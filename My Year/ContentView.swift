@@ -12,6 +12,9 @@ struct ContentView: View {
         VStack {
             YearGrid()
         }.background(Color("surface-muted"))
+        .onAppear {
+            NSLog("ContentView appeared")
+        }
     }
 }
 

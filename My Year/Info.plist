@@ -6,5 +6,16 @@
 	<array>
 		<string>remote-notification</string>
 	</array>
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>my-year</string>
+			</array>
+			<key>CFBundleURLName</key>
+			<string>com.sargon17.My-Year</string>
+		</dict>
+	</array>
 </dict>
 </plist>

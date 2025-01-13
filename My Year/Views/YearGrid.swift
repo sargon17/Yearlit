@@ -7,34 +7,32 @@
 
 import Foundation
 import SwiftUI
+import SharedModels
+import os
+
+private let logger = Logger(subsystem: "com.sargon17.My-Year", category: "Views")
 
 struct YearGrid: View {
-    let year = Calendar.current.component(.year, from: Date())
+    let store = ValuationStore.shared
+
+
+    @State private var showingValuationPopup = false
+    @State private var selectedDate: Date = Date()
     
-    // Calculate number of days in the year
-    var numberOfDaysInYear: Int {
-        let calendar = Calendar.current
+    
+    // Get color for a specific day
+    private func colorForDay(_ day: Int) -> Color {
+        let dayDate = store.dateForDay(day)
         
-        // Create date components for the first and last day of the year
-        let startOfYear = DateComponents(year: year, month: 1, day: 1)
-        let endOfYear = DateComponents(year: year, month: 12, day: 31)
-        
-        // Convert to actual dates
-        guard let startDate = calendar.date(from: startOfYear),
-              let endDate = calendar.date(from: endOfYear) else {
-            return 365 // Default to 365 if calculation fails
+        if day >= store.currentDayNumber {
+            return Color("dot-inactive")
         }
         
-        // Calculate the difference in days
-        let days = calendar.dateComponents([.day], from: startDate, to: endDate).day ?? 365
-        return days + 1 // Add 1 because dateComponents gives difference (e.g., Dec 31 - Jan 1 = 364)
-    }
-    
-    // Calculate current day number in year
-    var currentDayNumber: Int {
-        let calendar = Calendar.current
-        let today = Date()
-        return calendar.ordinality(of: .day, in: .year, for: today) ?? 0
+        if let valuation = store.getValuation(for: dayDate) {
+            return Color(valuation.mood.color)
+        }
+        
+        return Color("dot-active")
     }
     
     // Calculate grid layout for vertical rectangle
@@ -52,29 +50,49 @@ struct YearGrid: View {
         return (columns, rows, horizontalSpacing, verticalSpacing)
     }
     
+    private func handleDayTap(_ day: Int) {
+        let date = store.dateForDay(day)
+        if day < store.currentDayNumber && store.getValuation(for: date) == nil {
+            selectedDate = date
+            showingValuationPopup = true
+        }
+    }
+    
     var body: some View {
         VStack {
             HStack(alignment: .center, spacing: 6) {
-                    Text(year.description).font(.system(size: 68)).foregroundColor(Color("text-primary")).fontWeight(.black)
+                Text(Calendar.current.component(.year, from: Date()).description)
+                    .font(.system(size: 68))
+                    .foregroundColor(Color("text-primary"))
+                    .fontWeight(.black)
                 
                 Spacer()
-
-                let percent = Double(currentDayNumber) / 365.0
-                Text(String(format: "%.1f%%", percent * 100)).font(.system(size: 38)).foregroundColor(Color("text-primary").opacity(0.5)).fontWeight(.regular)
                 
-
-            }.padding(.horizontal)
-
+                let percent = Double(store.currentDayNumber) / Double(store.numberOfDaysInYear)
+                Text(String(format: "%.1f%%", percent * 100))
+                    .font(.system(size: 38))
+                    .foregroundColor(Color("text-primary").opacity(0.5))
+                    .fontWeight(.regular)
+            }
+            .padding(.horizontal)
+            
             HStack {
-
+                
                 Spacer()
-
-                Text("Left: ").font(.system(size: 22)).foregroundColor(Color("text-primary").opacity(0.5)).fontWeight(.regular)
-                + Text("\(365 - currentDayNumber)").font(.system(size: 38)).foregroundColor(Color("text-primary")).fontWeight(.bold)
-            }.padding(.horizontal)
-
+                
+                Text("Left: ")
+                    .font(.system(size: 22))
+                    .foregroundColor(Color("text-primary").opacity(0.5))
+                    .fontWeight(.regular)
+                + Text("\(store.numberOfDaysInYear - store.currentDayNumber)")
+                    .font(.system(size: 38))
+                    .foregroundColor(Color("text-primary"))
+                    .fontWeight(.bold)
+            }
+            .padding(.horizontal)
+            
             GeometryReader { geometry in
-                let dotSize: CGFloat = 5
+                let dotSize: CGFloat = 10
                 let padding: CGFloat = 20
                 
                 // Calculate available space
@@ -92,10 +110,13 @@ struct YearGrid: View {
                         HStack(spacing: dimensions.horizontalSpacing) {
                             ForEach(0..<dimensions.columns, id: \.self) { col in
                                 let day = row * dimensions.columns + col
-                                if day < 365 {
-                                    RoundedRectangle(cornerRadius: 1)
-                                        .fill(day < currentDayNumber ? Color("dot-active") : Color("dot-inactive"))
+                                if day < store.numberOfDaysInYear {
+                                    RoundedRectangle(cornerRadius: 3)
+                                        .fill(colorForDay(day))
                                         .frame(width: dotSize, height: dotSize)
+                                        .onTapGesture {
+                                            handleDayTap(day)
+                                        }
                                 } else {
                                     Color.clear.frame(width: dotSize, height: dotSize)
                                 }
@@ -106,6 +127,22 @@ struct YearGrid: View {
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
                 .padding(.horizontal)
             }
+        }
+        .onAppear {
+            logger.info("YearGrid onAppear called")
+            logger.info("Current day number: \(store.currentDayNumber)")
+            checkTodayValuation()
+        }
+        .sheet(isPresented: $showingValuationPopup) {
+            DayValuationPopup(date: selectedDate)
+        }
+    }
+    
+    private func checkTodayValuation() {
+        let today = Date()
+        if store.getValuation(for: today) == nil {
+            selectedDate = today
+            showingValuationPopup = true
         }
     }
 }

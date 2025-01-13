@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		7871CFA32D35995A005FFE4E /* SharedModels in Frameworks */ = {isa = PBXBuildFile; productRef = 7871CFA22D35995A005FFE4E /* SharedModels */; };
+		7871CFA62D3599B4005FFE4E /* SharedModels in Frameworks */ = {isa = PBXBuildFile; productRef = 7871CFA52D3599B4005FFE4E /* SharedModels */; };
 		78B025AE2D354F0B00E70B4C /* WidgetKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 78B025AD2D354F0B00E70B4C /* WidgetKit.framework */; };
 		78B025B02D354F0B00E70B4C /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 78B025AF2D354F0B00E70B4C /* SwiftUI.framework */; };
 		78B025BF2D354F0C00E70B4C /* YearWidgetExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 78B025AB2D354F0B00E70B4C /* YearWidgetExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
@@ -51,6 +53,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		7871CFA72D35C009005FFE4E /* YearWidgetExtension.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = YearWidgetExtension.entitlements; sourceTree = "<group>"; };
 		78B025672D35424100E70B4C /* My Year.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "My Year.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		78B0257B2D35424300E70B4C /* My YearTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "My YearTests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		78B025852D35424300E70B4C /* My YearUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "My YearUITests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -110,6 +113,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				7871CFA32D35995A005FFE4E /* SharedModels in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -132,6 +136,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				78B025B02D354F0B00E70B4C /* SwiftUI.framework in Frameworks */,
+				7871CFA62D3599B4005FFE4E /* SharedModels in Frameworks */,
 				78B025AE2D354F0B00E70B4C /* WidgetKit.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -142,6 +147,7 @@
 		78B0255E2D35424100E70B4C = {
 			isa = PBXGroup;
 			children = (
+				7871CFA72D35C009005FFE4E /* YearWidgetExtension.entitlements */,
 				78B025692D35424100E70B4C /* My Year */,
 				78B0257E2D35424300E70B4C /* My YearTests */,
 				78B025882D35424300E70B4C /* My YearUITests */,
@@ -193,6 +199,7 @@
 			);
 			name = "My Year";
 			packageProductDependencies = (
+				7871CFA22D35995A005FFE4E /* SharedModels */,
 			);
 			productName = "My Year";
 			productReference = 78B025672D35424100E70B4C /* My Year.app */;
@@ -261,6 +268,7 @@
 			);
 			name = YearWidgetExtension;
 			packageProductDependencies = (
+				7871CFA52D3599B4005FFE4E /* SharedModels */,
 			);
 			productName = YearWidgetExtension;
 			productReference = 78B025AB2D354F0B00E70B4C /* YearWidgetExtension.appex */;
@@ -301,6 +309,9 @@
 			);
 			mainGroup = 78B0255E2D35424100E70B4C;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				7871CFA42D3599B4005FFE4E /* XCLocalSwiftPackageReference "SharedModels" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 78B025682D35424100E70B4C /* Products */;
 			projectDirPath = "";
@@ -655,6 +666,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
+				CODE_SIGN_ENTITLEMENTS = YearWidgetExtension.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 9G3JW3N8UH;
@@ -683,6 +695,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
+				CODE_SIGN_ENTITLEMENTS = YearWidgetExtension.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 9G3JW3N8UH;
@@ -755,6 +768,24 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCLocalSwiftPackageReference section */
+		7871CFA42D3599B4005FFE4E /* XCLocalSwiftPackageReference "SharedModels" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = SharedModels;
+		};
+/* End XCLocalSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		7871CFA22D35995A005FFE4E /* SharedModels */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = SharedModels;
+		};
+		7871CFA52D3599B4005FFE4E /* SharedModels */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = SharedModels;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 78B0255F2D35424100E70B4C /* Project object */;
 }
