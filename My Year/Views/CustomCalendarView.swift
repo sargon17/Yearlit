@@ -25,12 +25,21 @@ enum SelectedDate: Equatable {
 struct CustomCalendarView: View {
     let calendarId: UUID
     private let store = CustomCalendarStore.shared
+    private let valuationStore = ValuationStore.shared
     
     var calendar: CustomCalendar {
         store.calendars.first { $0.id == calendarId }!
     }
     
     @State private var selectedDate: SelectedDate = .none
+    @State private var showingEditSheet = false
+    @State private var showingYearPicker = false
+    @State private var tempSelectedYear: Int = Calendar.current.component(.year, from: Date())
+    
+    private let availableYears: [Int] = {
+        let currentYear = Calendar.current.component(.year, from: Date())
+        return Array((currentYear-10)...currentYear).reversed()
+    }()
     
     private func getMaxCount() -> Int {
         let maxCount = calendar.entries.values.map { $0.count }.max() ?? 1
@@ -38,10 +47,9 @@ struct CustomCalendarView: View {
     }
     
     private func colorForDay(_ day: Int) -> Color {
-        let store = ValuationStore.shared // Using this for date calculations
-        let dayDate = store.dateForDay(day)
+        let dayDate = valuationStore.dateForDay(day)
         
-        if day >= store.currentDayNumber {
+        if day >= valuationStore.currentDayNumber {
             return Color("dot-inactive")
         }
         
@@ -64,9 +72,8 @@ struct CustomCalendarView: View {
     }
     
     private func handleDayTap(_ day: Int) {
-        let store = ValuationStore.shared // Using this for date calculations
-        let date = store.dateForDay(day)
-        if day < store.currentDayNumber {
+        let date = valuationStore.dateForDay(day)
+        if day < valuationStore.currentDayNumber {
             selectedDate = .selected(date)
         }
     }
@@ -92,10 +99,27 @@ struct CustomCalendarView: View {
             // Stats header
             VStack(spacing: 10) {
                 HStack(alignment: .center, spacing: 6) {
-                    Text(calendar.name.capitalized)
-                        .font(.system(size: 38))
-                        .foregroundColor(Color("text-primary"))
-                        .fontWeight(.black)
+                    VStack(alignment: .leading, spacing: 0) {
+                        HStack(alignment: .center, spacing: 8) {
+                            Text(calendar.name.capitalized)
+                                .font(.system(size: 38))
+                                .foregroundColor(Color("text-primary"))
+                                .fontWeight(.black)
+                            
+                            Button(action: { showingEditSheet = true }) {
+                                Image(systemName: "pencil")
+                                    .font(.system(size: 16))
+                                    .foregroundStyle(Color("text-tertiary"))
+                            }
+                        }
+                        
+                        Button(action: { showingYearPicker = true }) {
+                            Text("\(valuationStore.year.description)")
+                                .font(.system(size: 16))
+                                .foregroundColor(Color("text-tertiary"))
+                                .fontWeight(.bold)
+                        }
+                    }
                     
                     Spacer()
                 }
@@ -104,38 +128,41 @@ struct CustomCalendarView: View {
                 let stats = getStats()
                 HStack {
                     VStack(alignment: .leading) {
-                        Text("Active Days")
-                            .font(.system(size: 14))
-                            .foregroundColor(Color("text-secondary"))
                         Text("\(stats.activeDays)")
                             .font(.system(size: 24))
                             .foregroundColor(Color("text-primary"))
                             .fontWeight(.bold)
+
+                        Text("Active Days")
+                            .font(.system(size: 10))
+                            .foregroundColor(Color("text-tertiary"))
                     }
                     
                     Spacer()
                     
                     if calendar.trackingType != .binary {
                         VStack(alignment: .center) {
-                            Text("Total Count")
-                                .font(.system(size: 14))
-                                .foregroundColor(Color("text-secondary"))
                             Text("\(stats.totalCount)")
                                 .font(.system(size: 24))
                                 .foregroundColor(Color("text-primary"))
                                 .fontWeight(.bold)
+
+                            Text("Total Count")
+                                .font(.system(size: 10))
+                                .foregroundColor(Color("text-tertiary"))
                         }
                         
                         Spacer()
                         
                         VStack(alignment: .trailing) {
-                            Text("Max Count")
-                                .font(.system(size: 14))
-                                .foregroundColor(Color("text-secondary"))
                             Text("\(stats.maxCount)")
                                 .font(.system(size: 24))
                                 .foregroundColor(Color("text-primary"))
                                 .fontWeight(.bold)
+                                
+                            Text("Max Count")
+                                .font(.system(size: 10))
+                                .foregroundColor(Color("text-tertiary"))
                         }
                     }
                 }
@@ -182,7 +209,52 @@ struct CustomCalendarView: View {
                 .padding(.horizontal)
             }
         }
-        .navigationTitle(calendar.name)
+        .navigationBarTitleDisplayMode(.inline)
+        .sheet(isPresented: $showingEditSheet) {
+            NavigationView {
+                EditCalendarView(calendar: calendar) { updatedCalendar in
+                    store.updateCalendar(updatedCalendar)
+                }
+                .background(Color("surface-muted"))
+            }
+            .background(Color("surface-muted"))
+        }
+        .sheet(isPresented: $showingYearPicker) {
+            NavigationView {
+                VStack {
+                    Picker("Select Year", selection: $tempSelectedYear) {
+                        ForEach(availableYears, id: \.self) { year in
+                            Text(year.description)
+                                .foregroundColor(Color("text-primary"))
+                                .tag(year)
+                        }
+                    }
+                    .pickerStyle(.wheel)
+                }
+                .navigationTitle("Select Year")
+                .navigationBarTitleDisplayMode(.inline)
+                .toolbar {
+                    ToolbarItem(placement: .cancellationAction) {
+                        Button("Cancel") {
+                            tempSelectedYear = valuationStore.selectedYear
+                            showingYearPicker = false
+                        }
+                    }
+                    ToolbarItem(placement: .confirmationAction) {
+                        Button("Done") {
+                            valuationStore.selectedYear = tempSelectedYear
+                            showingYearPicker = false
+                        }
+                    }
+                }
+                .onAppear {
+                    tempSelectedYear = valuationStore.selectedYear
+                }
+                .background(Color("surface-muted"))
+            }
+            .background(Color("surface-muted"))
+            .presentationDetents([.height(280)])
+        }
         .sheet(
             isPresented: Binding(
                 get: { selectedDate.isPresented },
@@ -293,6 +365,104 @@ struct CalendarEntryView: View {
             if let existingEntry = CustomCalendarStore.shared.getEntry(calendarId: calendar.id, date: date) {
                 count = existingEntry.count
                 completed = existingEntry.completed
+            }
+        }
+    }
+}
+
+struct EditCalendarView: View {
+    @Environment(\.dismiss) private var dismiss
+    let calendar: CustomCalendar
+    let onSave: (CustomCalendar) -> Void
+    
+    @State private var name: String
+    @State private var selectedColor: String
+    @State private var trackingType: TrackingType
+    @State private var dailyTarget: Int
+    
+    init(calendar: CustomCalendar, onSave: @escaping (CustomCalendar) -> Void) {
+        self.calendar = calendar
+        self.onSave = onSave
+        _name = State(initialValue: calendar.name)
+        _selectedColor = State(initialValue: calendar.color)
+        _trackingType = State(initialValue: calendar.trackingType)
+        _dailyTarget = State(initialValue: calendar.dailyTarget)
+    }
+    
+    private let colors = [
+        "mood-terrible",
+        "mood-bad",
+        "mood-neutral",
+        "mood-good",
+        "mood-excellent"
+    ]
+    
+    var body: some View {
+        Form {
+            Section {
+                TextField("Calendar Name", text: $name)
+                    .foregroundColor(Color("text-primary"))
+                    .fontWeight(.bold)
+            }
+            .listRowBackground(Color("surface-primary"))
+
+            Section {
+                Picker("Tracking Type", selection: $trackingType) {
+                    Text("Once a day").tag(TrackingType.binary)
+                    Text("Multiple times (unlimited)").tag(TrackingType.counter)
+                    Text("Multiple times (with target)").tag(TrackingType.multipleDaily)
+                }
+                
+                if trackingType == .multipleDaily {
+                    Stepper("Daily Target: \(dailyTarget)", value: $dailyTarget, in: 1...10)
+                }
+            }
+            .listRowBackground(Color("surface-primary"))
+
+            Section {
+                HStack {
+                    ForEach(colors, id: \.self) { color in
+                        Circle()
+                            .fill(Color(color))
+                            .frame(width: 30, height: 30)
+                            .overlay(
+                                Circle()
+                                    .stroke(Color.primary, lineWidth: selectedColor == color ? 2 : 0)
+                            )
+                            .onTapGesture {
+                                selectedColor = color
+                            }
+                    }
+                }
+            } header: {
+                Text("Color")
+            }
+            .listRowBackground(Color("surface-primary"))
+        }
+        .scrollContentBackground(.hidden)
+        .background(Color("surface-muted"))
+        .navigationTitle("Edit Calendar")
+        .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .cancellationAction) {
+                Button("Cancel") {
+                    dismiss()
+                }
+            }
+            ToolbarItem(placement: .confirmationAction) {
+                Button("Save") {
+                    let updatedCalendar = CustomCalendar(
+                        id: calendar.id,
+                        name: name,
+                        color: selectedColor,
+                        trackingType: trackingType,
+                        dailyTarget: dailyTarget,
+                        entries: calendar.entries
+                    )
+                    onSave(updatedCalendar)
+                    dismiss()
+                }
+                .disabled(name.isEmpty)
             }
         }
     }

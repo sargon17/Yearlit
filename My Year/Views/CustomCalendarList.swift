@@ -207,6 +207,56 @@ struct SwipeableCalendarView: View {
         _selectedIndex = State(initialValue: index)
     }
     
+    private var currentCalendar: CustomCalendar? {
+        guard selectedIndex < store.calendars.count else { return nil }
+        return store.calendars[selectedIndex]
+    }
+    
+    private func quickAddEntry() {
+        guard let calendar = currentCalendar else { return }
+        
+        let today = Date()
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "yyyy-MM-dd"
+        let dateKey = dateFormatter.string(from: today)
+        
+        let currentEntry = calendar.entries[dateKey]
+        
+        switch calendar.trackingType {
+        case .binary:
+            // For binary, just toggle completion
+            let entry = CalendarEntry(
+                date: today,
+                count: 1,
+                completed: true
+            )
+            store.addEntry(calendarId: calendar.id, entry: entry)
+            
+        case .counter:
+            // For counter, increment by 1
+            let newCount = (currentEntry?.count ?? 0) + 1
+            let entry = CalendarEntry(
+                date: today,
+                count: newCount,
+                completed: true
+            )
+            store.addEntry(calendarId: calendar.id, entry: entry)
+            
+        case .multipleDaily:
+            // For multiple daily, increment by 1 if under target
+            let currentCount = currentEntry?.count ?? 0
+            if currentCount < calendar.dailyTarget {
+                let newCount = currentCount + 1
+                let entry = CalendarEntry(
+                    date: today,
+                    count: newCount,
+                    completed: newCount >= calendar.dailyTarget
+                )
+                store.addEntry(calendarId: calendar.id, entry: entry)
+            }
+        }
+    }
+    
     var body: some View {
         TabView(selection: $selectedIndex) {
             ForEach(Array(store.calendars.enumerated()), id: \.element.id) { index, calendar in
@@ -216,6 +266,14 @@ struct SwipeableCalendarView: View {
         }
         .tabViewStyle(.page)
         .indexViewStyle(.page(backgroundDisplayMode: .never))
+        .toolbar {
+            ToolbarItem(placement: .navigationBarTrailing) {
+                Button(action: quickAddEntry) {
+                    Image(systemName: "plus")
+                        .foregroundStyle(Color(currentCalendar?.color ?? "mood-good"))
+                }
+            }
+        }
     }
 }
 

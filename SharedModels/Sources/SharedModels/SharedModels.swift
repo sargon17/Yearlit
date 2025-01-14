@@ -250,6 +250,7 @@ public class ValuationStore {
     private let defaults: UserDefaults
     private var isLoading = false
     
+    public var selectedYear: Int = Calendar.current.component(.year, from: Date())
     public var valuations: [String: DayValuation] = [:] {
         didSet {
             if !isLoading {
@@ -262,28 +263,32 @@ public class ValuationStore {
     
     public func dateForDay(_ day: Int) -> Date {
         let calendar = Calendar.current
-        let year = calendar.component(.year, from: Date())
-        let startOfYear = calendar.date(from: DateComponents(year: year, month: 1, day: 1))!
+        let startOfYear = calendar.date(from: DateComponents(year: selectedYear, month: 1, day: 1))!
         return calendar.date(byAdding: .day, value: day, to: startOfYear)!
     }
 
     public var year: Int {
-        let calendar = Calendar.current
-        let year = calendar.component(.year, from: Date())
-        return year
+        selectedYear
     }
     
     public var currentDayNumber: Int {
         let calendar = Calendar.current
         let today = Date()
+        let currentYear = calendar.component(.year, from: today)
+        
+        if selectedYear > currentYear {
+            return 0
+        } else if selectedYear < currentYear {
+            return numberOfDaysInYear
+        }
+        
         return calendar.ordinality(of: .day, in: .year, for: today) ?? 0
     }
     
     public var numberOfDaysInYear: Int {
         let calendar = Calendar.current
-        let year = calendar.component(.year, from: Date())
-        let startOfYear = DateComponents(year: year, month: 1, day: 1)
-        let endOfYear = DateComponents(year: year, month: 12, day: 31)
+        let startOfYear = DateComponents(year: selectedYear, month: 1, day: 1)
+        let endOfYear = DateComponents(year: selectedYear, month: 12, day: 31)
         guard let startDate = calendar.date(from: startOfYear),
               let endDate = calendar.date(from: endOfYear) else {
             return 365
