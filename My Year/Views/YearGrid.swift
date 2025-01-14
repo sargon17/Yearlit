@@ -12,12 +12,37 @@ import os
 
 private let logger = Logger(subsystem: "com.sargon17.My-Year", category: "Views")
 
+
+enum DayMoodType: Hashable {
+    case mood(DayMood)  // Wraps the existing DayMood cases
+    case notEvaluated   // For days that could be evaluated but weren't
+    case future         // For future days
+    
+    // Helper to convert DayMood to this type
+    static func from(_ mood: DayMood) -> DayMoodType {
+        return .mood(mood)
+    }
+    
+    var color: String {
+        switch self {
+        case .mood(let mood):
+            return mood.color
+        case .notEvaluated:
+            return "dot-active"
+        case .future:
+            return "dot-inactive"
+        }
+    }
+}
+
 struct YearGrid: View {
     let store = ValuationStore.shared
 
 
     @State private var showingValuationPopup = false
     @State private var selectedDate: Date = Date()
+
+    @State private var dayTypesQuantity: [DayMoodType: Int] = [:]
     
     
     // Get color for a specific day
@@ -57,9 +82,26 @@ struct YearGrid: View {
             showingValuationPopup = true
         }
     }
+
+
+    private func updateDayTypesQuantity() {
+        let evaluatedDays = store.valuations.values.reduce(into: [:]) { counts, valuation in
+            counts[DayMoodType.from(valuation.mood), default: 0] += 1
+        }
+        
+        let notEvaluatedDays = store.currentDayNumber - store.valuations.count
+        let futureDays = store.numberOfDaysInYear - store.currentDayNumber
+        
+        var quantities = evaluatedDays
+        quantities[DayMoodType.notEvaluated] = notEvaluatedDays
+        quantities[DayMoodType.future] = futureDays
+        
+        dayTypesQuantity = quantities
+    }
     
     var body: some View {
         VStack {
+            VStack(spacing: 10) {
             HStack(alignment: .center, spacing: 6) {
                 Text(Calendar.current.component(.year, from: Date()).description)
                     .font(.system(size: 68))
@@ -77,6 +119,7 @@ struct YearGrid: View {
             .padding(.horizontal)
             
             HStack {
+                MosaicChart(dayTypesQuantity: dayTypesQuantity)
                 
                 Spacer()
                 
@@ -90,6 +133,8 @@ struct YearGrid: View {
                     .fontWeight(.bold)
             }
             .padding(.horizontal)
+
+            }
             
             GeometryReader { geometry in
                 let dotSize: CGFloat = 10
@@ -129,9 +174,12 @@ struct YearGrid: View {
             }
         }
         .onAppear {
-            logger.info("YearGrid onAppear called")
-            logger.info("Current day number: \(store.currentDayNumber)")
             checkTodayValuation()
+            updateDayTypesQuantity()
+            logger.info("Day types quantity: \(dayTypesQuantity)")
+        }
+        .onChange(of: store.valuations) { _ in
+            updateDayTypesQuantity()
         }
         .sheet(isPresented: $showingValuationPopup) {
             DayValuationPopup(date: selectedDate)
@@ -146,6 +194,36 @@ struct YearGrid: View {
         }
     }
 }
+
+struct MosaicChart: View {
+    let dayTypesQuantity: [DayMoodType: Int]
+    
+    var sortedEntries: [(type: DayMoodType, count: Int)] {
+        dayTypesQuantity.sorted { $0.key.color < $1.key.color }
+            .map { (type: $0.key, count: $0.value) }
+    }
+
+    var body: some View {
+        VStack {
+            GeometryReader { geometry in
+
+            let availableWidth = geometry.size.width
+
+                HStack(spacing: 2) {            
+                    ForEach(sortedEntries, id: \.type) { entry in
+                        RoundedRectangle(cornerRadius: 3)
+                        .fill(Color(entry.type.color))
+                        .frame(width: availableWidth * CGFloat(entry.count) / CGFloat(sortedEntries.reduce(0, { $0 + $1.count })), height: 40)
+                    }
+                }
+            }
+        }
+        .frame(height: 40)
+        .padding(.trailing)
+    }
+}
+
+
 
 #Preview {
     YearGrid()
