@@ -7,12 +7,12 @@
 
 import SwiftUI
 import SharedModels
+import RevenueCat
 
 @main
 struct My_YearApp: App {
     init() {
-        NSLog("=== App Launch ===")
-        NSLog("🚀 APP STARTING - IF YOU SEE THIS, LOGS ARE WORKING!")
+         Purchases.configure(withAPIKey: "appl_rQKHOkYUqJKaipHpcSXlIpPgvPe")
         
         // Test direct UserDefaults access
         let appGroupId = "group.sargon17.My-Year"

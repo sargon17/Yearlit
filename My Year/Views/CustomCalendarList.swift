@@ -1,5 +1,7 @@
 import SwiftUI
 import SharedModels
+import RevenueCat
+import RevenueCatUI
 
 struct CalendarListItem: View {
     let name: String
@@ -29,6 +31,8 @@ struct CalendarListItem: View {
 
 struct CustomCalendarList: View {
     @State private var showingCreateSheet = false
+    @State private var displayPaywall = false
+    @State private var customerInfo: CustomerInfo?
     private let store = CustomCalendarStore.shared
     
     var body: some View {
@@ -74,8 +78,13 @@ struct CustomCalendarList: View {
         .background(Color("surface-muted"))
         .navigationTitle("Calendars")
         .toolbar {
-            Button(action: { showingCreateSheet = true }) {
+            Button(action: { handleAddCalendar() }) {
                 Image(systemName: "plus")
+            }
+        }
+        .onAppear {
+            Purchases.shared.getCustomerInfo { (customerInfo, error) in
+                self.customerInfo = customerInfo
             }
         }
         .sheet(isPresented: $showingCreateSheet) {
@@ -87,6 +96,17 @@ struct CustomCalendarList: View {
                 .background(Color("surface-muted"))
             }
             .background(Color("surface-muted"))
+        }
+        .sheet(isPresented: $displayPaywall) {
+            PaywallView(displayCloseButton: true)
+        }
+    }
+
+    func handleAddCalendar() {
+        if customerInfo?.entitlements["premium"]?.isActive ?? false || store.calendars.count < 3 {
+            showingCreateSheet = true
+        } else {
+            displayPaywall = true
         }
     }
 }
