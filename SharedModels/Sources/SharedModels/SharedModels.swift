@@ -4,6 +4,53 @@ import Observation
 import WidgetKit
 import AppIntents
 
+// MARK: - Custom Calendar Models
+
+public struct CustomCalendar: Codable, Identifiable {
+    public let id: UUID
+    public var name: String
+    public var color: String // Store as hex or named color
+    public var trackingType: TrackingType
+    public var entries: [String: CalendarEntry] // Date string -> Entry
+    
+    public init(id: UUID = UUID(), name: String, color: String, trackingType: TrackingType) {
+        self.id = id
+        self.name = name
+        self.color = color
+        self.trackingType = trackingType
+        self.entries = [:]
+    }
+}
+
+public enum TrackingType: String, Codable {
+    case binary // Done/Not done
+    case counter // GitHub-style count
+    case multipleDaily // Fixed number of times per day
+    
+    public var description: String {
+        switch self {
+        case .binary:
+            return "Once a day"
+        case .counter:
+            return "Multiple times (unlimited)"
+        case .multipleDaily:
+            return "Multiple times (with target)"
+        }
+    }
+}
+
+public struct CalendarEntry: Codable {
+    public let date: Date
+    public var count: Int
+    public var completed: Bool
+    
+    public init(date: Date, count: Int = 0, completed: Bool = false) {
+        self.date = date
+        self.count = count
+        self.completed = completed
+    }
+}
+
 public enum DayMood: String, Codable {
     case terrible = "😫"
     case bad = "😞"
@@ -75,6 +122,92 @@ public struct DayValuation: Codable, Identifiable, Equatable {
     
     public static func == (lhs: DayValuation, rhs: DayValuation) -> Bool {
         return lhs.id == rhs.id && lhs.mood == rhs.mood
+    }
+}
+
+// MARK: - Custom Calendar Store
+
+@Observable
+public class CustomCalendarStore {
+    public static let shared = CustomCalendarStore()
+    
+    private let defaults: UserDefaults
+    private let calendarsKey = "customCalendars"
+    private let appGroupId = "group.sargon17.My-Year"
+    
+    public private(set) var calendars: [CustomCalendar] = []
+    public private(set) var isLoading: Bool = false
+    
+    public init() {
+        UserDefaults.standard.addSuite(named: appGroupId)
+        
+        guard let defaults = UserDefaults(suiteName: appGroupId) else {
+            fatalError("Failed to initialize UserDefaults with App Group: \(appGroupId)")
+        }
+        self.defaults = defaults
+        
+        loadCalendars()
+    }
+    
+    public func loadCalendars() {
+        isLoading = true
+        defer { isLoading = false }
+        
+        CFPreferencesAppSynchronize(appGroupId as CFString)
+        
+        guard let data = defaults.data(forKey: calendarsKey),
+              let decodedCalendars = try? JSONDecoder().decode([CustomCalendar].self, from: data) else {
+            calendars = []
+            return
+        }
+        
+        calendars = decodedCalendars
+    }
+    
+    private func saveCalendars() {
+        guard let data = try? JSONEncoder().encode(calendars) else { return }
+        defaults.set(data, forKey: calendarsKey)
+        defaults.synchronize()
+    }
+    
+    // MARK: - Calendar Management
+    
+    public func addCalendar(_ calendar: CustomCalendar) {
+        calendars.append(calendar)
+        saveCalendars()
+    }
+    
+    public func updateCalendar(_ calendar: CustomCalendar) {
+        guard let index = calendars.firstIndex(where: { $0.id == calendar.id }) else { return }
+        calendars[index] = calendar
+        saveCalendars()
+    }
+    
+    public func deleteCalendar(id: UUID) {
+        calendars.removeAll { $0.id == id }
+        saveCalendars()
+    }
+    
+    // MARK: - Entry Management
+    
+    public func addEntry(calendarId: UUID, entry: CalendarEntry) {
+        guard let index = calendars.firstIndex(where: { $0.id == calendarId }) else { return }
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "yyyy-MM-dd"
+        let dateKey = dateFormatter.string(from: entry.date)
+        
+        var calendar = calendars[index]
+        calendar.entries[dateKey] = entry
+        calendars[index] = calendar
+        saveCalendars()
+    }
+    
+    public func getEntry(calendarId: UUID, date: Date) -> CalendarEntry? {
+        guard let calendar = calendars.first(where: { $0.id == calendarId }) else { return nil }
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "yyyy-MM-dd"
+        let dateKey = dateFormatter.string(from: date)
+        return calendar.entries[dateKey]
     }
 }
 

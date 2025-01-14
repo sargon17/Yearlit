@@ -9,9 +9,21 @@ import SwiftUI
 
 struct ContentView: View {
     var body: some View {
-        VStack {
+        NavigationView {
             YearGrid()
-        }.background(Color("surface-muted"))
+                .toolbar {
+                    ToolbarItem(placement: .navigationBarTrailing) {
+                        NavigationLink(destination: CustomCalendarList()) {
+                            Image(systemName: "list.bullet")
+                        }
+                    }
+
+                    ToolbarItem(placement: .navigationBarLeading) {
+                        Text("Yearlit").font(.headline).foregroundColor(Color("text-primary"))
+                    }
+                }
+                .background(Color("surface-muted"))
+        }
         .onAppear {
             NSLog("ContentView appeared")
         }

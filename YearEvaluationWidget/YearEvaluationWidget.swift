@@ -20,24 +20,34 @@ struct ToggleVisualizationIntent: AppIntent {
     static var title: LocalizedStringResource = "Toggle Visualization"
     static var description = IntentDescription("Changes how the year is visualized")
 
-    private let defaults = UserDefaults(suiteName: "group.sargon17.My-Year")
+    private let appGroupId = "group.sargon17.My-Year"
     private let visualizationTypeKey = "widget.visualizationType"
-
+    
     func perform() async throws -> some IntentResult {
-        let currentType = defaults?.string(forKey: visualizationTypeKey).flatMap { VisualizationType(rawValue: $0) } ?? .full
-        let nextType: VisualizationType = {
-            switch currentType {
-            case .full: return .pastOnly
-            case .pastOnly: return .evaluatedOnly
-            case .evaluatedOnly: return .full
-            }
-        }()
-        
+        let defaults = UserDefaults(suiteName: appGroupId)
+        let currentType = getCurrentVisualizationType(defaults: defaults)
+        let nextType = getNextVisualizationType(current: currentType)
         defaults?.set(nextType.rawValue, forKey: visualizationTypeKey)
-        defaults?.synchronize()
-        
-        await WidgetCenter.shared.reloadAllTimelines()
         return .result()
+    }
+    
+    private func getCurrentVisualizationType(defaults: UserDefaults?) -> VisualizationType {
+        guard let typeString = defaults?.string(forKey: visualizationTypeKey),
+              let type = VisualizationType(rawValue: typeString) else {
+            return .full
+        }
+        return type
+    }
+    
+    private func getNextVisualizationType(current: VisualizationType) -> VisualizationType {
+        switch current {
+        case .full:
+            return .pastOnly
+        case .pastOnly:
+            return .evaluatedOnly
+        case .evaluatedOnly:
+            return .full
+        }
     }
 }
 

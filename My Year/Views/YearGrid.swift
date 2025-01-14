@@ -16,14 +16,9 @@ private let logger = Logger(subsystem: "com.sargon17.My-Year", category: "Views"
 struct YearGrid: View {
     let store = ValuationStore.shared
 
-
-    @State private var showingValuationPopup = false
-    @State private var selectedDate: Date = Date()
-
+    @State private var valuationPopup: (isPresented: Bool, date: Date)?
     @State private var dayTypesQuantity: [DayMoodType: Int] = [:]
     
-    
-    // Get color for a specific day
     private func colorForDay(_ day: Int) -> Color {
         let dayDate = store.dateForDay(day)
         
@@ -38,29 +33,19 @@ struct YearGrid: View {
         return Color("dot-active")
     }
     
-    // Calculate grid layout for vertical rectangle
-    private func calculateGridDimensions(availableWidth: CGFloat, availableHeight: CGFloat, dotSize: CGFloat) -> (columns: Int, rows: Int, horizontalSpacing: CGFloat, verticalSpacing: CGFloat) {
-        // Calculate grid dimensions based on aspect ratio, exactly as in widget
-        let aspectRatio = availableWidth / availableHeight
-        let targetColumns = Int(sqrt(Double(365) * aspectRatio))
-        let columns = min(targetColumns, 365)
-        let rows = Int(ceil(Double(365) / Double(columns)))
-        
-        // Calculate spacings to fill the widget, exactly as in widget
-        let horizontalSpacing = (availableWidth - (dotSize * CGFloat(columns))) / CGFloat(columns - 1)
-        let verticalSpacing = (availableHeight - (dotSize * CGFloat(rows))) / CGFloat(rows - 1)
-        
-        return (columns, rows, horizontalSpacing, verticalSpacing)
-    }
-    
     private func handleDayTap(_ day: Int) {
         let date = store.dateForDay(day)
         if day < store.currentDayNumber && store.getValuation(for: date) == nil {
-            selectedDate = date
-            showingValuationPopup = true
+            valuationPopup = (true, date)
         }
     }
-
+    
+    private func checkTodayValuation() {
+        let today = Date()
+        if store.getValuation(for: today) == nil {
+            valuationPopup = (true, today)
+        }
+    }
     
     var body: some View {
         VStack {
@@ -142,20 +127,31 @@ struct YearGrid: View {
             checkTodayValuation()
             dayTypesQuantity = updateDayTypesQuantity(store: store)
         }
-        .onChange(of: store.valuations) { _ in
+        .onChange(of: store.valuations) { _, _ in
             dayTypesQuantity = updateDayTypesQuantity(store: store)
         }
-        .sheet(isPresented: $showingValuationPopup) {
-            DayValuationPopup(date: selectedDate)
+        .sheet(isPresented: Binding(
+            get: { valuationPopup?.isPresented ?? false },
+            set: { if !$0 { valuationPopup = nil } }
+        )) {
+            if let date = valuationPopup?.date {
+                DayValuationPopup(date: date)
+            }
         }
     }
     
-    private func checkTodayValuation() {
-        let today = Date()
-        if store.getValuation(for: today) == nil {
-            selectedDate = today
-            showingValuationPopup = true
-        }
+    private func calculateGridDimensions(availableWidth: CGFloat, availableHeight: CGFloat, dotSize: CGFloat) -> (columns: Int, rows: Int, horizontalSpacing: CGFloat, verticalSpacing: CGFloat) {
+        // Calculate grid dimensions based on aspect ratio, exactly as in widget
+        let aspectRatio = availableWidth / availableHeight
+        let targetColumns = Int(sqrt(Double(365) * aspectRatio))
+        let columns = min(targetColumns, 365)
+        let rows = Int(ceil(Double(365) / Double(columns)))
+        
+        // Calculate spacings to fill the widget, exactly as in widget
+        let horizontalSpacing = (availableWidth - (dotSize * CGFloat(columns))) / CGFloat(columns - 1)
+        let verticalSpacing = (availableHeight - (dotSize * CGFloat(rows))) / CGFloat(rows - 1)
+        
+        return (columns, rows, horizontalSpacing, verticalSpacing)
     }
 }
 
