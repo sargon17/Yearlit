@@ -55,7 +55,7 @@ struct CustomCalendarList: View {
                 Section("Custom Calendars") {
                     ForEach(store.calendars) { calendar in
                         NavigationLink(
-                            destination: CustomCalendarView(calendarId: calendar.id)
+                            destination: SwipeableCalendarView(initialCalendarId: calendar.id)
                                 .background(Color("surface-muted"))
                         ) {
                             CalendarListItem(
@@ -193,6 +193,29 @@ struct CreateCalendarView: View {
                 .disabled(name.isEmpty)
             }
         }
+    }
+}
+
+struct SwipeableCalendarView: View {
+    let initialCalendarId: UUID
+    private let store = CustomCalendarStore.shared
+    @State private var selectedIndex: Int
+    
+    init(initialCalendarId: UUID) {
+        self.initialCalendarId = initialCalendarId
+        let index = store.calendars.firstIndex { $0.id == initialCalendarId } ?? 0
+        _selectedIndex = State(initialValue: index)
+    }
+    
+    var body: some View {
+        TabView(selection: $selectedIndex) {
+            ForEach(Array(store.calendars.enumerated()), id: \.element.id) { index, calendar in
+                CustomCalendarView(calendarId: calendar.id)
+                    .tag(index)
+            }
+        }
+        .tabViewStyle(.page)
+        .indexViewStyle(.page(backgroundDisplayMode: .never))
     }
 }
 

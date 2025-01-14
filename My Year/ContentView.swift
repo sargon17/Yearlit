@@ -6,8 +6,11 @@
 //
 
 import SwiftUI
+import RevenueCat
 
 struct ContentView: View {
+    @State private var customerInfo: CustomerInfo?
+
     var body: some View {
         NavigationView {
             YearGrid()
@@ -19,13 +22,25 @@ struct ContentView: View {
                     }
 
                     ToolbarItem(placement: .navigationBarLeading) {
-                        Text("Yearlit").font(.headline).foregroundColor(Color("text-primary"))
+                        if customerInfo?.entitlements["premium"]?.isActive ?? false {
+                            HStack(spacing: 4) {
+                                Text("Yearlit").font(.headline).foregroundColor(Color("text-primary"))
+                                Image(systemName: "checkmark.seal.fill")
+                                    .font(.caption)
+                                    .foregroundColor(Color("mood-excellent"))
+                                    .shadow(color: Color("mood-excellent").opacity(0.5), radius: 10)
+                            }
+                        } else {
+                            Text("Yearlit").font(.headline).foregroundColor(Color("text-primary"))
+                        }
                     }
                 }
                 .background(Color("surface-muted"))
         }
         .onAppear {
-            NSLog("ContentView appeared")
+            Purchases.shared.getCustomerInfo { (customerInfo, error) in
+                self.customerInfo = customerInfo
+            }
         }
     }
 }
