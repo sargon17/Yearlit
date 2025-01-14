@@ -33,6 +33,22 @@ enum DayMoodType: Hashable {
             return "dot-inactive"
         }
     }
+    
+    // Add sorting priority
+    var sortOrder: Int {
+        switch self {
+        case .mood(let mood):
+            switch mood {
+            case .terrible: return 0
+            case .bad: return 1
+            case .neutral: return 2
+            case .good: return 3
+            case .excellent: return 4
+            }
+        case .notEvaluated: return 5
+        case .future: return 6
+        }
+    }
 }
 
 struct YearGrid: View {
@@ -195,31 +211,94 @@ struct YearGrid: View {
     }
 }
 
+enum VisualizationType {
+    case full
+    case pastOnly
+    case evaluatedOnly
+}
+
 struct MosaicChart: View {
     let dayTypesQuantity: [DayMoodType: Int]
+
+    @State private var visualizationType: VisualizationType = .full
     
     var sortedEntries: [(type: DayMoodType, count: Int)] {
-        dayTypesQuantity.sorted { $0.key.color < $1.key.color }
-            .map { (type: $0.key, count: $0.value) }
+        dayTypesQuantity.sorted { lhs, rhs in
+            switch (lhs.key, rhs.key) {
+            case (.mood(let m1), .mood(let m2)):
+                return m1.rawValue < m2.rawValue
+            case (.mood, _):
+                return true
+            case (_, .mood):
+                return false
+            case (.notEvaluated, .future):
+                return true
+            case (.future, .notEvaluated):
+                return false
+            default:
+                return true
+            }
+        }
+        .map { (type: $0.key, count: $0.value) }
+    }
+
+
+    var filteredEntries: [(type: DayMoodType, count: Int)] {
+        sortedEntries.filter { entry in
+            switch visualizationType {
+            case .full: return true
+            case .pastOnly: return entry.type != .future
+            case .evaluatedOnly:
+                if case .mood(_) = entry.type {
+                    return true
+                }
+                return false
+            }
+        }
     }
 
     var body: some View {
         VStack {
             GeometryReader { geometry in
-
-            let availableWidth = geometry.size.width
+                let availableWidth = geometry.size.width
 
                 HStack(spacing: 2) {            
-                    ForEach(sortedEntries, id: \.type) { entry in
+                    ForEach(filteredEntries, id: \.type) { entry in
                         RoundedRectangle(cornerRadius: 3)
-                        .fill(Color(entry.type.color))
-                        .frame(width: availableWidth * CGFloat(entry.count) / CGFloat(sortedEntries.reduce(0, { $0 + $1.count })), height: 40)
+                            .fill(Color(entry.type.color))
+                            .frame(width: calculateWidth(for: entry, availableWidth: availableWidth), height: 40)
                     }
+                    .transition(.asymmetric(
+                        insertion: .scale.combined(with: .opacity),
+                        removal: .scale.combined(with: .opacity)
+                    ))
                 }
+                .animation(.spring(duration: 0.3, bounce: 0.2), value: visualizationType)
+                .animation(.spring(duration: 0.3, bounce: 0.2), value: filteredEntries.map { $0.count })
             }
         }
         .frame(height: 40)
         .padding(.trailing)
+        .onTapGesture {
+            withAnimation {
+                handleTap()
+            }
+        }
+    }
+
+    func handleTap() {
+        if visualizationType == .full {
+            visualizationType = .pastOnly
+        } else if visualizationType == .pastOnly {
+            visualizationType = .evaluatedOnly
+        } else if visualizationType == .evaluatedOnly {
+            visualizationType = .full
+        }
+    }
+
+    func calculateWidth(for entry: (type: DayMoodType, count: Int), availableWidth: CGFloat) -> CGFloat {
+        let totalCount = filteredEntries.reduce(0) { $0 + $1.count }
+        return availableWidth * CGFloat(entry.count) / CGFloat(totalCount)
     }
 }
 
