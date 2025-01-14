@@ -12,6 +12,9 @@
 		78B025AE2D354F0B00E70B4C /* WidgetKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 78B025AD2D354F0B00E70B4C /* WidgetKit.framework */; };
 		78B025B02D354F0B00E70B4C /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 78B025AF2D354F0B00E70B4C /* SwiftUI.framework */; };
 		78B025BF2D354F0C00E70B4C /* YearWidgetExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 78B025AB2D354F0B00E70B4C /* YearWidgetExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		78BCBD7E2D366AB20075CEC0 /* WidgetKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 78B025AD2D354F0B00E70B4C /* WidgetKit.framework */; };
+		78BCBD7F2D366AB20075CEC0 /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 78B025AF2D354F0B00E70B4C /* SwiftUI.framework */; };
+		78BCBD8E2D366AB40075CEC0 /* YearEvaluationWidgetExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 78BCBD7D2D366AB20075CEC0 /* YearEvaluationWidgetExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -36,6 +39,13 @@
 			remoteGlobalIDString = 78B025AA2D354F0B00E70B4C;
 			remoteInfo = YearWidgetExtension;
 		};
+		78BCBD8C2D366AB40075CEC0 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 78B0255F2D35424100E70B4C /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 78BCBD7C2D366AB20075CEC0;
+			remoteInfo = YearEvaluationWidgetExtension;
+		};
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -46,6 +56,7 @@
 			dstSubfolderSpec = 13;
 			files = (
 				78B025BF2D354F0C00E70B4C /* YearWidgetExtension.appex in Embed Foundation Extensions */,
+				78BCBD8E2D366AB40075CEC0 /* YearEvaluationWidgetExtension.appex in Embed Foundation Extensions */,
 			);
 			name = "Embed Foundation Extensions";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -60,6 +71,7 @@
 		78B025AB2D354F0B00E70B4C /* YearWidgetExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = YearWidgetExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		78B025AD2D354F0B00E70B4C /* WidgetKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WidgetKit.framework; path = System/Library/Frameworks/WidgetKit.framework; sourceTree = SDKROOT; };
 		78B025AF2D354F0B00E70B4C /* SwiftUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftUI.framework; path = System/Library/Frameworks/SwiftUI.framework; sourceTree = SDKROOT; };
+		78BCBD7D2D366AB20075CEC0 /* YearEvaluationWidgetExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = YearEvaluationWidgetExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -76,6 +88,13 @@
 				Info.plist,
 			);
 			target = 78B025AA2D354F0B00E70B4C /* YearWidgetExtension */;
+		};
+		78BCBD922D366AB40075CEC0 /* Exceptions for "YearEvaluationWidget" folder in "YearEvaluationWidgetExtension" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = 78BCBD7C2D366AB20075CEC0 /* YearEvaluationWidgetExtension */;
 		};
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
@@ -104,6 +123,14 @@
 				78B025C32D354F0C00E70B4C /* Exceptions for "YearWidget" folder in "YearWidgetExtension" target */,
 			);
 			path = YearWidget;
+			sourceTree = "<group>";
+		};
+		78BCBD802D366AB20075CEC0 /* YearEvaluationWidget */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				78BCBD922D366AB40075CEC0 /* Exceptions for "YearEvaluationWidget" folder in "YearEvaluationWidgetExtension" target */,
+			);
+			path = YearEvaluationWidget;
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
@@ -141,6 +168,15 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		78BCBD7A2D366AB20075CEC0 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				78BCBD7F2D366AB20075CEC0 /* SwiftUI.framework in Frameworks */,
+				78BCBD7E2D366AB20075CEC0 /* WidgetKit.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -152,6 +188,7 @@
 				78B0257E2D35424300E70B4C /* My YearTests */,
 				78B025882D35424300E70B4C /* My YearUITests */,
 				78B025B12D354F0B00E70B4C /* YearWidget */,
+				78BCBD802D366AB20075CEC0 /* YearEvaluationWidget */,
 				78B025AC2D354F0B00E70B4C /* Frameworks */,
 				78B025682D35424100E70B4C /* Products */,
 			);
@@ -164,6 +201,7 @@
 				78B0257B2D35424300E70B4C /* My YearTests.xctest */,
 				78B025852D35424300E70B4C /* My YearUITests.xctest */,
 				78B025AB2D354F0B00E70B4C /* YearWidgetExtension.appex */,
+				78BCBD7D2D366AB20075CEC0 /* YearEvaluationWidgetExtension.appex */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -193,6 +231,7 @@
 			);
 			dependencies = (
 				78B025BE2D354F0C00E70B4C /* PBXTargetDependency */,
+				78BCBD8D2D366AB40075CEC0 /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
 				78B025692D35424100E70B4C /* My Year */,
@@ -274,6 +313,28 @@
 			productReference = 78B025AB2D354F0B00E70B4C /* YearWidgetExtension.appex */;
 			productType = "com.apple.product-type.app-extension";
 		};
+		78BCBD7C2D366AB20075CEC0 /* YearEvaluationWidgetExtension */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 78BCBD8F2D366AB40075CEC0 /* Build configuration list for PBXNativeTarget "YearEvaluationWidgetExtension" */;
+			buildPhases = (
+				78BCBD792D366AB20075CEC0 /* Sources */,
+				78BCBD7A2D366AB20075CEC0 /* Frameworks */,
+				78BCBD7B2D366AB20075CEC0 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				78BCBD802D366AB20075CEC0 /* YearEvaluationWidget */,
+			);
+			name = YearEvaluationWidgetExtension;
+			packageProductDependencies = (
+			);
+			productName = YearEvaluationWidgetExtension;
+			productReference = 78BCBD7D2D366AB20075CEC0 /* YearEvaluationWidgetExtension.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -296,6 +357,9 @@
 						TestTargetID = 78B025662D35424100E70B4C;
 					};
 					78B025AA2D354F0B00E70B4C = {
+						CreatedOnToolsVersion = 16.2;
+					};
+					78BCBD7C2D366AB20075CEC0 = {
 						CreatedOnToolsVersion = 16.2;
 					};
 				};
@@ -321,6 +385,7 @@
 				78B0257A2D35424300E70B4C /* My YearTests */,
 				78B025842D35424300E70B4C /* My YearUITests */,
 				78B025AA2D354F0B00E70B4C /* YearWidgetExtension */,
+				78BCBD7C2D366AB20075CEC0 /* YearEvaluationWidgetExtension */,
 			);
 		};
 /* End PBXProject section */
@@ -348,6 +413,13 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 		78B025A92D354F0B00E70B4C /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		78BCBD7B2D366AB20075CEC0 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -385,6 +457,13 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		78BCBD792D366AB20075CEC0 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
@@ -402,6 +481,11 @@
 			isa = PBXTargetDependency;
 			target = 78B025AA2D354F0B00E70B4C /* YearWidgetExtension */;
 			targetProxy = 78B025BD2D354F0C00E70B4C /* PBXContainerItemProxy */;
+		};
+		78BCBD8D2D366AB40075CEC0 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 78BCBD7C2D366AB20075CEC0 /* YearEvaluationWidgetExtension */;
+			targetProxy = 78BCBD8C2D366AB40075CEC0 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -719,6 +803,60 @@
 			};
 			name = Release;
 		};
+		78BCBD902D366AB40075CEC0 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 9G3JW3N8UH;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = YearEvaluationWidget/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = YearEvaluationWidget;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "sargon17.My-Year.YearEvaluationWidget";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		78BCBD912D366AB40075CEC0 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 9G3JW3N8UH;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = YearEvaluationWidget/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = YearEvaluationWidget;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "sargon17.My-Year.YearEvaluationWidget";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -763,6 +901,15 @@
 			buildConfigurations = (
 				78B025C12D354F0C00E70B4C /* Debug */,
 				78B025C22D354F0C00E70B4C /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		78BCBD8F2D366AB40075CEC0 /* Build configuration list for PBXNativeTarget "YearEvaluationWidgetExtension" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				78BCBD902D366AB40075CEC0 /* Debug */,
+				78BCBD912D366AB40075CEC0 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
