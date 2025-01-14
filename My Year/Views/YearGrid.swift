@@ -283,6 +283,9 @@ struct MosaicChart: View {
             withAnimation {
                 handleTap()
             }
+
+            let generator = UIImpactFeedbackGenerator(style: .light)
+            generator.impactOccurred()
         }
     }
 
