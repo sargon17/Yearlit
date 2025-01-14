@@ -11,14 +11,16 @@ public struct CustomCalendar: Codable, Identifiable {
     public var name: String
     public var color: String // Store as hex or named color
     public var trackingType: TrackingType
+    public var dailyTarget: Int
     public var entries: [String: CalendarEntry] // Date string -> Entry
     
-    public init(id: UUID = UUID(), name: String, color: String, trackingType: TrackingType) {
+    public init(id: UUID = UUID(), name: String, color: String, trackingType: TrackingType, dailyTarget: Int = 1, entries: [String: CalendarEntry] = [:]) {
         self.id = id
         self.name = name
         self.color = color
         self.trackingType = trackingType
-        self.entries = [:]
+        self.dailyTarget = dailyTarget
+        self.entries = entries
     }
 }
 
@@ -155,13 +157,42 @@ public class CustomCalendarStore {
         
         CFPreferencesAppSynchronize(appGroupId as CFString)
         
-        guard let data = defaults.data(forKey: calendarsKey),
-              let decodedCalendars = try? JSONDecoder().decode([CustomCalendar].self, from: data) else {
+        guard let data = defaults.data(forKey: calendarsKey) else {
             calendars = []
             return
         }
         
-        calendars = decodedCalendars
+        // Try to decode with new model
+        if let decodedCalendars = try? JSONDecoder().decode([CustomCalendar].self, from: data) {
+            calendars = decodedCalendars
+            return
+        }
+        
+        // If that fails, try to decode old model and migrate
+        struct OldCalendar: Codable {
+            let id: UUID
+            var name: String
+            var color: String
+            var trackingType: TrackingType
+            var entries: [String: CalendarEntry]
+        }
+        
+        if let oldCalendars = try? JSONDecoder().decode([OldCalendar].self, from: data) {
+            calendars = oldCalendars.map { old in
+                CustomCalendar(
+                    id: old.id,
+                    name: old.name,
+                    color: old.color,
+                    trackingType: old.trackingType,
+                    dailyTarget: old.trackingType == .multipleDaily ? 2 : 1,
+                    entries: old.entries
+                )
+            }
+            // Save the migrated data
+            saveCalendars()
+        } else {
+            calendars = []
+        }
     }
     
     private func saveCalendars() {

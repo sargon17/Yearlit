@@ -84,7 +84,9 @@ struct CustomCalendarList: View {
                     store.addCalendar(newCalendar)
                     showingCreateSheet = false
                 }
+                .background(Color("surface-muted"))
             }
+            .background(Color("surface-muted"))
         }
     }
 }
@@ -96,6 +98,7 @@ struct CreateCalendarView: View {
     @State private var name = ""
     @State private var selectedColor = "mood-good"
     @State private var trackingType: TrackingType = .binary
+    @State private var dailyTarget = 2
     
     private let colors = [
         "mood-terrible",
@@ -109,16 +112,24 @@ struct CreateCalendarView: View {
         Form {
             Section {
                 TextField("Calendar Name", text: $name)
+                    .foregroundColor(Color("text-primary"))
+                    .fontWeight(.bold)
             }
-            
+            .listRowBackground(Color("surface-primary"))
+
             Section {
                 Picker("Tracking Type", selection: $trackingType) {
                     Text("Once a day").tag(TrackingType.binary)
                     Text("Multiple times (unlimited)").tag(TrackingType.counter)
                     Text("Multiple times (with target)").tag(TrackingType.multipleDaily)
                 }
+                
+                if trackingType == .multipleDaily {
+                    Stepper("Daily Target: \(dailyTarget)", value: $dailyTarget, in: 1...10)
+                }
             }
-            
+            .listRowBackground(Color("surface-primary"))
+
             Section {
                 HStack {
                     ForEach(colors, id: \.self) { color in
@@ -137,7 +148,10 @@ struct CreateCalendarView: View {
             } header: {
                 Text("Color")
             }
+            .listRowBackground(Color("surface-primary"))
         }
+        .scrollContentBackground(.hidden)
+        .background(Color("surface-muted"))
         .navigationTitle("New Calendar")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
@@ -151,7 +165,8 @@ struct CreateCalendarView: View {
                     let calendar = CustomCalendar(
                         name: name,
                         color: selectedColor,
-                        trackingType: trackingType
+                        trackingType: trackingType,
+                        dailyTarget: dailyTarget
                     )
                     onCreate(calendar)
                 }

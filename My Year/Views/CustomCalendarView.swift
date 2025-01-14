@@ -32,6 +32,11 @@ struct CustomCalendarView: View {
     
     @State private var selectedDate: SelectedDate = .none
     
+    private func getMaxCount() -> Int {
+        let maxCount = calendar.entries.values.map { $0.count }.max() ?? 1
+        return max(maxCount, 1) // Ensure we don't divide by zero
+    }
+    
     private func colorForDay(_ day: Int) -> Color {
         let store = ValuationStore.shared // Using this for date calculations
         let dayDate = store.dateForDay(day)
@@ -49,7 +54,8 @@ struct CustomCalendarView: View {
             case .binary:
                 return entry.completed ? Color(calendar.color) : Color("dot-active")
             case .counter, .multipleDaily:
-                let opacity = min(1.0, Double(entry.count) / 5.0) // Max intensity at 5 entries
+                let maxCount = getMaxCount()
+                let opacity = max(0.2, Double(entry.count) / Double(maxCount))
                 return Color(calendar.color).opacity(opacity)
             }
         }
@@ -65,38 +71,73 @@ struct CustomCalendarView: View {
         }
     }
     
+    private func getStats() -> (activeDays: Int, totalCount: Int, maxCount: Int) {
+        let activeDays = calendar.entries.values.filter { entry in
+            switch calendar.trackingType {
+            case .binary:
+                return entry.completed
+            case .counter, .multipleDaily:
+                return entry.count > 0
+            }
+        }.count
+        
+        let totalCount = calendar.entries.values.reduce(0) { $0 + $1.count }
+        let maxCount = calendar.entries.values.map { $0.count }.max() ?? 0
+        
+        return (activeDays, totalCount, maxCount)
+    }
+    
     var body: some View {
         VStack {
-            // Year progress header
+            // Stats header
             VStack(spacing: 10) {
                 HStack(alignment: .center, spacing: 6) {
-                    Text(Calendar.current.component(.year, from: Date()).description)
-                        .font(.system(size: 68))
+                    Text(calendar.name.capitalized)
+                        .font(.system(size: 38))
                         .foregroundColor(Color("text-primary"))
                         .fontWeight(.black)
                     
                     Spacer()
-                    
-                    let store = ValuationStore.shared
-                    let percent = Double(store.currentDayNumber) / Double(store.numberOfDaysInYear)
-                    Text(String(format: "%.1f%%", percent * 100))
-                        .font(.system(size: 38))
-                        .foregroundColor(Color("text-primary").opacity(0.5))
-                        .fontWeight(.regular)
                 }
                 .padding(.horizontal)
                 
+                let stats = getStats()
                 HStack {
+                    VStack(alignment: .leading) {
+                        Text("Active Days")
+                            .font(.system(size: 14))
+                            .foregroundColor(Color("text-secondary"))
+                        Text("\(stats.activeDays)")
+                            .font(.system(size: 24))
+                            .foregroundColor(Color("text-primary"))
+                            .fontWeight(.bold)
+                    }
+                    
                     Spacer()
                     
-                    Text("Left: ")
-                        .font(.system(size: 22))
-                        .foregroundColor(Color("text-primary").opacity(0.5))
-                        .fontWeight(.regular)
-                    + Text("\(ValuationStore.shared.numberOfDaysInYear - ValuationStore.shared.currentDayNumber)")
-                        .font(.system(size: 38))
-                        .foregroundColor(Color("text-primary"))
-                        .fontWeight(.bold)
+                    if calendar.trackingType != .binary {
+                        VStack(alignment: .center) {
+                            Text("Total Count")
+                                .font(.system(size: 14))
+                                .foregroundColor(Color("text-secondary"))
+                            Text("\(stats.totalCount)")
+                                .font(.system(size: 24))
+                                .foregroundColor(Color("text-primary"))
+                                .fontWeight(.bold)
+                        }
+                        
+                        Spacer()
+                        
+                        VStack(alignment: .trailing) {
+                            Text("Max Count")
+                                .font(.system(size: 14))
+                                .foregroundColor(Color("text-secondary"))
+                            Text("\(stats.maxCount)")
+                                .font(.system(size: 24))
+                                .foregroundColor(Color("text-primary"))
+                                .fontWeight(.bold)
+                        }
+                    }
                 }
                 .padding(.horizontal)
             }
@@ -152,9 +193,11 @@ struct CustomCalendarView: View {
                 NavigationView {
                     CalendarEntryView(calendar: calendar, date: date) { entry in
                         store.addEntry(calendarId: calendar.id, entry: entry)
-                        selectedDate = .none
                     }
+                    .background(Color("surface-muted"))
                 }
+                .background(Color("surface-muted"))
+                .presentationDetents([.fraction(0.3)])
             }
         }
     }
@@ -180,33 +223,69 @@ struct CalendarEntryView: View {
             Section {
                 Text(formattedDate)
                     .font(.headline)
-            }
+            }.listRowBackground(Color("surface-primary"))
             
             Section {
                 switch calendar.trackingType {
                 case .binary:
-                    Toggle("Completed", isOn: $completed)
-                case .counter, .multipleDaily:
-                    Stepper("Count: \(count)", value: $count, in: 0...99)
+                    Toggle("Completed", isOn: Binding(
+                        get: { completed },
+                        set: { newValue in
+                            completed = newValue
+                            let entry = CalendarEntry(
+                                date: date,
+                                count: count,
+                                completed: newValue
+                            )
+                            onSave(entry)
+                        }
+                    ))
+                    .foregroundColor(Color("text-primary"))
+                    .tint(Color(calendar.color))
+                case .counter:
+                    Stepper("Count: \(count)", value: Binding(
+                        get: { count },
+                        set: { newValue in
+                            count = newValue
+                            let entry = CalendarEntry(
+                                date: date,
+                                count: newValue,
+                                completed: completed
+                            )
+                            onSave(entry)
+                        }
+                    ), in: 0...99)
+                    .foregroundColor(Color("text-primary"))
+                case .multipleDaily:
+                    VStack(alignment: .leading, spacing: 8) {
+                        Stepper("Count: \(count) / \(calendar.dailyTarget)", value: Binding(
+                            get: { count },
+                            set: { newValue in
+                                count = newValue
+                                let entry = CalendarEntry(
+                                    date: date,
+                                    count: newValue,
+                                    completed: newValue >= calendar.dailyTarget
+                                )
+                                onSave(entry)
+                            }
+                        ), in: 0...99)
+                        .foregroundColor(Color("text-primary"))
+                        
+                        ProgressView(value: Double(count), total: Double(calendar.dailyTarget))
+                            .tint(Color(calendar.color))
+                    }
                 }
-            }
+            }.listRowBackground(Color("surface-primary"))
         }
+        .scrollContentBackground(.hidden)
+        .background(Color("surface-muted"))
         .navigationTitle("Add Entry")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
-            ToolbarItem(placement: .cancellationAction) {
-                Button("Cancel") {
-                    dismiss()
-                }
-            }
             ToolbarItem(placement: .confirmationAction) {
-                Button("Save") {
-                    let entry = CalendarEntry(
-                        date: date,
-                        count: count,
-                        completed: completed
-                    )
-                    onSave(entry)
+                Button("Done") {
+                    dismiss()
                 }
             }
         }
