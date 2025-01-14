@@ -13,7 +13,6 @@ struct Provider: TimelineProvider {
     let store = ValuationStore.shared
     
     func placeholder(in context: Context) -> SimpleEntry {
-        print("Widget: Creating placeholder entry")
         return SimpleEntry(date: Date(), valuations: [:])
     }
 

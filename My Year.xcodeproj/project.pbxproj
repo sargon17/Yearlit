@@ -15,6 +15,7 @@
 		78BCBD7E2D366AB20075CEC0 /* WidgetKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 78B025AD2D354F0B00E70B4C /* WidgetKit.framework */; };
 		78BCBD7F2D366AB20075CEC0 /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 78B025AF2D354F0B00E70B4C /* SwiftUI.framework */; };
 		78BCBD8E2D366AB40075CEC0 /* YearEvaluationWidgetExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 78BCBD7D2D366AB20075CEC0 /* YearEvaluationWidgetExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		78BCBD962D366E780075CEC0 /* SharedModels in Frameworks */ = {isa = PBXBuildFile; productRef = 78BCBD952D366E780075CEC0 /* SharedModels */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -72,6 +73,7 @@
 		78B025AD2D354F0B00E70B4C /* WidgetKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WidgetKit.framework; path = System/Library/Frameworks/WidgetKit.framework; sourceTree = SDKROOT; };
 		78B025AF2D354F0B00E70B4C /* SwiftUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftUI.framework; path = System/Library/Frameworks/SwiftUI.framework; sourceTree = SDKROOT; };
 		78BCBD7D2D366AB20075CEC0 /* YearEvaluationWidgetExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = YearEvaluationWidgetExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		78BCBD932D366DA50075CEC0 /* YearEvaluationWidgetExtension.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = YearEvaluationWidgetExtension.entitlements; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -173,6 +175,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				78BCBD7F2D366AB20075CEC0 /* SwiftUI.framework in Frameworks */,
+				78BCBD962D366E780075CEC0 /* SharedModels in Frameworks */,
 				78BCBD7E2D366AB20075CEC0 /* WidgetKit.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -183,6 +186,7 @@
 		78B0255E2D35424100E70B4C = {
 			isa = PBXGroup;
 			children = (
+				78BCBD932D366DA50075CEC0 /* YearEvaluationWidgetExtension.entitlements */,
 				7871CFA72D35C009005FFE4E /* YearWidgetExtension.entitlements */,
 				78B025692D35424100E70B4C /* My Year */,
 				78B0257E2D35424300E70B4C /* My YearTests */,
@@ -330,6 +334,7 @@
 			);
 			name = YearEvaluationWidgetExtension;
 			packageProductDependencies = (
+				78BCBD952D366E780075CEC0 /* SharedModels */,
 			);
 			productName = YearEvaluationWidgetExtension;
 			productReference = 78BCBD7D2D366AB20075CEC0 /* YearEvaluationWidgetExtension.appex */;
@@ -374,7 +379,7 @@
 			mainGroup = 78B0255E2D35424100E70B4C;
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
-				7871CFA42D3599B4005FFE4E /* XCLocalSwiftPackageReference "SharedModels" */,
+				78BCBD942D366E780075CEC0 /* XCLocalSwiftPackageReference "SharedModels" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 78B025682D35424100E70B4C /* Products */;
@@ -513,7 +518,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.1;
+				MARKETING_VERSION = 1.2;
 				PRODUCT_BUNDLE_IDENTIFIER = "sargon17.My-Year";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -545,7 +550,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.1;
+				MARKETING_VERSION = 1.2;
 				PRODUCT_BUNDLE_IDENTIFIER = "sargon17.My-Year";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -808,6 +813,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
+				CODE_SIGN_ENTITLEMENTS = YearEvaluationWidgetExtension.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 9G3JW3N8UH;
@@ -815,6 +821,7 @@
 				INFOPLIST_FILE = YearEvaluationWidget/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = YearEvaluationWidget;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -835,6 +842,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
+				CODE_SIGN_ENTITLEMENTS = YearEvaluationWidgetExtension.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 9G3JW3N8UH;
@@ -842,6 +850,7 @@
 				INFOPLIST_FILE = YearEvaluationWidget/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = YearEvaluationWidget;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -917,7 +926,7 @@
 /* End XCConfigurationList section */
 
 /* Begin XCLocalSwiftPackageReference section */
-		7871CFA42D3599B4005FFE4E /* XCLocalSwiftPackageReference "SharedModels" */ = {
+		78BCBD942D366E780075CEC0 /* XCLocalSwiftPackageReference "SharedModels" */ = {
 			isa = XCLocalSwiftPackageReference;
 			relativePath = SharedModels;
 		};
@@ -929,6 +938,10 @@
 			productName = SharedModels;
 		};
 		7871CFA52D3599B4005FFE4E /* SharedModels */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = SharedModels;
+		};
+		78BCBD952D366E780075CEC0 /* SharedModels */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = SharedModels;
 		};
