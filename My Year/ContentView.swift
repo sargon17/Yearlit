@@ -43,29 +43,7 @@ struct CalendarOverviewSheet: View {
                     
                     // Custom Calendar Cards
                     ForEach(store.calendars) { calendar in
-                        Button {
-                            selectedIndex = store.calendars.firstIndex(where: { $0.id == calendar.id })! + 1
-                            dismiss()
-                        } label: {
-                            VStack(alignment: .leading, spacing: 12) {
-                                HStack {
-                                    Text(calendar.name.capitalized)
-                                        .font(.headline)
-                                        .foregroundColor(Color("text-primary"))
-                                    Spacer()
-                                    Circle()
-                                        .fill(Color(calendar.color))
-                                        .frame(width: 12, height: 12)
-                                }
-                                Text(calendar.trackingType.description)
-                                    .font(.caption)
-                                    .foregroundColor(Color("text-tertiary"))
-                            }
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                            .padding()
-                            .background(Color("surface-primary"))
-                            .cornerRadius(12)
-                        }
+                        CalendarOverviewSheetItem(calendar: calendar, selectedIndex: $selectedIndex, store: store)
                     }
                 }
                 .padding()
@@ -73,6 +51,51 @@ struct CalendarOverviewSheet: View {
             .background(Color("surface-muted"))
             .navigationTitle("Calendars")
             .navigationBarTitleDisplayMode(.inline)
+        }
+    }
+}
+
+
+struct CalendarOverviewSheetItem: View {
+    let calendar: CustomCalendar
+    @Binding var selectedIndex: Int
+    @Environment(\.dismiss) private var dismiss
+    let store: CustomCalendarStore
+
+    @State private var isContextMenuPresented = false
+
+    var body: some View {
+        Button {
+            selectedIndex = store.calendars.firstIndex(where: { $0.id == calendar.id })! + 1
+            dismiss()
+        } label: {
+            VStack(alignment: .leading, spacing: 12) {
+                HStack {
+                    Text(calendar.name.capitalized)
+                        .font(.headline)
+                        .foregroundColor(Color("text-primary"))
+                    Spacer()
+                    Circle()
+                        .fill(Color(calendar.color))
+                        .frame(width: 12, height: 12)
+                }
+                Text(calendar.trackingType.description)
+                    .font(.caption)
+                .foregroundColor(Color("text-tertiary"))
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding()
+        .background(Color("surface-primary"))
+        .cornerRadius(12)
+        }.onLongPressGesture {
+            isContextMenuPresented = true
+        }
+        .contextMenu {
+            Button(action: {
+                store.deleteCalendar(id: calendar.id)
+            }) {
+                Text("Delete Calendar")
+            }
         }
     }
 }
