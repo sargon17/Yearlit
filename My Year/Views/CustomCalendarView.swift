@@ -524,8 +524,11 @@ struct EditCalendarView: View {
                 UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound]) {
                   granted, error in
                   if let error = error {
-                    print(
-                      "Failed to request notification permission: \(error.localizedDescription)")
+                    DispatchQueue.main.async {
+                      self.calendarError = .notificationPermissionDenied
+                      recurringReminderEnabled = false
+                    }
+                    return
                   }
                   DispatchQueue.main.async {
                     recurringReminderEnabled = granted
