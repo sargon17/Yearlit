@@ -36,6 +36,7 @@ struct CustomCalendarView: View {
   @State private var showingEditSheet = false
   @State private var showingYearPicker = false
   @State private var tempSelectedYear: Int = Calendar.current.component(.year, from: Date())
+  @State private var calendarError: CalendarError?
 
   private let availableYears: [Int] = {
     let currentYear = Calendar.current.component(.year, from: Date())
@@ -274,6 +275,17 @@ struct CustomCalendarView: View {
         .presentationDetents([.fraction(0.3)])
       }
     }
+    .alert(
+      isPresented: Binding(
+        get: { calendarError != nil },
+        set: { if !$0 { calendarError = nil } }
+      )
+    ) {
+      Alert(
+        title: Text("Notification Error"),
+        message: Text(calendarError?.errorDescription ?? "Unknown error"),
+        dismissButton: .default(Text("OK")))
+    }
   }
 }
 
@@ -394,8 +406,7 @@ struct EditCalendarView: View {
   @State private var dailyTarget: Int
   @State private var recurringReminderEnabled: Bool
   @State private var reminderTime: Date
-  @State private var showErrorAlert: Bool = false
-  @State private var errorMessage: String = ""
+  @State private var calendarError: CalendarError?
 
   init(calendar: CustomCalendar, onSave: @escaping (CustomCalendar) -> Void) {
     self.calendar = calendar
@@ -457,8 +468,7 @@ struct EditCalendarView: View {
     UNUserNotificationCenter.current().add(request) { error in
       if let error = error {
         DispatchQueue.main.async {
-          self.showErrorAlert = true
-          self.errorMessage = "Failed to schedule notification: \(error.localizedDescription)"
+          self.calendarError = .notificationSchedulingFailed(error)
         }
       }
     }
@@ -520,9 +530,7 @@ struct EditCalendarView: View {
                   DispatchQueue.main.async {
                     recurringReminderEnabled = granted
                     if !granted {
-                      self.showErrorAlert = true
-                      self.errorMessage =
-                        "Please enable notifications in Settings to receive reminders."
+                      self.calendarError = .notificationPermissionDenied
                     }
                   }
                 }
@@ -575,9 +583,14 @@ struct EditCalendarView: View {
       }
       ToolbarItem(placement: .confirmationAction) {
         Button("Save") {
+          let trimmedName = name.trimmingCharacters(in: .whitespacesAndNewlines)
+          guard !trimmedName.isEmpty && trimmedName.count <= 50 else {
+            calendarError = .invalidName
+            return
+          }
           let updatedCalendar = CustomCalendar(
             id: calendar.id,
-            name: name,
+            name: trimmedName,
             color: selectedColor,
             trackingType: trackingType,
             dailyTarget: dailyTarget,
@@ -592,10 +605,22 @@ struct EditCalendarView: View {
         .disabled(name.isEmpty)
       }
     }
-    .alert(isPresented: $showErrorAlert) {
-      Alert(
-        title: Text("Notification Error"), message: Text(errorMessage),
-        dismissButton: .default(Text("OK")))
+  }
+}
+
+private enum CalendarError: LocalizedError {
+  case invalidName
+  case notificationPermissionDenied
+  case notificationSchedulingFailed(Error)
+
+  var errorDescription: String? {
+    switch self {
+    case .invalidName:
+      return "Please enter a valid name (1-50 characters)"
+    case .notificationPermissionDenied:
+      return "Please enable notifications in Settings to receive reminders."
+    case .notificationSchedulingFailed(let error):
+      return "Failed to schedule notification: \(error.localizedDescription)"
     }
   }
 }
