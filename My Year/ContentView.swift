@@ -11,9 +11,10 @@ import SharedModels
 import SwiftUI
 
 struct CalendarOverviewSheet: View {
-  let store: CustomCalendarStore
+  @ObservedObject var store: CustomCalendarStore
   @Binding var selectedIndex: Int
   @Environment(\.dismiss) private var dismiss
+  @State private var isReorderActive = false
 
   var body: some View {
     NavigationView {
@@ -57,12 +58,15 @@ struct CalendarOverviewSheet: View {
           .onTapGesture {
             selectedIndex = 0
             dismiss()
-          }
+          }.opacity(isReorderActive ? 0.5 : 1)
 
           // Custom Calendar Cards
-          ForEach(Array(store.calendars.enumerated()), id: \.element.id) { index, calendar in
+          ForEach(
+            Array(store.calendars.sorted { $0.order < $1.order }.enumerated()), id: \.element.id
+          ) { index, calendar in
             CalendarOverviewSheetItem(
-              calendar: calendar, selectedIndex: $selectedIndex, store: store
+              calendar: calendar, selectedIndex: $selectedIndex, store: store,
+              isReorderActive: $isReorderActive
             )
             .onTapGesture {
               selectedIndex = index + 2
@@ -71,11 +75,83 @@ struct CalendarOverviewSheet: View {
           }
         }
         .padding()
+        .animation(.spring(), value: store.calendars.map { $0.order })
       }
       .background(Color("surface-muted"))
       .navigationTitle("Calendars")
       .navigationBarTitleDisplayMode(.large)
+      .toolbar {
+        ToolbarItem(placement: .navigationBarTrailing) {
+          Button(action: { isReorderActive.toggle() }) {
+            Image(systemName: "arrow.up.arrow.down")
+              .resizable()
+              .frame(width: 16, height: 16)
+              .foregroundColor(Color("text-tertiary"))
+
+          }
+        }
+      }
     }
+  }
+}
+
+struct ContextOrDragModifier: ViewModifier {
+  let isReorderActive: Bool
+  let calendar: CustomCalendar
+  @ObservedObject var store: CustomCalendarStore
+  @Binding var showEditSheet: Bool
+  @Binding var showDeleteConfirmation: Bool
+
+  func body(content: Content) -> some View {
+    if isReorderActive {
+      content
+        .onDrag {
+          NSItemProvider(object: calendar.id.uuidString as NSString)
+        }
+        .onDrop(of: [.text], delegate: CalendarDropDelegate(item: calendar, store: store))
+    } else {
+      content.contextMenu {
+        Button(action: {
+          showEditSheet = true
+        }) {
+          Text("Edit Calendar")
+        }
+        Divider()
+        Button(action: {
+          showDeleteConfirmation = true
+        }) {
+          Text("Delete Calendar")
+        }
+      }
+    }
+  }
+}
+
+struct CalendarDropDelegate: DropDelegate {
+  let item: CustomCalendar
+  @ObservedObject var store: CustomCalendarStore
+
+  func performDrop(info: DropInfo) -> Bool {
+    let providers = info.itemProviders(for: [.text])
+    if let provider = providers.first {
+      provider.loadObject(ofClass: NSString.self) { (object, error) in
+        if let idString = object as? String, let draggedUUID = UUID(uuidString: idString) {
+          DispatchQueue.main.async {
+            if let sourceIndex = store.calendars.firstIndex(where: { $0.id == draggedUUID }),
+              let targetIndex = store.calendars.firstIndex(where: { $0.id == item.id }),
+              sourceIndex != targetIndex
+            {
+              let destination = targetIndex > sourceIndex ? targetIndex + 1 : targetIndex
+              withAnimation {
+                store.moveCalendar(
+                  fromOffsets: IndexSet(integer: sourceIndex), toOffset: destination)
+              }
+            }
+          }
+        }
+      }
+    }
+    return true
   }
 }
 
@@ -83,9 +159,11 @@ struct CalendarOverviewSheetItem: View {
   let calendar: CustomCalendar
   @Binding var selectedIndex: Int
   @Environment(\.dismiss) private var dismiss
-  let store: CustomCalendarStore
+  @ObservedObject var store: CustomCalendarStore
   @State private var showDeleteConfirmation = false
   @State private var showEditSheet = false
+  @Binding var isReorderActive: Bool
+
   var body: some View {
     VStack(alignment: .leading, spacing: 12) {
       HStack(alignment: .firstTextBaseline) {
@@ -116,21 +194,12 @@ struct CalendarOverviewSheetItem: View {
     .background(Color("surface-primary"))
     .cornerRadius(12)
     .aspectRatio(1.4, contentMode: .fit)
-    .contextMenu {
-      Button(action: {
-        showEditSheet = true
-      }) {
-        Text("Edit Calendar")
-      }
-
-      Divider()
-
-      Button(action: {
-        showDeleteConfirmation = true
-      }) {
-        Text("Delete Calendar")
-      }
-    }.alert("Delete Calendar?", isPresented: $showDeleteConfirmation) {
+    .modifier(
+      ContextOrDragModifier(
+        isReorderActive: isReorderActive, calendar: calendar, store: store,
+        showEditSheet: $showEditSheet, showDeleteConfirmation: $showDeleteConfirmation)
+    )
+    .alert("Delete Calendar?", isPresented: $showDeleteConfirmation) {
       Button("Delete", role: .destructive) {
         store.deleteCalendar(id: calendar.id)
       }

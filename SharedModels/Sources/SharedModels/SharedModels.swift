@@ -4,6 +4,10 @@ import Observation
 import SwiftUI
 import WidgetKit
 
+#if canImport(UIKit)
+  import UIKit
+#endif
+
 // MARK: - Custom Calendar Models
 
 public struct CustomCalendar: Codable, Identifiable {
@@ -12,6 +16,7 @@ public struct CustomCalendar: Codable, Identifiable {
   public var color: String  // Store as hex or named color
   public var trackingType: TrackingType
   public var dailyTarget: Int
+  public var order: Int = 0
   public var recurringReminderEnabled: Bool
   public var reminderHour: Int?
   public var reminderMinute: Int?
@@ -20,7 +25,7 @@ public struct CustomCalendar: Codable, Identifiable {
   public init(
     id: UUID = UUID(), name: String, color: String, trackingType: TrackingType,
     dailyTarget: Int = 1, entries: [String: CalendarEntry] = [:],
-    recurringReminderEnabled: Bool = false, reminderTime: Date? = nil
+    recurringReminderEnabled: Bool = false, reminderTime: Date? = nil, order: Int = 0
   ) {
     self.id = id
     self.name = name
@@ -28,7 +33,7 @@ public struct CustomCalendar: Codable, Identifiable {
     self.trackingType = trackingType
     self.dailyTarget = dailyTarget
     self.recurringReminderEnabled = recurringReminderEnabled
-    // Convert reminderTime to hour & minute if provided
+    self.order = order
     if let time = reminderTime {
       let calendar = Calendar.current
       self.reminderHour = calendar.component(.hour, from: time)
@@ -44,7 +49,8 @@ public struct CustomCalendar: Codable, Identifiable {
   public init(
     id: UUID = UUID(), name: String, color: String, trackingType: TrackingType,
     dailyTarget: Int = 1, entries: [String: CalendarEntry] = [:],
-    recurringReminderEnabled: Bool = false, reminderHour: Int? = nil, reminderMinute: Int? = nil
+    recurringReminderEnabled: Bool = false, reminderHour: Int? = nil, reminderMinute: Int? = nil,
+    order: Int = 0
   ) throws {
     // Validate hour and minute ranges
     if let hour = reminderHour, let minute = reminderMinute {
@@ -61,6 +67,7 @@ public struct CustomCalendar: Codable, Identifiable {
     self.trackingType = trackingType
     self.dailyTarget = dailyTarget
     self.recurringReminderEnabled = recurringReminderEnabled
+    self.order = order
     self.reminderHour = reminderHour
     self.reminderMinute = reminderMinute
     self.entries = entries
@@ -172,16 +179,16 @@ public struct DayValuation: Codable, Identifiable, Equatable {
 
 // MARK: - Custom Calendar Store
 
-@Observable
-public class CustomCalendarStore {
+@available(macOS 10.15, *)
+public class CustomCalendarStore: ObservableObject {
   public static let shared = CustomCalendarStore()
 
   private let defaults: UserDefaults
   private let calendarsKey = "customCalendars"
   private let appGroupId = "group.sargon17.My-Year"
 
-  public private(set) var calendars: [CustomCalendar] = []
-  public private(set) var isLoading: Bool = false
+  @Published public private(set) var calendars: [CustomCalendar] = []
+  @Published public private(set) var isLoading: Bool = false
 
   public init() {
     UserDefaults.standard.addSuite(named: appGroupId)
@@ -207,7 +214,7 @@ public class CustomCalendarStore {
 
     // Try to decode with new model
     if let decodedCalendars = try? JSONDecoder().decode([CustomCalendar].self, from: data) {
-      calendars = decodedCalendars
+      calendars = decodedCalendars.sorted { $0.order < $1.order }
       return
     }
 
@@ -221,14 +228,15 @@ public class CustomCalendarStore {
     }
 
     if let oldCalendars = try? JSONDecoder().decode([OldCalendar].self, from: data) {
-      calendars = oldCalendars.map { old in
+      calendars = oldCalendars.enumerated().map { index, old in
         CustomCalendar(
           id: old.id,
           name: old.name,
           color: old.color,
           trackingType: old.trackingType,
           dailyTarget: old.trackingType == .multipleDaily ? 2 : 1,
-          entries: old.entries
+          entries: old.entries,
+          recurringReminderEnabled: false, order: index
         )
       }
       // Save the migrated data
@@ -247,7 +255,9 @@ public class CustomCalendarStore {
   // MARK: - Calendar Management
 
   public func addCalendar(_ calendar: CustomCalendar) {
-    calendars.append(calendar)
+    var newCalendar = calendar
+    newCalendar.order = calendars.count
+    calendars.append(newCalendar)
     saveCalendars()
   }
 
@@ -259,6 +269,17 @@ public class CustomCalendarStore {
 
   public func deleteCalendar(id: UUID) {
     calendars.removeAll { $0.id == id }
+    saveCalendars()
+  }
+
+  public func moveCalendar(fromOffsets indices: IndexSet, toOffset destination: Int) {
+    var newCalendars = calendars
+    newCalendars.move(fromOffsets: indices, toOffset: destination)
+    for (index, var calendar) in newCalendars.enumerated() {
+      calendar.order = index
+      newCalendars[index] = calendar
+    }
+    calendars = newCalendars
     saveCalendars()
   }
 
@@ -285,16 +306,15 @@ public class CustomCalendarStore {
   }
 }
 
-@Observable
-public class ValuationStore {
+public class ValuationStore: ObservableObject {
   public static let shared = ValuationStore()
   private let appGroupId = "group.sargon17.My-Year"
   private let valuationsKey = "dayValuations"
   private let defaults: UserDefaults
   private var isLoading = false
 
-  public var selectedYear: Int = Calendar.current.component(.year, from: Date())
-  public var valuations: [String: DayValuation] = [:] {
+  @Published public var selectedYear: Int = Calendar.current.component(.year, from: Date())
+  @Published public var valuations: [String: DayValuation] = [:] {
     didSet {
       if !isLoading {
         saveValuations()
@@ -366,7 +386,9 @@ public class ValuationStore {
       return
     }
 
-    valuations = decoded
+    if #available(macOS 10.15, *) {
+      valuations = decoded
+    }
   }
 
   public func getValuation(for date: Date) -> DayValuation? {
@@ -378,7 +400,9 @@ public class ValuationStore {
 
   public func setValuation(_ mood: DayMood, for date: Date = Date()) {
     let valuation = DayValuation(date: date, mood: mood)
-    valuations[valuation.id] = valuation
+    var newValuations = valuations
+    newValuations[valuation.id] = valuation
+    valuations = newValuations
 
     #if os(iOS)
       WidgetCenter.shared.reloadAllTimelines()
@@ -404,7 +428,7 @@ public class ValuationStore {
   }
 
   public func clearAllValuations() {
-    valuations.removeAll()
+    valuations = [:]
     defaults.removeObject(forKey: valuationsKey)
     defaults.synchronize()
 
@@ -419,10 +443,12 @@ public enum VisualizationType: String, Codable, AppEnum {
   case pastOnly
   case evaluatedOnly
 
+  @available(macOS 13.0, *)
   public static var typeDisplayRepresentation: TypeDisplayRepresentation {
     "Visualization Type"
   }
 
+  @available(macOS 13.0, *)
   public static var caseDisplayRepresentations: [VisualizationType: DisplayRepresentation] {
     [
       .full: "Full Year",
@@ -432,6 +458,7 @@ public enum VisualizationType: String, Codable, AppEnum {
   }
 }
 
+@available(macOS 10.15, *)
 public struct MosaicChart: View {
   public let dayTypesQuantity: [DayMoodType: Int]
 
@@ -506,8 +533,10 @@ public struct MosaicChart: View {
         handleTap()
       }
 
-      let generator = UIImpactFeedbackGenerator(style: .light)
-      generator.impactOccurred()
+      #if canImport(UIKit)
+        let generator = UIImpactFeedbackGenerator(style: .light)
+        generator.impactOccurred()
+      #endif
     }
   }
 
