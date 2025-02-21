@@ -96,6 +96,36 @@ struct CustomCalendarView: View {
     return (activeDays, totalCount, maxCount)
   }
 
+  private func handleQuickAdd() {
+    do {
+      // Get the date for the previous day (today is not yet available)
+      let today = valuationStore.dateForDay(valuationStore.currentDayNumber - 1)
+      var newEntry = CalendarEntry(date: today, count: 1, completed: true)  // Default entry
+
+      // Check if an entry already exists for today
+      if let existingEntry = store.getEntry(calendarId: calendar.id, date: today) {
+        // If the tracking type is counter or multipleDaily, increment the count
+        if calendar.trackingType == .counter || calendar.trackingType == .multipleDaily {
+          newEntry = CalendarEntry(
+            date: today,
+            count: existingEntry.count + 1,
+            completed: existingEntry.completed
+          )
+        } else {
+          // If it's binary, toggle the completed state
+          newEntry = CalendarEntry(
+            date: today,
+            count: 1,
+            completed: !existingEntry.completed
+          )
+        }
+      }
+      store.addEntry(calendarId: calendar.id, entry: newEntry)
+    } catch {
+      calendarError = .errorAddingEntry(error)
+    }
+  }
+
   var body: some View {
     VStack {
       // Stats header
@@ -671,6 +701,7 @@ private enum CalendarError: LocalizedError {
   case invalidName
   case notificationPermissionDenied
   case notificationSchedulingFailed(Error)
+  case errorAddingEntry(Error)
 
   var errorDescription: String? {
     switch self {
@@ -680,6 +711,8 @@ private enum CalendarError: LocalizedError {
       return "Please enable notifications in Settings to receive reminders."
     case .notificationSchedulingFailed(let error):
       return "Failed to schedule notification: \(error.localizedDescription)"
+    case .errorAddingEntry(let error):
+      return "Failed to add entry: \(error.localizedDescription)"
     }
   }
 }
