@@ -1,5 +1,6 @@
 import SwiftUI
 import SharedModels
+import UserNotifications
 
 enum SelectedDate: Equatable {
     case none
@@ -407,6 +408,23 @@ struct EditCalendarView: View {
         "mood-excellent"
     ]
     
+    private func scheduleNotifications(for calendar: CustomCalendar) {
+        guard calendar.recurringReminderEnabled, let reminderTime = calendar.reminderTime else {
+            UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: [calendar.id.uuidString])
+            return
+        }
+
+        let content = UNMutableNotificationContent()
+        content.title = "Time to update \(calendar.name)"
+        content.sound = .default
+
+        let components = Calendar.current.dateComponents([.hour, .minute], from: reminderTime)
+        let trigger = UNCalendarNotificationTrigger(dateMatching: components, repeats: true)
+
+        let request = UNNotificationRequest(identifier: calendar.id.uuidString, content: content, trigger: trigger)
+        UNUserNotificationCenter.current().add(request)
+    }
+    
     var body: some View {
         Form {
             Section {
@@ -430,7 +448,23 @@ struct EditCalendarView: View {
             .listRowBackground(Color("surface-primary"))
 
             Section {
-                Toggle("Recurring Reminder", isOn: $recurringReminderEnabled)
+                Toggle("Recurring Reminder", isOn: Binding(
+                    get: { recurringReminderEnabled },
+                    set: { newValue in
+                        if newValue {
+                            UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound]) { granted, error in
+                                DispatchQueue.main.async {
+                                    recurringReminderEnabled = granted
+                                    if !granted {
+                                        // Show alert about enabling notifications in Settings
+                                    }
+                                }
+                            }
+                        } else {
+                            recurringReminderEnabled = newValue
+                        }
+                    }
+                ))
                 if recurringReminderEnabled {
                     DatePicker("Reminder Time", selection: $reminderTime, displayedComponents: [.hourAndMinute])
                 }
@@ -480,6 +514,7 @@ struct EditCalendarView: View {
                         reminderTime: recurringReminderEnabled ? reminderTime : nil
                     )
                     onSave(updatedCalendar)
+                    scheduleNotifications(for: updatedCalendar)
                     dismiss()
                 }
                 .disabled(name.isEmpty)
