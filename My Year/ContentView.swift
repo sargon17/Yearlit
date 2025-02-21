@@ -15,6 +15,7 @@ struct CalendarOverviewSheet: View {
   @Binding var selectedIndex: Int
   @Environment(\.dismiss) private var dismiss
 
+
   var body: some View {
     NavigationView {
       ScrollView {
@@ -63,6 +64,7 @@ struct CalendarOverviewSheetItem: View {
   @Binding var selectedIndex: Int
   @Environment(\.dismiss) private var dismiss
   let store: CustomCalendarStore
+@State private var showDeleteConfirmation = false
 
   @State private var isContextMenuPresented = false
 
@@ -94,10 +96,17 @@ struct CalendarOverviewSheetItem: View {
     }
     .contextMenu {
       Button(action: {
-        store.deleteCalendar(id: calendar.id)
+        showDeleteConfirmation = true
       }) {
         Text("Delete Calendar")
       }
+    }.alert("Delete Calendar?", isPresented: $showDeleteConfirmation) {
+      Button("Delete", role: .destructive) {
+        store.deleteCalendar(id: calendar.id)
+      }
+      Button("Cancel", role: .cancel) {}
+    } message: {
+      Text("Are you sure you want to delete '\(calendar.name)'? This action cannot be undone.")
     }
   }
 }
@@ -182,7 +191,7 @@ struct ContentView: View {
       .background(Color("surface-muted"))
     }
     .onAppear {
-      Purchases.shared.getCustomerInfo { (customerInfo, error) in
+      Purchases.shared.getCustomerInfo { (customerInfo, _) in
         self.customerInfo = customerInfo
       }
     }

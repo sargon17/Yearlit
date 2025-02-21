@@ -16,6 +16,9 @@
     "Add Entry" : {
 
     },
+    "Are you sure you want to delete '%@'? This action cannot be undone." : {
+
+    },
     "Calendar Name" : {
 
     },
@@ -60,6 +63,9 @@
 
     },
     "Delete Calendar" : {
+
+    },
+    "Delete Calendar?" : {
 
     },
     "Done" : {
