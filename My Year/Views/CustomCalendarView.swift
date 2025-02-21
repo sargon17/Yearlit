@@ -520,7 +520,9 @@ struct EditCalendarView: View {
                   DispatchQueue.main.async {
                     recurringReminderEnabled = granted
                     if !granted {
-                      // Show alert about enabling notifications in Settings
+                      self.showErrorAlert = true
+                      self.errorMessage =
+                        "Please enable notifications in Settings to receive reminders."
                     }
                   }
                 }
