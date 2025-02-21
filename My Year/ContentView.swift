@@ -15,7 +15,6 @@ struct CalendarOverviewSheet: View {
   @Binding var selectedIndex: Int
   @Environment(\.dismiss) private var dismiss
 
-
   var body: some View {
     NavigationView {
       ScrollView {
@@ -23,38 +22,59 @@ struct CalendarOverviewSheet: View {
           columns: [
             GridItem(.flexible()),
             GridItem(.flexible()),
-          ], spacing: 16
+          ], spacing: 8
         ) {
           // Year Grid Card
-          Button {
+          VStack(alignment: .leading, spacing: 12) {
+            HStack(alignment: .firstTextBaseline) {
+              Circle()
+                .fill(Color("mood-excellent"))
+                .frame(width: 12, height: 12)
+
+              Text("Year")
+                .font(.system(size: 18))
+                .fontWeight(.bold)
+                .foregroundColor(Color("text-primary"))
+                .lineLimit(2)
+                .minimumScaleFactor(0.5)
+                .multilineTextAlignment(.leading)
+            }
+
+            Spacer()
+
+            Text("Track your year mood")
+              .font(.system(size: 11))
+              .foregroundColor(Color("text-tertiary"))
+              .lineLimit(2)
+              .minimumScaleFactor(0.5)
+              .multilineTextAlignment(.leading)
+          }
+          .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
+          .padding()
+          .background(Color("surface-primary"))
+          .cornerRadius(12)
+          .aspectRatio(1.4, contentMode: .fit)
+          .onTapGesture {
             selectedIndex = 0
             dismiss()
-          } label: {
-            VStack(alignment: .leading, spacing: 12) {
-              Text("Year Calendar")
-                .font(.headline)
-                .foregroundColor(Color("text-primary"))
-              Text("Daily mood tracking")
-                .font(.caption)
-                .foregroundColor(Color("text-tertiary"))
-            }
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .padding()
-            .background(Color("surface-primary"))
-            .cornerRadius(12)
           }
 
           // Custom Calendar Cards
-          ForEach(store.calendars) { calendar in
+          ForEach(Array(store.calendars.enumerated()), id: \.element.id) { index, calendar in
             CalendarOverviewSheetItem(
-              calendar: calendar, selectedIndex: $selectedIndex, store: store)
+              calendar: calendar, selectedIndex: $selectedIndex, store: store
+            )
+            .onTapGesture {
+              selectedIndex = index + 2
+              dismiss()
+            }
           }
         }
         .padding()
       }
       .background(Color("surface-muted"))
       .navigationTitle("Calendars")
-      .navigationBarTitleDisplayMode(.inline)
+      .navigationBarTitleDisplayMode(.large)
     }
   }
 }
@@ -64,37 +84,47 @@ struct CalendarOverviewSheetItem: View {
   @Binding var selectedIndex: Int
   @Environment(\.dismiss) private var dismiss
   let store: CustomCalendarStore
-@State private var showDeleteConfirmation = false
-
-  @State private var isContextMenuPresented = false
-
+  @State private var showDeleteConfirmation = false
+  @State private var showEditSheet = false
   var body: some View {
-    Button {
-      selectedIndex = store.calendars.firstIndex(where: { $0.id == calendar.id })! + 1
-      dismiss()
-    } label: {
-      VStack(alignment: .leading, spacing: 12) {
-        HStack {
-          Text(calendar.name.capitalized)
-            .font(.headline)
-            .foregroundColor(Color("text-primary"))
-          Spacer()
-          Circle()
-            .fill(Color(calendar.color))
-            .frame(width: 12, height: 12)
-        }
-        Text(calendar.trackingType.description)
-          .font(.caption)
-          .foregroundColor(Color("text-tertiary"))
+    VStack(alignment: .leading, spacing: 12) {
+      HStack(alignment: .firstTextBaseline) {
+        Circle()
+          .fill(Color(calendar.color))
+          .frame(width: 12, height: 12)
+
+        Text(calendar.name.capitalized)
+          .font(.system(size: 18))
+          .fontWeight(.bold)
+          .foregroundColor(Color("text-primary"))
+          .lineLimit(2)
+          .minimumScaleFactor(0.5)
+          .multilineTextAlignment(.leading)
       }
-      .frame(maxWidth: .infinity, alignment: .leading)
-      .padding()
-      .background(Color("surface-primary"))
-      .cornerRadius(12)
-    }.onLongPressGesture {
-      isContextMenuPresented = true
+
+      Spacer()
+
+      Text(calendar.trackingType.description)
+        .font(.system(size: 11))
+        .foregroundColor(Color("text-tertiary"))
+        .lineLimit(2)
+        .minimumScaleFactor(0.5)
+        .multilineTextAlignment(.leading)
     }
+    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
+    .padding()
+    .background(Color("surface-primary"))
+    .cornerRadius(12)
+    .aspectRatio(1.4, contentMode: .fit)
     .contextMenu {
+      Button(action: {
+        showEditSheet = true
+      }) {
+        Text("Edit Calendar")
+      }
+
+      Divider()
+
       Button(action: {
         showDeleteConfirmation = true
       }) {
@@ -108,6 +138,16 @@ struct CalendarOverviewSheetItem: View {
     } message: {
       Text("Are you sure you want to delete '\(calendar.name)'? This action cannot be undone.")
     }
+    .sheet(isPresented: $showEditSheet) {
+      NavigationView {
+        EditCalendarView(
+          calendar: calendar,
+          onSave: { _ in
+            showEditSheet = false
+          })
+      }
+      .background(Color("surface-muted"))
+    }
   }
 }
 
@@ -116,7 +156,7 @@ struct ContentView: View {
   private let store = CustomCalendarStore.shared
   @State private var showingCreateSheet = false
   @State private var displayPaywall = false
-  @State private var selectedIndex = 0
+  @State private var selectedIndex: Int = 0
   @State private var showingOverview = false
   private let impactGenerator = UIImpactFeedbackGenerator(style: .light)
 
@@ -132,9 +172,9 @@ struct ContentView: View {
           .tag(0)
 
         // Custom Calendars
-        ForEach(store.calendars) { calendar in
+        ForEach(Array(store.calendars.enumerated()), id: \.element.id) { index, calendar in
           CustomCalendarView(calendarId: calendar.id)
-            .tag(store.calendars.firstIndex(where: { $0.id == calendar.id }) ?? 0 + 1)
+            .tag(index + 2)
         }
 
         // Add Calendar Button
@@ -156,9 +196,9 @@ struct ContentView: View {
         }
       }
       .gesture(
-        MagnificationGesture()
+        DragGesture()
           .onEnded { value in
-            if value < 1.0 {
+            if value.translation.height < -100 {
               impactGenerator.impactOccurred()
               showingOverview = true
             }

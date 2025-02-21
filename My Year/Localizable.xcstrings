@@ -50,12 +50,6 @@
     "Create" : {
 
     },
-    "Custom Calendars" : {
-
-    },
-    "Daily mood tracking" : {
-
-    },
     "Daily Target: %lld" : {
 
     },
@@ -144,10 +138,13 @@
     "Total Count" : {
 
     },
+    "Track your year mood" : {
+
+    },
     "Tracking Type" : {
 
     },
-    "Year Calendar" : {
+    "Year" : {
 
     },
     "Yearlit" : {
