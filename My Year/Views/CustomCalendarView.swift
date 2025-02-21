@@ -29,7 +29,13 @@ struct CustomCalendarView: View {
   private let valuationStore: ValuationStore = ValuationStore.shared
 
   var calendar: CustomCalendar {
-    store.calendars.first { $0.id == calendarId }!
+    store.calendars.first { $0.id == calendarId }
+      ?? CustomCalendar(
+        id: calendarId,
+        name: "Unknown Calendar",
+        color: "mood-neutral",
+        trackingType: .binary
+      )
   }
 
   @State private var selectedDate: SelectedDate = .none
