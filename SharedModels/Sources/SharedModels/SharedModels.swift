@@ -12,14 +12,18 @@ public struct CustomCalendar: Codable, Identifiable {
     public var color: String // Store as hex or named color
     public var trackingType: TrackingType
     public var dailyTarget: Int
+    public var recurringReminderEnabled: Bool
+    public var reminderTime: Date?
     public var entries: [String: CalendarEntry] // Date string -> Entry
     
-    public init(id: UUID = UUID(), name: String, color: String, trackingType: TrackingType, dailyTarget: Int = 1, entries: [String: CalendarEntry] = [:]) {
+    public init(id: UUID = UUID(), name: String, color: String, trackingType: TrackingType, dailyTarget: Int = 1, entries: [String: CalendarEntry] = [:], recurringReminderEnabled: Bool = false, reminderTime: Date? = nil) {
         self.id = id
         self.name = name
         self.color = color
         self.trackingType = trackingType
         self.dailyTarget = dailyTarget
+        self.recurringReminderEnabled = recurringReminderEnabled
+        self.reminderTime = reminderTime
         self.entries = entries
     }
 }

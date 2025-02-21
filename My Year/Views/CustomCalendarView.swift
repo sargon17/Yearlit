@@ -379,6 +379,8 @@ struct EditCalendarView: View {
     @State private var selectedColor: String
     @State private var trackingType: TrackingType
     @State private var dailyTarget: Int
+    @State private var recurringReminderEnabled: Bool
+    @State private var reminderTime: Date
     
     init(calendar: CustomCalendar, onSave: @escaping (CustomCalendar) -> Void) {
         self.calendar = calendar
@@ -387,6 +389,8 @@ struct EditCalendarView: View {
         _selectedColor = State(initialValue: calendar.color)
         _trackingType = State(initialValue: calendar.trackingType)
         _dailyTarget = State(initialValue: calendar.dailyTarget)
+        _recurringReminderEnabled = State(initialValue: calendar.recurringReminderEnabled)
+        _reminderTime = State(initialValue: calendar.reminderTime ?? Date())
     }
     
     private let colors = [
@@ -415,6 +419,14 @@ struct EditCalendarView: View {
                 
                 if trackingType == .multipleDaily {
                     Stepper("Daily Target: \(dailyTarget)", value: $dailyTarget, in: 1...10)
+                }
+            }
+            .listRowBackground(Color("surface-primary"))
+
+            Section {
+                Toggle("Recurring Reminder", isOn: $recurringReminderEnabled)
+                if recurringReminderEnabled {
+                    DatePicker("Reminder Time", selection: $reminderTime, displayedComponents: [.hourAndMinute])
                 }
             }
             .listRowBackground(Color("surface-primary"))
@@ -457,7 +469,9 @@ struct EditCalendarView: View {
                         color: selectedColor,
                         trackingType: trackingType,
                         dailyTarget: dailyTarget,
-                        entries: calendar.entries
+                        entries: calendar.entries,
+                        recurringReminderEnabled: recurringReminderEnabled,
+                        reminderTime: recurringReminderEnabled ? reminderTime : nil
                     )
                     onSave(updatedCalendar)
                     dismiss()

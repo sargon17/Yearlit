@@ -119,6 +119,8 @@ struct CreateCalendarView: View {
     @State private var selectedColor = "mood-good"
     @State private var trackingType: TrackingType = .binary
     @State private var dailyTarget = 2
+    @State private var recurringReminderEnabled: Bool = false
+    @State private var reminderTime: Date = Date()
     
     private let colors = [
         "mood-terrible",
@@ -146,6 +148,14 @@ struct CreateCalendarView: View {
                 
                 if trackingType == .multipleDaily {
                     Stepper("Daily Target: \(dailyTarget)", value: $dailyTarget, in: 1...10)
+                }
+            }
+            .listRowBackground(Color("surface-primary"))
+
+            Section {
+                Toggle("Recurring Reminder", isOn: $recurringReminderEnabled)
+                if recurringReminderEnabled {
+                    DatePicker("Reminder Time", selection: $reminderTime, displayedComponents: [.hourAndMinute])
                 }
             }
             .listRowBackground(Color("surface-primary"))
@@ -186,7 +196,9 @@ struct CreateCalendarView: View {
                         name: name,
                         color: selectedColor,
                         trackingType: trackingType,
-                        dailyTarget: dailyTarget
+                        dailyTarget: dailyTarget,
+                        recurringReminderEnabled: recurringReminderEnabled,
+                        reminderTime: recurringReminderEnabled ? reminderTime : nil
                     )
                     onCreate(calendar)
                 }
