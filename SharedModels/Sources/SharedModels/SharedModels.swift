@@ -38,6 +38,15 @@ public struct CustomCalendar: Codable, Identifiable {
 
     // New initializer using hour and minute directly
     public init(id: UUID = UUID(), name: String, color: String, trackingType: TrackingType, dailyTarget: Int = 1, entries: [String: CalendarEntry] = [:], recurringReminderEnabled: Bool = false, reminderHour: Int? = nil, reminderMinute: Int? = nil) {
+        // Validate hour and minute ranges
+        if let hour = reminderHour, let minute = reminderMinute {
+            guard (0...23).contains(hour) else {
+                fatalError("Invalid hour value: \(hour). Must be between 0 and 23.")
+            }
+            guard (0...59).contains(minute) else {
+                fatalError("Invalid minute value: \(minute). Must be between 0 and 59.")
+            }
+        }
         self.id = id
         self.name = name
         self.color = color
