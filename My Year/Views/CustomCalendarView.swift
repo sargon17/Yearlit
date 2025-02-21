@@ -411,20 +411,40 @@ struct EditCalendarView: View {
     ]
     
     private func scheduleNotifications(for calendar: CustomCalendar) {
-        guard calendar.recurringReminderEnabled, let reminderTime = calendar.reminderTime else {
+        guard calendar.recurringReminderEnabled, let hour = calendar.reminderHour, let minute = calendar.reminderMinute else {
             UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: [calendar.id.uuidString])
             return
         }
 
         let content = UNMutableNotificationContent()
-        content.title = "Time to update \(calendar.name)"
+        content.title = String(format: NSLocalizedString("notification.reminder.title", comment: "Notification title for calendar reminder"), calendar.name)
         content.sound = .default
 
-        let components = Calendar.current.dateComponents([.hour, .minute], from: reminderTime)
+        let components = DateComponents(hour: hour, minute: minute)
         let trigger = UNCalendarNotificationTrigger(dateMatching: components, repeats: true)
 
         let request = UNNotificationRequest(identifier: calendar.id.uuidString, content: content, trigger: trigger)
-        UNUserNotificationCenter.current().add(request)
+        UNUserNotificationCenter.current().add(request) { error in
+            if let error = error {
+                print("Failed to schedule notification: \(error.localizedDescription)")
+                // TODO: Consider showing an alert to the user
+            }
+        }
+    }
+    
+    private func validateReminderTime(_ time: Date) -> Date {
+        let calendar = Calendar.current
+        let now = Date()
+        
+        // Extract hour and minute components
+        let timeComponents = calendar.dateComponents([.hour, .minute], from: time)
+        let nowComponents = calendar.dateComponents([.hour, .minute], from: now)
+        
+        // If time is in the past for today, set it for tomorrow
+        if timeComponents.hour! < nowComponents.hour! || (timeComponents.hour! == nowComponents.hour! && timeComponents.minute! <= nowComponents.minute!) {
+            return calendar.date(byAdding: .day, value: 1, to: time)! 
+        }
+        return time
     }
     
     var body: some View {
@@ -455,6 +475,9 @@ struct EditCalendarView: View {
                     set: { newValue in
                         if newValue {
                             UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound]) { granted, error in
+                                if let error = error {
+                                    print("Failed to request notification permission: \(error.localizedDescription)")
+                                }
                                 DispatchQueue.main.async {
                                     recurringReminderEnabled = granted
                                     if !granted {
@@ -469,6 +492,10 @@ struct EditCalendarView: View {
                 ))
                 if recurringReminderEnabled {
                     DatePicker("Reminder Time", selection: $reminderTime, displayedComponents: [.hourAndMinute])
+                        .environment(\.timeZone, TimeZone.current)
+                    Text("Reminders will be sent in your local timezone")
+                        .font(.caption)
+                        .foregroundColor(Color("text-tertiary"))
                 }
             }
             .listRowBackground(Color("surface-primary"))
@@ -513,7 +540,7 @@ struct EditCalendarView: View {
                         dailyTarget: dailyTarget,
                         entries: calendar.entries,
                         recurringReminderEnabled: recurringReminderEnabled,
-                        reminderTime: recurringReminderEnabled ? reminderTime : nil
+                        reminderTime: recurringReminderEnabled ? validateReminderTime(reminderTime) : nil
                     )
                     onSave(updatedCalendar)
                     scheduleNotifications(for: updatedCalendar)

@@ -37,14 +37,14 @@ public struct CustomCalendar: Codable, Identifiable {
     }
 
     // New initializer using hour and minute directly
-    public init(id: UUID = UUID(), name: String, color: String, trackingType: TrackingType, dailyTarget: Int = 1, entries: [String: CalendarEntry] = [:], recurringReminderEnabled: Bool = false, reminderHour: Int? = nil, reminderMinute: Int? = nil) {
+    public init(id: UUID = UUID(), name: String, color: String, trackingType: TrackingType, dailyTarget: Int = 1, entries: [String: CalendarEntry] = [:], recurringReminderEnabled: Bool = false, reminderHour: Int? = nil, reminderMinute: Int? = nil) throws {
         // Validate hour and minute ranges
         if let hour = reminderHour, let minute = reminderMinute {
             guard (0...23).contains(hour) else {
-                fatalError("Invalid hour value: \(hour). Must be between 0 and 23.")
+                throw ValidationError.invalidHour(hour)
             }
             guard (0...59).contains(minute) else {
-                fatalError("Invalid minute value: \(minute). Must be between 0 and 59.")
+                throw ValidationError.invalidMinute(minute)
             }
         }
         self.id = id
@@ -527,4 +527,10 @@ public func updateDayTypesQuantity(store: ValuationStore) -> [DayMoodType: Int] 
     quantities[DayMoodType.future] = futureDays
     
     return quantities
+}
+
+// Add the following error type above the CustomCalendar struct
+public enum ValidationError: Error {
+    case invalidHour(Int)
+    case invalidMinute(Int)
 }
