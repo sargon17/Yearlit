@@ -382,6 +382,8 @@ struct EditCalendarView: View {
     @State private var dailyTarget: Int
     @State private var recurringReminderEnabled: Bool
     @State private var reminderTime: Date
+    @State private var showErrorAlert: Bool = false
+    @State private var errorMessage: String = ""
     
     init(calendar: CustomCalendar, onSave: @escaping (CustomCalendar) -> Void) {
         self.calendar = calendar
@@ -426,8 +428,10 @@ struct EditCalendarView: View {
         let request = UNNotificationRequest(identifier: calendar.id.uuidString, content: content, trigger: trigger)
         UNUserNotificationCenter.current().add(request) { error in
             if let error = error {
-                print("Failed to schedule notification: \(error.localizedDescription)")
-                // TODO: Consider showing an alert to the user
+                DispatchQueue.main.async {
+                    self.showErrorAlert = true
+                    self.errorMessage = "Failed to schedule notification: \(error.localizedDescription)"
+                }
             }
         }
     }
@@ -548,6 +552,9 @@ struct EditCalendarView: View {
                 }
                 .disabled(name.isEmpty)
             }
+        }
+        .alert(isPresented: $showErrorAlert) {
+            Alert(title: Text("Notification Error"), message: Text(errorMessage), dismissButton: .default(Text("OK")))
         }
     }
 }
