@@ -390,7 +390,13 @@ struct EditCalendarView: View {
         _trackingType = State(initialValue: calendar.trackingType)
         _dailyTarget = State(initialValue: calendar.dailyTarget)
         _recurringReminderEnabled = State(initialValue: calendar.recurringReminderEnabled)
-        _reminderTime = State(initialValue: calendar.reminderTime ?? Date())
+        
+        let defaultTime = Calendar.current.date(bySettingHour: 9, minute: 0, second: 0, of: Date()) ?? Date()
+        if calendar.recurringReminderEnabled, let hour = calendar.reminderHour, let minute = calendar.reminderMinute {
+            _reminderTime = State(initialValue: Calendar.current.date(bySettingHour: hour, minute: minute, second: 0, of: Date()) ?? defaultTime)
+        } else {
+            _reminderTime = State(initialValue: defaultTime)
+        }
     }
     
     private let colors = [

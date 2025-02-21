@@ -13,7 +13,8 @@ public struct CustomCalendar: Codable, Identifiable {
     public var trackingType: TrackingType
     public var dailyTarget: Int
     public var recurringReminderEnabled: Bool
-    public var reminderTime: Date?
+    public var reminderHour: Int?
+    public var reminderMinute: Int?
     public var entries: [String: CalendarEntry] // Date string -> Entry
     
     public init(id: UUID = UUID(), name: String, color: String, trackingType: TrackingType, dailyTarget: Int = 1, entries: [String: CalendarEntry] = [:], recurringReminderEnabled: Bool = false, reminderTime: Date? = nil) {
@@ -23,7 +24,28 @@ public struct CustomCalendar: Codable, Identifiable {
         self.trackingType = trackingType
         self.dailyTarget = dailyTarget
         self.recurringReminderEnabled = recurringReminderEnabled
-        self.reminderTime = reminderTime
+        // Convert reminderTime to hour & minute if provided
+        if let time = reminderTime {
+            let calendar = Calendar.current
+            self.reminderHour = calendar.component(.hour, from: time)
+            self.reminderMinute = calendar.component(.minute, from: time)
+        } else {
+            self.reminderHour = nil
+            self.reminderMinute = nil
+        }
+        self.entries = entries
+    }
+
+    // New initializer using hour and minute directly
+    public init(id: UUID = UUID(), name: String, color: String, trackingType: TrackingType, dailyTarget: Int = 1, entries: [String: CalendarEntry] = [:], recurringReminderEnabled: Bool = false, reminderHour: Int? = nil, reminderMinute: Int? = nil) {
+        self.id = id
+        self.name = name
+        self.color = color
+        self.trackingType = trackingType
+        self.dailyTarget = dailyTarget
+        self.recurringReminderEnabled = recurringReminderEnabled
+        self.reminderHour = reminderHour
+        self.reminderMinute = reminderMinute
         self.entries = entries
     }
 }
