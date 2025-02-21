@@ -25,21 +25,21 @@ enum SelectedDate: Equatable {
 
 struct CustomCalendarView: View {
   let calendarId: UUID
-  private let store = CustomCalendarStore.shared
-  private let valuationStore = ValuationStore.shared
+  private let store: CustomCalendarStore = CustomCalendarStore.shared
+  private let valuationStore: ValuationStore = ValuationStore.shared
 
   var calendar: CustomCalendar {
     store.calendars.first { $0.id == calendarId }!
   }
 
   @State private var selectedDate: SelectedDate = .none
-  @State private var showingEditSheet = false
-  @State private var showingYearPicker = false
+  @State private var showingEditSheet: Bool = false
+  @State private var showingYearPicker: Bool = false
   @State private var tempSelectedYear: Int = Calendar.current.component(.year, from: Date())
   @State private var calendarError: CalendarError?
 
   private let availableYears: [Int] = {
-    let currentYear = Calendar.current.component(.year, from: Date())
+    let currentYear: Int = Calendar.current.component(.year, from: Date())
     return Array((currentYear - 10)...currentYear).reversed()
   }()
 
@@ -55,16 +55,16 @@ struct CustomCalendarView: View {
       return Color("dot-inactive")
     }
 
-    let dateFormatter = DateFormatter()
+    let dateFormatter: DateFormatter = DateFormatter()
     dateFormatter.dateFormat = "yyyy-MM-dd"
-    let dateKey = dateFormatter.string(from: dayDate)
+    let dateKey: String = dateFormatter.string(from: dayDate)
 
-    if let entry = calendar.entries[dateKey] {
+    if let entry: CalendarEntry = calendar.entries[dateKey] {
       switch calendar.trackingType {
       case .binary:
         return entry.completed ? Color(calendar.color) : Color("dot-active")
       case .counter, .multipleDaily:
-        let maxCount = getMaxCount()
+        let maxCount: Int = getMaxCount()
         let opacity = max(0.2, Double(entry.count) / Double(maxCount))
         return Color(calendar.color).opacity(opacity)
       }
@@ -74,7 +74,7 @@ struct CustomCalendarView: View {
   }
 
   private func handleDayTap(_ day: Int) {
-    let date = valuationStore.dateForDay(day)
+    let date: Date = valuationStore.dateForDay(day)
     if day < valuationStore.currentDayNumber {
       selectedDate = .selected(date)
     }
@@ -102,17 +102,75 @@ struct CustomCalendarView: View {
       VStack(spacing: 10) {
         HStack(alignment: .center, spacing: 6) {
           VStack(alignment: .leading, spacing: 0) {
-            HStack(alignment: .center, spacing: 8) {
+            HStack(alignment: .firstTextBaseline, spacing: 8) {
               Text(calendar.name.capitalized)
                 .font(.system(size: 38))
+                .lineLimit(2)
+                .minimumScaleFactor(0.5)
                 .foregroundColor(Color("text-primary"))
                 .fontWeight(.black)
+                .onTapGesture {
+                  showingEditSheet = true
+                }
 
-              Button(action: { showingEditSheet = true }) {
-                Image(systemName: "pencil")
-                  .font(.system(size: 16))
-                  .foregroundStyle(Color("text-tertiary"))
+              if calendar.recurringReminderEnabled, let hour = calendar.reminderHour,
+                let minute = calendar.reminderMinute
+              {
+                HStack(alignment: .center, spacing: 4) {
+                  let reminderTime = String(format: "%02d:%02d", hour, minute)
+                  Image(systemName: "bell.fill")
+                    .font(.system(size: 12))
+                    .foregroundColor(Color("text-tertiary").opacity(0.5))
+                  Text(reminderTime)
+                    .font(.system(size: 12))
+                    .foregroundColor(Color("text-tertiary").opacity(0.5))
+                }.onTapGesture {
+                  showingEditSheet = true
+                }
               }
+
+              Spacer()
+
+              let today = valuationStore.dateForDay(valuationStore.currentDayNumber - 1)
+              Button(action: {
+                var newEntry = CalendarEntry(date: today, count: 1, completed: true)  // Default entry
+
+                // Check if an entry already exists for today
+                if let existingEntry = store.getEntry(calendarId: calendar.id, date: today) {
+                  // If the tracking type is counter or multipleDaily, increment the count
+                  if calendar.trackingType == .counter || calendar.trackingType == .multipleDaily {
+                    newEntry = CalendarEntry(
+                      date: today,
+                      count: existingEntry.count + 1,
+                      completed: existingEntry.completed
+                    )
+                  } else {
+                    // If it's binary, toggle the completed state
+                    newEntry = CalendarEntry(
+                      date: today,
+                      count: 1,
+                      completed: !existingEntry.completed
+                    )
+                  }
+                }
+                store.addEntry(calendarId: calendar.id, entry: newEntry)
+              }) {
+                ZStack {
+                  RoundedRectangle(cornerRadius: 4)
+                    .fill(Color(calendar.color).opacity(0.1))
+                    .frame(width: 24, height: 24)
+
+                  Image(
+                    systemName: calendar.trackingType == .binary
+                      && store.getEntry(calendarId: calendar.id, date: today) != nil
+                      && store.getEntry(calendarId: calendar.id, date: today)!.completed
+                      ? "minus" : "plus"
+                  )
+                  .font(.system(size: 16))
+                  .foregroundColor(Color(calendar.color))
+                }
+              }.frame(width: 24, height: 24)
+
             }
 
             Button(action: { showingYearPicker = true }) {
@@ -122,8 +180,6 @@ struct CustomCalendarView: View {
                 .fontWeight(.bold)
             }
           }
-
-          Spacer()
         }
         .padding(.horizontal)
 
