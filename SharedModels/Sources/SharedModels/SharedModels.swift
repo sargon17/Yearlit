@@ -12,14 +12,49 @@ public struct CustomCalendar: Codable, Identifiable {
     public var color: String // Store as hex or named color
     public var trackingType: TrackingType
     public var dailyTarget: Int
+    public var recurringReminderEnabled: Bool
+    public var reminderHour: Int?
+    public var reminderMinute: Int?
     public var entries: [String: CalendarEntry] // Date string -> Entry
     
-    public init(id: UUID = UUID(), name: String, color: String, trackingType: TrackingType, dailyTarget: Int = 1, entries: [String: CalendarEntry] = [:]) {
+    public init(id: UUID = UUID(), name: String, color: String, trackingType: TrackingType, dailyTarget: Int = 1, entries: [String: CalendarEntry] = [:], recurringReminderEnabled: Bool = false, reminderTime: Date? = nil) {
         self.id = id
         self.name = name
         self.color = color
         self.trackingType = trackingType
         self.dailyTarget = dailyTarget
+        self.recurringReminderEnabled = recurringReminderEnabled
+        // Convert reminderTime to hour & minute if provided
+        if let time = reminderTime {
+            let calendar = Calendar.current
+            self.reminderHour = calendar.component(.hour, from: time)
+            self.reminderMinute = calendar.component(.minute, from: time)
+        } else {
+            self.reminderHour = nil
+            self.reminderMinute = nil
+        }
+        self.entries = entries
+    }
+
+    // New initializer using hour and minute directly
+    public init(id: UUID = UUID(), name: String, color: String, trackingType: TrackingType, dailyTarget: Int = 1, entries: [String: CalendarEntry] = [:], recurringReminderEnabled: Bool = false, reminderHour: Int? = nil, reminderMinute: Int? = nil) throws {
+        // Validate hour and minute ranges
+        if let hour = reminderHour, let minute = reminderMinute {
+            guard (0...23).contains(hour) else {
+                throw ValidationError.invalidHour(hour)
+            }
+            guard (0...59).contains(minute) else {
+                throw ValidationError.invalidMinute(minute)
+            }
+        }
+        self.id = id
+        self.name = name
+        self.color = color
+        self.trackingType = trackingType
+        self.dailyTarget = dailyTarget
+        self.recurringReminderEnabled = recurringReminderEnabled
+        self.reminderHour = reminderHour
+        self.reminderMinute = reminderMinute
         self.entries = entries
     }
 }
@@ -492,4 +527,10 @@ public func updateDayTypesQuantity(store: ValuationStore) -> [DayMoodType: Int] 
     quantities[DayMoodType.future] = futureDays
     
     return quantities
+}
+
+// Add the following error type above the CustomCalendar struct
+public enum ValidationError: Error {
+    case invalidHour(Int)
+    case invalidMinute(Int)
 }

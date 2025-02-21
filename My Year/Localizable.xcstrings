@@ -1,0 +1,149 @@
+{
+  "sourceLanguage" : "en",
+  "strings" : {
+    "%@" : {
+
+    },
+    "%lld" : {
+
+    },
+    "Active Days" : {
+
+    },
+    "Add Calendar" : {
+
+    },
+    "Add Entry" : {
+
+    },
+    "Calendar Name" : {
+
+    },
+    "Calendars" : {
+
+    },
+    "Cancel" : {
+
+    },
+    "Color" : {
+
+    },
+    "Completed" : {
+
+    },
+    "Count: %lld" : {
+
+    },
+    "Count: %lld / %lld" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Count: %1$lld / %2$lld"
+          }
+        }
+      }
+    },
+    "Create" : {
+
+    },
+    "Custom Calendars" : {
+
+    },
+    "Daily mood tracking" : {
+
+    },
+    "Daily Target: %lld" : {
+
+    },
+    "Delete Calendar" : {
+
+    },
+    "Done" : {
+
+    },
+    "Edit Calendar" : {
+
+    },
+    "How was your day?" : {
+
+    },
+    "Left: " : {
+
+    },
+    "Max Count" : {
+
+    },
+    "Multiple times (unlimited)" : {
+
+    },
+    "Multiple times (with target)" : {
+
+    },
+    "New Calendar" : {
+
+    },
+    "Notification Error" : {
+
+    },
+    "notification.reminder.body" : {
+      "comment" : "Notification body for calendar reminder",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Time to log your progress in your %@ calendar! Your goal today is %d entries—keep it up!"
+          }
+        }
+      }
+    },
+    "notification.reminder.title" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Don't forget to update your %@ calendar!"
+          }
+        }
+      }
+    },
+    "OK" : {
+
+    },
+    "Once a day" : {
+
+    },
+    "Recurring Reminder" : {
+
+    },
+    "Reminder Time" : {
+
+    },
+    "Reminders will be sent in your local timezone" : {
+
+    },
+    "Save" : {
+
+    },
+    "Select Year" : {
+
+    },
+    "Skip" : {
+
+    },
+    "Total Count" : {
+
+    },
+    "Tracking Type" : {
+
+    },
+    "Year Calendar" : {
+
+    },
+    "Yearlit" : {
+
+    }
+  },
+  "version" : "1.0"
+}
