@@ -9,6 +9,7 @@ import RevenueCat
 import RevenueCatUI
 import SharedModels
 import SwiftUI
+import UIKit
 
 struct CalendarOverviewSheet: View {
   @ObservedObject var store: CustomCalendarStore
@@ -107,6 +108,11 @@ struct ContextOrDragModifier: ViewModifier {
       content
         .onDrag {
           NSItemProvider(object: calendar.id.uuidString as NSString)
+
+          let vibration = UIImpactFeedbackGenerator(style: .light)
+          vibration.impactOccurred()
+
+          return NSItemProvider(object: calendar.id.uuidString as NSString)
         }
         .onDrop(of: [.text], delegate: CalendarDropDelegate(item: calendar, store: store))
     } else {
@@ -151,6 +157,10 @@ struct CalendarDropDelegate: DropDelegate {
         }
       }
     }
+
+    let vibration = UIImpactFeedbackGenerator(style: .light)
+    vibration.impactOccurred()
+
     return true
   }
 }
@@ -228,6 +238,7 @@ struct ContentView: View {
   @State private var selectedIndex: Int = 0
   @State private var showingOverview = false
   private let impactGenerator = UIImpactFeedbackGenerator(style: .light)
+  @State private var dragStarted: Bool = false
 
   var body: some View {
     NavigationView {
@@ -266,9 +277,16 @@ struct ContentView: View {
       }
       .gesture(
         DragGesture()
-          .onEnded { value in
-            if value.translation.height < -100 {
+          .onChanged { value in
+            if !dragStarted {
+              dragStarted = true
               impactGenerator.impactOccurred()
+            }
+          }
+          .onEnded { value in
+            impactGenerator.impactOccurred()
+            dragStarted = false
+            if value.translation.height < -100 {
               showingOverview = true
             }
           }
