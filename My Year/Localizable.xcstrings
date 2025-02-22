@@ -7,13 +7,16 @@
     "%lld" : {
 
     },
-    "Active Days" : {
+    "Active" : {
 
     },
     "Add Calendar" : {
 
     },
     "Add Entry" : {
+
+    },
+    "Are you sure you want to delete '%@'? This action cannot be undone." : {
 
     },
     "Calendar Name" : {
@@ -29,6 +32,9 @@
 
     },
     "Completed" : {
+
+    },
+    "Count" : {
 
     },
     "Count: %lld" : {
@@ -47,16 +53,22 @@
     "Create" : {
 
     },
-    "Custom Calendars" : {
-
-    },
-    "Daily mood tracking" : {
+    "Current" : {
 
     },
     "Daily Target: %lld" : {
 
     },
+    "Days" : {
+
+    },
+    "Delete" : {
+
+    },
     "Delete Calendar" : {
+
+    },
+    "Delete Calendar?" : {
 
     },
     "Done" : {
@@ -71,7 +83,10 @@
     "Left: " : {
 
     },
-    "Max Count" : {
+    "Longest" : {
+
+    },
+    "Max" : {
 
     },
     "Multiple times (unlimited)" : {
@@ -132,13 +147,19 @@
     "Skip" : {
 
     },
-    "Total Count" : {
+    "Streaks" : {
+
+    },
+    "Total" : {
+
+    },
+    "Track your year mood" : {
 
     },
     "Tracking Type" : {
 
     },
-    "Year Calendar" : {
+    "Year" : {
 
     },
     "Yearlit" : {
