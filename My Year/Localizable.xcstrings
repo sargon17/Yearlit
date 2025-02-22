@@ -7,7 +7,7 @@
     "%lld" : {
 
     },
-    "Active Days" : {
+    "Active" : {
 
     },
     "Add Calendar" : {
@@ -34,6 +34,9 @@
     "Completed" : {
 
     },
+    "Count" : {
+
+    },
     "Count: %lld" : {
 
     },
@@ -50,7 +53,13 @@
     "Create" : {
 
     },
+    "Current" : {
+
+    },
     "Daily Target: %lld" : {
+
+    },
+    "Days" : {
 
     },
     "Delete" : {
@@ -74,7 +83,10 @@
     "Left: " : {
 
     },
-    "Max Count" : {
+    "Longest" : {
+
+    },
+    "Max" : {
 
     },
     "Multiple times (unlimited)" : {
@@ -135,7 +147,10 @@
     "Skip" : {
 
     },
-    "Total Count" : {
+    "Streaks" : {
+
+    },
+    "Total" : {
 
     },
     "Track your year mood" : {

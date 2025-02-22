@@ -28,6 +28,8 @@ struct CustomCalendarView: View {
   private let store: CustomCalendarStore = CustomCalendarStore.shared
   private let valuationStore: ValuationStore = ValuationStore.shared
 
+  private let today = Date()
+
   var calendar: CustomCalendar {
     store.calendars.first { $0.id == calendarId }
       ?? CustomCalendar(
@@ -61,9 +63,7 @@ struct CustomCalendarView: View {
       return Color("dot-inactive")
     }
 
-    let dateFormatter: DateFormatter = DateFormatter()
-    dateFormatter.dateFormat = "yyyy-MM-dd"
-    let dateKey: String = dateFormatter.string(from: dayDate)
+    let dateKey: String = customDateFormatter(date: dayDate)
 
     if let entry: CalendarEntry = calendar.entries[dateKey] {
       switch calendar.trackingType {
@@ -86,7 +86,13 @@ struct CustomCalendarView: View {
     }
   }
 
-  private func getStats() -> (activeDays: Int, totalCount: Int, maxCount: Int) {
+  private func getStats() -> (
+    activeDays: Int,
+    totalCount: Int,
+    maxCount: Int,
+    longestStreak: Int,
+    currentStreak: Int
+  ) {
     let activeDays = calendar.entries.values.filter { entry in
       switch calendar.trackingType {
       case .binary:
@@ -99,7 +105,56 @@ struct CustomCalendarView: View {
     let totalCount = calendar.entries.values.reduce(0) { $0 + $1.count }
     let maxCount = calendar.entries.values.map { $0.count }.max() ?? 0
 
-    return (activeDays, totalCount, maxCount)
+    var currentStreak = 0
+    var longestStreak = 0
+
+    // Calculate Longest Streak
+    var tempLongestStreak = 0
+    for day in (0..<valuationStore.currentDayNumber).reversed() {
+      let dayDate = valuationStore.dateForDay(day)
+      let dateKey = customDateFormatter(date: dayDate)
+
+      if isDayActive(dateKey: dateKey) {
+        tempLongestStreak += 1
+      } else {
+        longestStreak = max(longestStreak, tempLongestStreak)
+        tempLongestStreak = 0  // Reset the streak
+      }
+    }
+    longestStreak = max(longestStreak, tempLongestStreak)  // Check if the streak continues to the beginning of the year
+
+    // Calculate Current Streak
+    for day in (0..<valuationStore.currentDayNumber).reversed() {
+      let dayDate = valuationStore.dateForDay(day)
+      let dateKey = customDateFormatter(date: dayDate)
+
+      // If the day is today, skip checking the entry to avoid resetting the streak
+      if isToday(date: dayDate) {
+        if isDayActive(dateKey: dateKey) {
+          currentStreak += 1
+        }
+        continue
+      }
+
+      if isDayActive(dateKey: dateKey) {
+        currentStreak += 1
+      } else {
+        break
+      }
+    }
+
+    func isDayActive(dateKey: String) -> Bool {
+      if let entry = calendar.entries[dateKey] {
+        switch calendar.trackingType {
+        case .binary:
+          return entry.completed
+        case .counter, .multipleDaily:
+          return entry.count >= calendar.dailyTarget
+        }
+      }
+      return false
+    }
+    return (activeDays, totalCount, maxCount, longestStreak, currentStreak)
   }
 
   private func handleQuickAdd() {
@@ -199,7 +254,7 @@ struct CustomCalendarView: View {
               Text("\(valuationStore.year.description)")
                 .font(.system(size: 16))
                 .foregroundColor(Color("text-tertiary"))
-                .fontWeight(.bold)
+                .fontWeight(.black)
             }
           }
         }
@@ -207,44 +262,108 @@ struct CustomCalendarView: View {
 
         let stats = getStats()
         HStack {
-          VStack(alignment: .leading) {
-            Text("\(stats.activeDays)")
-              .font(.system(size: 24))
-              .foregroundColor(Color("text-primary"))
-              .fontWeight(.bold)
 
-            Text("Active Days")
-              .font(.system(size: 10))
-              .foregroundColor(Color("text-tertiary"))
+          VStack {
+            VStack(alignment: .center, spacing: 4) {
+              Text("Days")
+                .font(.system(size: 10))
+                .foregroundColor(Color("text-tertiary"))
+
+              VStack(alignment: .center) {
+                Text("\(stats.activeDays)")
+                  .font(.system(size: 18))
+                  .foregroundColor(Color("text-secondary"))
+                  .fontWeight(.black)
+
+                Text("Active")
+                  .font(.system(size: 10))
+                  .foregroundColor(Color("text-tertiary").opacity(0.5))
+
+              }
+            }.padding(10)
           }
+          .frame(maxWidth: .infinity)
+          .background(Color("surface-primary").opacity(0.5))
+          .cornerRadius(10)
 
           Spacer()
 
           if calendar.trackingType != .binary {
-            VStack(alignment: .center) {
-              Text("\(stats.totalCount)")
-                .font(.system(size: 24))
-                .foregroundColor(Color("text-primary"))
-                .fontWeight(.bold)
 
-              Text("Total Count")
-                .font(.system(size: 10))
-                .foregroundColor(Color("text-tertiary"))
+            VStack {
+              VStack(alignment: .center, spacing: 4) {
+                Text("Count")
+                  .font(.system(size: 10))
+                  .foregroundColor(Color("text-tertiary"))
+
+                HStack {
+                  VStack(alignment: .center) {
+                    Text("\(stats.totalCount)")
+                      .font(.system(size: 18))
+                      .foregroundColor(Color("text-secondary"))
+                      .fontWeight(.black)
+
+                    Text("Total")
+                      .font(.system(size: 10))
+                      .foregroundColor(Color("text-tertiary").opacity(0.5))
+                  }.frame(maxWidth: .infinity)
+
+                  VStack(alignment: .center) {
+                    Text("\(stats.maxCount)")
+                      .font(.system(size: 18))
+                      .foregroundColor(Color("text-secondary"))
+                      .fontWeight(.black)
+
+                    Text("Max")
+                      .font(.system(size: 10))
+                      .foregroundColor(Color("text-tertiary").opacity(0.5))
+                  }.frame(maxWidth: .infinity)
+
+                }
+              }
+              .padding(10)
             }
-
-            Spacer()
-
-            VStack(alignment: .trailing) {
-              Text("\(stats.maxCount)")
-                .font(.system(size: 24))
-                .foregroundColor(Color("text-primary"))
-                .fontWeight(.bold)
-
-              Text("Max Count")
-                .font(.system(size: 10))
-                .foregroundColor(Color("text-tertiary"))
-            }
+            .frame(maxWidth: .infinity)
+            .background(Color("surface-primary").opacity(0.5))
+            .cornerRadius(10)
           }
+
+          VStack {
+            VStack(alignment: .center, spacing: 4) {
+              Text("Streaks")
+                .font(.system(size: 10))
+                .foregroundColor(Color("text-tertiary"))
+
+              HStack {
+                VStack(alignment: .center) {
+                  Text("\(stats.currentStreak)")
+                    .font(.system(size: 18))
+                    .foregroundColor(Color("text-primary"))
+                    .fontWeight(.black)
+
+                  Text("Current")
+                    .font(.system(size: 10))
+                    .foregroundColor(Color("text-tertiary").opacity(0.5))
+                }.frame(maxWidth: .infinity)
+
+                VStack(alignment: .center) {
+                  Text("\(stats.longestStreak)")
+                    .font(.system(size: 18))
+                    .foregroundColor(Color("text-secondary"))
+                    .fontWeight(.black)
+
+                  Text("Longest")
+                    .font(.system(size: 10))
+                    .foregroundColor(Color("text-tertiary").opacity(0.5))
+                }.frame(maxWidth: .infinity)
+
+              }
+            }
+            .padding(10)
+          }
+          .frame(maxWidth: .infinity)
+          .background(Color("surface-primary").opacity(0.5))
+          .cornerRadius(10)
         }
         .padding(.horizontal)
       }
