@@ -8,6 +8,7 @@
 import RevenueCat
 import RevenueCatUI
 import SharedModels
+import SwiftData
 import SwiftUI
 import UIKit
 
@@ -232,7 +233,7 @@ struct CalendarOverviewSheetItem: View {
 
 struct ContentView: View {
   @State private var customerInfo: CustomerInfo?
-  private let store = CustomCalendarStore.shared
+  @ObservedObject private var store = CustomCalendarStore.shared
   @State private var showingCreateSheet = false
   @State private var displayPaywall = false
   @State private var selectedIndex: Int = 0
@@ -253,7 +254,7 @@ struct ContentView: View {
 
         // Custom Calendars
         ForEach(Array(store.calendars.enumerated()), id: \.element.id) { index, calendar in
-          CustomCalendarView(calendarId: calendar.id)
+          CustomCalendarView(calendar: calendar)
             .tag(index + 2)
         }
 

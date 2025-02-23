@@ -24,21 +24,11 @@ enum SelectedDate: Equatable {
 }
 
 struct CustomCalendarView: View {
-  let calendarId: UUID
-  private let store: CustomCalendarStore = CustomCalendarStore.shared
-  private let valuationStore: ValuationStore = ValuationStore.shared
+  let calendar: CustomCalendar
+  @StateObject private var store: CustomCalendarStore = CustomCalendarStore.shared
+  @ObservedObject private var valuationStore: ValuationStore = ValuationStore.shared
 
   private let today = Date()
-
-  var calendar: CustomCalendar {
-    store.calendars.first { $0.id == calendarId }
-      ?? CustomCalendar(
-        id: calendarId,
-        name: "Unknown Calendar",
-        color: "mood-neutral",
-        trackingType: .binary
-      )
-  }
 
   @State private var selectedDate: SelectedDate = .none
   @State private var showingEditSheet: Bool = false
@@ -229,6 +219,7 @@ struct CustomCalendarView: View {
               Spacer()
 
               let today = valuationStore.dateForDay(valuationStore.currentDayNumber - 1)
+
               Button(action: {
                 handleQuickAdd()
               }) {
@@ -608,17 +599,5 @@ enum CalendarError: LocalizedError {
     case .errorAddingEntry(let error):
       return "Failed to add entry: \(error.localizedDescription)"
     }
-  }
-}
-
-#Preview {
-  NavigationView {
-    CustomCalendarView(
-      calendarId: CustomCalendar(
-        name: "Test Calendar",
-        color: "mood-good",
-        trackingType: .binary
-      ).id
-    )
   }
 }
