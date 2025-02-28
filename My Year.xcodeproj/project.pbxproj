@@ -21,6 +21,7 @@
 		78BCBD962D366E780075CEC0 /* SharedModels in Frameworks */ = {isa = PBXBuildFile; productRef = 78BCBD952D366E780075CEC0 /* SharedModels */; };
 		78BCBDEF2D36EE090075CEC0 /* RevenueCat in Frameworks */ = {isa = PBXBuildFile; productRef = 78BCBDEE2D36EE090075CEC0 /* RevenueCat */; };
 		78BCBDF12D36EE090075CEC0 /* RevenueCatUI in Frameworks */ = {isa = PBXBuildFile; productRef = 78BCBDF02D36EE090075CEC0 /* RevenueCatUI */; };
+		78FAADA52D71EAAE0093A704 /* SharedModels in Frameworks */ = {isa = PBXBuildFile; productRef = 78FAADA42D71EAAE0093A704 /* SharedModels */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -120,6 +121,13 @@
 			);
 			target = 78BCBD7C2D366AB20075CEC0 /* YearEvaluationWidgetExtension */;
 		};
+		78FAADA72D72288B0093A704 /* Exceptions for "My Year" folder in "HabitsWidgetExtension" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Assets.xcassets,
+			);
+			target = 7867EFF22D6B6CBD00A459CE /* HabitsWidgetExtension */;
+		};
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -135,6 +143,7 @@
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
 				78B0258D2D35424300E70B4C /* Exceptions for "My Year" folder in "My Year" target */,
+				78FAADA72D72288B0093A704 /* Exceptions for "My Year" folder in "HabitsWidgetExtension" target */,
 			);
 			path = "My Year";
 			sourceTree = "<group>";
@@ -173,6 +182,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				7867EFF52D6B6CBD00A459CE /* SwiftUI.framework in Frameworks */,
+				78FAADA52D71EAAE0093A704 /* SharedModels in Frameworks */,
 				7867EFF42D6B6CBD00A459CE /* WidgetKit.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -283,6 +293,7 @@
 			);
 			name = HabitsWidgetExtension;
 			packageProductDependencies = (
+				78FAADA42D71EAAE0093A704 /* SharedModels */,
 			);
 			productName = HabitsWidgetExtension;
 			productReference = 7867EFF32D6B6CBD00A459CE /* HabitsWidgetExtension.appex */;
@@ -1129,6 +1140,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 78BCBDED2D36EE090075CEC0 /* XCRemoteSwiftPackageReference "purchases-ios-spm" */;
 			productName = RevenueCatUI;
+		};
+		78FAADA42D71EAAE0093A704 /* SharedModels */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 78BCBD942D366E780075CEC0 /* XCLocalSwiftPackageReference "SharedModels" */;
+			productName = SharedModels;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

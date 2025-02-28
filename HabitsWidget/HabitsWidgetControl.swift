@@ -6,6 +6,7 @@
 //
 
 import AppIntents
+import SharedModels
 import SwiftUI
 import WidgetKit
 

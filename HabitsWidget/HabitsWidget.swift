@@ -5,13 +5,14 @@
 //  Created by Mykhaylo Tymofyeyev  on 23/02/25.
 //
 
+import AppIntents
 import SharedModels
 import SwiftUI
 import WidgetKit
 
 struct Provider: AppIntentTimelineProvider {
   func placeholder(in context: Context) -> SimpleEntry {
-    SimpleEntry(date: Date(), configuration: ConfigurationAppIntent())
+    SimpleEntry(date: Date(), configuration: ConfigurationAppIntent.defaultCalendar)
   }
 
   func snapshot(for configuration: ConfigurationAppIntent, in context: Context) async -> SimpleEntry
@@ -22,22 +23,16 @@ struct Provider: AppIntentTimelineProvider {
   func timeline(for configuration: ConfigurationAppIntent, in context: Context) async -> Timeline<
     SimpleEntry
   > {
-    var entries: [SimpleEntry] = []
+    // Create a single entry with current data
+    let entry = SimpleEntry(date: Date(), configuration: configuration)
 
-    // Generate a timeline consisting of five entries an hour apart, starting from the current date.
-    let currentDate = Date()
-    for hourOffset in 0..<5 {
-      let entryDate = Calendar.current.date(byAdding: .hour, value: hourOffset, to: currentDate)!
-      let entry = SimpleEntry(date: entryDate, configuration: configuration)
-      entries.append(entry)
-    }
+    // Update at midnight
+    let calendar = Calendar.current
+    let tomorrow = calendar.startOfDay(
+      for: calendar.date(byAdding: .day, value: 1, to: Date()) ?? Date())
 
-    return Timeline(entries: entries, policy: .atEnd)
+    return Timeline(entries: [entry], policy: .after(tomorrow))
   }
-
-  //    func relevances() async -> WidgetRelevances<ConfigurationAppIntent> {
-  //        // Generate a list containing the contexts this widget is relevant in.
-  //    }
 }
 
 struct SimpleEntry: TimelineEntry {
@@ -45,16 +40,212 @@ struct SimpleEntry: TimelineEntry {
   let configuration: ConfigurationAppIntent
 }
 
-struct HabitsWidgetEntryView: View {
-  var entry: Provider.Entry
+struct HorizontalCalendarGrid: View {
+  let dotSize: CGFloat
+  let family: WidgetFamily
+  let store = ValuationStore.shared
+  let calendar: CustomCalendar?
+  private let calendarStore = CustomCalendarStore.shared
+
+  init(family: WidgetFamily, calendar: CustomCalendar?) {
+    self.family = family
+    self.calendar = calendar
+    switch family {
+    case .systemLarge:
+      self.dotSize = 6.0
+    case .systemMedium:
+      self.dotSize = 6.0
+    default:
+      self.dotSize = 4.0
+    }
+  }
+
+  private func handleQuickAdd() {
+    guard let calendar = calendar else { return }
+
+    // Get the date for the previous day (today is not yet available)
+    let today = store.dateForDay(store.currentDayNumber - 1)
+    var newEntry = CalendarEntry(date: today, count: 1, completed: true)  // Default entry
+
+    // Check if an entry already exists for today
+    if let existingEntry = calendarStore.getEntry(calendarId: calendar.id, date: today) {
+      // If the tracking type is counter or multipleDaily, increment the count
+      if calendar.trackingType == .counter || calendar.trackingType == .multipleDaily {
+        newEntry = CalendarEntry(
+          date: today,
+          count: existingEntry.count + 1,
+          completed: existingEntry.completed
+        )
+      } else {
+        // If it's binary, toggle the completed state
+        newEntry = CalendarEntry(
+          date: today,
+          count: 1,
+          completed: !existingEntry.completed
+        )
+      }
+    }
+    calendarStore.addEntry(calendarId: calendar.id, entry: newEntry)
+  }
+
+  private func colorForDay(_ day: Int) -> Color {
+    let dayDate = store.dateForDay(day)
+
+    if day >= store.currentDayNumber {
+      return Color("dot-inactive")
+    }
+
+    let formatter = DateFormatter()
+    formatter.dateFormat = "yyyy-MM-dd"
+    let key = formatter.string(from: dayDate)
+
+    if let calendar = calendar,
+      let entry = calendar.entries[key]
+    {
+      switch calendar.trackingType {
+      case .binary:
+        return entry.completed ? Color(calendar.color) : Color("dot-active")
+      case .counter, .multipleDaily:
+        let maxCount = calendar.entries.values.map { $0.count }.max() ?? 1
+        let opacity = max(0.2, Double(entry.count) / Double(maxCount))
+        return Color(calendar.color).opacity(opacity)
+      }
+    }
+
+    return Color("dot-active")
+  }
 
   var body: some View {
     VStack {
-      Text("Time:")
-      Text(entry.date, style: .time)
+      HStack(spacing: 6) {
+        if family == .systemLarge || family == .systemMedium {
+          if let calendar = calendar {
+            Text(calendar.name)
+              .font(.system(size: 12))
+              .foregroundColor(Color("text-primary"))
+              .fontWeight(.bold)
+            Circle()
+              .fill(Color(calendar.color))
+              .frame(width: 8, height: 8)
+          }
+        }
 
-      Text("Favorite Emoji:")
-      Text(entry.configuration.favoriteEmoji)
+        Spacer()
+
+        if let calendar = calendar {
+          let activeDays = calendar.entries.values.filter { entry in
+            switch calendar.trackingType {
+            case .binary:
+              return entry.completed
+            case .counter, .multipleDaily:
+              return entry.count >= calendar.dailyTarget
+            }
+          }.count
+
+          HStack(spacing: 8) {
+            Text("\(activeDays) days")
+              .font(.system(size: 12))
+              .foregroundColor(Color("text-primary"))
+              .fontWeight(.bold)
+
+            let today = store.dateForDay(store.currentDayNumber - 1)
+            if #available(iOS 17.0, *) {
+              Button(intent: QuickAddIntent(calendarId: calendar.id.uuidString)) {
+                ZStack {
+                  RoundedRectangle(cornerRadius: 4)
+                    .fill(Color(calendar.color).opacity(0.1))
+                    .frame(width: 24, height: 24)
+
+                  Image(
+                    systemName: calendar.trackingType == .binary
+                      && calendarStore.getEntry(calendarId: calendar.id, date: today) != nil
+                      && calendarStore.getEntry(calendarId: calendar.id, date: today)!.completed
+                      ? "minus" : "plus"
+                  )
+                  .font(.system(size: 16))
+                  .foregroundColor(Color(calendar.color))
+                }
+              }
+              .buttonStyle(.plain)
+              .frame(width: 24, height: 24)
+            } else {
+              // Fallback for iOS 16 and earlier - will open the app
+              Link(destination: URL(string: "my-year://quick-add/\(calendar.id.uuidString)")!) {
+                ZStack {
+                  RoundedRectangle(cornerRadius: 4)
+                    .fill(Color(calendar.color).opacity(0.1))
+                    .frame(width: 24, height: 24)
+
+                  Image(
+                    systemName: calendar.trackingType == .binary
+                      && calendarStore.getEntry(calendarId: calendar.id, date: today) != nil
+                      && calendarStore.getEntry(calendarId: calendar.id, date: today)!.completed
+                      ? "minus" : "plus"
+                  )
+                  .font(.system(size: 16))
+                  .foregroundColor(Color(calendar.color))
+                }
+              }
+              .frame(width: 24, height: 24)
+            }
+          }
+        }
+      }
+
+      GeometryReader { geometry in
+        let aspectRatio = geometry.size.width / geometry.size.height
+        let targetColumns = Int(sqrt(Double(365) * aspectRatio))
+        let columns = min(targetColumns, 365)
+        let rows = Int(ceil(Double(365) / Double(columns)))
+
+        let horizontalSpacing =
+          (geometry.size.width - (dotSize * CGFloat(columns))) / CGFloat(columns - 1)
+        let verticalSpacing = (geometry.size.height - (dotSize * CGFloat(rows))) / CGFloat(rows - 1)
+
+        VStack(spacing: verticalSpacing) {
+          ForEach(0..<rows, id: \.self) { row in
+            HStack(spacing: horizontalSpacing) {
+              ForEach(0..<columns, id: \.self) { col in
+                let day = row * columns + col
+                if day < store.numberOfDaysInYear {
+                  RoundedRectangle(cornerRadius: 1)
+                    .fill(colorForDay(day))
+                    .frame(width: dotSize, height: dotSize)
+                } else {
+                  Color.clear.frame(width: dotSize, height: dotSize)
+                }
+              }
+            }
+          }
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+      }
+    }
+    .padding()
+    .background(Color.clear)
+  }
+}
+
+struct HabitsWidgetEntryView: View {
+  var entry: Provider.Entry
+  @Environment(\.widgetFamily) var family
+  private let store = CustomCalendarStore.shared
+
+  var selectedCalendar: CustomCalendar? {
+    store.loadCalendars()  // Load calendars when needed
+    return store.calendars.first { calendar in
+      calendar.id.uuidString == entry.configuration.selectedCalendar?.id
+    }
+  }
+
+  var body: some View {
+    if #available(iOS 17.0, *) {
+      HorizontalCalendarGrid(family: family, calendar: selectedCalendar)
+        .containerBackground(Color("surface-muted"), for: .widget)
+    } else {
+      HorizontalCalendarGrid(family: family, calendar: selectedCalendar)
+        .padding()
+        .background(Color("surface-muted"))
     }
   }
 }
@@ -63,31 +254,36 @@ struct HabitsWidget: Widget {
   let kind: String = "HabitsWidget"
 
   var body: some WidgetConfiguration {
-    AppIntentConfiguration(kind: kind, intent: ConfigurationAppIntent.self, provider: Provider()) {
-      entry in
+    let configuration = AppIntentConfiguration(
+      kind: kind,
+      intent: ConfigurationAppIntent.self,
+      provider: Provider()
+    ) { entry in
       HabitsWidgetEntryView(entry: entry)
-        .containerBackground(.fill.tertiary, for: .widget)
     }
-  }
-}
+    .configurationDisplayName("Habit Progress")
+    .description("Track your habit's progress with a beautiful visualization.")
+    .supportedFamilies([.systemSmall, .systemMedium, .systemLarge])
+    .contentMarginsDisabled()
 
-extension ConfigurationAppIntent {
-  fileprivate static var smiley: ConfigurationAppIntent {
-    let intent = ConfigurationAppIntent()
-    intent.favoriteEmoji = "😀"
-    return intent
-  }
-
-  fileprivate static var starEyes: ConfigurationAppIntent {
-    let intent = ConfigurationAppIntent()
-    intent.favoriteEmoji = "🤩"
-    return intent
+    return configuration
   }
 }
 
 #Preview(as: .systemSmall) {
   HabitsWidget()
 } timeline: {
-  SimpleEntry(date: .now, configuration: .smiley)
-  SimpleEntry(date: .now, configuration: .starEyes)
+  SimpleEntry(date: .now, configuration: .defaultCalendar)
+}
+
+#Preview(as: .systemMedium) {
+  HabitsWidget()
+} timeline: {
+  SimpleEntry(date: .now, configuration: .defaultCalendar)
+}
+
+#Preview(as: .systemLarge) {
+  HabitsWidget()
+} timeline: {
+  SimpleEntry(date: .now, configuration: .defaultCalendar)
 }
