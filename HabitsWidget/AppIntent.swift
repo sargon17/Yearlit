@@ -69,6 +69,14 @@ public struct ConfigurationAppIntent: WidgetConfigurationIntent {
 
   public init() {
     // Initialize with nil, will be populated by the system
+    let store = CustomCalendarStore.shared
+    store.loadCalendars()
+    if let calendar = store.calendars.first {
+      self.selectedCalendar = CalendarOption(
+        id: calendar.id.uuidString,
+        name: calendar.name
+      )
+    }
   }
 
   public init(selectedCalendar: CalendarOption? = nil) {

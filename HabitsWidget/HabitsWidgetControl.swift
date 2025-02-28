@@ -19,60 +19,107 @@ struct HabitsWidgetControl: ControlWidget {
       provider: Provider()
     ) { value in
       ControlWidgetToggle(
-        "Start Timer",
-        isOn: value.isRunning,
-        action: StartTimerIntent(value.name)
-      ) { isRunning in
-        Label(isRunning ? "On" : "Off", systemImage: "timer")
+        "Quick Add",
+        isOn: value.isCompleted,
+        action: HabitQuickAddIntent(calendarId: value.calendarId)
+      ) { isCompleted in
+        Label(
+          isCompleted ? "Completed" : "Add",
+          systemImage: isCompleted ? "checkmark.circle.fill" : "plus.circle"
+        )
       }
     }
-    .displayName("Timer")
-    .description("A an example control that runs a timer.")
+    .displayName("Habit Quick Add")
+    .description("Quickly add entries to your habit tracker.")
   }
 }
 
 extension HabitsWidgetControl {
   struct Value {
-    var isRunning: Bool
-    var name: String
+    var isCompleted: Bool
+    var calendarId: String
   }
 
   struct Provider: AppIntentControlValueProvider {
-    func previewValue(configuration: TimerConfiguration) -> Value {
-      HabitsWidgetControl.Value(isRunning: false, name: configuration.timerName)
+    func previewValue(configuration: HabitConfiguration) -> Value {
+      HabitsWidgetControl.Value(isCompleted: false, calendarId: configuration.calendarId)
     }
 
-    func currentValue(configuration: TimerConfiguration) async throws -> Value {
-      let isRunning = true  // Check if the timer is running
-      return HabitsWidgetControl.Value(isRunning: isRunning, name: configuration.timerName)
+    func currentValue(configuration: HabitConfiguration) async throws -> Value {
+      let store = CustomCalendarStore.shared
+      store.loadCalendars()
+
+      guard
+        let calendar = store.calendars.first(where: { $0.id.uuidString == configuration.calendarId }
+        )
+      else {
+        return Value(isCompleted: false, calendarId: configuration.calendarId)
+      }
+
+      let valStore = ValuationStore.shared
+      let today = valStore.dateForDay(valStore.currentDayNumber - 1)
+      let isCompleted = store.getEntry(calendarId: calendar.id, date: today)?.completed ?? false
+
+      return Value(isCompleted: isCompleted, calendarId: configuration.calendarId)
     }
   }
 }
 
-struct TimerConfiguration: ControlConfigurationIntent {
-  static let title: LocalizedStringResource = "Timer Name Configuration"
+struct HabitConfiguration: ControlConfigurationIntent {
+  static let title: LocalizedStringResource = "Habit Configuration"
 
-  @Parameter(title: "Timer Name", default: "Timer")
-  var timerName: String
+  @Parameter(title: "Calendar ID", default: "default")
+  var calendarId: String
 }
 
-struct StartTimerIntent: SetValueIntent {
-  static let title: LocalizedStringResource = "Start a timer"
+struct HabitQuickAddIntent: SetValueIntent {
+  static let title: LocalizedStringResource = "Quick Add Habit Entry"
 
-  @Parameter(title: "Timer Name")
-  var name: String
+  @Parameter(title: "Calendar ID")
+  var calendarId: String
 
-  @Parameter(title: "Timer is running")
+  @Parameter(title: "Habit is completed")
   var value: Bool
 
-  init() {}
+  init() {
+    self.calendarId = ""
+    self.value = false
+  }
 
-  init(_ name: String) {
-    self.name = name
+  init(calendarId: String) {
+    self.calendarId = calendarId
+    self.value = false
   }
 
   func perform() async throws -> some IntentResult {
-    // Start the timer…
+    let store = CustomCalendarStore.shared
+    let valStore = ValuationStore.shared
+
+    guard let calendar = store.calendars.first(where: { $0.id.uuidString == calendarId }) else {
+      return .result()
+    }
+
+    let today = valStore.dateForDay(valStore.currentDayNumber - 1)
+    var newEntry = CalendarEntry(date: today, count: 1, completed: true)
+
+    if let existingEntry = store.getEntry(calendarId: calendar.id, date: today) {
+      if calendar.trackingType == .counter || calendar.trackingType == .multipleDaily {
+        newEntry = CalendarEntry(
+          date: today,
+          count: existingEntry.count + 1,
+          completed: existingEntry.completed
+        )
+      } else {
+        newEntry = CalendarEntry(
+          date: today,
+          count: 1,
+          completed: !existingEntry.completed
+        )
+      }
+    }
+
+    store.addEntry(calendarId: calendar.id, entry: newEntry)
+    WidgetCenter.shared.reloadTimelines(ofKind: "HabitsWidget")
     return .result()
   }
 }
