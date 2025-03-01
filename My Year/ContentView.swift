@@ -17,6 +17,7 @@ struct CalendarOverviewSheet: View {
   @Binding var selectedIndex: Int
   @Environment(\.dismiss) private var dismiss
   @State private var isReorderActive = false
+  @State private var showingAddCalendarSheet = false
 
   var body: some View {
     NavigationView {
@@ -75,6 +76,23 @@ struct CalendarOverviewSheet: View {
               dismiss()
             }
           }
+
+          // Add Calendar Button
+          VStack {
+            Spacer()
+            VStack(spacing: 16) {
+              Image(systemName: "plus")
+                .font(.system(size: 42))
+                .foregroundStyle(Color("text-secondary"))
+              Text("Add Calendar")
+                .font(.headline)
+                .foregroundColor(Color("text-primary"))
+            }
+            Spacer()
+          }
+          .onTapGesture {
+            showingAddCalendarSheet = true
+          }
         }
         .padding()
         .animation(.spring(), value: store.calendars.map { $0.order })
@@ -92,6 +110,15 @@ struct CalendarOverviewSheet: View {
 
           }
         }
+      }
+    }
+    .sheet(isPresented: $showingAddCalendarSheet) {
+      NavigationView {
+        CreateCalendarView { newCalendar in
+          store.addCalendar(newCalendar)
+          showingAddCalendarSheet = false
+        }
+        .background(Color("surface-muted"))
       }
     }
   }
