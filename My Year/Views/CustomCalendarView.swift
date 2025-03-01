@@ -402,9 +402,15 @@ struct CustomCalendarView: View {
     }
     .sheet(isPresented: $showingEditSheet) {
       NavigationView {
-        EditCalendarView(calendar: calendar) { updatedCalendar in
-          store.updateCalendar(updatedCalendar)
-        }
+        EditCalendarView(
+          calendar: calendar,
+          onSave: { updatedCalendar in
+            store.updateCalendar(updatedCalendar)
+          },
+          onDelete: { _ in
+            store.deleteCalendar(id: calendar.id)
+          }
+        )
         .background(Color("surface-muted"))
       }
       .background(Color("surface-muted"))

@@ -224,7 +224,12 @@ struct CalendarOverviewSheetItem: View {
           calendar: calendar,
           onSave: { _ in
             showEditSheet = false
-          })
+          },
+          onDelete: { _ in
+            showEditSheet = false
+            store.deleteCalendar(id: calendar.id)
+          }
+        )
       }
       .background(Color("surface-muted"))
     }
