@@ -24,13 +24,11 @@ enum SelectedDate: Equatable {
 }
 
 struct CustomCalendarView: View {
-  let calendarId: UUID
-  private let store: CustomCalendarStore = CustomCalendarStore.shared
-  private let valuationStore: ValuationStore = ValuationStore.shared
+  let calendar: CustomCalendar
+  @StateObject private var store: CustomCalendarStore = CustomCalendarStore.shared
+  @ObservedObject private var valuationStore: ValuationStore = ValuationStore.shared
 
-  var calendar: CustomCalendar {
-    store.calendars.first { $0.id == calendarId }!
-  }
+  private let today = Date()
 
   @State private var selectedDate: SelectedDate = .none
   @State private var showingEditSheet: Bool = false
@@ -55,9 +53,7 @@ struct CustomCalendarView: View {
       return Color("dot-inactive")
     }
 
-    let dateFormatter: DateFormatter = DateFormatter()
-    dateFormatter.dateFormat = "yyyy-MM-dd"
-    let dateKey: String = dateFormatter.string(from: dayDate)
+    let dateKey: String = customDateFormatter(date: dayDate)
 
     if let entry: CalendarEntry = calendar.entries[dateKey] {
       switch calendar.trackingType {
@@ -80,7 +76,13 @@ struct CustomCalendarView: View {
     }
   }
 
-  private func getStats() -> (activeDays: Int, totalCount: Int, maxCount: Int) {
+  private func getStats() -> (
+    activeDays: Int,
+    totalCount: Int,
+    maxCount: Int,
+    longestStreak: Int,
+    currentStreak: Int
+  ) {
     let activeDays = calendar.entries.values.filter { entry in
       switch calendar.trackingType {
       case .binary:
@@ -93,7 +95,56 @@ struct CustomCalendarView: View {
     let totalCount = calendar.entries.values.reduce(0) { $0 + $1.count }
     let maxCount = calendar.entries.values.map { $0.count }.max() ?? 0
 
-    return (activeDays, totalCount, maxCount)
+    var currentStreak = 0
+    var longestStreak = 0
+
+    // Calculate Longest Streak
+    var tempLongestStreak = 0
+    for day in (0..<valuationStore.currentDayNumber).reversed() {
+      let dayDate = valuationStore.dateForDay(day)
+      let dateKey = customDateFormatter(date: dayDate)
+
+      if isDayActive(dateKey: dateKey) {
+        tempLongestStreak += 1
+      } else {
+        longestStreak = max(longestStreak, tempLongestStreak)
+        tempLongestStreak = 0  // Reset the streak
+      }
+    }
+    longestStreak = max(longestStreak, tempLongestStreak)  // Check if the streak continues to the beginning of the year
+
+    // Calculate Current Streak
+    for day in (0..<valuationStore.currentDayNumber).reversed() {
+      let dayDate = valuationStore.dateForDay(day)
+      let dateKey = customDateFormatter(date: dayDate)
+
+      // If the day is today, skip checking the entry to avoid resetting the streak
+      if isToday(date: dayDate) {
+        if isDayActive(dateKey: dateKey) {
+          currentStreak += 1
+        }
+        continue
+      }
+
+      if isDayActive(dateKey: dateKey) {
+        currentStreak += 1
+      } else {
+        break
+      }
+    }
+
+    func isDayActive(dateKey: String) -> Bool {
+      if let entry = calendar.entries[dateKey] {
+        switch calendar.trackingType {
+        case .binary:
+          return entry.completed
+        case .counter, .multipleDaily:
+          return entry.count >= calendar.dailyTarget
+        }
+      }
+      return false
+    }
+    return (activeDays, totalCount, maxCount, longestStreak, currentStreak)
   }
 
   private func handleQuickAdd() {
@@ -121,9 +172,15 @@ struct CustomCalendarView: View {
         }
       }
       store.addEntry(calendarId: calendar.id, entry: newEntry)
+
     } catch {
       calendarError = .errorAddingEntry(error)
     }
+
+    // Vibrate to provide haptic feedback
+    let impactFeedbackgenerator = UIImpactFeedbackGenerator(style: .medium)
+    impactFeedbackgenerator.prepare()
+    impactFeedbackgenerator.impactOccurred()
   }
 
   var body: some View {
@@ -162,28 +219,9 @@ struct CustomCalendarView: View {
               Spacer()
 
               let today = valuationStore.dateForDay(valuationStore.currentDayNumber - 1)
-              Button(action: {
-                var newEntry = CalendarEntry(date: today, count: 1, completed: true)  // Default entry
 
-                // Check if an entry already exists for today
-                if let existingEntry = store.getEntry(calendarId: calendar.id, date: today) {
-                  // If the tracking type is counter or multipleDaily, increment the count
-                  if calendar.trackingType == .counter || calendar.trackingType == .multipleDaily {
-                    newEntry = CalendarEntry(
-                      date: today,
-                      count: existingEntry.count + 1,
-                      completed: existingEntry.completed
-                    )
-                  } else {
-                    // If it's binary, toggle the completed state
-                    newEntry = CalendarEntry(
-                      date: today,
-                      count: 1,
-                      completed: !existingEntry.completed
-                    )
-                  }
-                }
-                store.addEntry(calendarId: calendar.id, entry: newEntry)
+              Button(action: {
+                handleQuickAdd()
               }) {
                 ZStack {
                   RoundedRectangle(cornerRadius: 4)
@@ -207,7 +245,7 @@ struct CustomCalendarView: View {
               Text("\(valuationStore.year.description)")
                 .font(.system(size: 16))
                 .foregroundColor(Color("text-tertiary"))
-                .fontWeight(.bold)
+                .fontWeight(.black)
             }
           }
         }
@@ -215,44 +253,108 @@ struct CustomCalendarView: View {
 
         let stats = getStats()
         HStack {
-          VStack(alignment: .leading) {
-            Text("\(stats.activeDays)")
-              .font(.system(size: 24))
-              .foregroundColor(Color("text-primary"))
-              .fontWeight(.bold)
 
-            Text("Active Days")
-              .font(.system(size: 10))
-              .foregroundColor(Color("text-tertiary"))
+          VStack {
+            VStack(alignment: .center, spacing: 4) {
+              Text("Days")
+                .font(.system(size: 10))
+                .foregroundColor(Color("text-tertiary"))
+
+              VStack(alignment: .center) {
+                Text("\(stats.activeDays)")
+                  .font(.system(size: 18))
+                  .foregroundColor(Color("text-secondary"))
+                  .fontWeight(.black)
+
+                Text("Active")
+                  .font(.system(size: 10))
+                  .foregroundColor(Color("text-tertiary").opacity(0.5))
+
+              }
+            }.padding(10)
           }
+          .frame(maxWidth: .infinity)
+          .background(Color("surface-primary").opacity(0.5))
+          .cornerRadius(10)
 
           Spacer()
 
           if calendar.trackingType != .binary {
-            VStack(alignment: .center) {
-              Text("\(stats.totalCount)")
-                .font(.system(size: 24))
-                .foregroundColor(Color("text-primary"))
-                .fontWeight(.bold)
 
-              Text("Total Count")
-                .font(.system(size: 10))
-                .foregroundColor(Color("text-tertiary"))
+            VStack {
+              VStack(alignment: .center, spacing: 4) {
+                Text("Count")
+                  .font(.system(size: 10))
+                  .foregroundColor(Color("text-tertiary"))
+
+                HStack {
+                  VStack(alignment: .center) {
+                    Text("\(stats.totalCount)")
+                      .font(.system(size: 18))
+                      .foregroundColor(Color("text-secondary"))
+                      .fontWeight(.black)
+
+                    Text("Total")
+                      .font(.system(size: 10))
+                      .foregroundColor(Color("text-tertiary").opacity(0.5))
+                  }.frame(maxWidth: .infinity)
+
+                  VStack(alignment: .center) {
+                    Text("\(stats.maxCount)")
+                      .font(.system(size: 18))
+                      .foregroundColor(Color("text-secondary"))
+                      .fontWeight(.black)
+
+                    Text("Max")
+                      .font(.system(size: 10))
+                      .foregroundColor(Color("text-tertiary").opacity(0.5))
+                  }.frame(maxWidth: .infinity)
+
+                }
+              }
+              .padding(10)
             }
-
-            Spacer()
-
-            VStack(alignment: .trailing) {
-              Text("\(stats.maxCount)")
-                .font(.system(size: 24))
-                .foregroundColor(Color("text-primary"))
-                .fontWeight(.bold)
-
-              Text("Max Count")
-                .font(.system(size: 10))
-                .foregroundColor(Color("text-tertiary"))
-            }
+            .frame(maxWidth: .infinity)
+            .background(Color("surface-primary").opacity(0.5))
+            .cornerRadius(10)
           }
+
+          VStack {
+            VStack(alignment: .center, spacing: 4) {
+              Text("Streaks")
+                .font(.system(size: 10))
+                .foregroundColor(Color("text-tertiary"))
+
+              HStack {
+                VStack(alignment: .center) {
+                  Text("\(stats.currentStreak)")
+                    .font(.system(size: 18))
+                    .foregroundColor(Color("text-primary"))
+                    .fontWeight(.black)
+
+                  Text("Current")
+                    .font(.system(size: 10))
+                    .foregroundColor(Color("text-tertiary").opacity(0.5))
+                }.frame(maxWidth: .infinity)
+
+                VStack(alignment: .center) {
+                  Text("\(stats.longestStreak)")
+                    .font(.system(size: 18))
+                    .foregroundColor(Color("text-secondary"))
+                    .fontWeight(.black)
+
+                  Text("Longest")
+                    .font(.system(size: 10))
+                    .foregroundColor(Color("text-tertiary").opacity(0.5))
+                }.frame(maxWidth: .infinity)
+
+              }
+            }
+            .padding(10)
+          }
+          .frame(maxWidth: .infinity)
+          .background(Color("surface-primary").opacity(0.5))
+          .cornerRadius(10)
         }
         .padding(.horizontal)
       }
@@ -298,7 +400,6 @@ struct CustomCalendarView: View {
         .padding(.horizontal)
       }
     }
-    .navigationBarTitleDisplayMode(.inline)
     .sheet(isPresented: $showingEditSheet) {
       NavigationView {
         EditCalendarView(calendar: calendar) { updatedCalendar in
@@ -321,7 +422,7 @@ struct CustomCalendarView: View {
           .pickerStyle(.wheel)
         }
         .navigationTitle("Select Year")
-        .navigationBarTitleDisplayMode(.inline)
+        .navigationBarTitleDisplayMode(.large)
         .toolbar {
           ToolbarItem(placement: .cancellationAction) {
             Button("Cancel") {
@@ -462,7 +563,7 @@ struct CalendarEntryView: View {
     .scrollContentBackground(.hidden)
     .background(Color("surface-muted"))
     .navigationTitle("Add Entry")
-    .navigationBarTitleDisplayMode(.inline)
+    .navigationBarTitleDisplayMode(.large)
     .toolbar {
       ToolbarItem(placement: .confirmationAction) {
         Button("Done") {
@@ -481,223 +582,7 @@ struct CalendarEntryView: View {
   }
 }
 
-struct EditCalendarView: View {
-  @Environment(\.dismiss) private var dismiss
-  let calendar: CustomCalendar
-  let onSave: (CustomCalendar) -> Void
-
-  @State private var name: String
-  @State private var selectedColor: String
-  @State private var trackingType: TrackingType
-  @State private var dailyTarget: Int
-  @State private var recurringReminderEnabled: Bool
-  @State private var reminderTime: Date
-  @State private var calendarError: CalendarError?
-
-  init(calendar: CustomCalendar, onSave: @escaping (CustomCalendar) -> Void) {
-    self.calendar = calendar
-    self.onSave = onSave
-    _name = State(initialValue: calendar.name)
-    _selectedColor = State(initialValue: calendar.color)
-    _trackingType = State(initialValue: calendar.trackingType)
-    _dailyTarget = State(initialValue: calendar.dailyTarget)
-    _recurringReminderEnabled = State(initialValue: calendar.recurringReminderEnabled)
-
-    // Default reminder time set to 9:00 AM as it's a common time for daily reminders
-    let defaultTime =
-      Calendar.current.date(bySettingHour: 9, minute: 0, second: 0, of: Date()) ?? Date()
-    if calendar.recurringReminderEnabled, let hour = calendar.reminderHour,
-      let minute = calendar.reminderMinute
-    {
-      _reminderTime = State(
-        initialValue: Calendar.current.date(
-          bySettingHour: hour, minute: minute, second: 0, of: Date()) ?? defaultTime)
-    } else {
-      _reminderTime = State(initialValue: defaultTime)
-    }
-  }
-
-  private let colors = [
-    "mood-terrible",
-    "mood-bad",
-    "mood-neutral",
-    "mood-good",
-    "mood-excellent",
-  ]
-
-  private func scheduleNotifications(for calendar: CustomCalendar) {
-    guard calendar.recurringReminderEnabled, let hour = calendar.reminderHour,
-      let minute = calendar.reminderMinute
-    else {
-      UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: [
-        calendar.id.uuidString
-      ])
-      return
-    }
-
-    let content = UNMutableNotificationContent()
-    content.title = String(
-      format: NSLocalizedString(
-        "notification.reminder.title", comment: "Notification title for calendar reminder"),
-      calendar.name)
-    content.body = String(
-      format: NSLocalizedString(
-        "notification.reminder.body", comment: "Notification body for calendar reminder"),
-      calendar.name, calendar.dailyTarget)
-    content.sound = .default
-
-    let components = DateComponents(hour: hour, minute: minute)
-    let trigger = UNCalendarNotificationTrigger(dateMatching: components, repeats: true)
-
-    let request = UNNotificationRequest(
-      identifier: calendar.id.uuidString, content: content, trigger: trigger)
-    UNUserNotificationCenter.current().add(request) { error in
-      if let error = error {
-        DispatchQueue.main.async {
-          self.calendarError = .notificationSchedulingFailed(error)
-        }
-      }
-    }
-  }
-
-  private func validateReminderTime(_ time: Date) -> Date {
-    let calendar = Calendar.current
-    let now = Date()
-
-    // Extract hour and minute components
-    let timeComponents = calendar.dateComponents([.hour, .minute], from: time)
-    let nowComponents = calendar.dateComponents([.hour, .minute], from: now)
-
-    // If time is in the past for today, set it for tomorrow
-    if timeComponents.hour! < nowComponents.hour!
-      || (timeComponents.hour! == nowComponents.hour!
-        && timeComponents.minute! <= nowComponents.minute!)
-    {
-      return calendar.date(byAdding: .day, value: 1, to: time)!
-    }
-    return time
-  }
-
-  var body: some View {
-    Form {
-      Section {
-        TextField("Calendar Name", text: $name)
-          .foregroundColor(Color("text-primary"))
-          .fontWeight(.bold)
-      }
-      .listRowBackground(Color("surface-primary"))
-
-      Section {
-        Picker("Tracking Type", selection: $trackingType) {
-          Text("Once a day").tag(TrackingType.binary)
-          Text("Multiple times (unlimited)").tag(TrackingType.counter)
-          Text("Multiple times (with target)").tag(TrackingType.multipleDaily)
-        }
-
-        if trackingType == .multipleDaily {
-          Stepper("Daily Target: \(dailyTarget)", value: $dailyTarget, in: 1...10)
-        }
-      }
-      .listRowBackground(Color("surface-primary"))
-
-      Section {
-        Toggle(
-          "Recurring Reminder",
-          isOn: Binding(
-            get: { recurringReminderEnabled },
-            set: { newValue in
-              if newValue {
-                UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound]) {
-                  granted, error in
-                  if let error = error {
-                    DispatchQueue.main.async {
-                      self.calendarError = .notificationPermissionDenied
-                      recurringReminderEnabled = false
-                    }
-                    return
-                  }
-                  DispatchQueue.main.async {
-                    recurringReminderEnabled = granted
-                    if !granted {
-                      self.calendarError = .notificationPermissionDenied
-                    }
-                  }
-                }
-              } else {
-                recurringReminderEnabled = newValue
-              }
-            }
-          ))
-        if recurringReminderEnabled {
-          DatePicker(
-            "Reminder Time", selection: $reminderTime, displayedComponents: [.hourAndMinute]
-          )
-          .environment(\.timeZone, TimeZone.current)
-          Text("Reminders will be sent in your local timezone")
-            .font(.caption)
-            .foregroundColor(Color("text-tertiary"))
-        }
-      }
-      .listRowBackground(Color("surface-primary"))
-
-      Section {
-        HStack {
-          ForEach(colors, id: \.self) { color in
-            Circle()
-              .fill(Color(color))
-              .frame(width: 30, height: 30)
-              .overlay(
-                Circle()
-                  .stroke(Color.primary, lineWidth: selectedColor == color ? 2 : 0)
-              )
-              .onTapGesture {
-                selectedColor = color
-              }
-          }
-        }
-      } header: {
-        Text("Color")
-      }
-      .listRowBackground(Color("surface-primary"))
-    }
-    .scrollContentBackground(.hidden)
-    .background(Color("surface-muted"))
-    .navigationTitle("Edit Calendar")
-    .navigationBarTitleDisplayMode(.inline)
-    .toolbar {
-      ToolbarItem(placement: .cancellationAction) {
-        Button("Cancel") {
-          dismiss()
-        }
-      }
-      ToolbarItem(placement: .confirmationAction) {
-        Button("Save") {
-          let trimmedName = name.trimmingCharacters(in: .whitespacesAndNewlines)
-          guard !trimmedName.isEmpty && trimmedName.count <= 50 else {
-            calendarError = .invalidName
-            return
-          }
-          let updatedCalendar = CustomCalendar(
-            id: calendar.id,
-            name: trimmedName,
-            color: selectedColor,
-            trackingType: trackingType,
-            dailyTarget: dailyTarget,
-            entries: calendar.entries,
-            recurringReminderEnabled: recurringReminderEnabled,
-            reminderTime: recurringReminderEnabled ? validateReminderTime(reminderTime) : nil
-          )
-          onSave(updatedCalendar)
-          scheduleNotifications(for: updatedCalendar)
-          dismiss()
-        }
-        .disabled(name.isEmpty)
-      }
-    }
-  }
-}
-
-private enum CalendarError: LocalizedError {
+enum CalendarError: LocalizedError {
   case invalidName
   case notificationPermissionDenied
   case notificationSchedulingFailed(Error)
@@ -714,17 +599,5 @@ private enum CalendarError: LocalizedError {
     case .errorAddingEntry(let error):
       return "Failed to add entry: \(error.localizedDescription)"
     }
-  }
-}
-
-#Preview {
-  NavigationView {
-    CustomCalendarView(
-      calendarId: CustomCalendar(
-        name: "Test Calendar",
-        color: "mood-good",
-        trackingType: .binary
-      ).id
-    )
   }
 }

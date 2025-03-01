@@ -7,6 +7,9 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		7867EFF42D6B6CBD00A459CE /* WidgetKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 78B025AD2D354F0B00E70B4C /* WidgetKit.framework */; };
+		7867EFF52D6B6CBD00A459CE /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 78B025AF2D354F0B00E70B4C /* SwiftUI.framework */; };
+		7867F0042D6B6CBF00A459CE /* HabitsWidgetExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 7867EFF32D6B6CBD00A459CE /* HabitsWidgetExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		7871CFA32D35995A005FFE4E /* SharedModels in Frameworks */ = {isa = PBXBuildFile; productRef = 7871CFA22D35995A005FFE4E /* SharedModels */; };
 		7871CFA62D3599B4005FFE4E /* SharedModels in Frameworks */ = {isa = PBXBuildFile; productRef = 7871CFA52D3599B4005FFE4E /* SharedModels */; };
 		78B025AE2D354F0B00E70B4C /* WidgetKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 78B025AD2D354F0B00E70B4C /* WidgetKit.framework */; };
@@ -18,9 +21,17 @@
 		78BCBD962D366E780075CEC0 /* SharedModels in Frameworks */ = {isa = PBXBuildFile; productRef = 78BCBD952D366E780075CEC0 /* SharedModels */; };
 		78BCBDEF2D36EE090075CEC0 /* RevenueCat in Frameworks */ = {isa = PBXBuildFile; productRef = 78BCBDEE2D36EE090075CEC0 /* RevenueCat */; };
 		78BCBDF12D36EE090075CEC0 /* RevenueCatUI in Frameworks */ = {isa = PBXBuildFile; productRef = 78BCBDF02D36EE090075CEC0 /* RevenueCatUI */; };
+		78FAADA52D71EAAE0093A704 /* SharedModels in Frameworks */ = {isa = PBXBuildFile; productRef = 78FAADA42D71EAAE0093A704 /* SharedModels */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
+		7867F0022D6B6CBF00A459CE /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 78B0255F2D35424100E70B4C /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 7867EFF22D6B6CBD00A459CE;
+			remoteInfo = HabitsWidgetExtension;
+		};
 		78B0257C2D35424300E70B4C /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 78B0255F2D35424100E70B4C /* Project object */;
@@ -60,6 +71,7 @@
 			files = (
 				78B025BF2D354F0C00E70B4C /* YearWidgetExtension.appex in Embed Foundation Extensions */,
 				78BCBD8E2D366AB40075CEC0 /* YearEvaluationWidgetExtension.appex in Embed Foundation Extensions */,
+				7867F0042D6B6CBF00A459CE /* HabitsWidgetExtension.appex in Embed Foundation Extensions */,
 			);
 			name = "Embed Foundation Extensions";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -67,6 +79,8 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		7867EFF32D6B6CBD00A459CE /* HabitsWidgetExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = HabitsWidgetExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		7867F0092D6B6D7C00A459CE /* HabitsWidgetExtension.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = HabitsWidgetExtension.entitlements; sourceTree = "<group>"; };
 		7871CFA72D35C009005FFE4E /* YearWidgetExtension.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = YearWidgetExtension.entitlements; sourceTree = "<group>"; };
 		78B025672D35424100E70B4C /* My Year.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "My Year.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		78B0257B2D35424300E70B4C /* My YearTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "My YearTests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -79,6 +93,13 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		7867F0082D6B6CBF00A459CE /* Exceptions for "HabitsWidget" folder in "HabitsWidgetExtension" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = 7867EFF22D6B6CBD00A459CE /* HabitsWidgetExtension */;
+		};
 		78B0258D2D35424300E70B4C /* Exceptions for "My Year" folder in "My Year" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
@@ -100,13 +121,30 @@
 			);
 			target = 78BCBD7C2D366AB20075CEC0 /* YearEvaluationWidgetExtension */;
 		};
+		78FAADA72D72288B0093A704 /* Exceptions for "My Year" folder in "HabitsWidgetExtension" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Assets.xcassets,
+				Utils/Date.swift,
+			);
+			target = 7867EFF22D6B6CBD00A459CE /* HabitsWidgetExtension */;
+		};
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
+		7867EFF62D6B6CBD00A459CE /* HabitsWidget */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				7867F0082D6B6CBF00A459CE /* Exceptions for "HabitsWidget" folder in "HabitsWidgetExtension" target */,
+			);
+			path = HabitsWidget;
+			sourceTree = "<group>";
+		};
 		78B025692D35424100E70B4C /* My Year */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
 				78B0258D2D35424300E70B4C /* Exceptions for "My Year" folder in "My Year" target */,
+				78FAADA72D72288B0093A704 /* Exceptions for "My Year" folder in "HabitsWidgetExtension" target */,
 			);
 			path = "My Year";
 			sourceTree = "<group>";
@@ -140,6 +178,16 @@
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		7867EFF02D6B6CBD00A459CE /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				7867EFF52D6B6CBD00A459CE /* SwiftUI.framework in Frameworks */,
+				78FAADA52D71EAAE0093A704 /* SharedModels in Frameworks */,
+				7867EFF42D6B6CBD00A459CE /* WidgetKit.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		78B025642D35424100E70B4C /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -190,6 +238,7 @@
 		78B0255E2D35424100E70B4C = {
 			isa = PBXGroup;
 			children = (
+				7867F0092D6B6D7C00A459CE /* HabitsWidgetExtension.entitlements */,
 				78BCBD932D366DA50075CEC0 /* YearEvaluationWidgetExtension.entitlements */,
 				7871CFA72D35C009005FFE4E /* YearWidgetExtension.entitlements */,
 				78B025692D35424100E70B4C /* My Year */,
@@ -197,6 +246,7 @@
 				78B025882D35424300E70B4C /* My YearUITests */,
 				78B025B12D354F0B00E70B4C /* YearWidget */,
 				78BCBD802D366AB20075CEC0 /* YearEvaluationWidget */,
+				7867EFF62D6B6CBD00A459CE /* HabitsWidget */,
 				78B025AC2D354F0B00E70B4C /* Frameworks */,
 				78B025682D35424100E70B4C /* Products */,
 			);
@@ -210,6 +260,7 @@
 				78B025852D35424300E70B4C /* My YearUITests.xctest */,
 				78B025AB2D354F0B00E70B4C /* YearWidgetExtension.appex */,
 				78BCBD7D2D366AB20075CEC0 /* YearEvaluationWidgetExtension.appex */,
+				7867EFF32D6B6CBD00A459CE /* HabitsWidgetExtension.appex */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -226,6 +277,29 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
+		7867EFF22D6B6CBD00A459CE /* HabitsWidgetExtension */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 7867F0052D6B6CBF00A459CE /* Build configuration list for PBXNativeTarget "HabitsWidgetExtension" */;
+			buildPhases = (
+				7867EFEF2D6B6CBD00A459CE /* Sources */,
+				7867EFF02D6B6CBD00A459CE /* Frameworks */,
+				7867EFF12D6B6CBD00A459CE /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				7867EFF62D6B6CBD00A459CE /* HabitsWidget */,
+			);
+			name = HabitsWidgetExtension;
+			packageProductDependencies = (
+				78FAADA42D71EAAE0093A704 /* SharedModels */,
+			);
+			productName = HabitsWidgetExtension;
+			productReference = 7867EFF32D6B6CBD00A459CE /* HabitsWidgetExtension.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
 		78B025662D35424100E70B4C /* My Year */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 78B0258E2D35424300E70B4C /* Build configuration list for PBXNativeTarget "My Year" */;
@@ -240,6 +314,7 @@
 			dependencies = (
 				78B025BE2D354F0C00E70B4C /* PBXTargetDependency */,
 				78BCBD8D2D366AB40075CEC0 /* PBXTargetDependency */,
+				7867F0032D6B6CBF00A459CE /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
 				78B025692D35424100E70B4C /* My Year */,
@@ -356,6 +431,9 @@
 				LastSwiftUpdateCheck = 1620;
 				LastUpgradeCheck = 1620;
 				TargetAttributes = {
+					7867EFF22D6B6CBD00A459CE = {
+						CreatedOnToolsVersion = 16.2;
+					};
 					78B025662D35424100E70B4C = {
 						CreatedOnToolsVersion = 16.2;
 					};
@@ -398,11 +476,19 @@
 				78B025842D35424300E70B4C /* My YearUITests */,
 				78B025AA2D354F0B00E70B4C /* YearWidgetExtension */,
 				78BCBD7C2D366AB20075CEC0 /* YearEvaluationWidgetExtension */,
+				7867EFF22D6B6CBD00A459CE /* HabitsWidgetExtension */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
+		7867EFF12D6B6CBD00A459CE /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		78B025652D35424100E70B4C /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -441,6 +527,13 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		7867EFEF2D6B6CBD00A459CE /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		78B025632D35424100E70B4C /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -479,6 +572,11 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
+		7867F0032D6B6CBF00A459CE /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 7867EFF22D6B6CBD00A459CE /* HabitsWidgetExtension */;
+			targetProxy = 7867F0022D6B6CBF00A459CE /* PBXContainerItemProxy */;
+		};
 		78B0257D2D35424300E70B4C /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = 78B025662D35424100E70B4C /* My Year */;
@@ -502,6 +600,64 @@
 /* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
+		7867F0062D6B6CBF00A459CE /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
+				CODE_SIGN_ENTITLEMENTS = HabitsWidgetExtension.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 9G3JW3N8UH;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = HabitsWidget/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = HabitsWidget;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.4;
+				PRODUCT_BUNDLE_IDENTIFIER = "sargon17.My-Year.HabitsWidget";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		7867F0072D6B6CBF00A459CE /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
+				CODE_SIGN_ENTITLEMENTS = HabitsWidgetExtension.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 9G3JW3N8UH;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = HabitsWidget/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = HabitsWidget;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.4;
+				PRODUCT_BUNDLE_IDENTIFIER = "sargon17.My-Year.HabitsWidget";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
 		78B0258F2D35424300E70B4C /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -515,6 +671,7 @@
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "My Year/Info.plist";
+				INFOPLIST_KEY_CFBundleDisplayName = Yearlit;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -525,7 +682,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.3;
+				MARKETING_VERSION = 1.4;
 				PRODUCT_BUNDLE_IDENTIFIER = "sargon17.My-Year";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -547,6 +704,7 @@
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "My Year/Info.plist";
+				INFOPLIST_KEY_CFBundleDisplayName = Yearlit;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -557,7 +715,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.3;
+				MARKETING_VERSION = 1.4;
 				PRODUCT_BUNDLE_IDENTIFIER = "sargon17.My-Year";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -625,6 +783,7 @@
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = iphoneos;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 			};
 			name = Debug;
@@ -681,6 +840,7 @@
 				MTL_FAST_MATH = YES;
 				SDKROOT = iphoneos;
 				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_EMIT_LOC_STRINGS = YES;
 				VALIDATE_PRODUCT = YES;
 			};
 			name = Release;
@@ -876,6 +1036,15 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		7867F0052D6B6CBF00A459CE /* Build configuration list for PBXNativeTarget "HabitsWidgetExtension" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				7867F0062D6B6CBF00A459CE /* Debug */,
+				7867F0072D6B6CBF00A459CE /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 		78B025622D35424100E70B4C /* Build configuration list for PBXProject "My Year" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
@@ -972,6 +1141,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 78BCBDED2D36EE090075CEC0 /* XCRemoteSwiftPackageReference "purchases-ios-spm" */;
 			productName = RevenueCatUI;
+		};
+		78FAADA42D71EAAE0093A704 /* SharedModels */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 78BCBD942D366E780075CEC0 /* XCLocalSwiftPackageReference "SharedModels" */;
+			productName = SharedModels;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};
