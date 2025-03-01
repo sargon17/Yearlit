@@ -28,10 +28,10 @@ struct Provider: AppIntentTimelineProvider {
 
     // Update at midnight
     let calendar: Calendar = Calendar.current
-    let tomorrow: Date = calendar.startOfDay(
+    let refreshDate: Date = calendar.startOfDay(
       for: calendar.date(byAdding: .day, value: 1, to: Date()) ?? Date())
 
-    return Timeline(entries: [entry], policy: .never)
+    return Timeline(entries: [entry], policy: .after(refreshDate))
   }
 }
 
