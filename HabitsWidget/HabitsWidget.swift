@@ -52,9 +52,9 @@ struct HorizontalCalendarGrid: View {
     self.calendar = calendar
     switch family {
     case .systemLarge:
-      self.dotSize = 6.0
+      self.dotSize = 10.0
     case .systemMedium:
-      self.dotSize = 6.0
+      self.dotSize = 7.0
     default:
       self.dotSize = 4.0
     }
@@ -127,40 +127,16 @@ struct HorizontalCalendarGrid: View {
 
             if #available(iOS 17.0, *) {
               Button(intent: HabitQuickAddIntent(calendarId: calendar.id.uuidString)) {
-                ZStack {
-                  RoundedRectangle(cornerRadius: 4)
-                    .fill(Color(calendar.color).opacity(0.1))
-                    .frame(width: 24, height: 24)
-
-                  Image(
-                    systemName: calendar.trackingType == .binary
-                      && calendarStore.getEntry(calendarId: calendar.id, date: today) != nil
-                      && calendarStore.getEntry(calendarId: calendar.id, date: today)!.completed
-                      ? "minus" : "plus"
-                  )
-                  .font(.system(size: 16))
-                  .foregroundColor(Color(calendar.color))
-                }
+                QuickAddButtonContent(
+                  calendar: calendar, today: today)
               }
               .buttonStyle(.plain)
               .frame(width: 24, height: 24)
             } else {
               // Fallback for iOS 16 and earlier - will open the app
               Link(destination: URL(string: "my-year://quick-add/\(calendar.id.uuidString)")!) {
-                ZStack {
-                  RoundedRectangle(cornerRadius: 4)
-                    .fill(Color(calendar.color).opacity(0.1))
-                    .frame(width: 24, height: 24)
-
-                  Image(
-                    systemName: calendar.trackingType == .binary
-                      && calendarStore.getEntry(calendarId: calendar.id, date: today) != nil
-                      && calendarStore.getEntry(calendarId: calendar.id, date: today)!.completed
-                      ? "minus" : "plus"
-                  )
-                  .font(.system(size: 16))
-                  .foregroundColor(Color(calendar.color))
-                }
+                QuickAddButtonContent(
+                  calendar: calendar, today: today)
               }
               .frame(width: 24, height: 24)
             }
@@ -203,6 +179,30 @@ struct HorizontalCalendarGrid: View {
     }
     .padding()
     .background(Color.clear)
+  }
+}
+
+struct QuickAddButtonContent: View {
+  let calendar: CustomCalendar
+  let today: Date
+  let calendarStore = CustomCalendarStore.shared
+
+  var body: some View {
+    ZStack {
+      RoundedRectangle(cornerRadius: 4)
+        .fill(Color(calendar.color).opacity(0.1))
+        .frame(width: 24, height: 24)
+
+      Image(
+        systemName: calendar.trackingType == .binary
+          && calendarStore.getEntry(calendarId: calendar.id, date: today) != nil
+          && calendarStore.getEntry(calendarId: calendar.id, date: today)!.completed
+          ? "minus" : "plus"
+      )
+      .font(.system(size: 16))
+      .foregroundColor(Color(calendar.color))
+    }
+
   }
 }
 
@@ -291,24 +291,6 @@ struct HabitsWidget: Widget {
     return configuration
   }
 }
-
-// #Preview(as: .systemSmall) {
-//   HabitsWidget()
-// } timeline: {
-//   SimpleEntry(date: .now, configuration: .defaultCalendar)
-// }
-
-// #Preview(as: .systemMedium) {
-//   HabitsWidget()
-// } timeline: {
-//   SimpleEntry(date: .now, configuration: .defaultCalendar)
-// }
-
-// #Preview(as: .systemLarge) {
-//   HabitsWidget()
-// } timeline: {
-//   SimpleEntry(date: .now, configuration: .defaultCalendar)
-// }
 
 struct HabitQuickAddIntent: AppIntent, SetValueIntent {
   static var title: LocalizedStringResource = "Quick Add Habit Entry"
