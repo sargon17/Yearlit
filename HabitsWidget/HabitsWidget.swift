@@ -8,6 +8,7 @@
 import AppIntents
 import SharedModels
 import SwiftUI
+import UIKit
 import WidgetKit
 
 struct Provider: AppIntentTimelineProvider {
@@ -113,7 +114,7 @@ struct HorizontalCalendarGrid: View {
             let today = Date()
             let formattedToday = customDateFormatter(date: today)
 
-            if calendar.trackingType != .binary || family != .systemSmall {
+            if calendar.trackingType != .binary && family != .systemSmall {
               if let todayEntry = calendar.entries[formattedToday] {
                 TodaysCountView(count: todayEntry.count)
               } else {
@@ -141,6 +142,8 @@ struct HorizontalCalendarGrid: View {
           }
         }
       }
+
+      Spacer()
 
       GeometryReader { geometry in
         let aspectRatio = geometry.size.height / geometry.size.width
@@ -348,6 +351,10 @@ struct HabitQuickAddIntent: AppIntent, SetValueIntent {
       try store.addEntry(calendarId: calendar.id, entry: newEntry)
       // Only reload the HabitsWidget
       WidgetCenter.shared.reloadTimelines(ofKind: "HabitsWidget")
+
+      let impactFeedbackgenerator = UIImpactFeedbackGenerator(style: .medium)
+      impactFeedbackgenerator.prepare()
+      impactFeedbackgenerator.impactOccurred()
     } catch {
       print("Error adding entry: \(error) \(newEntry)")
       return .result()

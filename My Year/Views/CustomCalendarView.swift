@@ -1,6 +1,7 @@
 import SharedModels
 import SwiftUI
 import UserNotifications
+import WidgetKit
 
 enum SelectedDate: Equatable {
   case none
@@ -172,7 +173,7 @@ struct CustomCalendarView: View {
         }
       }
       store.addEntry(calendarId: calendar.id, entry: newEntry)
-
+      WidgetCenter.shared.reloadAllTimelines()
     } catch {
       calendarError = .errorAddingEntry(error)
     }
@@ -492,7 +493,7 @@ struct CalendarEntryView: View {
   @State private var completed = false
 
   var formattedDate: String {
-    let formatter = DateFormatter()
+    let formatter: DateFormatter = DateFormatter()
     formatter.dateStyle = .long
     return formatter.string(from: date)
   }
@@ -519,6 +520,7 @@ struct CalendarEntryView: View {
                   completed: newValue
                 )
                 onSave(entry)
+                WidgetCenter.shared.reloadAllTimelines()
               }
             )
           )
@@ -537,6 +539,7 @@ struct CalendarEntryView: View {
                   completed: completed
                 )
                 onSave(entry)
+                WidgetCenter.shared.reloadAllTimelines()
               }
             ), in: 0...99
           )
@@ -555,6 +558,7 @@ struct CalendarEntryView: View {
                     completed: newValue >= calendar.dailyTarget
                   )
                   onSave(entry)
+                  WidgetCenter.shared.reloadAllTimelines()
                 }
               ), in: 0...99
             )
