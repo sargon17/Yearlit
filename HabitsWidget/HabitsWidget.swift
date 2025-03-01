@@ -321,10 +321,7 @@ struct HabitQuickAddIntent: SetValueIntent {
 
   @Parameter(title: "Calendar ID")
   var calendarId: String
-
-  @Parameter(title: "Habit is completed")
-  var value: Bool
-
+}
   init() {
     self.calendarId = ""
     self.value = false
