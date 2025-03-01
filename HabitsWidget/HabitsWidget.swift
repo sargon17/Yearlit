@@ -67,9 +67,7 @@ struct HorizontalCalendarGrid: View {
       return Color("dot-inactive")
     }
 
-    let formatter = DateFormatter()
-    formatter.dateFormat = "yyyy-MM-dd"
-    let key = formatter.string(from: dayDate)
+    let key = customDateFormatter(date: dayDate)
 
     if let calendar = calendar,
       let entry = calendar.entries[key]
