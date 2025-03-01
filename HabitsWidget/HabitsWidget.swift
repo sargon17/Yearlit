@@ -254,12 +254,6 @@ struct HabitsWidgetEntryView: View {
   @Environment(\.widgetFamily) var family
   private let store = CustomCalendarStore.shared
 
-  init(entry: Provider.Entry) {
-    self.entry = entry
-    // store.loadCalendars()
-    dump(store.calendars)
-  }
-
   var selectedCalendar: CustomCalendar? {
     return store.calendars.first { calendar in
       calendar.id.uuidString == entry.configuration.selectedCalendar?.id
@@ -316,12 +310,16 @@ struct HabitsWidget: Widget {
 //   SimpleEntry(date: .now, configuration: .defaultCalendar)
 // }
 
-struct HabitQuickAddIntent: SetValueIntent {
-  static let title: LocalizedStringResource = "Quick Add Habit Entry"
+struct HabitQuickAddIntent: AppIntent, SetValueIntent {
+  static var title: LocalizedStringResource = "Quick Add Habit Entry"
+  static var description = IntentDescription("Quickly add an entry to your habit tracker")
 
   @Parameter(title: "Calendar ID")
   var calendarId: String
-}
+
+  @Parameter(title: "Value")
+  var value: Bool  // Required by SetValueIntent
+
   init() {
     self.calendarId = ""
     self.value = false
