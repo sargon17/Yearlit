@@ -27,11 +27,11 @@ struct Provider: AppIntentTimelineProvider {
     let entry = SimpleEntry(date: Date(), configuration: configuration)
 
     // Update at midnight
-    let calendar = Calendar.current
-    let tomorrow = calendar.startOfDay(
+    let calendar: Calendar = Calendar.current
+    let tomorrow: Date = calendar.startOfDay(
       for: calendar.date(byAdding: .day, value: 1, to: Date()) ?? Date())
 
-    return Timeline(entries: [entry], policy: .after(tomorrow))
+    return Timeline(entries: [entry], policy: .never)
   }
 }
 
@@ -58,34 +58,6 @@ struct HorizontalCalendarGrid: View {
     default:
       self.dotSize = 4.0
     }
-  }
-
-  private func handleQuickAdd() {
-    guard let calendar = calendar else { return }
-
-    // Get the date for the previous day (today is not yet available)
-    let today = store.dateForDay(store.currentDayNumber - 1)
-    var newEntry = CalendarEntry(date: today, count: 1, completed: true)  // Default entry
-
-    // Check if an entry already exists for today
-    if let existingEntry = calendarStore.getEntry(calendarId: calendar.id, date: today) {
-      // If the tracking type is counter or multipleDaily, increment the count
-      if calendar.trackingType == .counter || calendar.trackingType == .multipleDaily {
-        newEntry = CalendarEntry(
-          date: today,
-          count: existingEntry.count + 1,
-          completed: existingEntry.completed
-        )
-      } else {
-        // If it's binary, toggle the completed state
-        newEntry = CalendarEntry(
-          date: today,
-          count: 1,
-          completed: !existingEntry.completed
-        )
-      }
-    }
-    calendarStore.addEntry(calendarId: calendar.id, entry: newEntry)
   }
 
   private func colorForDay(_ day: Int) -> Color {
@@ -124,9 +96,6 @@ struct HorizontalCalendarGrid: View {
               .font(.system(size: 12))
               .foregroundColor(Color("text-primary"))
               .fontWeight(.bold)
-            Circle()
-              .fill(Color(calendar.color))
-              .frame(width: 8, height: 8)
           }
         }
 
@@ -142,15 +111,22 @@ struct HorizontalCalendarGrid: View {
             }
           }.count
 
-          HStack(spacing: 8) {
-            Text("\(activeDays) days")
-              .font(.system(size: 12))
-              .foregroundColor(Color("text-primary"))
-              .fontWeight(.bold)
+          HStack(spacing: 4) {
+            let today = Date()
+            let formattedToday = customDateFormatter(date: today)
 
-            let today = store.dateForDay(store.currentDayNumber - 1)
+            if calendar.trackingType != .binary || family != .systemSmall {
+              if let todayEntry = calendar.entries[formattedToday] {
+                TodaysCountView(count: todayEntry.count)
+              } else {
+                TodaysCountView(count: 0)
+              }
+            }
+
+            NumberOfDaysView(numberOfDays: activeDays)
+
             if #available(iOS 17.0, *) {
-              Button(intent: QuickAddIntent(calendarId: calendar.id.uuidString)) {
+              Button(intent: HabitQuickAddIntent(calendarId: calendar.id.uuidString)) {
                 ZStack {
                   RoundedRectangle(cornerRadius: 4)
                     .fill(Color(calendar.color).opacity(0.1))
@@ -193,20 +169,24 @@ struct HorizontalCalendarGrid: View {
       }
 
       GeometryReader { geometry in
-        let aspectRatio = geometry.size.width / geometry.size.height
-        let targetColumns = Int(sqrt(Double(365) * aspectRatio))
-        let columns = min(targetColumns, 365)
-        let rows = Int(ceil(Double(365) / Double(columns)))
+        let aspectRatio = geometry.size.height / geometry.size.width
+        let targetRows = Int(sqrt(Double(365) * aspectRatio))
+        let rows = min(targetRows, 365)
+        let columns = Int(ceil(Double(365) / Double(rows)))
 
-        let horizontalSpacing =
-          (geometry.size.width - (dotSize * CGFloat(columns))) / CGFloat(columns - 1)
-        let verticalSpacing = (geometry.size.height - (dotSize * CGFloat(rows))) / CGFloat(rows - 1)
+        // Calculate a single spacing value that works for both directions
+        let horizontalTotalSpace = geometry.size.width - (dotSize * CGFloat(columns))
+        let verticalTotalSpace = geometry.size.height - (dotSize * CGFloat(rows))
+        let spacing = min(
+          horizontalTotalSpace / CGFloat(columns - 1),
+          verticalTotalSpace / CGFloat(rows - 1)
+        )
 
-        VStack(spacing: verticalSpacing) {
-          ForEach(0..<rows, id: \.self) { row in
-            HStack(spacing: horizontalSpacing) {
-              ForEach(0..<columns, id: \.self) { col in
-                let day = row * columns + col
+        HStack(spacing: spacing) {
+          ForEach(0..<columns, id: \.self) { column in
+            VStack(spacing: spacing) {
+              ForEach(0..<rows, id: \.self) { row in
+                let day = column * rows + row
                 if day < store.numberOfDaysInYear {
                   RoundedRectangle(cornerRadius: 1)
                     .fill(colorForDay(day))
@@ -226,13 +206,61 @@ struct HorizontalCalendarGrid: View {
   }
 }
 
+struct NumberOfDaysView: View {
+  let numberOfDays: Int
+  let label: String
+
+  init(numberOfDays: Int) {
+    self.numberOfDays = numberOfDays
+    self.label = numberOfDays == 1 ? "day" : "days"
+  }
+
+  var body: some View {
+    HStack {
+      Text("\(numberOfDays)")
+        .fontWeight(.bold)
+        + Text(" \(label)")
+        .foregroundColor(Color("text-tertiary"))
+    }
+    .foregroundColor(Color("text-primary"))
+    .font(.system(size: 9))
+  }
+}
+
+struct TodaysCountView: View {
+  let count: Int
+  let label: String
+
+  init(count: Int) {
+    self.count = count
+    self.label = count == 1 ? "time today" : "times today"
+  }
+
+  var body: some View {
+    HStack {
+      Text("\(count)")
+        .fontWeight(.bold)
+        + Text(" \(label)")
+        .foregroundColor(Color("text-tertiary"))
+    }
+    .lineLimit(1)
+    .foregroundColor(Color("text-primary"))
+    .font(.system(size: 9))
+  }
+}
+
 struct HabitsWidgetEntryView: View {
   var entry: Provider.Entry
   @Environment(\.widgetFamily) var family
   private let store = CustomCalendarStore.shared
 
+  init(entry: Provider.Entry) {
+    self.entry = entry
+    // store.loadCalendars()
+    dump(store.calendars)
+  }
+
   var selectedCalendar: CustomCalendar? {
-    store.loadCalendars()  // Load calendars when needed
     return store.calendars.first { calendar in
       calendar.id.uuidString == entry.configuration.selectedCalendar?.id
     }
@@ -270,20 +298,86 @@ struct HabitsWidget: Widget {
   }
 }
 
-#Preview(as: .systemSmall) {
-  HabitsWidget()
-} timeline: {
-  SimpleEntry(date: .now, configuration: .defaultCalendar)
-}
+// #Preview(as: .systemSmall) {
+//   HabitsWidget()
+// } timeline: {
+//   SimpleEntry(date: .now, configuration: .defaultCalendar)
+// }
 
-#Preview(as: .systemMedium) {
-  HabitsWidget()
-} timeline: {
-  SimpleEntry(date: .now, configuration: .defaultCalendar)
-}
+// #Preview(as: .systemMedium) {
+//   HabitsWidget()
+// } timeline: {
+//   SimpleEntry(date: .now, configuration: .defaultCalendar)
+// }
 
-#Preview(as: .systemLarge) {
-  HabitsWidget()
-} timeline: {
-  SimpleEntry(date: .now, configuration: .defaultCalendar)
+// #Preview(as: .systemLarge) {
+//   HabitsWidget()
+// } timeline: {
+//   SimpleEntry(date: .now, configuration: .defaultCalendar)
+// }
+
+struct HabitQuickAddIntent: SetValueIntent {
+  static let title: LocalizedStringResource = "Quick Add Habit Entry"
+
+  @Parameter(title: "Calendar ID")
+  var calendarId: String
+
+  @Parameter(title: "Habit is completed")
+  var value: Bool
+
+  init() {
+    self.calendarId = ""
+    self.value = false
+  }
+
+  init(calendarId: String) {
+    self.calendarId = calendarId
+    self.value = false
+  }
+
+  func perform() async throws -> some IntentResult {
+    let store = CustomCalendarStore.shared
+    let valStore = ValuationStore.shared
+
+    guard let calendar = store.calendars.first(where: { $0.id.uuidString == calendarId }) else {
+      return .result()
+    }
+
+    let today: Date = Date()
+    var newEntry: CalendarEntry
+
+    if let existingEntry = store.getEntry(calendarId: calendar.id, date: today) {
+      if calendar.trackingType == .counter || calendar.trackingType == .multipleDaily {
+        newEntry = CalendarEntry(
+          date: today,
+          count: existingEntry.count + 1,
+          completed: false
+        )
+      } else {
+        newEntry = CalendarEntry(
+          date: today,
+          count: 1,
+          completed: !existingEntry.completed
+        )
+      }
+    } else {
+      // Handle case when there's no existing entry
+      newEntry = CalendarEntry(
+        date: today,
+        count: 1,
+        completed: calendar.trackingType == .binary  // true for binary, false for others
+      )
+    }
+
+    do {
+      try store.addEntry(calendarId: calendar.id, entry: newEntry)
+      // Only reload the HabitsWidget
+      WidgetCenter.shared.reloadTimelines(ofKind: "HabitsWidget")
+    } catch {
+      print("Error adding entry: \(error) \(newEntry)")
+      return .result()
+    }
+
+    return .result()
+  }
 }

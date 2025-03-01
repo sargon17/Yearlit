@@ -100,50 +100,50 @@ extension ConfigurationAppIntent {
   }
 }
 
-public struct QuickAddIntent: AppIntent {
-  public static var title: LocalizedStringResource = "Quick Add Entry"
-  public static var description = IntentDescription("Quickly add an entry to your habit tracker")
+// public struct QuickAddIntent: AppIntent, SetValueIntent {
+//   public static var title: LocalizedStringResource = "Quick Add Entry"
+//   public static var description = IntentDescription("Quickly add an entry to your habit tracker")
 
-  @Parameter(title: "Calendar ID")
-  public var calendarId: String
+//   @Parameter(title: "Calendar ID")
+//   public var calendarId: String
 
-  public init() {
-    self.calendarId = ""
-  }
+//   public init() {
+//     self.calendarId = ""
+//   }
 
-  public init(calendarId: String) {
-    self.calendarId = calendarId
-  }
+//   public init(calendarId: String) {
+//     self.calendarId = calendarId
+//   }
 
-  public func perform() async throws -> some IntentResult & ReturnsValue<Bool> {
-    let store = CustomCalendarStore.shared
-    let valStore = ValuationStore.shared
+//   public func perform() async throws -> some IntentResult & ReturnsValue<Bool> {
+//     let store = CustomCalendarStore.shared
+//     let valStore = ValuationStore.shared
 
-    guard let calendar = store.calendars.first(where: { $0.id.uuidString == calendarId }) else {
-      return .result(value: false)
-    }
+//     guard let calendar = store.calendars.first(where: { $0.id.uuidString == calendarId }) else {
+//       return .result(value: false)
+//     }
 
-    let today = valStore.dateForDay(valStore.currentDayNumber - 1)
-    var newEntry = CalendarEntry(date: today, count: 1, completed: true)
+//     let today = valStore.dateForDay(valStore.currentDayNumber - 1)
+//     var newEntry = CalendarEntry(date: today, count: 1, completed: true)
 
-    if let existingEntry = store.getEntry(calendarId: calendar.id, date: today) {
-      if calendar.trackingType == .counter || calendar.trackingType == .multipleDaily {
-        newEntry = CalendarEntry(
-          date: today,
-          count: existingEntry.count + 1,
-          completed: existingEntry.completed
-        )
-      } else {
-        newEntry = CalendarEntry(
-          date: today,
-          count: 1,
-          completed: !existingEntry.completed
-        )
-      }
-    }
+//     if let existingEntry = store.getEntry(calendarId: calendar.id, date: today) {
+//       if calendar.trackingType == .counter || calendar.trackingType == .multipleDaily {
+//         newEntry = CalendarEntry(
+//           date: today,
+//           count: existingEntry.count + 1,
+//           completed: existingEntry.completed
+//         )
+//       } else {
+//         newEntry = CalendarEntry(
+//           date: today,
+//           count: 1,
+//           completed: !existingEntry.completed
+//         )
+//       }
+//     }
 
-    store.addEntry(calendarId: calendar.id, entry: newEntry)
-    WidgetCenter.shared.reloadTimelines(ofKind: "HabitsWidget")
-    return .result(value: true)
-  }
-}
+//     store.addEntry(calendarId: calendar.id, entry: newEntry)
+//     WidgetCenter.shared.reloadTimelines(ofKind: "HabitsWidget")
+//     return .result(value: true)
+//   }
+// }

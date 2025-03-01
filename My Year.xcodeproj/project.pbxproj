@@ -125,6 +125,7 @@
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				Assets.xcassets,
+				Utils/Date.swift,
 			);
 			target = 7867EFF22D6B6CBD00A459CE /* HabitsWidgetExtension */;
 		};

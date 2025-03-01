@@ -11,22 +11,18 @@ import SwiftUI
 import WidgetKit
 
 struct HabitsWidgetControl: ControlWidget {
-  static let kind: String = "sargon17.My-Year.HabitsWidget"
+  static let kind: String = "HabitsWidgetControl"
 
   var body: some ControlWidgetConfiguration {
     AppIntentControlConfiguration(
       kind: Self.kind,
       provider: Provider()
     ) { value in
-      ControlWidgetToggle(
+      ControlWidgetButton(
         "Quick Add",
-        isOn: value.isCompleted,
         action: HabitQuickAddIntent(calendarId: value.calendarId)
-      ) { isCompleted in
-        Label(
-          isCompleted ? "Completed" : "Add",
-          systemImage: isCompleted ? "checkmark.circle.fill" : "plus.circle"
-        )
+      ) { _ in
+        Label("Quick Add", systemImage: "plus.circle")
       }
     }
     .displayName("Habit Quick Add")
@@ -72,54 +68,63 @@ struct HabitConfiguration: ControlConfigurationIntent {
   var calendarId: String
 }
 
-struct HabitQuickAddIntent: SetValueIntent {
-  static let title: LocalizedStringResource = "Quick Add Habit Entry"
+// struct HabitQuickAddIntent: SetValueIntent {
+//   static let title: LocalizedStringResource = "Quick Add Habit Entry"
 
-  @Parameter(title: "Calendar ID")
-  var calendarId: String
+//   @Parameter(title: "Calendar ID")
+//   var calendarId: String
 
-  @Parameter(title: "Habit is completed")
-  var value: Bool
+//   @Parameter(title: "Habit is completed")
+//   var value: Bool
 
-  init() {
-    self.calendarId = ""
-    self.value = false
-  }
+//   init() {
+//     self.calendarId = ""
+//     self.value = false
+//   }
 
-  init(calendarId: String) {
-    self.calendarId = calendarId
-    self.value = false
-  }
+//   init(calendarId: String) {
+//     self.calendarId = calendarId
+//     self.value = false
+//   }
 
-  func perform() async throws -> some IntentResult {
-    let store = CustomCalendarStore.shared
-    let valStore = ValuationStore.shared
+//   func perform() async throws -> some IntentResult {
+//     let store = CustomCalendarStore.shared
+//     let valStore = ValuationStore.shared
 
-    guard let calendar = store.calendars.first(where: { $0.id.uuidString == calendarId }) else {
-      return .result()
-    }
+//     guard let calendar = store.calendars.first(where: { $0.id.uuidString == calendarId }) else {
+//       return .result()
+//     }
 
-    let today = valStore.dateForDay(valStore.currentDayNumber - 1)
-    var newEntry = CalendarEntry(date: today, count: 1, completed: true)
+//     let today: Date = Date()
+//     var newEntry: CalendarEntry? = nil
 
-    if let existingEntry = store.getEntry(calendarId: calendar.id, date: today) {
-      if calendar.trackingType == .counter || calendar.trackingType == .multipleDaily {
-        newEntry = CalendarEntry(
-          date: today,
-          count: existingEntry.count + 1,
-          completed: existingEntry.completed
-        )
-      } else {
-        newEntry = CalendarEntry(
-          date: today,
-          count: 1,
-          completed: !existingEntry.completed
-        )
-      }
-    }
+//     if let existingEntry = store.getEntry(calendarId: calendar.id, date: today) {
+//       if calendar.trackingType == .counter || calendar.trackingType == .multipleDaily {
+//         newEntry = CalendarEntry(
+//           date: today,
+//           count: existingEntry.count + 1,
+//           completed: false
+//         )
+//       } else {
+//         newEntry = CalendarEntry(
+//           date: today,
+//           count: 1,
+//           completed: !existingEntry.completed
+//         )
+//       }
+//     }
 
-    store.addEntry(calendarId: calendar.id, entry: newEntry)
-    WidgetCenter.shared.reloadTimelines(ofKind: "HabitsWidget")
-    return .result()
-  }
-}
+//     do {
+//       if let newEntry = newEntry {
+//         try store.addEntry(calendarId: calendar.id, entry: newEntry)
+//       }
+//     } catch {
+//       print(
+//         "Error adding entry: \(error) \(newEntry ?? CalendarEntry(date: today, count: 1, completed: false))"
+//       )
+//       return .result()
+//     }
+
+//     return .result()
+//   }
+// }
