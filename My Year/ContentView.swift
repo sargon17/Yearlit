@@ -272,6 +272,7 @@ struct ContentView: View {
   @State private var showingOverview = false
   private let impactGenerator = UIImpactFeedbackGenerator(style: .light)
   @State private var dragStarted: Bool = false
+  @State private var isSettingsPresented = false
 
   var body: some View {
     NavigationView {
@@ -307,44 +308,61 @@ struct ContentView: View {
         .onTapGesture {
           showingCreateSheet = true
         }
+      }.overlay {
+        // Upper separator
+        VStack {
+          CustomSeparator()
+          Spacer()
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
       }
-      .gesture(
-        DragGesture()
-          .onChanged { value in
-            if !dragStarted {
-              dragStarted = true
-              impactGenerator.impactOccurred()
-            }
-          }
-          .onEnded { value in
-            impactGenerator.impactOccurred()
-            dragStarted = false
-            if value.translation.height < -100 {
-              showingOverview = true
-            }
-          }
-      )
-      .tabViewStyle(.page)
+      // .gesture(
+      //   DragGesture()
+      //     .onChanged { value in
+      //       if !dragStarted {
+      //         dragStarted = true
+      //         impactGenerator.impactOccurred()
+      //       }
+      //     }
+      //     .onEnded { value in
+      //       impactGenerator.impactOccurred()
+      //       dragStarted = false
+      //       if value.translation.height < -100 {
+      //         showingOverview = true
+      //       }
+      //     }
+      // )
+      .tabViewStyle(.page(indexDisplayMode: .never))
+      .ignoresSafeArea(edges: .bottom)
       .indexViewStyle(.page(backgroundDisplayMode: .never))
       .toolbar {
         ToolbarItem(placement: .navigationBarLeading) {
-          if customerInfo?.entitlements["premium"]?.isActive ?? false {
-            HStack(spacing: 4) {
-              Text("Yearlit").font(.headline).foregroundColor(Color("text-primary"))
+          HStack(spacing: 4) {
+            Text("Yearlit")
+              .font(.system(size: 12, design: .monospaced))
+              .foregroundColor(Color("text-tertiary"))
+
+            if customerInfo?.entitlements["premium"]?.isActive ?? false {
               Image(systemName: "checkmark.seal.fill")
                 .font(.caption)
                 .foregroundColor(Color("mood-excellent"))
                 .shadow(color: Color("mood-excellent").opacity(0.5), radius: 10)
             }
-          } else {
-            Text("Yearlit").font(.headline).foregroundColor(Color("text-primary"))
           }
         }
 
         ToolbarItem(placement: .navigationBarTrailing) {
-          Button(action: { showingOverview = true }) {
-            Image(systemName: "square.grid.2x2")
-              .foregroundColor(Color("text-primary"))
+          HStack(spacing: 4) {
+            Button(action: { isSettingsPresented = true }) {
+              Image(systemName: "gearshape")
+                .foregroundColor(Color("text-tertiary"))
+                .font(.system(size: 12))
+            }
+            Button(action: { showingOverview = true }) {
+              Image(systemName: "square.grid.2x2")
+                .font(.system(size: 12))
+                .foregroundColor(Color("text-tertiary"))
+            }
           }
         }
       }
@@ -368,6 +386,9 @@ struct ContentView: View {
     }
     .sheet(isPresented: $showingOverview) {
       CalendarOverviewSheet(store: store, selectedIndex: $selectedIndex)
+    }
+    .sheet(isPresented: $isSettingsPresented) {
+      SettingsView()
     }
   }
 }

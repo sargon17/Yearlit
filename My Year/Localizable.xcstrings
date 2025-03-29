@@ -7,6 +7,9 @@
     "%lld" : {
 
     },
+    "•" : {
+
+    },
     "Active" : {
 
     },
@@ -23,6 +26,9 @@
 
     },
     "Calendar Name" : {
+
+    },
+    "Calendar Statistics" : {
 
     },
     "Calendars" : {
@@ -153,7 +159,13 @@
     "Select Year" : {
 
     },
+    "Settings" : {
+
+    },
     "Skip" : {
+
+    },
+    "Statistics" : {
 
     },
     "Streaks" : {
