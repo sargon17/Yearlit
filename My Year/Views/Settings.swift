@@ -5,12 +5,25 @@ struct SettingsView: View {
 
   var body: some View {
     NavigationView { // Add NavigationView for title
-      VStack {
+      VStack(spacing: 0) {
+        HStack {
+          Text("Settings")
+          .font(.system(size: 32, design: .monospaced))
+          .fontWeight(.bold)
+          .foregroundColor(Color("text-primary"))
+          Spacer()
+        }
+        .padding(.horizontal)
+        .padding(.bottom, 8)
+
+        CustomSeparator()
+
         Form { // Use Form for settings layout
             Section(header: Text("Features")) {
                 Toggle("Enable Mood Tracking", isOn: $isMoodTrackingEnabled)
             }
-        }
+        }.font(.system(size: 12, design: .monospaced))
+        .foregroundColor(Color("text-secondary"))
 
         Spacer() // Push credits to the bottom
 
@@ -32,9 +45,8 @@ struct SettingsView: View {
         .font(.system(size: 9, design: .monospaced))
         .foregroundColor(Color("text-tertiary").opacity(0.5))
         .multilineTextAlignment(.center)
-        .padding(.bottom, 20) // Adjusted padding
       }
-      .navigationTitle("Settings") // Set the title
+        .padding(.vertical, 20)
     }
   }
 }
