@@ -298,7 +298,7 @@ struct CustomCalendarView: View {
       }
 
       }
-      .frame(height: UIScreen.main.bounds.height * 0.8)
+      .frame(height: UIScreen.main.bounds.height * 0.85)
 
 
       let stats = getStats()
@@ -323,6 +323,10 @@ struct CustomCalendarView: View {
       .padding(.bottom, 40)
 
     }.scrollIndicators(.hidden)
+    .refreshable {
+      store.loadCalendars()
+      WidgetCenter.shared.reloadAllTimelines()
+    }
     .sheet(isPresented: $showingEditSheet) {
       NavigationView {
         EditCalendarView(
@@ -381,7 +385,7 @@ struct CustomCalendarView: View {
           .frame(maxWidth: 1)
 
         Spacer()
-        
+
         Rectangle()
           .fill(Color("devider-top"))
           .frame(maxHeight: .infinity, alignment: .trailing)
