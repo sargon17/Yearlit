@@ -74,7 +74,7 @@ struct CreateCalendarView: View {
           .foregroundColor(Color("text-primary"))
           .fontWeight(.bold)
       }
-      .listRowBackground(Color("surface-primary"))
+      .listRowBackground(Color("surface-secondary"))
 
       Section {
         Picker("Tracking Type", selection: $trackingType) {
@@ -87,7 +87,7 @@ struct CreateCalendarView: View {
           Stepper("Daily Target: \(dailyTarget)", value: $dailyTarget, in: 1...10)
         }
       }
-      .listRowBackground(Color("surface-primary"))
+      .listRowBackground(Color("surface-secondary"))
 
       Section {
         Toggle("Recurring Reminder", isOn: $recurringReminderEnabled)
@@ -96,13 +96,13 @@ struct CreateCalendarView: View {
             "Reminder Time", selection: $reminderTime, displayedComponents: [.hourAndMinute])
         }
       }
-      .listRowBackground(Color("surface-primary"))
+      .listRowBackground(Color("surface-secondary"))
 
       Section {
-          ScrollView(.horizontal, showsIndicators: false) {
-        HStack {
-          ForEach(colors, id: \.self) { color in
-            Circle()
+        ScrollView(.horizontal, showsIndicators: false) {
+          HStack {
+            ForEach(colors, id: \.self) { color in
+              Circle()
               .fill(Color(color))
               .frame(width: 30, height: 30)
               .overlay(
@@ -113,12 +113,13 @@ struct CreateCalendarView: View {
                 selectedColor = color
                 }
               }
-            }
-          }
+            }.padding(2)
+            .padding(.horizontal, 10)
+          }.padding(.horizontal, -20)
         } header: {
           Text("Color")
         }
-      .listRowBackground(Color("surface-primary"))
+      .listRowBackground(Color("surface-secondary"))
     }
     .scrollContentBackground(.hidden)
     .background(Color("surface-muted"))

@@ -122,7 +122,22 @@ struct YearGrid: View {
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
                 .padding(.horizontal)
             }
-        }
+        }.overlay {
+            HStack {
+                Rectangle()
+                .fill(Color("devider-bottom"))
+                .frame(maxHeight: .infinity, alignment: .trailing)
+                .frame(maxWidth: 1)
+
+                Spacer()
+                
+                Rectangle()
+                    .fill(Color("devider-top"))
+                    .frame(maxHeight: .infinity, alignment: .trailing)
+                    .frame(maxWidth: 1)
+                
+                }
+      }.ignoresSafeArea(edges: .bottom)
         .onAppear {
             checkTodayValuation()
             dayTypesQuantity = updateDayTypesQuantity(store: store)
