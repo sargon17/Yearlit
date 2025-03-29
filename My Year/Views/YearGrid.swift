@@ -15,6 +15,7 @@ private let logger = Logger(subsystem: "com.sargon17.My-Year", category: "Views"
 
 struct YearGrid: View {
     let store = ValuationStore.shared
+    @AppStorage("isMoodTrackingEnabled") var isMoodTrackingEnabled: Bool = true
 
     @State private var valuationPopup: (isPresented: Bool, date: Date)?
     @State private var dayTypesQuantity: [DayMoodType: Int] = [:]
@@ -34,6 +35,7 @@ struct YearGrid: View {
     }
     
     private func handleDayTap(_ day: Int) {
+        guard isMoodTrackingEnabled else { return }
         let date = store.dateForDay(day)
         if day < store.currentDayNumber && store.getValuation(for: date) == nil {
             valuationPopup = (true, date)
@@ -41,6 +43,7 @@ struct YearGrid: View {
     }
     
     private func checkTodayValuation() {
+        guard isMoodTrackingEnabled else { return }
         let today = Date()
         if store.getValuation(for: today) == nil {
             valuationPopup = (true, today)
@@ -149,7 +152,7 @@ struct YearGrid: View {
             get: { valuationPopup?.isPresented ?? false },
             set: { if !$0 { valuationPopup = nil } }
         )) {
-            if let date = valuationPopup?.date {
+            if let date = valuationPopup?.date, isMoodTrackingEnabled {
                 DayValuationPopup(date: date)
             }
         }
