@@ -22,6 +22,19 @@ struct CalendarOverviewSheet: View {
 
   var body: some View {
     NavigationView {
+      VStack(spacing: 0) {
+        HStack {
+          Text("Calendars")
+            .font(.system(size: 32, design: .monospaced))
+            .fontWeight(.bold)
+            .foregroundColor(Color("text-primary"))
+
+          Spacer()
+        }
+        .padding(.horizontal)
+        .padding(.bottom, 8)
+
+      CustomSeparator()
       ScrollView {
         LazyVGrid(
           columns: [
@@ -32,12 +45,13 @@ struct CalendarOverviewSheet: View {
           // Year Grid Card
           VStack(alignment: .leading, spacing: 12) {
             HStack(alignment: .firstTextBaseline) {
-              Circle()
+              Rectangle()
                 .fill(Color("mood-excellent"))
                 .frame(width: 12, height: 12)
+                .cornerRadius(3)
 
               Text("Year")
-                .font(.system(size: 18))
+                .font(.system(size: 18, design: .monospaced))
                 .fontWeight(.bold)
                 .foregroundColor(Color("text-primary"))
                 .lineLimit(2)
@@ -48,7 +62,7 @@ struct CalendarOverviewSheet: View {
             Spacer()
 
             Text("Track your year mood")
-              .font(.system(size: 11))
+              .font(.system(size: 11, design: .monospaced))
               .foregroundColor(Color("text-tertiary"))
               .lineLimit(2)
               .minimumScaleFactor(0.5)
@@ -56,7 +70,7 @@ struct CalendarOverviewSheet: View {
           }
           .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
           .padding()
-          .background(Color("surface-primary"))
+          .background(Color("surface-secondary"))
           .cornerRadius(12)
           .aspectRatio(1.4, contentMode: .fit)
           .onTapGesture {
@@ -98,9 +112,8 @@ struct CalendarOverviewSheet: View {
         .padding()
         .animation(.spring(), value: store.calendars.map { $0.order })
       }
+      }
       .background(Color("surface-muted"))
-      .navigationTitle("Calendars")
-      .navigationBarTitleDisplayMode(.large)
       .toolbar {
         ToolbarItem(placement: .navigationBarTrailing) {
           Button(action: { isReorderActive.toggle() }) {
@@ -110,8 +123,8 @@ struct CalendarOverviewSheet: View {
               .foregroundColor(Color("text-tertiary"))
 
           }
+          }
         }
-      }
     }
     .sheet(isPresented: $showingAddCalendarSheet) {
       NavigationView {
@@ -206,12 +219,13 @@ struct CalendarOverviewSheetItem: View {
   var body: some View {
     VStack(alignment: .leading, spacing: 12) {
       HStack(alignment: .firstTextBaseline) {
-        Circle()
+        Rectangle()
           .fill(Color(calendar.color))
           .frame(width: 12, height: 12)
+          .cornerRadius(3)
 
         Text(calendar.name.capitalized)
-          .font(.system(size: 18))
+          .font(.system(size: 18, design: .monospaced))
           .fontWeight(.bold)
           .foregroundColor(Color("text-primary"))
           .lineLimit(2)
@@ -222,7 +236,7 @@ struct CalendarOverviewSheetItem: View {
       Spacer()
 
       Text(calendar.trackingType.description)
-        .font(.system(size: 11))
+        .font(.system(size: 11, design: .monospaced))
         .foregroundColor(Color("text-tertiary"))
         .lineLimit(2)
         .minimumScaleFactor(0.5)
@@ -230,7 +244,7 @@ struct CalendarOverviewSheetItem: View {
     }
     .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
     .padding()
-    .background(Color("surface-primary"))
+    .background(Color("surface-secondary"))
     .cornerRadius(12)
     .aspectRatio(1.4, contentMode: .fit)
     .modifier(
@@ -316,22 +330,6 @@ struct ContentView: View {
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
       }
-      // .gesture(
-      //   DragGesture()
-      //     .onChanged { value in
-      //       if !dragStarted {
-      //         dragStarted = true
-      //         impactGenerator.impactOccurred()
-      //       }
-      //     }
-      //     .onEnded { value in
-      //       impactGenerator.impactOccurred()
-      //       dragStarted = false
-      //       if value.translation.height < -100 {
-      //         showingOverview = true
-      //       }
-      //     }
-      // )
       .tabViewStyle(.page(indexDisplayMode: .never))
       .ignoresSafeArea(edges: .bottom)
       .indexViewStyle(.page(backgroundDisplayMode: .never))
