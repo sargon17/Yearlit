@@ -10,9 +10,6 @@
     "•" : {
 
     },
-    "Active" : {
-
-    },
     "Add Calendar" : {
 
     },
@@ -28,9 +25,6 @@
     "Calendar Name" : {
 
     },
-    "Calendar Statistics" : {
-
-    },
     "Calendars" : {
 
     },
@@ -41,9 +35,6 @@
 
     },
     "Completed" : {
-
-    },
-    "Count" : {
 
     },
     "Count: %lld" : {
@@ -62,16 +53,10 @@
     "Create" : {
 
     },
-    "Current" : {
-
-    },
     "Daily Target: %lld" : {
 
     },
     "Danger Zone" : {
-
-    },
-    "Days" : {
 
     },
     "Delete" : {
@@ -96,12 +81,6 @@
 
     },
     "Left: " : {
-
-    },
-    "Longest" : {
-
-    },
-    "Max" : {
 
     },
     "Multiple times (unlimited)" : {
@@ -166,12 +145,6 @@
 
     },
     "Statistics" : {
-
-    },
-    "Streaks" : {
-
-    },
-    "Total" : {
 
     },
     "Track your year mood" : {
