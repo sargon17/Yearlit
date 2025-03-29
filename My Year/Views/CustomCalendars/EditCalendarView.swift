@@ -46,9 +46,20 @@ struct EditCalendarView: View {
   private let colors = [
     "mood-terrible",
     "mood-bad",
+    "qs-amber",
     "mood-neutral",
+    "qs-lime",
     "mood-good",
+    "qs-emerald",
+    "qs-teal",
+    "qs-cyan",
+    "qs-sky",
+    "qs-blue",
+    "qs-indigo",
     "mood-excellent",
+    "qs-fuchsia",
+    "qs-pink",
+    "qs-rose",
   ]
 
   private func scheduleNotifications(for calendar: CustomCalendar) {
@@ -121,27 +132,31 @@ struct EditCalendarView: View {
           Stepper("Daily Target: \(dailyTarget)", value: $dailyTarget, in: 1...10)
         }
       }
-      .listRowBackground(Color("surface-primary"))
+      .listRowBackground(Color("surface-secondary"))
 
       Section {
-        HStack {
-          ForEach(colors, id: \.self) { color in
-            Circle()
-              .fill(Color(color))
-              .frame(width: 30, height: 30)
-              .overlay(
+        ScrollView(.horizontal, showsIndicators: false) {
+          HStack {
+              ForEach(colors, id: \.self) { color in
                 Circle()
-                  .stroke(Color.primary, lineWidth: selectedColor == color ? 2 : 0)
-              )
-              .onTapGesture {
-                selectedColor = color
+                  .fill(Color(color))
+                  .frame(width: 30, height: 30)
+                  .overlay(
+                    Circle()
+                      .stroke(Color.primary, lineWidth: selectedColor == color ? 2 : 0)
+                  )
+                  .onTapGesture {
+                    selectedColor = color
+                  }
               }
-          }
-        }
+            }.padding(2)
+            .padding(.horizontal, 10)
+          }.padding(.horizontal, -20)
       } header: {
         Text("Color")
       }
-      .listRowBackground(Color("surface-primary"))
+      .padding(0)
+      .listRowBackground(Color("surface-secondary"))
 
       Section {
         Toggle(
@@ -181,7 +196,7 @@ struct EditCalendarView: View {
             .foregroundColor(Color("text-tertiary"))
         }
       }
-      .listRowBackground(Color("surface-primary"))
+      .listRowBackground(Color("surface-secondary"))
 
       Section {
         Button(action: {

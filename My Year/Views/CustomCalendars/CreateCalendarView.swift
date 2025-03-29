@@ -22,9 +22,20 @@ struct CreateCalendarView: View {
   private let colors = [
     "mood-terrible",
     "mood-bad",
+    "qs-amber",
     "mood-neutral",
+    "qs-lime",
     "mood-good",
+    "qs-emerald",
+    "qs-teal",
+    "qs-cyan",
+    "qs-sky",
+    "qs-blue",
+    "qs-indigo",
     "mood-excellent",
+    "qs-fuchsia",
+    "qs-pink",
+    "qs-rose",
   ]
 
   func userCanCreateCalendar() -> Bool {
@@ -88,6 +99,7 @@ struct CreateCalendarView: View {
       .listRowBackground(Color("surface-primary"))
 
       Section {
+          ScrollView(.horizontal, showsIndicators: false) {
         HStack {
           ForEach(colors, id: \.self) { color in
             Circle()
@@ -99,12 +111,13 @@ struct CreateCalendarView: View {
               )
               .onTapGesture {
                 selectedColor = color
+                }
               }
+            }
           }
+        } header: {
+          Text("Color")
         }
-      } header: {
-        Text("Color")
-      }
       .listRowBackground(Color("surface-primary"))
     }
     .scrollContentBackground(.hidden)

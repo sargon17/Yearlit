@@ -376,16 +376,17 @@ struct CustomCalendarView: View {
     }.overlay {
       HStack {
         Rectangle()
-          .fill(Color("devider-top"))
+          .fill(Color("devider-bottom"))
           .frame(maxHeight: .infinity, alignment: .trailing)
           .frame(maxWidth: 1)
 
         Spacer()
         
         Rectangle()
-          .fill(Color("devider-bottom"))
+          .fill(Color("devider-top"))
           .frame(maxHeight: .infinity, alignment: .trailing)
           .frame(maxWidth: 1)
+        
         }
       }.ignoresSafeArea(edges: .bottom)
     .sheet(
