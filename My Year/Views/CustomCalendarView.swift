@@ -407,7 +407,7 @@ struct CustomCalendarView: View {
           .background(Color("surface-muted"))
         }
         .background(Color("surface-muted"))
-        .presentationDetents([.fraction(0.3)])
+        .presentationDetents([.fraction(0.5)])
       }
     }
     .alert(
@@ -440,11 +440,26 @@ struct CalendarEntryView: View {
   }
 
   var body: some View {
+    VStack(spacing: 0) {
+
+      HStack {
+        Text("Add Entry")
+        .font(.system(size: 32, design: .monospaced))
+        .foregroundColor(Color("text-secondary"))
+        .fontWeight(.bold)
+        Spacer()
+        
+      }
+      .padding(.horizontal)
+      .padding(.bottom, 8)
+      CustomSeparator()
+
     Form {
       Section {
         Text(formattedDate)
-          .font(.headline)
-      }.listRowBackground(Color("surface-primary"))
+          .font(.system(size: 12, design: .monospaced))
+          .foregroundColor(Color("text-secondary"))
+      }.listRowBackground(Color("surface-secondary"))
 
       Section {
         switch calendar.trackingType {
@@ -465,7 +480,6 @@ struct CalendarEntryView: View {
               }
             )
           )
-          .foregroundColor(Color("text-primary"))
           .tint(Color(calendar.color))
         case .counter:
           Stepper(
@@ -484,7 +498,6 @@ struct CalendarEntryView: View {
               }
             ), in: 0...99
           )
-          .foregroundColor(Color("text-primary"))
         case .multipleDaily:
           VStack(alignment: .leading, spacing: 8) {
             Stepper(
@@ -503,18 +516,18 @@ struct CalendarEntryView: View {
                 }
               ), in: 0...99
             )
-            .foregroundColor(Color("text-primary"))
 
             ProgressView(value: Double(count), total: Double(calendar.dailyTarget))
               .tint(Color(calendar.color))
           }
         }
-      }.listRowBackground(Color("surface-primary"))
+      }.listRowBackground(Color("surface-secondary"))
     }
+    }
+    .font(.system(size: 12, design: .monospaced))
+    .foregroundColor(Color("text-secondary"))
     .scrollContentBackground(.hidden)
     .background(Color("surface-muted"))
-    .navigationTitle("Add Entry")
-    .navigationBarTitleDisplayMode(.large)
     .toolbar {
       ToolbarItem(placement: .confirmationAction) {
         Button("Done") {
