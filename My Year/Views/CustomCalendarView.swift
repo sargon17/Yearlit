@@ -303,7 +303,25 @@ struct CustomCalendarView: View {
 
       let stats = getStats()
       CalendarStatisticsView(stats: stats, accentColor: Color(calendar.color))
-      
+
+      VStack(spacing: 0) {
+        Text("Independently engineered. Lovingly crafted.")
+        Text("Thank you for your support!")
+
+        Spacer()
+        HStack(spacing: 4) {
+          Text("Mykhaylo Tymofyeyev")
+          Text("•")
+          Text("[@tymofyeyev_m](https://x.com/tymofyeyev_m)").foregroundColor(Color(calendar.color))
+        }
+        .foregroundColor(Color("text-tertiary"))
+
+      }.padding(.horizontal)
+      .font(.system(size: 9, design: .monospaced))
+      .foregroundColor(Color("text-tertiary").opacity(0.5))
+      .multilineTextAlignment(.center)
+      .padding(.bottom, 40)
+
     }.scrollIndicators(.hidden)
     .sheet(isPresented: $showingEditSheet) {
       NavigationView {
