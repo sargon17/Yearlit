@@ -19,6 +19,7 @@ struct CalendarOverviewSheet: View {
   @State private var isReorderActive = false
   @State private var showingAddCalendarSheet = false
 
+
   var body: some View {
     NavigationView {
       ScrollView {
@@ -267,7 +268,6 @@ struct ContentView: View {
   @State private var customerInfo: CustomerInfo?
   @ObservedObject private var store = CustomCalendarStore.shared
   @State private var showingCreateSheet = false
-  @State private var displayPaywall = false
   @State private var selectedIndex: Int = 0
   @State private var showingOverview = false
   private let impactGenerator = UIImpactFeedbackGenerator(style: .light)
@@ -305,7 +305,7 @@ struct ContentView: View {
         }
         .tag(store.calendars.count + 1)
         .onTapGesture {
-          handleAddCalendar()
+          showingCreateSheet = true
         }
       }
       .gesture(
@@ -359,7 +359,7 @@ struct ContentView: View {
       NavigationView {
         CreateCalendarView { newCalendar in
           store.addCalendar(newCalendar)
-          selectedIndex = store.calendars.count  // Switch to the newly added calendar
+          selectedIndex = store.calendars.count
           showingCreateSheet = false
         }
         .background(Color("surface-muted"))
@@ -368,17 +368,6 @@ struct ContentView: View {
     }
     .sheet(isPresented: $showingOverview) {
       CalendarOverviewSheet(store: store, selectedIndex: $selectedIndex)
-    }
-    .sheet(isPresented: $displayPaywall) {
-      PaywallView(displayCloseButton: true)
-    }
-  }
-
-  func handleAddCalendar() {
-    if customerInfo?.entitlements["premium"]?.isActive ?? false || store.calendars.count < 3 {
-      showingCreateSheet = true
-    } else {
-      displayPaywall = true
     }
   }
 }
