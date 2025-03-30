@@ -343,7 +343,7 @@ struct CustomCalendarView: View {
       .background(Color("surface-muted"))
     }
     .sheet(isPresented: $showingYearPicker) {
-      NavigationView {
+      NavigationStack {
         VStack {
           Picker("Select Year", selection: $tempSelectedYear) {
             ForEach(availableYears, id: \.self) { year in
@@ -400,7 +400,7 @@ struct CustomCalendarView: View {
       )
     ) {
       if let date = selectedDate.date {
-        NavigationView {
+        NavigationStack {
           CalendarEntryView(calendar: calendar, date: date) { entry in
             store.addEntry(calendarId: calendar.id, entry: entry)
           }

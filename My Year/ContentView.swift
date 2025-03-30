@@ -21,7 +21,7 @@ struct CalendarOverviewSheet: View {
 
 
   var body: some View {
-    NavigationView {
+    NavigationStack {
       VStack(spacing: 0) {
         HStack {
           Text("Calendars")
@@ -127,7 +127,7 @@ struct CalendarOverviewSheet: View {
         }
     }
     .sheet(isPresented: $showingAddCalendarSheet) {
-      NavigationView {
+      NavigationStack {
         CreateCalendarView { newCalendar in
           store.addCalendar(newCalendar)
           showingAddCalendarSheet = false
@@ -289,7 +289,7 @@ struct ContentView: View {
   @State private var isSettingsPresented = false
 
   var body: some View {
-    NavigationView {
+    NavigationStack {
       TabView(
         selection: $selectedIndex.onChange { _ in
           impactGenerator.impactOccurred()
@@ -372,7 +372,7 @@ struct ContentView: View {
       }
     }
     .sheet(isPresented: $showingCreateSheet) {
-      NavigationView {
+      NavigationStack {
         CreateCalendarView { newCalendar in
           store.addCalendar(newCalendar)
           selectedIndex = store.calendars.count
