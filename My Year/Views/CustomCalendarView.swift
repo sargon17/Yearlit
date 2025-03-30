@@ -42,6 +42,32 @@ struct CustomCalendarView: View {
     return Array((currentYear - 10)...currentYear).reversed()
   }()
 
+  private func fillRandomEntries() {
+    let calendar = Calendar.current
+    let startOfYear = calendar.date(from: DateComponents(year: valuationStore.selectedYear, month: 1, day: 1))!
+    
+    for day in 0..<valuationStore.currentDayNumber {
+      let date = calendar.date(byAdding: .day, value: day, to: startOfYear)!
+      let dateKey = customDateFormatter(date: date)
+      
+      if date <= today && store.getEntry(calendarId: self.calendar.id, date: date) == nil {
+        switch self.calendar.trackingType {
+        case .binary:
+          let entry = CalendarEntry(date: date, count: 1, completed: Bool.random())
+          store.addEntry(calendarId: self.calendar.id, entry: entry)
+        case .counter:
+          let count = Int.random(in: 0...5)
+          let entry = CalendarEntry(date: date, count: count, completed: count > 0)
+          store.addEntry(calendarId: self.calendar.id, entry: entry)
+        case .multipleDaily:
+          let count = Int.random(in: 0...self.calendar.dailyTarget)
+          let entry = CalendarEntry(date: date, count: count, completed: count >= self.calendar.dailyTarget)
+          store.addEntry(calendarId: self.calendar.id, entry: entry)
+        }
+      }
+    }
+  }
+
   private func getMaxCount() -> Int {
     let maxCount = calendar.entries.values.map { $0.count }.max() ?? 1
     return max(maxCount, 1)  // Ensure we don't divide by zero
@@ -199,6 +225,14 @@ struct CustomCalendarView: View {
               Spacer()
 
               let today = valuationStore.dateForDay(valuationStore.currentDayNumber - 1)
+
+              if My_YearApp.isDebugMode {
+                Button(action: fillRandomEntries) {
+                  Image(systemName: "wand.and.stars")
+                    .foregroundColor(Color(calendar.color))
+                }
+                .padding(.horizontal, 4)
+              }
 
               Button(action: {
                 handleQuickAdd()

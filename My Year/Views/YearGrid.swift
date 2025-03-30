@@ -49,9 +49,52 @@ struct YearGrid: View {
             valuationPopup = (true, today)
         }
     }
-    
+
+    private func fillRandomValuations() {
+        let calendar = Calendar.current
+        let today = Date()
+        let startOfYear = calendar.date(from: DateComponents(year: store.selectedYear, month: 1, day: 1))!
+        
+        for day in 0..<store.currentDayNumber {
+            let date = calendar.date(byAdding: .day, value: day, to: startOfYear)!
+            if date <= today && store.getValuation(for: date) == nil {
+                let randomMood = [DayMood.terrible, .bad, .neutral, .good, .excellent].randomElement()!
+                store.setValuation(randomMood, for: date)
+            }
+        }
+    }
+
     var body: some View {
-        VStack {
+        VStack(spacing: 0) {
+            HStack {
+                Text("\(store.year.description)")
+                    .font(.system(size: 32, design: .monospaced))
+                    .fontWeight(.bold)
+                    .foregroundColor(Color("text-primary"))
+                
+                if My_YearApp.isDebugMode {
+                    Button(action: fillRandomValuations) {
+                        Image(systemName: "wand.and.stars")
+                            .foregroundColor(Color("text-tertiary"))
+                    }
+                    .padding(.leading, 4)
+                }
+
+                Spacer()
+                
+                Text("Left: ")
+                    .font(.system(size: 14))
+                    .fontWeight(.regular)
+                + Text("\(store.numberOfDaysInYear - store.currentDayNumber)")
+                    .font(.system(size: 20))
+                    .foregroundColor(Color("text-primary"))
+                    .fontWeight(.black)
+            }
+            .foregroundColor(Color("text-primary").opacity(0.5))
+            .fontWeight(.regular)
+            .padding(.horizontal)
+            .padding(.bottom, 8)
+            
             VStack(spacing: 10) {
             HStack(alignment: .center, spacing: 6) {
                 Text(Calendar.current.component(.year, from: Date()).description)
