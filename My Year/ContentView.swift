@@ -17,9 +17,24 @@ struct CalendarOverviewSheet: View {
   @Binding var selectedIndex: Int
   @Environment(\.dismiss) private var dismiss
   @State private var isReorderActive = false
+  @State private var showingAddCalendarSheet = false
+
 
   var body: some View {
-    NavigationView {
+    NavigationStack {
+      VStack(spacing: 0) {
+        HStack {
+          Text("Calendars")
+            .font(.system(size: 32, design: .monospaced))
+            .fontWeight(.bold)
+            .foregroundColor(Color("text-primary"))
+
+          Spacer()
+        }
+        .padding(.horizontal)
+        .padding(.bottom, 8)
+
+      CustomSeparator()
       ScrollView {
         LazyVGrid(
           columns: [
@@ -30,12 +45,13 @@ struct CalendarOverviewSheet: View {
           // Year Grid Card
           VStack(alignment: .leading, spacing: 12) {
             HStack(alignment: .firstTextBaseline) {
-              Circle()
+              Rectangle()
                 .fill(Color("mood-excellent"))
                 .frame(width: 12, height: 12)
+                .cornerRadius(3)
 
               Text("Year")
-                .font(.system(size: 18))
+                .font(.system(size: 18, design: .monospaced))
                 .fontWeight(.bold)
                 .foregroundColor(Color("text-primary"))
                 .lineLimit(2)
@@ -46,7 +62,7 @@ struct CalendarOverviewSheet: View {
             Spacer()
 
             Text("Track your year mood")
-              .font(.system(size: 11))
+              .font(.system(size: 11, design: .monospaced))
               .foregroundColor(Color("text-tertiary"))
               .lineLimit(2)
               .minimumScaleFactor(0.5)
@@ -54,7 +70,7 @@ struct CalendarOverviewSheet: View {
           }
           .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
           .padding()
-          .background(Color("surface-primary"))
+          .background(Color("surface-secondary"))
           .cornerRadius(12)
           .aspectRatio(1.4, contentMode: .fit)
           .onTapGesture {
@@ -75,13 +91,29 @@ struct CalendarOverviewSheet: View {
               dismiss()
             }
           }
+
+          // Add Calendar Button
+          VStack {
+            Spacer()
+            VStack(spacing: 16) {
+              Image(systemName: "plus")
+                .font(.system(size: 42))
+                .foregroundStyle(Color("text-secondary"))
+              Text("Add Calendar")
+                .font(.headline)
+                .foregroundColor(Color("text-primary"))
+            }
+            Spacer()
+          }
+          .onTapGesture {
+            showingAddCalendarSheet = true
+          }
         }
         .padding()
         .animation(.spring(), value: store.calendars.map { $0.order })
       }
+      }
       .background(Color("surface-muted"))
-      .navigationTitle("Calendars")
-      .navigationBarTitleDisplayMode(.large)
       .toolbar {
         ToolbarItem(placement: .navigationBarTrailing) {
           Button(action: { isReorderActive.toggle() }) {
@@ -91,7 +123,16 @@ struct CalendarOverviewSheet: View {
               .foregroundColor(Color("text-tertiary"))
 
           }
+          }
         }
+    }
+    .sheet(isPresented: $showingAddCalendarSheet) {
+      NavigationStack {
+        CreateCalendarView { newCalendar in
+          store.addCalendar(newCalendar)
+          showingAddCalendarSheet = false
+        }
+        .background(Color("surface-muted"))
       }
     }
   }
@@ -178,12 +219,13 @@ struct CalendarOverviewSheetItem: View {
   var body: some View {
     VStack(alignment: .leading, spacing: 12) {
       HStack(alignment: .firstTextBaseline) {
-        Circle()
+        Rectangle()
           .fill(Color(calendar.color))
           .frame(width: 12, height: 12)
+          .cornerRadius(3)
 
         Text(calendar.name.capitalized)
-          .font(.system(size: 18))
+          .font(.system(size: 18, design: .monospaced))
           .fontWeight(.bold)
           .foregroundColor(Color("text-primary"))
           .lineLimit(2)
@@ -194,7 +236,7 @@ struct CalendarOverviewSheetItem: View {
       Spacer()
 
       Text(calendar.trackingType.description)
-        .font(.system(size: 11))
+        .font(.system(size: 11, design: .monospaced))
         .foregroundColor(Color("text-tertiary"))
         .lineLimit(2)
         .minimumScaleFactor(0.5)
@@ -202,7 +244,7 @@ struct CalendarOverviewSheetItem: View {
     }
     .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
     .padding()
-    .background(Color("surface-primary"))
+    .background(Color("surface-secondary"))
     .cornerRadius(12)
     .aspectRatio(1.4, contentMode: .fit)
     .modifier(
@@ -224,7 +266,12 @@ struct CalendarOverviewSheetItem: View {
           calendar: calendar,
           onSave: { _ in
             showEditSheet = false
-          })
+          },
+          onDelete: { _ in
+            showEditSheet = false
+            store.deleteCalendar(id: calendar.id)
+          }
+        )
       }
       .background(Color("surface-muted"))
     }
@@ -235,14 +282,14 @@ struct ContentView: View {
   @State private var customerInfo: CustomerInfo?
   @ObservedObject private var store = CustomCalendarStore.shared
   @State private var showingCreateSheet = false
-  @State private var displayPaywall = false
   @State private var selectedIndex: Int = 0
   @State private var showingOverview = false
   private let impactGenerator = UIImpactFeedbackGenerator(style: .light)
   @State private var dragStarted: Bool = false
+  @State private var isSettingsPresented = false
 
   var body: some View {
-    NavigationView {
+    NavigationStack {
       TabView(
         selection: $selectedIndex.onChange { _ in
           impactGenerator.impactOccurred()
@@ -273,46 +320,47 @@ struct ContentView: View {
         }
         .tag(store.calendars.count + 1)
         .onTapGesture {
-          handleAddCalendar()
+          showingCreateSheet = true
         }
+      }.overlay {
+        // Upper separator
+        VStack {
+          CustomSeparator()
+          Spacer()
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
       }
-      .gesture(
-        DragGesture()
-          .onChanged { value in
-            if !dragStarted {
-              dragStarted = true
-              impactGenerator.impactOccurred()
-            }
-          }
-          .onEnded { value in
-            impactGenerator.impactOccurred()
-            dragStarted = false
-            if value.translation.height < -100 {
-              showingOverview = true
-            }
-          }
-      )
-      .tabViewStyle(.page)
+      .tabViewStyle(.page(indexDisplayMode: .never))
+      .ignoresSafeArea(edges: .bottom)
       .indexViewStyle(.page(backgroundDisplayMode: .never))
       .toolbar {
         ToolbarItem(placement: .navigationBarLeading) {
-          if customerInfo?.entitlements["premium"]?.isActive ?? false {
-            HStack(spacing: 4) {
-              Text("Yearlit").font(.headline).foregroundColor(Color("text-primary"))
+          HStack(spacing: 4) {
+            Text("Yearlit")
+              .font(.system(size: 12, design: .monospaced))
+              .foregroundColor(Color("text-tertiary"))
+
+            if customerInfo?.entitlements["premium"]?.isActive ?? false {
               Image(systemName: "checkmark.seal.fill")
                 .font(.caption)
                 .foregroundColor(Color("mood-excellent"))
                 .shadow(color: Color("mood-excellent").opacity(0.5), radius: 10)
             }
-          } else {
-            Text("Yearlit").font(.headline).foregroundColor(Color("text-primary"))
           }
         }
 
         ToolbarItem(placement: .navigationBarTrailing) {
-          Button(action: { showingOverview = true }) {
-            Image(systemName: "square.grid.2x2")
-              .foregroundColor(Color("text-primary"))
+          HStack(spacing: 4) {
+            Button(action: { isSettingsPresented = true }) {
+              Image(systemName: "gearshape")
+                .foregroundColor(Color("text-tertiary"))
+                .font(.system(size: 12))
+            }
+            Button(action: { showingOverview = true }) {
+              Image(systemName: "square.grid.2x2")
+                .font(.system(size: 12))
+                .foregroundColor(Color("text-tertiary"))
+            }
           }
         }
       }
@@ -324,10 +372,10 @@ struct ContentView: View {
       }
     }
     .sheet(isPresented: $showingCreateSheet) {
-      NavigationView {
+      NavigationStack {
         CreateCalendarView { newCalendar in
           store.addCalendar(newCalendar)
-          selectedIndex = store.calendars.count  // Switch to the newly added calendar
+          selectedIndex = store.calendars.count
           showingCreateSheet = false
         }
         .background(Color("surface-muted"))
@@ -337,16 +385,8 @@ struct ContentView: View {
     .sheet(isPresented: $showingOverview) {
       CalendarOverviewSheet(store: store, selectedIndex: $selectedIndex)
     }
-    .sheet(isPresented: $displayPaywall) {
-      PaywallView(displayCloseButton: true)
-    }
-  }
-
-  func handleAddCalendar() {
-    if customerInfo?.entitlements["premium"]?.isActive ?? false || store.calendars.count < 3 {
-      showingCreateSheet = true
-    } else {
-      displayPaywall = true
+    .sheet(isPresented: $isSettingsPresented) {
+      SettingsView()
     }
   }
 }

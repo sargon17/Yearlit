@@ -11,6 +11,12 @@ import RevenueCat
 
 @main
 struct My_YearApp: App {
+    #if DEBUG
+    public static let isDebugMode = true
+    #else
+    public static let isDebugMode = false
+    #endif
+
     init() {
          Purchases.configure(withAPIKey: "appl_rQKHOkYUqJKaipHpcSXlIpPgvPe")
         

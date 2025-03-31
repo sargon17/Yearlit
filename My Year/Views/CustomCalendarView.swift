@@ -1,6 +1,7 @@
 import SharedModels
 import SwiftUI
 import UserNotifications
+import WidgetKit
 
 enum SelectedDate: Equatable {
   case none
@@ -41,6 +42,32 @@ struct CustomCalendarView: View {
     return Array((currentYear - 10)...currentYear).reversed()
   }()
 
+  private func fillRandomEntries() {
+    let calendar = Calendar.current
+    let startOfYear = calendar.date(from: DateComponents(year: valuationStore.selectedYear, month: 1, day: 1))!
+    
+    for day in 0..<valuationStore.currentDayNumber {
+      let date = calendar.date(byAdding: .day, value: day, to: startOfYear)!
+      let dateKey = customDateFormatter(date: date)
+      
+      if date <= today && store.getEntry(calendarId: self.calendar.id, date: date) == nil {
+        switch self.calendar.trackingType {
+        case .binary:
+          let entry = CalendarEntry(date: date, count: 1, completed: Bool.random())
+          store.addEntry(calendarId: self.calendar.id, entry: entry)
+        case .counter:
+          let count = Int.random(in: 0...5)
+          let entry = CalendarEntry(date: date, count: count, completed: count > 0)
+          store.addEntry(calendarId: self.calendar.id, entry: entry)
+        case .multipleDaily:
+          let count = Int.random(in: 0...self.calendar.dailyTarget)
+          let entry = CalendarEntry(date: date, count: count, completed: count >= self.calendar.dailyTarget)
+          store.addEntry(calendarId: self.calendar.id, entry: entry)
+        }
+      }
+    }
+  }
+
   private func getMaxCount() -> Int {
     let maxCount = calendar.entries.values.map { $0.count }.max() ?? 1
     return max(maxCount, 1)  // Ensure we don't divide by zero
@@ -76,13 +103,7 @@ struct CustomCalendarView: View {
     }
   }
 
-  private func getStats() -> (
-    activeDays: Int,
-    totalCount: Int,
-    maxCount: Int,
-    longestStreak: Int,
-    currentStreak: Int
-  ) {
+  private func getStats() -> CalendarStats {
     let activeDays = calendar.entries.values.filter { entry in
       switch calendar.trackingType {
       case .binary:
@@ -144,7 +165,7 @@ struct CustomCalendarView: View {
       }
       return false
     }
-    return (activeDays, totalCount, maxCount, longestStreak, currentStreak)
+    return CalendarStats(activeDays: activeDays, totalCount: totalCount, maxCount: maxCount, longestStreak: longestStreak, currentStreak: currentStreak)
   }
 
   private func handleQuickAdd() {
@@ -172,7 +193,7 @@ struct CustomCalendarView: View {
         }
       }
       store.addEntry(calendarId: calendar.id, entry: newEntry)
-
+      WidgetCenter.shared.reloadAllTimelines()
     } catch {
       calendarError = .errorAddingEntry(error)
     }
@@ -184,14 +205,15 @@ struct CustomCalendarView: View {
   }
 
   var body: some View {
-    VStack {
-      // Stats header
+    ScrollView {
       VStack(spacing: 10) {
-        HStack(alignment: .center, spacing: 6) {
+        // Stats header    
+        VStack(spacing: 10) {
+          HStack(alignment: .center, spacing: 6) {
           VStack(alignment: .leading, spacing: 0) {
             HStack(alignment: .firstTextBaseline, spacing: 8) {
               Text(calendar.name.capitalized)
-                .font(.system(size: 38))
+                .font(.system(size: 36, design: .monospaced))
                 .lineLimit(2)
                 .minimumScaleFactor(0.5)
                 .foregroundColor(Color("text-primary"))
@@ -199,34 +221,26 @@ struct CustomCalendarView: View {
                 .onTapGesture {
                   showingEditSheet = true
                 }
-
-              if calendar.recurringReminderEnabled, let hour = calendar.reminderHour,
-                let minute = calendar.reminderMinute
-              {
-                HStack(alignment: .center, spacing: 4) {
-                  let reminderTime = String(format: "%02d:%02d", hour, minute)
-                  Image(systemName: "bell.fill")
-                    .font(.system(size: 12))
-                    .foregroundColor(Color("text-tertiary").opacity(0.5))
-                  Text(reminderTime)
-                    .font(.system(size: 12))
-                    .foregroundColor(Color("text-tertiary").opacity(0.5))
-                }.onTapGesture {
-                  showingEditSheet = true
-                }
-              }
-
+                .padding(.top)
               Spacer()
 
               let today = valuationStore.dateForDay(valuationStore.currentDayNumber - 1)
+
+              if My_YearApp.isDebugMode {
+                Button(action: fillRandomEntries) {
+                  Image(systemName: "wand.and.stars")
+                    .foregroundColor(Color(calendar.color))
+                }
+                .padding(.horizontal, 4)
+              }
 
               Button(action: {
                 handleQuickAdd()
               }) {
                 ZStack {
-                  RoundedRectangle(cornerRadius: 4)
+                  RoundedRectangle(cornerRadius: 3)
                     .fill(Color(calendar.color).opacity(0.1))
-                    .frame(width: 24, height: 24)
+                    .frame(width: 20, height: 20)
 
                   Image(
                     systemName: calendar.trackingType == .binary
@@ -241,122 +255,39 @@ struct CustomCalendarView: View {
 
             }
 
-            Button(action: { showingYearPicker = true }) {
-              Text("\(valuationStore.year.description)")
-                .font(.system(size: 16))
-                .foregroundColor(Color("text-tertiary"))
-                .fontWeight(.black)
-            }
-          }
-        }
-        .padding(.horizontal)
-
-        let stats = getStats()
-        HStack {
-
-          VStack {
-            VStack(alignment: .center, spacing: 4) {
-              Text("Days")
-                .font(.system(size: 10))
-                .foregroundColor(Color("text-tertiary"))
-
-              VStack(alignment: .center) {
-                Text("\(stats.activeDays)")
-                  .font(.system(size: 18))
-                  .foregroundColor(Color("text-secondary"))
-                  .fontWeight(.black)
-
-                Text("Active")
-                  .font(.system(size: 10))
-                  .foregroundColor(Color("text-tertiary").opacity(0.5))
-
-              }
-            }.padding(10)
-          }
-          .frame(maxWidth: .infinity)
-          .background(Color("surface-primary").opacity(0.5))
-          .cornerRadius(10)
-
-          Spacer()
-
-          if calendar.trackingType != .binary {
-
-            VStack {
-              VStack(alignment: .center, spacing: 4) {
-                Text("Count")
-                  .font(.system(size: 10))
+            HStack(spacing: 4) {
+              Button(action: { showingYearPicker = true }) {
+                Text("\(valuationStore.year.description)")
+                  .font(.system(size: 12, design: .monospaced))
                   .foregroundColor(Color("text-tertiary"))
+              }
 
-                HStack {
-                  VStack(alignment: .center) {
-                    Text("\(stats.totalCount)")
-                      .font(.system(size: 18))
-                      .foregroundColor(Color("text-secondary"))
-                      .fontWeight(.black)
 
-                    Text("Total")
-                      .font(.system(size: 10))
-                      .foregroundColor(Color("text-tertiary").opacity(0.5))
-                  }.frame(maxWidth: .infinity)
+              if calendar.recurringReminderEnabled, let hour = calendar.reminderHour,
+                let minute = calendar.reminderMinute
+              {
+                Text("•")
+                  .font(.system(size: 4, weight: .black, design: .monospaced))
+                  .foregroundColor(Color("text-tertiary"))
+                  .padding(.horizontal, 2)
 
-                  VStack(alignment: .center) {
-                    Text("\(stats.maxCount)")
-                      .font(.system(size: 18))
-                      .foregroundColor(Color("text-secondary"))
-                      .fontWeight(.black)
-
-                    Text("Max")
-                      .font(.system(size: 10))
-                      .foregroundColor(Color("text-tertiary").opacity(0.5))
-                  }.frame(maxWidth: .infinity)
-
+                HStack(alignment: .center, spacing: 4) {
+                  let reminderTime = String(format: "%02d:%02d", hour, minute)
+                  Image(systemName: "bell")
+                    .font(.system(size: 12, design: .monospaced))
+                    .foregroundColor(Color("text-tertiary"))
+                  Text(reminderTime)
+                    .font(.system(size: 12, design: .monospaced))
+                    .foregroundColor(Color("text-tertiary"))
+                }.onTapGesture {
+                  showingEditSheet = true
                 }
               }
-              .padding(10)
             }
-            .frame(maxWidth: .infinity)
-            .background(Color("surface-primary").opacity(0.5))
-            .cornerRadius(10)
           }
-
-          VStack {
-            VStack(alignment: .center, spacing: 4) {
-              Text("Streaks")
-                .font(.system(size: 10))
-                .foregroundColor(Color("text-tertiary"))
-
-              HStack {
-                VStack(alignment: .center) {
-                  Text("\(stats.currentStreak)")
-                    .font(.system(size: 18))
-                    .foregroundColor(Color("text-primary"))
-                    .fontWeight(.black)
-
-                  Text("Current")
-                    .font(.system(size: 10))
-                    .foregroundColor(Color("text-tertiary").opacity(0.5))
-                }.frame(maxWidth: .infinity)
-
-                VStack(alignment: .center) {
-                  Text("\(stats.longestStreak)")
-                    .font(.system(size: 18))
-                    .foregroundColor(Color("text-secondary"))
-                    .fontWeight(.black)
-
-                  Text("Longest")
-                    .font(.system(size: 10))
-                    .foregroundColor(Color("text-tertiary").opacity(0.5))
-                }.frame(maxWidth: .infinity)
-
-              }
-            }
-            .padding(10)
-          }
-          .frame(maxWidth: .infinity)
-          .background(Color("surface-primary").opacity(0.5))
-          .cornerRadius(10)
         }
         .padding(.horizontal)
+        CustomSeparator()
       }
 
       // Calendar grid
@@ -399,18 +330,54 @@ struct CustomCalendarView: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .padding(.horizontal)
       }
+
+      }
+      .frame(height: UIScreen.main.bounds.height * 0.85)
+
+
+      let stats = getStats()
+      CalendarStatisticsView(stats: stats, accentColor: Color(calendar.color))
+
+      VStack(spacing: 0) {
+        Text("Independently engineered. Lovingly crafted.")
+        Text("Thank you for your support!")
+
+        Spacer()
+        HStack(spacing: 4) {
+          Text("Mykhaylo Tymofyeyev")
+          Text("•")
+          Text("[@tymofyeyev_m](https://x.com/tymofyeyev_m)").foregroundColor(Color(calendar.color))
+        }
+        .foregroundColor(Color("text-tertiary"))
+
+      }.padding(.horizontal)
+      .font(.system(size: 9, design: .monospaced))
+      .foregroundColor(Color("text-tertiary").opacity(0.5))
+      .multilineTextAlignment(.center)
+      .padding(.bottom, 40)
+
+    }.scrollIndicators(.hidden)
+    .refreshable {
+      store.loadCalendars()
+      WidgetCenter.shared.reloadAllTimelines()
     }
     .sheet(isPresented: $showingEditSheet) {
       NavigationView {
-        EditCalendarView(calendar: calendar) { updatedCalendar in
-          store.updateCalendar(updatedCalendar)
-        }
+        EditCalendarView(
+          calendar: calendar,
+          onSave: { updatedCalendar in
+            store.updateCalendar(updatedCalendar)
+          },
+          onDelete: { _ in
+            store.deleteCalendar(id: calendar.id)
+          }
+        )
         .background(Color("surface-muted"))
       }
       .background(Color("surface-muted"))
     }
     .sheet(isPresented: $showingYearPicker) {
-      NavigationView {
+      NavigationStack {
         VStack {
           Picker("Select Year", selection: $tempSelectedYear) {
             ForEach(availableYears, id: \.self) { year in
@@ -444,7 +411,22 @@ struct CustomCalendarView: View {
       }
       .background(Color("surface-muted"))
       .presentationDetents([.height(280)])
-    }
+    }.overlay {
+      HStack {
+        Rectangle()
+          .fill(Color("devider-bottom"))
+          .frame(maxHeight: .infinity, alignment: .trailing)
+          .frame(maxWidth: 1)
+
+        Spacer()
+
+        Rectangle()
+          .fill(Color("devider-top"))
+          .frame(maxHeight: .infinity, alignment: .trailing)
+          .frame(maxWidth: 1)
+        
+        }
+      }.ignoresSafeArea(edges: .bottom)
     .sheet(
       isPresented: Binding(
         get: { selectedDate.isPresented },
@@ -452,14 +434,14 @@ struct CustomCalendarView: View {
       )
     ) {
       if let date = selectedDate.date {
-        NavigationView {
+        NavigationStack {
           CalendarEntryView(calendar: calendar, date: date) { entry in
             store.addEntry(calendarId: calendar.id, entry: entry)
           }
           .background(Color("surface-muted"))
         }
         .background(Color("surface-muted"))
-        .presentationDetents([.fraction(0.3)])
+        .presentationDetents([.fraction(0.5)])
       }
     }
     .alert(
@@ -486,17 +468,32 @@ struct CalendarEntryView: View {
   @State private var completed = false
 
   var formattedDate: String {
-    let formatter = DateFormatter()
+    let formatter: DateFormatter = DateFormatter()
     formatter.dateStyle = .long
     return formatter.string(from: date)
   }
 
   var body: some View {
+    VStack(spacing: 0) {
+
+      HStack {
+        Text("Add Entry")
+        .font(.system(size: 32, design: .monospaced))
+        .foregroundColor(Color("text-secondary"))
+        .fontWeight(.bold)
+        Spacer()
+        
+      }
+      .padding(.horizontal)
+      .padding(.bottom, 8)
+      CustomSeparator()
+
     Form {
       Section {
         Text(formattedDate)
-          .font(.headline)
-      }.listRowBackground(Color("surface-primary"))
+          .font(.system(size: 12, design: .monospaced))
+          .foregroundColor(Color("text-secondary"))
+      }.listRowBackground(Color("surface-secondary"))
 
       Section {
         switch calendar.trackingType {
@@ -513,10 +510,10 @@ struct CalendarEntryView: View {
                   completed: newValue
                 )
                 onSave(entry)
+                WidgetCenter.shared.reloadAllTimelines()
               }
             )
           )
-          .foregroundColor(Color("text-primary"))
           .tint(Color(calendar.color))
         case .counter:
           Stepper(
@@ -531,10 +528,10 @@ struct CalendarEntryView: View {
                   completed: completed
                 )
                 onSave(entry)
+                WidgetCenter.shared.reloadAllTimelines()
               }
             ), in: 0...99
           )
-          .foregroundColor(Color("text-primary"))
         case .multipleDaily:
           VStack(alignment: .leading, spacing: 8) {
             Stepper(
@@ -549,21 +546,22 @@ struct CalendarEntryView: View {
                     completed: newValue >= calendar.dailyTarget
                   )
                   onSave(entry)
+                  WidgetCenter.shared.reloadAllTimelines()
                 }
               ), in: 0...99
             )
-            .foregroundColor(Color("text-primary"))
 
             ProgressView(value: Double(count), total: Double(calendar.dailyTarget))
               .tint(Color(calendar.color))
           }
         }
-      }.listRowBackground(Color("surface-primary"))
+      }.listRowBackground(Color("surface-secondary"))
     }
+    }
+    .font(.system(size: 12, design: .monospaced))
+    .foregroundColor(Color("text-secondary"))
     .scrollContentBackground(.hidden)
     .background(Color("surface-muted"))
-    .navigationTitle("Add Entry")
-    .navigationBarTitleDisplayMode(.large)
     .toolbar {
       ToolbarItem(placement: .confirmationAction) {
         Button("Done") {

@@ -1,3 +1,4 @@
+import RevenueCat
 import RevenueCatUI
 import SharedModels
 import SwiftUI
@@ -6,20 +7,65 @@ struct CreateCalendarView: View {
   @Environment(\.dismiss) private var dismiss
   let onCreate: (CustomCalendar) -> Void
 
+  @State private var customerInfo: CustomerInfo?
+  @ObservedObject private var store = CustomCalendarStore.shared
   @State private var name = ""
   @State private var selectedColor = "mood-good"
   @State private var trackingType: TrackingType = .binary
   @State private var dailyTarget = 2
   @State private var recurringReminderEnabled: Bool = false
   @State private var reminderTime: Date = Date()
+  @State private var isPaywallPresented = false
+  @State private var errorMessage: String?
+  @State private var isAlertPresented = false
 
   private let colors = [
     "mood-terrible",
     "mood-bad",
+    "qs-amber",
     "mood-neutral",
+    "qs-lime",
     "mood-good",
+    "qs-emerald",
+    "qs-teal",
+    "qs-cyan",
+    "qs-sky",
+    "qs-blue",
+    "qs-indigo",
     "mood-excellent",
+    "qs-fuchsia",
+    "qs-pink",
+    "qs-rose",
   ]
+
+  func userCanCreateCalendar() -> Bool {
+    return customerInfo?.entitlements["premium"]?.isActive ?? false || store.calendars.count < 3
+  }
+
+  func createCalendar() {
+    do {
+      let calendar = CustomCalendar(
+        name: name,
+        color: selectedColor,
+        trackingType: trackingType,
+        dailyTarget: dailyTarget,
+        recurringReminderEnabled: recurringReminderEnabled,
+        reminderTime: recurringReminderEnabled ? reminderTime : nil
+      )
+      onCreate(calendar)
+    } catch {
+      errorMessage = "Error creating calendar, please try again."
+    }
+  }
+
+  func handleCreateCalendar() {
+    if !userCanCreateCalendar() {
+      isPaywallPresented = true
+    } else {
+      createCalendar()
+    }
+  }
+
 
   var body: some View {
     Form {
@@ -28,7 +74,7 @@ struct CreateCalendarView: View {
           .foregroundColor(Color("text-primary"))
           .fontWeight(.bold)
       }
-      .listRowBackground(Color("surface-primary"))
+      .listRowBackground(Color("surface-secondary"))
 
       Section {
         Picker("Tracking Type", selection: $trackingType) {
@@ -41,7 +87,7 @@ struct CreateCalendarView: View {
           Stepper("Daily Target: \(dailyTarget)", value: $dailyTarget, in: 1...10)
         }
       }
-      .listRowBackground(Color("surface-primary"))
+      .listRowBackground(Color("surface-secondary"))
 
       Section {
         Toggle("Recurring Reminder", isOn: $recurringReminderEnabled)
@@ -50,12 +96,13 @@ struct CreateCalendarView: View {
             "Reminder Time", selection: $reminderTime, displayedComponents: [.hourAndMinute])
         }
       }
-      .listRowBackground(Color("surface-primary"))
+      .listRowBackground(Color("surface-secondary"))
 
       Section {
-        HStack {
-          ForEach(colors, id: \.self) { color in
-            Circle()
+        ScrollView(.horizontal, showsIndicators: false) {
+          HStack {
+            ForEach(colors, id: \.self) { color in
+              Circle()
               .fill(Color(color))
               .frame(width: 30, height: 30)
               .overlay(
@@ -64,13 +111,15 @@ struct CreateCalendarView: View {
               )
               .onTapGesture {
                 selectedColor = color
+                }
               }
-          }
+            }.padding(2)
+            .padding(.horizontal, 10)
+          }.padding(.horizontal, -20)
+        } header: {
+          Text("Color")
         }
-      } header: {
-        Text("Color")
-      }
-      .listRowBackground(Color("surface-primary"))
+      .listRowBackground(Color("surface-secondary"))
     }
     .scrollContentBackground(.hidden)
     .background(Color("surface-muted"))
@@ -84,18 +133,23 @@ struct CreateCalendarView: View {
       }
       ToolbarItem(placement: .confirmationAction) {
         Button("Create") {
-          let calendar = CustomCalendar(
-            name: name,
-            color: selectedColor,
-            trackingType: trackingType,
-            dailyTarget: dailyTarget,
-            recurringReminderEnabled: recurringReminderEnabled,
-            reminderTime: recurringReminderEnabled ? reminderTime : nil
-          )
-          onCreate(calendar)
+          handleCreateCalendar()
         }
         .disabled(name.isEmpty)
       }
+    }
+    .sheet(isPresented: $isPaywallPresented) {
+      PaywallView(displayCloseButton: true)
+    }
+    .alert(isPresented: $isAlertPresented) {
+      Alert(
+        title: Text("Error"),
+        message: Text(errorMessage ?? "An unknown error occurred"),
+        dismissButton: .default(Text("OK")) {
+          errorMessage = nil
+          dismiss()
+        }
+      )
     }
   }
 }

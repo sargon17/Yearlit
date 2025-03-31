@@ -1,13 +1,16 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    "[@tymofyeyev_m](https://x.com/tymofyeyev_m)" : {
+
+    },
     "%@" : {
 
     },
     "%lld" : {
 
     },
-    "Active" : {
+    "•" : {
 
     },
     "Add Calendar" : {
@@ -17,6 +20,9 @@
 
     },
     "Are you sure you want to delete '%@'? This action cannot be undone." : {
+
+    },
+    "Are you sure you want to delete this calendar? This action cannot be undone." : {
 
     },
     "Calendar Name" : {
@@ -32,9 +38,6 @@
 
     },
     "Completed" : {
-
-    },
-    "Count" : {
 
     },
     "Count: %lld" : {
@@ -53,13 +56,10 @@
     "Create" : {
 
     },
-    "Current" : {
-
-    },
     "Daily Target: %lld" : {
 
     },
-    "Days" : {
+    "Danger Zone" : {
 
     },
     "Delete" : {
@@ -77,22 +77,31 @@
     "Edit Calendar" : {
 
     },
+    "Enable Mood Tracking" : {
+
+    },
+    "Error" : {
+
+    },
+    "Features" : {
+
+    },
     "How was your day?" : {
 
     },
+    "Independently engineered. Lovingly crafted." : {
+
+    },
     "Left: " : {
-
-    },
-    "Longest" : {
-
-    },
-    "Max" : {
 
     },
     "Multiple times (unlimited)" : {
 
     },
     "Multiple times (with target)" : {
+
+    },
+    "Mykhaylo Tymofyeyev" : {
 
     },
     "New Calendar" : {
@@ -129,6 +138,9 @@
     "Once a day" : {
 
     },
+    "Passed: " : {
+
+    },
     "Recurring Reminder" : {
 
     },
@@ -144,13 +156,16 @@
     "Select Year" : {
 
     },
+    "Settings" : {
+
+    },
     "Skip" : {
 
     },
-    "Streaks" : {
+    "Statistics" : {
 
     },
-    "Total" : {
+    "Thank you for your support!" : {
 
     },
     "Track your year mood" : {

@@ -2,9 +2,10 @@ import SharedModels
 import SwiftUI
 
 struct EditCalendarView: View {
-  @Environment(\.dismiss) private var dismiss
+  @Environment(\.dismiss) private var dismiss: DismissAction
   let calendar: CustomCalendar
   let onSave: (CustomCalendar) -> Void
+  let onDelete: (CustomCalendar) -> Void
 
   @State private var name: String
   @State private var selectedColor: String
@@ -13,10 +14,15 @@ struct EditCalendarView: View {
   @State private var recurringReminderEnabled: Bool
   @State private var reminderTime: Date
   @State private var calendarError: CalendarError?
+  @State private var showingDeleteConfirmation = false
 
-  init(calendar: CustomCalendar, onSave: @escaping (CustomCalendar) -> Void) {
+  init(
+    calendar: CustomCalendar, onSave: @escaping (CustomCalendar) -> Void,
+    onDelete: @escaping (CustomCalendar) -> Void
+  ) {
     self.calendar = calendar
     self.onSave = onSave
+    self.onDelete = onDelete
     _name = State(initialValue: calendar.name)
     _selectedColor = State(initialValue: calendar.color)
     _trackingType = State(initialValue: calendar.trackingType)
@@ -40,9 +46,20 @@ struct EditCalendarView: View {
   private let colors = [
     "mood-terrible",
     "mood-bad",
+    "qs-amber",
     "mood-neutral",
+    "qs-lime",
     "mood-good",
+    "qs-emerald",
+    "qs-teal",
+    "qs-cyan",
+    "qs-sky",
+    "qs-blue",
+    "qs-indigo",
     "mood-excellent",
+    "qs-fuchsia",
+    "qs-pink",
+    "qs-rose",
   ]
 
   private func scheduleNotifications(for calendar: CustomCalendar) {
@@ -104,10 +121,7 @@ struct EditCalendarView: View {
         TextField("Calendar Name", text: $name)
           .foregroundColor(Color("text-primary"))
           .fontWeight(.bold)
-      }
-      .listRowBackground(Color("surface-primary"))
 
-      Section {
         Picker("Tracking Type", selection: $trackingType) {
           Text("Once a day").tag(TrackingType.binary)
           Text("Multiple times (unlimited)").tag(TrackingType.counter)
@@ -118,7 +132,31 @@ struct EditCalendarView: View {
           Stepper("Daily Target: \(dailyTarget)", value: $dailyTarget, in: 1...10)
         }
       }
-      .listRowBackground(Color("surface-primary"))
+      .listRowBackground(Color("surface-secondary"))
+
+      Section {
+        ScrollView(.horizontal, showsIndicators: false) {
+          HStack {
+              ForEach(colors, id: \.self) { color in
+                Circle()
+                  .fill(Color(color))
+                  .frame(width: 30, height: 30)
+                  .overlay(
+                    Circle()
+                      .stroke(Color.primary, lineWidth: selectedColor == color ? 2 : 0)
+                  )
+                  .onTapGesture {
+                    selectedColor = color
+                  }
+              }
+            }.padding(2)
+            .padding(.horizontal, 10)
+          }.padding(.horizontal, -20)
+      } header: {
+        Text("Color")
+      }
+      .padding(0)
+      .listRowBackground(Color("surface-secondary"))
 
       Section {
         Toggle(
@@ -158,27 +196,32 @@ struct EditCalendarView: View {
             .foregroundColor(Color("text-tertiary"))
         }
       }
-      .listRowBackground(Color("surface-primary"))
+      .listRowBackground(Color("surface-secondary"))
 
       Section {
-        HStack {
-          ForEach(colors, id: \.self) { color in
-            Circle()
-              .fill(Color(color))
-              .frame(width: 30, height: 30)
-              .overlay(
-                Circle()
-                  .stroke(Color.primary, lineWidth: selectedColor == color ? 2 : 0)
-              )
-              .onTapGesture {
-                selectedColor = color
-              }
-          }
+        Button(action: {
+          showingDeleteConfirmation = true
+        }) {
+          Text("Delete Calendar")
+            .frame(maxWidth: .infinity, alignment: .center)
+            .fontWeight(.bold)
         }
       } header: {
-        Text("Color")
+        Text("Danger Zone")
+          .foregroundColor(Color("mood-terrible"))
       }
-      .listRowBackground(Color("surface-primary"))
+      .listRowBackground(Color("mood-terrible"))
+      .foregroundColor(Color("surface-muted"))
+      .alert("Delete Calendar", isPresented: $showingDeleteConfirmation) {
+        Button("Cancel", role: .cancel) {}
+        Button("Delete", role: .destructive) {
+          onDelete(calendar)
+          dismiss()
+        }
+      } message: {
+        Text("Are you sure you want to delete this calendar? This action cannot be undone.")
+      }
+
     }
     .scrollContentBackground(.hidden)
     .background(Color("surface-muted"))
