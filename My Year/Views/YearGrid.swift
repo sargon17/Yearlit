@@ -137,9 +137,8 @@ struct YearGrid: View {
                 let dotSize: CGFloat = 10
                 let padding: CGFloat = 20
                 
-                // Calculate available space
                 let availableWidth = geometry.size.width - (padding * 2)
-                let availableHeight = geometry.size.height - (padding * 2) // Account for header
+                let availableHeight = geometry.size.height - (padding * 2)
                 
                 let dimensions = calculateGridDimensions(
                     availableWidth: availableWidth,
