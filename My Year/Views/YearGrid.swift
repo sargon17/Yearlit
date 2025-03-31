@@ -19,6 +19,8 @@ struct YearGrid: View {
 
     @State private var valuationPopup: (isPresented: Bool, date: Date)?
     @State private var dayTypesQuantity: [DayMoodType: Int] = [:]
+    @State private var showRemainingDays: Bool = true
+    @State private var isLabelVisible: Bool = true
     
     private func colorForDay(_ day: Int) -> Color {
         let dayDate = store.dateForDay(day)
@@ -66,39 +68,10 @@ struct YearGrid: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            HStack {
-                Text("\(store.year.description)")
-                    .font(.system(size: 32, design: .monospaced))
-                    .fontWeight(.bold)
-                    .foregroundColor(Color("text-primary"))
-                
-                if My_YearApp.isDebugMode {
-                    Button(action: fillRandomValuations) {
-                        Image(systemName: "wand.and.stars")
-                            .foregroundColor(Color("text-tertiary"))
-                    }
-                    .padding(.leading, 4)
-                }
-
-                Spacer()
-                
-                Text("Left: ")
-                    .font(.system(size: 14))
-                    .fontWeight(.regular)
-                + Text("\(store.numberOfDaysInYear - store.currentDayNumber)")
-                    .font(.system(size: 20))
-                    .foregroundColor(Color("text-primary"))
-                    .fontWeight(.black)
-            }
-            .foregroundColor(Color("text-primary").opacity(0.5))
-            .fontWeight(.regular)
-            .padding(.horizontal)
-            .padding(.bottom, 8)
-            
             VStack(spacing: 10) {
             HStack(alignment: .center, spacing: 6) {
                 Text(Calendar.current.component(.year, from: Date()).description)
-                    .font(.system(size: 68))
+                    .font(.system(size: 68, design: .monospaced))
                     .foregroundColor(Color("text-primary"))
                     .fontWeight(.black)
                 
@@ -106,8 +79,8 @@ struct YearGrid: View {
                 
                 let percent = Double(store.currentDayNumber) / Double(store.numberOfDaysInYear)
                 Text(String(format: "%.1f%%", percent * 100))
-                    .font(.system(size: 38))
-                    .foregroundColor(Color("text-primary").opacity(0.5))
+                    .font(.system(size: 38, design: .monospaced))
+                    .foregroundColor(Color("text-tertiary"))
                     .fontWeight(.regular)
             }
             .padding(.horizontal)
@@ -115,22 +88,50 @@ struct YearGrid: View {
             HStack {
 
                 SharedModels.MosaicChart(dayTypesQuantity: dayTypesQuantity)
-                    .frame(height: 40)
+                    .frame(height: 40).frame(width: 200)
                 
                 Spacer()
                 
-                Text("Left: ")
-                    .font(.system(size: 22))
-                    .foregroundColor(Color("text-primary").opacity(0.5))
-                    .fontWeight(.regular)
-                + Text("\(store.numberOfDaysInYear - store.currentDayNumber)")
-                    .font(.system(size: 38))
-                    .foregroundColor(Color("text-primary"))
-                    .fontWeight(.bold)
+                HStack(alignment: .lastTextBaseline, spacing: 2) {
+                    Text(showRemainingDays ? "Left: " : "Passed: ")
+                        .font(.system(size: 12, design: .monospaced))
+                        .foregroundColor(Color("text-tertiary"))
+                        .fontWeight(.regular)
+                        .opacity(isLabelVisible ? 1 : 0)
+
+                    Text(showRemainingDays ? "\(store.numberOfDaysInYear - store.currentDayNumber)" : "\(store.currentDayNumber)")
+                        .font(.system(size: 38, design: .monospaced))
+                        .foregroundColor(Color("text-primary"))
+                        .fontWeight(.bold)
+                        .contentTransition(.numericText())
+                }
+                .onTapGesture {
+                    Task {
+                        let labelAnimationDuration = 0.2
+                        let numberTransitionDuration = 0.3
+
+                        withAnimation(.easeInOut(duration: labelAnimationDuration)) {
+                            isLabelVisible = false
+                        }
+                        try? await Task.sleep(for: .seconds(labelAnimationDuration))
+
+                        withAnimation(.easeInOut) {
+                           showRemainingDays.toggle()
+                        }
+
+                        try? await Task.sleep(for: .seconds(numberTransitionDuration))
+
+                        withAnimation(.easeInOut(duration: labelAnimationDuration)) {
+                            isLabelVisible = true
+                        }
+                    }
+                }
             }
             .padding(.horizontal)
 
             }
+
+            CustomSeparator()
             
             GeometryReader { geometry in
                 let dotSize: CGFloat = 10
