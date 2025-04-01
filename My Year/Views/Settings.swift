@@ -2,6 +2,7 @@ import SwiftUI
 
 struct SettingsView: View {
   @AppStorage("isMoodTrackingEnabled") var isMoodTrackingEnabled: Bool = true // Default to enabled
+  @AppStorage("runtimeDebugEnabled") var runtimeDebugEnabled: Bool = false // Add new debug setting
 
   var body: some View {
     NavigationView { // Add NavigationView for title
@@ -21,6 +22,9 @@ struct SettingsView: View {
         Form { // Use Form for settings layout
             Section(header: Text("Features")) {
                 Toggle("Enable Mood Tracking", isOn: $isMoodTrackingEnabled)
+                #if DEBUG
+                Toggle("Enable Runtime Debug", isOn: $runtimeDebugEnabled) // Add conditional debug toggle
+                #endif
             }
         }.font(.system(size: 12, design: .monospaced))
         .foregroundColor(Color("text-secondary"))

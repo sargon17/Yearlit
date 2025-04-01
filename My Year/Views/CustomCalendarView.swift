@@ -28,6 +28,7 @@ struct CustomCalendarView: View {
   let calendar: CustomCalendar
   @StateObject private var store: CustomCalendarStore = CustomCalendarStore.shared
   @ObservedObject private var valuationStore: ValuationStore = ValuationStore.shared
+  @AppStorage("runtimeDebugEnabled") private var runtimeDebugEnabled: Bool = false
 
   private let today = Date()
 
@@ -43,6 +44,9 @@ struct CustomCalendarView: View {
   }()
 
   private func fillRandomEntries() {
+    // TODO: Implement clearEntries(calendarId:) in CustomCalendarStore to enable clearing before filling.
+    // store.clearEntries(calendarId: self.calendar.id)
+    
     let calendar = Calendar.current
     let startOfYear = calendar.date(from: DateComponents(year: valuationStore.selectedYear, month: 1, day: 1))!
     
@@ -50,7 +54,7 @@ struct CustomCalendarView: View {
       let date = calendar.date(byAdding: .day, value: day, to: startOfYear)!
       let dateKey = customDateFormatter(date: date)
       
-      if date <= today && store.getEntry(calendarId: self.calendar.id, date: date) == nil {
+      if date <= today {
         switch self.calendar.trackingType {
         case .binary:
           let entry = CalendarEntry(date: date, count: 1, completed: Bool.random())
@@ -226,7 +230,7 @@ struct CustomCalendarView: View {
 
               let today = valuationStore.dateForDay(valuationStore.currentDayNumber - 1)
 
-              if My_YearApp.isDebugMode {
+              if My_YearApp.isDebugMode && runtimeDebugEnabled {
                 Button(action: fillRandomEntries) {
                   Image(systemName: "wand.and.stars")
                     .foregroundColor(Color(calendar.color))
