@@ -15,6 +15,7 @@ struct CreateCalendarView: View {
   @State private var dailyTarget = 2
   @State private var recurringReminderEnabled: Bool = false
   @State private var reminderTime: Date = Date()
+  @State private var selectedUnit: UnitOfMeasure? = nil
   @State private var isPaywallPresented = false
   @State private var errorMessage: String?
   @State private var isAlertPresented = false
@@ -50,7 +51,8 @@ struct CreateCalendarView: View {
         trackingType: trackingType,
         dailyTarget: dailyTarget,
         recurringReminderEnabled: recurringReminderEnabled,
-        reminderTime: recurringReminderEnabled ? reminderTime : nil
+        reminderTime: recurringReminderEnabled ? reminderTime : nil,
+        unit: trackingType == .counter ? selectedUnit : nil
       )
       onCreate(calendar)
     } catch {
@@ -85,6 +87,22 @@ struct CreateCalendarView: View {
 
         if trackingType == .multipleDaily {
           Stepper("Daily Target: \(dailyTarget)", value: $dailyTarget, in: 1...10)
+        }
+
+        if trackingType == .counter {
+          Section {
+            Picker("Unit of Measure", selection: $selectedUnit) {
+              Text("None").tag(nil as UnitOfMeasure?)
+              ForEach(UnitOfMeasure.Category.allCases, id: \.self) { category in
+                Section(header: Text(category.rawValue)) {
+                  ForEach(UnitOfMeasure.allCasesGrouped[category] ?? [], id: \.self) { unit in
+                    Text(unit.displayName).tag(unit as UnitOfMeasure?)
+                  }
+                }
+              }
+            }
+          }
+          .listRowBackground(Color("surface-secondary"))
         }
       }
       .listRowBackground(Color("surface-secondary"))

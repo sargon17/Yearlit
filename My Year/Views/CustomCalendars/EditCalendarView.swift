@@ -13,6 +13,7 @@ struct EditCalendarView: View {
   @State private var dailyTarget: Int
   @State private var recurringReminderEnabled: Bool
   @State private var reminderTime: Date
+  @State private var selectedUnit: UnitOfMeasure?
   @State private var calendarError: CalendarError?
   @State private var showingDeleteConfirmation = false
 
@@ -28,6 +29,7 @@ struct EditCalendarView: View {
     _trackingType = State(initialValue: calendar.trackingType)
     _dailyTarget = State(initialValue: calendar.dailyTarget)
     _recurringReminderEnabled = State(initialValue: calendar.recurringReminderEnabled)
+    _selectedUnit = State(initialValue: calendar.unit)
 
     // Default reminder time set to 9:00 AM as it's a common time for daily reminders
     let defaultTime =
@@ -133,6 +135,22 @@ struct EditCalendarView: View {
         }
       }
       .listRowBackground(Color("surface-secondary"))
+
+      if trackingType == .counter {
+        Section {
+          Picker("Unit of Measure", selection: $selectedUnit) {
+            Text("None").tag(nil as UnitOfMeasure?)
+            ForEach(UnitOfMeasure.Category.allCases, id: \.self) { category in
+              Section(header: Text(category.rawValue)) {
+                ForEach(UnitOfMeasure.allCasesGrouped[category] ?? [], id: \.self) { unit in
+                  Text(unit.displayName).tag(unit as UnitOfMeasure?)
+                }
+              }
+            }
+          }
+        }
+        .listRowBackground(Color("surface-secondary"))
+      }
 
       Section {
         ScrollView(.horizontal, showsIndicators: false) {
@@ -248,7 +266,9 @@ struct EditCalendarView: View {
             dailyTarget: dailyTarget,
             entries: calendar.entries,
             recurringReminderEnabled: recurringReminderEnabled,
-            reminderTime: recurringReminderEnabled ? validateReminderTime(reminderTime) : nil
+            reminderTime: recurringReminderEnabled ? validateReminderTime(reminderTime) : nil,
+            order: calendar.order,
+            unit: trackingType == .counter ? selectedUnit : nil
           )
           onSave(updatedCalendar)
           scheduleNotifications(for: updatedCalendar)

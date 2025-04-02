@@ -1,4 +1,5 @@
 import SwiftUI
+import SharedModels
 
 struct CalendarStats {
   public let activeDays: Int
@@ -11,6 +12,8 @@ struct CalendarStats {
 struct CalendarStatisticsView: View {
   let stats: CalendarStats
   let accentColor: Color
+  let todaysCount: Int
+  let unit: UnitOfMeasure?
 
   var body: some View {
     VStack(spacing: 0) {
@@ -27,11 +30,17 @@ struct CalendarStatisticsView: View {
         }
         CustomSeparator()
       }
-      StatisticItem(title: "Active Days", value: "\(stats.activeDays)", accentColor: accentColor)
-      StatisticItem(title: "Total Times Logged", value: "\(stats.totalCount)", accentColor: accentColor)
-      StatisticItem(title: "Max Times Logged in a Day", value: "\(stats.maxCount)", accentColor: accentColor)
-      StatisticItem(title: "Longest Days in a Row", value: "\(stats.longestStreak)", accentColor: accentColor)
-      StatisticItem(title: "Current Days in a Row", value: "\(stats.currentStreak)", accentColor: accentColor)
+      StatisticItem(
+        title: "Today's Log",
+        value: "\(todaysCount)",
+        unit: unit,
+        accentColor: accentColor
+      )
+      StatisticItem(title: "Active Days", value: "\(stats.activeDays)", unit: unit, accentColor: accentColor)
+      StatisticItem(title: "Total Times Logged", value: "\(stats.totalCount)", unit: unit, accentColor: accentColor)
+      StatisticItem(title: "Max Times Logged in a Day", value: "\(stats.maxCount)", unit: unit, accentColor: accentColor)
+      StatisticItem(title: "Longest Days in a Row", value: "\(stats.longestStreak)", unit: unit, accentColor: accentColor)
+      StatisticItem(title: "Current Days in a Row", value: "\(stats.currentStreak)", unit: unit, accentColor: accentColor)
     }.padding(.bottom)
   }
 }
@@ -39,6 +48,7 @@ struct CalendarStatisticsView: View {
 struct StatisticItem: View {
   let title: String
   let value: String
+  let unit: UnitOfMeasure?
   let accentColor: Color
 
   var body: some View {
@@ -54,6 +64,13 @@ struct StatisticItem: View {
             .foregroundColor(Color(accentColor))
             .fontWeight(.black)
             .padding(.bottom, -20)
+
+            if let unit = unit {
+              Text(unit.rawValue)
+                .font(.system(size: 12, design: .monospaced))
+                .foregroundColor(Color("text-tertiary"))
+                .padding(.top, -10)
+            }
         }
         .clipped()
         .padding(0)

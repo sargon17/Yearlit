@@ -110,6 +110,9 @@
     "New Calendar" : {
 
     },
+    "None" : {
+
+    },
     "Notification Error" : {
 
     },
@@ -175,6 +178,9 @@
 
     },
     "Tracking Type" : {
+
+    },
+    "Unit of Measure" : {
 
     },
     "Wand Fill Force: %.2f" : {

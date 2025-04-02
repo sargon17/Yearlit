@@ -8,6 +8,91 @@ import WidgetKit
   import UIKit
 #endif
 
+// MARK: - Unit of Measure Definition
+
+public enum UnitOfMeasure: String, Codable, CaseIterable, Identifiable {
+    public var id: String { rawValue }
+
+    // Quantity/Count
+    case pages = "Pages"
+    case items = "Items"
+    case rounds = "Rounds"
+    case servings = "Servings"
+    case doses = "Doses"
+
+    // Distance
+    case meters = "m"
+    case kilometers = "km"
+    case miles = "Miles"
+    case steps = "Steps"
+    case floors = "Floors"
+
+    // Volume
+    case milliliters = "ml"
+    case liters = "l"
+    case ounces = "oz"
+    case cups = "Cups"
+
+    // Time
+    case minutes = "Minutes"
+    case hours = "Hours"
+
+    // Weight
+    case grams = "g"
+    case kilograms = "kg"
+    case pounds = "Pounds"
+
+    // Energy/Calories
+    case calories = "kcal"
+    case kilojoules = "kJ"
+
+    public enum Category: String, CaseIterable {
+        case quantity = "Quantity/Count"
+        case distance = "Distance"
+        case volume = "Volume"
+        case time = "Time"
+        case weight = "Weight"
+        case energy = "Energy/Calories"
+    }
+
+    public var category: Category {
+        switch self {
+        case .pages, .items, .rounds, .servings, .doses:
+            return .quantity
+        case .meters, .kilometers, .miles, .steps, .floors:
+            return .distance
+        case .milliliters, .liters, .ounces, .cups:
+            return .volume
+        case .minutes, .hours:
+            return .time
+        case .grams, .kilograms, .pounds:
+            return .weight
+        case .calories, .kilojoules:
+            return .energy
+        }
+    }
+
+    // Display name might be different from raw value for units like 'km'
+    public var displayName: String {
+        switch self {
+        case .kilometers: return "Kilometers (km)"
+        case .meters: return "Meters (m)"
+        case .milliliters: return "Milliliters (ml)"
+        case .liters: return "Liters (l)"
+        case .ounces: return "Ounces (oz)"
+        case .grams: return "Grams (g)"
+        case .kilograms: return "Kilograms (kg)"
+        case .calories: return "Calories (kcal)"
+        case .kilojoules: return "Kilojoules (kJ)"
+        default: return rawValue
+        }
+    }
+
+    public static var allCasesGrouped: [Category: [UnitOfMeasure]] {
+        Dictionary(grouping: allCases, by: { $0.category })
+    }
+}
+
 // MARK: - Custom Calendar Models
 
 public struct CustomCalendar: Codable, Identifiable {
@@ -16,6 +101,7 @@ public struct CustomCalendar: Codable, Identifiable {
   public var color: String  // Store as hex or named color
   public var trackingType: TrackingType
   public var dailyTarget: Int
+  public var unit: UnitOfMeasure? // New optional property
   public var order: Int = 0
   public var recurringReminderEnabled: Bool
   public var reminderHour: Int?
@@ -25,13 +111,15 @@ public struct CustomCalendar: Codable, Identifiable {
   public init(
     id: UUID = UUID(), name: String, color: String, trackingType: TrackingType,
     dailyTarget: Int = 1, entries: [String: CalendarEntry] = [:],
-    recurringReminderEnabled: Bool = false, reminderTime: Date? = nil, order: Int = 0
+    recurringReminderEnabled: Bool = false, reminderTime: Date? = nil, order: Int = 0,
+    unit: UnitOfMeasure? = nil // Add unit parameter
   ) {
     self.id = id
     self.name = name
     self.color = color
     self.trackingType = trackingType
     self.dailyTarget = dailyTarget
+    self.unit = unit // Assign unit
     self.recurringReminderEnabled = recurringReminderEnabled
     self.order = order
     if let time = reminderTime {
@@ -50,7 +138,8 @@ public struct CustomCalendar: Codable, Identifiable {
     id: UUID = UUID(), name: String, color: String, trackingType: TrackingType,
     dailyTarget: Int = 1, entries: [String: CalendarEntry] = [:],
     recurringReminderEnabled: Bool = false, reminderHour: Int? = nil, reminderMinute: Int? = nil,
-    order: Int = 0
+    order: Int = 0,
+    unit: UnitOfMeasure? = nil // Add unit parameter
   ) throws {
     // Validate hour and minute ranges
     if let hour = reminderHour, let minute = reminderMinute {
@@ -66,6 +155,7 @@ public struct CustomCalendar: Codable, Identifiable {
     self.color = color
     self.trackingType = trackingType
     self.dailyTarget = dailyTarget
+    self.unit = unit // Assign unit
     self.recurringReminderEnabled = recurringReminderEnabled
     self.order = order
     self.reminderHour = reminderHour
@@ -236,7 +326,9 @@ public class CustomCalendarStore: ObservableObject {
           trackingType: old.trackingType,
           dailyTarget: old.trackingType == .multipleDaily ? 2 : 1,
           entries: old.entries,
-          recurringReminderEnabled: false, order: index
+          recurringReminderEnabled: false,
+          order: index,
+          unit: nil // Set unit to nil for migrated calendars
         )
       }
       // Save the migrated data

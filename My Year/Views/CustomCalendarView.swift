@@ -339,9 +339,19 @@ struct CustomCalendarView: View {
       }
       .frame(height: UIScreen.main.bounds.height * 0.85)
 
+      // Calculate today's count
+      let todayDateString = customDateFormatter(date: today)
+      let todaysLogCount = calendar.entries[todayDateString]?.count ?? 0
 
-      let stats = getStats()
-      CalendarStatisticsView(stats: stats, accentColor: Color(calendar.color))
+      CalendarStatisticsView(
+        stats: getStats(),
+        accentColor: Color(calendar.color),
+        todaysCount: todaysLogCount, // Pass today's count
+        unit: calendar.unit // Pass the unit
+      )
+      .padding(.top, 20)
+
+      CustomSeparator()
 
       VStack(spacing: 0) {
         Text("Independently engineered. Lovingly crafted.")
