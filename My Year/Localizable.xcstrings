@@ -16,9 +16,6 @@
     "Add Calendar" : {
 
     },
-    "Add Entry" : {
-
-    },
     "Are you sure you want to delete '%@'? This action cannot be undone." : {
 
     },
@@ -39,19 +36,6 @@
     },
     "Completed" : {
 
-    },
-    "Count: %lld" : {
-
-    },
-    "Count: %lld / %lld" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Count: %1$lld / %2$lld"
-          }
-        }
-      }
     },
     "Create" : {
 
@@ -89,6 +73,9 @@
     "Error" : {
 
     },
+    "Error: No date selected." : {
+
+    },
     "Features" : {
 
     },
@@ -114,9 +101,6 @@
 
     },
     "None" : {
-
-    },
-    "Notification Error" : {
 
     },
     "notification.reminder.body" : {

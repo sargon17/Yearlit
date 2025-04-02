@@ -3,9 +3,18 @@ import SwiftUI
 import UserNotifications
 import WidgetKit
 
-enum SelectedDate: Equatable {
+enum SelectedDate: Equatable, Identifiable {
   case none
   case selected(Date)
+
+  var id: Date? {
+    switch self {
+    case .none:
+      return nil
+    case .selected(let date):
+      return date
+    }
+  }
 
   var date: Date? {
     switch self {
@@ -33,7 +42,7 @@ struct CustomCalendarView: View {
 
   private let today = Date()
 
-  @State private var selectedDate: SelectedDate = .none
+  @State private var selectedDate: SelectedDate? = nil
   @State private var showingEditSheet: Bool = false
   @State private var showingYearPicker: Bool = false
   @State private var tempSelectedYear: Int = Calendar.current.component(.year, from: Date())
@@ -53,7 +62,6 @@ struct CustomCalendarView: View {
     
     for day in 0..<valuationStore.currentDayNumber {
       let date = calendar.date(byAdding: .day, value: day, to: startOfYear)!
-      let dateKey = customDateFormatter(date: date)
       
       if date <= today && Double.random(in: 0.0...1.0) < wandFillForce {
         switch self.calendar.trackingType {
@@ -105,6 +113,8 @@ struct CustomCalendarView: View {
     let date: Date = valuationStore.dateForDay(day)
     if day < valuationStore.currentDayNumber {
       selectedDate = .selected(date)
+    } else {
+      selectedDate = nil
     }
   }
 
@@ -174,43 +184,39 @@ struct CustomCalendarView: View {
   }
 
   private func handleQuickAdd() {
-    do {
-      // Get the date for the previous day (today is not yet available)
-      let today = valuationStore.dateForDay(valuationStore.currentDayNumber - 1)
-      var newEntry = CalendarEntry(date: today, count: 1, completed: true)  // Default entry
+    // Get the date for the previous day (today is not yet available)
+    let today = valuationStore.dateForDay(valuationStore.currentDayNumber - 1)
+    var newEntry = CalendarEntry(date: today, count: 1, completed: true)  // Default entry
 
-      // Check if an entry already exists for today
-      if let existingEntry = store.getEntry(calendarId: calendar.id, date: today) {
-        // If the tracking type is counter or multipleDaily, increment the count by the defaultRecordValue
-        if calendar.trackingType == .counter || calendar.trackingType == .multipleDaily {
-          let addValue = calendar.defaultRecordValue ?? 1 // Use defaultRecordValue or 1 if nil
-          newEntry = CalendarEntry(
-            date: today,
-            count: existingEntry.count + addValue,
-            completed: existingEntry.completed
-          )
-        } else {
-          // If it's binary, toggle the completed state
-          newEntry = CalendarEntry(
-            date: today,
-            count: 1,
-            completed: !existingEntry.completed
-          )
-        }
+    // Check if an entry already exists for today
+    if let existingEntry = store.getEntry(calendarId: calendar.id, date: today) {
+      // If the tracking type is counter or multipleDaily, increment the count by the defaultRecordValue
+      if calendar.trackingType == .counter || calendar.trackingType == .multipleDaily {
+        let addValue = calendar.defaultRecordValue ?? 1 // Use defaultRecordValue or 1 if nil
+        newEntry = CalendarEntry(
+          date: today,
+          count: existingEntry.count + addValue,
+          completed: existingEntry.completed
+        )
       } else {
-        // If no entry exists, create a new one using defaultRecordValue for count
-        if calendar.trackingType == .counter || calendar.trackingType == .multipleDaily {
-            let addValue = calendar.defaultRecordValue ?? 1 // Use defaultRecordValue or 1 if nil
-            newEntry = CalendarEntry(date: today, count: addValue, completed: addValue > 0) 
-        } else { // Binary remains count 1, completed true
-            newEntry = CalendarEntry(date: today, count: 1, completed: true) 
-        }
+        // If it's binary, toggle the completed state
+        newEntry = CalendarEntry(
+          date: today,
+          count: 1,
+          completed: !existingEntry.completed
+        )
       }
-      store.addEntry(calendarId: calendar.id, entry: newEntry)
-      WidgetCenter.shared.reloadAllTimelines()
-    } catch {
-      calendarError = .errorAddingEntry(error)
+    } else {
+      // If no entry exists, create a new one using defaultRecordValue for count
+      if calendar.trackingType == .counter || calendar.trackingType == .multipleDaily {
+          let addValue = calendar.defaultRecordValue ?? 1 // Use defaultRecordValue or 1 if nil
+          newEntry = CalendarEntry(date: today, count: addValue, completed: addValue > 0) 
+      } else { // Binary remains count 1, completed true
+          newEntry = CalendarEntry(date: today, count: 1, completed: true) 
+      }
     }
+    store.addEntry(calendarId: calendar.id, entry: newEntry)
+    WidgetCenter.shared.reloadAllTimelines()
 
     // Vibrate to provide haptic feedback
     let impactFeedbackgenerator = UIImpactFeedbackGenerator(style: .medium)
@@ -451,164 +457,127 @@ struct CustomCalendarView: View {
         
         }
       }.ignoresSafeArea(edges: .bottom)
-    .sheet(
-      isPresented: Binding(
-        get: { selectedDate.isPresented },
-        set: { if !$0 { selectedDate = .none } }
-      )
-    ) {
-      if let date = selectedDate.date {
-        NavigationStack {
-          CalendarEntryView(calendar: calendar, date: date) { entry in
-            store.addEntry(calendarId: calendar.id, entry: entry)
-          }
-          .background(Color("surface-muted"))
-        }
-        .background(Color("surface-muted"))
-        .presentationDetents([.fraction(0.5)])
+    .sheet(item: $selectedDate) { selected in
+      // Ensure selected.date is non-nil before proceeding
+      if let date = selected.date {
+        DayEntryEditSheet(
+          calendar: calendar,
+          date: date,
+          store: store // Pass the store
+        )
+      } else {
+        // Optional: Provide a fallback view or handle the nil case appropriately
+        Text("Error: No date selected.")
       }
     }
-    .alert(
-      isPresented: Binding(
-        get: { calendarError != nil },
-        set: { if !$0 { calendarError = nil } }
-      )
-    ) {
-      Alert(
-        title: Text("Notification Error"),
-        message: Text(calendarError?.errorDescription ?? "Unknown error"),
-        dismissButton: .default(Text("OK")))
+    .alert(item: $calendarError) { error in
+      Alert(title: Text(error.title), message: Text(error.message), dismissButton: .default(Text("OK")))
     }
   }
 }
 
-struct CalendarEntryView: View {
+// MARK: - Day Entry Edit Sheet View
+
+struct DayEntryEditSheet: View {
+  @Environment(\.dismiss) private var dismiss
   let calendar: CustomCalendar
   let date: Date
-  let onSave: (CalendarEntry) -> Void
+  let store: CustomCalendarStore // Receive the store
 
-  @Environment(\.dismiss) private var dismiss
-  @State private var count = 0
-  @State private var completed = false
+  @State private var entryCount: Int
+  @State private var entryCompleted: Bool
 
-  var formattedDate: String {
-    let formatter: DateFormatter = DateFormatter()
-    formatter.dateStyle = .long
-    return formatter.string(from: date)
+  init(calendar: CustomCalendar, date: Date, store: CustomCalendarStore) {
+    self.calendar = calendar
+    self.date = date
+    self.store = store
+    // Initialize state based on existing entry or defaults
+    let existingEntry = store.getEntry(calendarId: calendar.id, date: date)
+    _entryCount = State(initialValue: existingEntry?.count ?? 0)
+    _entryCompleted = State(initialValue: existingEntry?.completed ?? false)
+  }
+
+  private func saveEntry() {
+    let newEntry = CalendarEntry(date: date, count: entryCount, completed: entryCompleted)
+    store.addEntry(calendarId: calendar.id, entry: newEntry)
+    WidgetCenter.shared.reloadAllTimelines()
+    dismiss()
   }
 
   var body: some View {
-    VStack(spacing: 0) {
-
-      HStack {
-        Text("Add Entry")
-        .font(.system(size: 32, design: .monospaced))
-        .foregroundColor(Color("text-secondary"))
-        .fontWeight(.bold)
-        Spacer()
-        
-      }
-      .padding(.horizontal)
-      .padding(.bottom, 8)
-      CustomSeparator()
-
-    Form {
-      Section {
-        Text(formattedDate)
-          .font(.system(size: 12, design: .monospaced))
-          .foregroundColor(Color("text-secondary"))
-      }.listRowBackground(Color("surface-secondary"))
-
-      Section {
-        switch calendar.trackingType {
-        case .binary:
-          Toggle(
-            "Completed",
-            isOn: Binding(
-              get: { completed },
-              set: { newValue in
-                completed = newValue
-                let entry = CalendarEntry(
-                  date: date,
-                  count: count,
-                  completed: newValue
-                )
-                onSave(entry)
-                WidgetCenter.shared.reloadAllTimelines()
+    NavigationView { // Wrap in NavigationView for title and buttons
+      Form {
+        Section {
+          if calendar.trackingType == .binary {
+            Toggle("Completed", isOn: $entryCompleted)
+          } else {
+            HStack {
+              Text("Count" + (calendar.unit != nil ? " (\(calendar.unit!.rawValue))" : ""))
+              Spacer()
+              TextField("Value", value: $entryCount, formatter: NumberFormatter())
+                .keyboardType(.numberPad)
+                .multilineTextAlignment(.trailing)
+                .frame(maxWidth: 100)
+                .onChange(of: entryCount) { newValue in
+                    // Automatically mark as completed if count > 0 for counter/multiple
+                    if calendar.trackingType == .counter || calendar.trackingType == .multipleDaily {
+                      entryCompleted = newValue > 0
+                    }
+                  }
               }
-            )
-          )
-          .tint(Color(calendar.color))
-        case .counter:
-          Stepper(
-            "Count: \(count)",
-            value: Binding(
-              get: { count },
-              set: { newValue in
-                count = newValue
-                let entry = CalendarEntry(
-                  date: date,
-                  count: newValue,
-                  completed: completed
-                )
-                onSave(entry)
-                WidgetCenter.shared.reloadAllTimelines()
-              }
-            ), in: 0...99
-          )
-        case .multipleDaily:
-          VStack(alignment: .leading, spacing: 8) {
-            Stepper(
-              "Count: \(count) / \(calendar.dailyTarget)",
-              value: Binding(
-                get: { count },
-                set: { newValue in
-                  count = newValue
-                  let entry = CalendarEntry(
-                    date: date,
-                    count: newValue,
-                    completed: newValue >= calendar.dailyTarget
-                  )
-                  onSave(entry)
-                  WidgetCenter.shared.reloadAllTimelines()
-                }
-              ), in: 0...99
-            )
-
-            ProgressView(value: Double(count), total: Double(calendar.dailyTarget))
-              .tint(Color(calendar.color))
-          }
+            }
         }
-      }.listRowBackground(Color("surface-secondary"))
-    }
-    }
-    .font(.system(size: 12, design: .monospaced))
-    .foregroundColor(Color("text-secondary"))
-    .scrollContentBackground(.hidden)
-    .background(Color("surface-muted"))
-    .toolbar {
-      ToolbarItem(placement: .confirmationAction) {
-        Button("Done") {
-          dismiss()
+        .listRowBackground(Color("surface-secondary"))
+      }
+      // Format the date to a String for the navigation title
+      .navigationTitle(dateFormatterLong.string(from: date))
+      .navigationBarTitleDisplayMode(.inline)
+      .toolbar {
+        ToolbarItem(placement: .cancellationAction) {
+          Button("Cancel") { dismiss() }
+        }
+        ToolbarItem(placement: .confirmationAction) {
+          Button("Save") { saveEntry() }
         }
       }
+      .background(Color("surface-muted").ignoresSafeArea())
+      .scrollContentBackground(.hidden)
     }
-    .onAppear {
-      if let existingEntry = CustomCalendarStore.shared.getEntry(
-        calendarId: calendar.id, date: date)
-      {
-        count = existingEntry.count
-        completed = existingEntry.completed
-      }
-    }
+    .presentationDetents([.medium])
   }
 }
 
-enum CalendarError: LocalizedError {
+private let dateFormatterLong: DateFormatter = {
+    let formatter = DateFormatter()
+    formatter.dateStyle = .long
+    formatter.timeStyle = .none
+    return formatter
+}()
+
+enum CalendarError: LocalizedError, Identifiable {
   case invalidName
   case notificationPermissionDenied
   case notificationSchedulingFailed(Error)
   case errorAddingEntry(Error)
+
+  var id: String { self.localizedDescription }
+
+  var title: String {
+      switch self {
+      case .invalidName:
+          return "Invalid Name"
+      case .notificationPermissionDenied:
+          return "Notification Permission Denied"
+      case .notificationSchedulingFailed:
+          return "Notification Error"
+      case .errorAddingEntry:
+          return "Entry Error"
+      }
+  }
+
+  var message: String {
+      errorDescription ?? "An unknown error occurred."
+  }
 
   var errorDescription: String? {
     switch self {
