@@ -14,6 +14,7 @@ struct EditCalendarView: View {
   @State private var recurringReminderEnabled: Bool
   @State private var reminderTime: Date
   @State private var selectedUnit: UnitOfMeasure?
+  @State private var defaultRecordValue: Int
   @State private var calendarError: CalendarError?
   @State private var showingDeleteConfirmation = false
 
@@ -30,6 +31,7 @@ struct EditCalendarView: View {
     _dailyTarget = State(initialValue: calendar.dailyTarget)
     _recurringReminderEnabled = State(initialValue: calendar.recurringReminderEnabled)
     _selectedUnit = State(initialValue: calendar.unit)
+    _defaultRecordValue = State(initialValue: calendar.defaultRecordValue ?? 1)
 
     // Default reminder time set to 9:00 AM as it's a common time for daily reminders
     let defaultTime =
@@ -152,6 +154,22 @@ struct EditCalendarView: View {
         .listRowBackground(Color("surface-secondary"))
       }
 
+      // Add Stepper for Default Record Value
+      if trackingType == .counter || trackingType == .multipleDaily {
+          Section {
+              // Replace Stepper with TextField for numbers
+              HStack {
+                  Text("Default Quick Add Value")
+                  Spacer()
+                  TextField("Value", value: $defaultRecordValue, formatter: NumberFormatter())
+                      .keyboardType(.numberPad)
+                      .multilineTextAlignment(.trailing)
+                      .frame(maxWidth: 100)
+              }
+          }
+          .listRowBackground(Color("surface-secondary"))
+      }
+
       Section {
         ScrollView(.horizontal, showsIndicators: false) {
           HStack {
@@ -268,7 +286,8 @@ struct EditCalendarView: View {
             recurringReminderEnabled: recurringReminderEnabled,
             reminderTime: recurringReminderEnabled ? validateReminderTime(reminderTime) : nil,
             order: calendar.order,
-            unit: trackingType == .counter ? selectedUnit : nil
+            unit: trackingType == .counter ? selectedUnit : nil,
+            defaultRecordValue: (trackingType == .counter || trackingType == .multipleDaily) ? defaultRecordValue : nil
           )
           onSave(updatedCalendar)
           scheduleNotifications(for: updatedCalendar)

@@ -16,6 +16,7 @@ struct CreateCalendarView: View {
   @State private var recurringReminderEnabled: Bool = false
   @State private var reminderTime: Date = Date()
   @State private var selectedUnit: UnitOfMeasure? = nil
+  @State private var defaultRecordValue: Int = 1
   @State private var isPaywallPresented = false
   @State private var errorMessage: String?
   @State private var isAlertPresented = false
@@ -52,7 +53,8 @@ struct CreateCalendarView: View {
         dailyTarget: dailyTarget,
         recurringReminderEnabled: recurringReminderEnabled,
         reminderTime: recurringReminderEnabled ? reminderTime : nil,
-        unit: trackingType == .counter ? selectedUnit : nil
+        unit: trackingType == .counter ? selectedUnit : nil,
+        defaultRecordValue: (trackingType == .counter || trackingType == .multipleDaily) ? defaultRecordValue : nil
       )
       onCreate(calendar)
     } catch {
@@ -103,6 +105,20 @@ struct CreateCalendarView: View {
             }
           }
           .listRowBackground(Color("surface-secondary"))
+        }
+
+        if trackingType == .counter || trackingType == .multipleDaily {
+            Section {
+                HStack {
+                    Text("Default Quick Add Value")
+                    Spacer()
+                    TextField("Value", value: $defaultRecordValue, formatter: NumberFormatter()) 
+                        .keyboardType(.numberPad)
+                        .multilineTextAlignment(.trailing)
+                        .frame(maxWidth: 100)
+                }
+            }
+            .listRowBackground(Color("surface-secondary"))
         }
       }
       .listRowBackground(Color("surface-secondary"))

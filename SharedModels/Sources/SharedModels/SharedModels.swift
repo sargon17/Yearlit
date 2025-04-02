@@ -101,7 +101,8 @@ public struct CustomCalendar: Codable, Identifiable {
   public var color: String  // Store as hex or named color
   public var trackingType: TrackingType
   public var dailyTarget: Int
-  public var unit: UnitOfMeasure? // New optional property
+  public var unit: UnitOfMeasure?
+  public var defaultRecordValue: Int?
   public var order: Int = 0
   public var recurringReminderEnabled: Bool
   public var reminderHour: Int?
@@ -112,14 +113,16 @@ public struct CustomCalendar: Codable, Identifiable {
     id: UUID = UUID(), name: String, color: String, trackingType: TrackingType,
     dailyTarget: Int = 1, entries: [String: CalendarEntry] = [:],
     recurringReminderEnabled: Bool = false, reminderTime: Date? = nil, order: Int = 0,
-    unit: UnitOfMeasure? = nil // Add unit parameter
+    unit: UnitOfMeasure? = nil,
+    defaultRecordValue: Int? = nil
   ) {
     self.id = id
     self.name = name
     self.color = color
     self.trackingType = trackingType
     self.dailyTarget = dailyTarget
-    self.unit = unit // Assign unit
+    self.unit = unit
+    self.defaultRecordValue = defaultRecordValue
     self.recurringReminderEnabled = recurringReminderEnabled
     self.order = order
     if let time = reminderTime {
@@ -139,7 +142,8 @@ public struct CustomCalendar: Codable, Identifiable {
     dailyTarget: Int = 1, entries: [String: CalendarEntry] = [:],
     recurringReminderEnabled: Bool = false, reminderHour: Int? = nil, reminderMinute: Int? = nil,
     order: Int = 0,
-    unit: UnitOfMeasure? = nil // Add unit parameter
+    unit: UnitOfMeasure? = nil,
+    defaultRecordValue: Int? = nil
   ) throws {
     // Validate hour and minute ranges
     if let hour = reminderHour, let minute = reminderMinute {
@@ -155,7 +159,8 @@ public struct CustomCalendar: Codable, Identifiable {
     self.color = color
     self.trackingType = trackingType
     self.dailyTarget = dailyTarget
-    self.unit = unit // Assign unit
+    self.unit = unit
+    self.defaultRecordValue = defaultRecordValue
     self.recurringReminderEnabled = recurringReminderEnabled
     self.order = order
     self.reminderHour = reminderHour
@@ -328,7 +333,8 @@ public class CustomCalendarStore: ObservableObject {
           entries: old.entries,
           recurringReminderEnabled: false,
           order: index,
-          unit: nil // Set unit to nil for migrated calendars
+          unit: nil,
+          defaultRecordValue: nil
         )
       }
       // Save the migrated data

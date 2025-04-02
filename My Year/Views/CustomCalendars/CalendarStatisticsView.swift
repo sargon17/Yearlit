@@ -36,11 +36,11 @@ struct CalendarStatisticsView: View {
         unit: unit,
         accentColor: accentColor
       )
-      StatisticItem(title: "Active Days", value: "\(stats.activeDays)", unit: unit, accentColor: accentColor)
-      StatisticItem(title: "Total Times Logged", value: "\(stats.totalCount)", unit: unit, accentColor: accentColor)
-      StatisticItem(title: "Max Times Logged in a Day", value: "\(stats.maxCount)", unit: unit, accentColor: accentColor)
-      StatisticItem(title: "Longest Days in a Row", value: "\(stats.longestStreak)", unit: unit, accentColor: accentColor)
-      StatisticItem(title: "Current Days in a Row", value: "\(stats.currentStreak)", unit: unit, accentColor: accentColor)
+      StatisticItem(title: "Active Days", value: "\(stats.activeDays)", unit: nil, accentColor: accentColor)
+      StatisticItem(title: "Total Times Logged", value: "\(stats.totalCount)", unit: nil, accentColor: accentColor)
+      StatisticItem(title: "Max Times Logged in a Day", value: "\(stats.maxCount)", unit: nil, accentColor: accentColor)
+      StatisticItem(title: "Longest Days in a Row", value: "\(stats.longestStreak)", unit: nil, accentColor: accentColor)
+      StatisticItem(title: "Current Days in a Row", value: "\(stats.currentStreak)", unit: nil, accentColor: accentColor)
     }.padding(.bottom)
   }
 }
