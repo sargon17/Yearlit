@@ -362,7 +362,8 @@ struct CustomCalendarView: View {
         stats: getStats(),
         accentColor: Color(calendar.color),
         todaysCount: todaysLogCount, // Pass today's count
-        unit: calendar.unit // Pass the unit
+        unit: calendar.unit, // Pass the unit
+        currencySymbol: calendar.currencySymbol // Pass the currency symbol
       )
       .padding(.top, 20)
 
@@ -512,7 +513,7 @@ struct DayEntryEditSheet: View {
             Toggle("Completed", isOn: $entryCompleted)
           } else {
             HStack {
-              Text("Count" + (calendar.unit != nil ? " (\(calendar.unit!.rawValue))" : ""))
+              Text("Count" + (calendar.unit != nil ? " (\(calendar.unit == .currency ? (calendar.currencySymbol ?? "$") : calendar.unit!.rawValue))" : ""))
               Spacer()
               TextField("Value", value: $entryCount, formatter: NumberFormatter())
                 .keyboardType(.numberPad)

@@ -40,6 +40,9 @@
     "Create" : {
 
     },
+    "Currency Symbol" : {
+
+    },
     "Daily Target: %lld" : {
 
     },
@@ -156,6 +159,9 @@
 
     },
     "Statistics" : {
+
+    },
+    "Symbol" : {
 
     },
     "Thank you for your support!" : {

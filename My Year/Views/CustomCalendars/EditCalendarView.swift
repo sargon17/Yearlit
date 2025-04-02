@@ -17,6 +17,7 @@ struct EditCalendarView: View {
   @State private var defaultRecordValue: Int
   @State private var calendarError: CalendarError?
   @State private var showingDeleteConfirmation = false
+  @State private var currencySymbol: String
 
   init(
     calendar: CustomCalendar, onSave: @escaping (CustomCalendar) -> Void,
@@ -32,6 +33,7 @@ struct EditCalendarView: View {
     _recurringReminderEnabled = State(initialValue: calendar.recurringReminderEnabled)
     _selectedUnit = State(initialValue: calendar.unit)
     _defaultRecordValue = State(initialValue: calendar.defaultRecordValue ?? 1)
+    _currencySymbol = State(initialValue: calendar.currencySymbol ?? "$")
 
     // Default reminder time set to 9:00 AM as it's a common time for daily reminders
     let defaultTime =
@@ -138,8 +140,9 @@ struct EditCalendarView: View {
       }
       .listRowBackground(Color("surface-secondary"))
 
+      // Group Unit of Measure and Currency Symbol together conditionally
       if trackingType == .counter {
-        Section {
+        Section { // Section for Unit/Symbol
           Picker("Unit of Measure", selection: $selectedUnit) {
             Text("None").tag(nil as UnitOfMeasure?)
             ForEach(UnitOfMeasure.Category.allCases, id: \.self) { category in
@@ -150,24 +153,33 @@ struct EditCalendarView: View {
               }
             }
           }
-        }
+
+          if selectedUnit == .currency {
+            HStack {
+              Text("Currency Symbol")
+              Spacer()
+              TextField("Symbol", text: $currencySymbol)
+                .multilineTextAlignment(.trailing)
+                .frame(maxWidth: 100)
+            }
+          }
+        } // End Section for Unit/Symbol
         .listRowBackground(Color("surface-secondary"))
       }
 
-      // Add Stepper for Default Record Value
+      // Add Stepper for Default Record Value (Separate Section)
       if trackingType == .counter || trackingType == .multipleDaily {
-          Section {
-              // Replace Stepper with TextField for numbers
-              HStack {
-                  Text("Default Quick Add Value")
-                  Spacer()
-                  TextField("Value", value: $defaultRecordValue, formatter: NumberFormatter())
-                      .keyboardType(.numberPad)
-                      .multilineTextAlignment(.trailing)
-                      .frame(maxWidth: 100)
-              }
+        Section {
+          HStack {
+            Text("Default Quick Add Value")
+            Spacer()
+            TextField("Value", value: $defaultRecordValue, formatter: NumberFormatter())
+                .keyboardType(.numberPad)
+                .multilineTextAlignment(.trailing)
+                .frame(maxWidth: 100)
           }
-          .listRowBackground(Color("surface-secondary"))
+        }
+        .listRowBackground(Color("surface-secondary"))
       }
 
       Section {
@@ -287,7 +299,8 @@ struct EditCalendarView: View {
             reminderTime: recurringReminderEnabled ? validateReminderTime(reminderTime) : nil,
             order: calendar.order,
             unit: trackingType == .counter ? selectedUnit : nil,
-            defaultRecordValue: (trackingType == .counter || trackingType == .multipleDaily) ? defaultRecordValue : nil
+            defaultRecordValue: (trackingType == .counter || trackingType == .multipleDaily) ? defaultRecordValue : nil,
+            currencySymbol: (trackingType == .counter && selectedUnit == .currency) ? currencySymbol : nil
           )
           onSave(updatedCalendar)
           scheduleNotifications(for: updatedCalendar)

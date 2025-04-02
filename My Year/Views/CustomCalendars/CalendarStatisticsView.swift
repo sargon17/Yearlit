@@ -14,6 +14,7 @@ struct CalendarStatisticsView: View {
   let accentColor: Color
   let todaysCount: Int
   let unit: UnitOfMeasure?
+  let currencySymbol: String?
 
   var body: some View {
     VStack(spacing: 0) {
@@ -34,13 +35,14 @@ struct CalendarStatisticsView: View {
         title: "Today's Log",
         value: "\(todaysCount)",
         unit: unit,
+        currencySymbol: currencySymbol,
         accentColor: accentColor
       )
-      StatisticItem(title: "Total Times Logged", value: "\(stats.totalCount)", unit: unit, accentColor: accentColor)
-      StatisticItem(title: "Max Times Logged in a Day", value: "\(stats.maxCount)", unit: unit, accentColor: accentColor)
-      StatisticItem(title: "Active Days", value: "\(stats.activeDays)", unit: nil, accentColor: accentColor)
-      StatisticItem(title: "Longest Days in a Row", value: "\(stats.longestStreak)", unit: nil, accentColor: accentColor)
-      StatisticItem(title: "Current Days in a Row", value: "\(stats.currentStreak)", unit: nil, accentColor: accentColor)
+      StatisticItem(title: "Total Times Logged", value: "\(stats.totalCount)", unit: unit, currencySymbol: currencySymbol, accentColor: accentColor)
+      StatisticItem(title: "Max Times Logged in a Day", value: "\(stats.maxCount)", unit: unit, currencySymbol: currencySymbol, accentColor: accentColor)
+      StatisticItem(title: "Active Days", value: "\(stats.activeDays)", unit: nil, currencySymbol: nil, accentColor: accentColor)
+      StatisticItem(title: "Longest Days in a Row", value: "\(stats.longestStreak)", unit: nil, currencySymbol: nil, accentColor: accentColor)
+      StatisticItem(title: "Current Days in a Row", value: "\(stats.currentStreak)", unit: nil, currencySymbol: nil, accentColor: accentColor)
     }.padding(.bottom)
   }
 }
@@ -49,6 +51,7 @@ struct StatisticItem: View {
   let title: String
   let value: String
   let unit: UnitOfMeasure?
+  let currencySymbol: String?
   let accentColor: Color
 
   var body: some View {
@@ -68,7 +71,7 @@ struct StatisticItem: View {
             .lineLimit(1)
 
             if let unit = unit {
-              Text(unit.rawValue)
+              Text(unit == .currency ? (currencySymbol ?? "$") : unit.rawValue)
                 .font(.system(size: 12, design: .monospaced))
                 .foregroundColor(Color("text-tertiary"))
                 .padding(.top, -10)

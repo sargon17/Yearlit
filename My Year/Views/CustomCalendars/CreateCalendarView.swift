@@ -20,6 +20,7 @@ struct CreateCalendarView: View {
   @State private var isPaywallPresented = false
   @State private var errorMessage: String?
   @State private var isAlertPresented = false
+  @State private var currencySymbol: String = "$"
 
   private let colors = [
     "mood-terrible",
@@ -54,7 +55,8 @@ struct CreateCalendarView: View {
         recurringReminderEnabled: recurringReminderEnabled,
         reminderTime: recurringReminderEnabled ? reminderTime : nil,
         unit: trackingType == .counter ? selectedUnit : nil,
-        defaultRecordValue: (trackingType == .counter || trackingType == .multipleDaily) ? defaultRecordValue : nil
+        defaultRecordValue: (trackingType == .counter || trackingType == .multipleDaily) ? defaultRecordValue : nil,
+        currencySymbol: (trackingType == .counter && selectedUnit == .currency) ? currencySymbol : nil
       )
       onCreate(calendar)
     } catch {
@@ -101,6 +103,16 @@ struct CreateCalendarView: View {
                     Text(unit.displayName).tag(unit as UnitOfMeasure?)
                   }
                 }
+              }
+            }
+
+            if selectedUnit == .currency {
+              HStack {
+                Text("Currency Symbol")
+                Spacer()
+                TextField("Symbol", text: $currencySymbol)
+                  .multilineTextAlignment(.trailing)
+                  .frame(maxWidth: 100)
               }
             }
           }
@@ -154,8 +166,8 @@ struct CreateCalendarView: View {
           Text("Color")
         }
       .listRowBackground(Color("surface-secondary"))
-    }
-    .scrollContentBackground(.hidden)
+      }
+      .scrollContentBackground(.hidden)
     .background(Color("surface-muted"))
     .navigationTitle("New Calendar")
     .navigationBarTitleDisplayMode(.large)

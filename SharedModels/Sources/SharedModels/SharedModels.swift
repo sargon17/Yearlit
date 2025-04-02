@@ -46,6 +46,9 @@ public enum UnitOfMeasure: String, Codable, CaseIterable, Identifiable {
     case calories = "kcal"
     case kilojoules = "kJ"
 
+    // Currency
+    case currency = "Currency"
+
     public enum Category: String, CaseIterable {
         case quantity = "Quantity/Count"
         case distance = "Distance"
@@ -53,6 +56,7 @@ public enum UnitOfMeasure: String, Codable, CaseIterable, Identifiable {
         case time = "Time"
         case weight = "Weight"
         case energy = "Energy/Calories"
+        case currency = "Currency"
     }
 
     public var category: Category {
@@ -69,6 +73,8 @@ public enum UnitOfMeasure: String, Codable, CaseIterable, Identifiable {
             return .weight
         case .calories, .kilojoules:
             return .energy
+        case .currency:
+            return .currency
         }
     }
 
@@ -84,6 +90,7 @@ public enum UnitOfMeasure: String, Codable, CaseIterable, Identifiable {
         case .kilograms: return "Kilograms (kg)"
         case .calories: return "Calories (kcal)"
         case .kilojoules: return "Kilojoules (kJ)"
+        case .currency: return "Currency"
         default: return rawValue
         }
     }
@@ -102,6 +109,7 @@ public struct CustomCalendar: Codable, Identifiable {
   public var trackingType: TrackingType
   public var dailyTarget: Int
   public var unit: UnitOfMeasure?
+  public var currencySymbol: String?
   public var defaultRecordValue: Int?
   public var order: Int = 0
   public var recurringReminderEnabled: Bool
@@ -114,7 +122,8 @@ public struct CustomCalendar: Codable, Identifiable {
     dailyTarget: Int = 1, entries: [String: CalendarEntry] = [:],
     recurringReminderEnabled: Bool = false, reminderTime: Date? = nil, order: Int = 0,
     unit: UnitOfMeasure? = nil,
-    defaultRecordValue: Int? = nil
+    defaultRecordValue: Int? = nil,
+    currencySymbol: String? = nil
   ) {
     self.id = id
     self.name = name
@@ -123,6 +132,7 @@ public struct CustomCalendar: Codable, Identifiable {
     self.dailyTarget = dailyTarget
     self.unit = unit
     self.defaultRecordValue = defaultRecordValue
+    self.currencySymbol = currencySymbol
     self.recurringReminderEnabled = recurringReminderEnabled
     self.order = order
     if let time = reminderTime {
@@ -143,7 +153,8 @@ public struct CustomCalendar: Codable, Identifiable {
     recurringReminderEnabled: Bool = false, reminderHour: Int? = nil, reminderMinute: Int? = nil,
     order: Int = 0,
     unit: UnitOfMeasure? = nil,
-    defaultRecordValue: Int? = nil
+    defaultRecordValue: Int? = nil,
+    currencySymbol: String? = nil
   ) throws {
     // Validate hour and minute ranges
     if let hour = reminderHour, let minute = reminderMinute {
@@ -161,6 +172,7 @@ public struct CustomCalendar: Codable, Identifiable {
     self.dailyTarget = dailyTarget
     self.unit = unit
     self.defaultRecordValue = defaultRecordValue
+    self.currencySymbol = currencySymbol
     self.recurringReminderEnabled = recurringReminderEnabled
     self.order = order
     self.reminderHour = reminderHour
@@ -334,7 +346,8 @@ public class CustomCalendarStore: ObservableObject {
           recurringReminderEnabled: false,
           order: index,
           unit: nil,
-          defaultRecordValue: nil
+          defaultRecordValue: nil,
+          currencySymbol: nil
         )
       }
       // Save the migrated data
