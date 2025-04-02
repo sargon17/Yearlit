@@ -304,6 +304,12 @@ public class CustomCalendarStore: ObservableObject {
     let dateKey = dateFormatter.string(from: date)
     return calendar.entries[dateKey]
   }
+
+  public func clearEntries(calendarId: UUID) {
+    guard let index = calendars.firstIndex(where: { $0.id == calendarId }) else { return }
+    calendars[index].entries = [:]
+    saveCalendars()
+  }
 }
 
 public class ValuationStore: ObservableObject {

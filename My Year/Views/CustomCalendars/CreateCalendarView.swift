@@ -151,5 +151,14 @@ struct CreateCalendarView: View {
         }
       )
     }
+    .onAppear {
+        Purchases.shared.getCustomerInfo { (info, error) in
+            if let e = error {
+                print("Error fetching customer info: \(e.localizedDescription)")
+                return
+            }
+            self.customerInfo = info
+        }
+    }
   }
 }

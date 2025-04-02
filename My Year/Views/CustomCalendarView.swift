@@ -29,6 +29,7 @@ struct CustomCalendarView: View {
   @StateObject private var store: CustomCalendarStore = CustomCalendarStore.shared
   @ObservedObject private var valuationStore: ValuationStore = ValuationStore.shared
   @AppStorage("runtimeDebugEnabled") private var runtimeDebugEnabled: Bool = false
+  @AppStorage("wandFillForce") private var wandFillForce: Double = 0.5
 
   private let today = Date()
 
@@ -45,7 +46,7 @@ struct CustomCalendarView: View {
 
   private func fillRandomEntries() {
     // TODO: Implement clearEntries(calendarId:) in CustomCalendarStore to enable clearing before filling.
-    // store.clearEntries(calendarId: self.calendar.id)
+    store.clearEntries(calendarId: self.calendar.id)
     
     let calendar = Calendar.current
     let startOfYear = calendar.date(from: DateComponents(year: valuationStore.selectedYear, month: 1, day: 1))!
@@ -54,17 +55,17 @@ struct CustomCalendarView: View {
       let date = calendar.date(byAdding: .day, value: day, to: startOfYear)!
       let dateKey = customDateFormatter(date: date)
       
-      if date <= today {
+      if date <= today && Double.random(in: 0.0...1.0) < wandFillForce {
         switch self.calendar.trackingType {
         case .binary:
-          let entry = CalendarEntry(date: date, count: 1, completed: Bool.random())
+          let entry = CalendarEntry(date: date, count: 1, completed: true)
           store.addEntry(calendarId: self.calendar.id, entry: entry)
         case .counter:
-          let count = Int.random(in: 0...5)
+          let count = Int.random(in: 1...5)
           let entry = CalendarEntry(date: date, count: count, completed: count > 0)
           store.addEntry(calendarId: self.calendar.id, entry: entry)
         case .multipleDaily:
-          let count = Int.random(in: 0...self.calendar.dailyTarget)
+          let count = Int.random(in: 1...self.calendar.dailyTarget)
           let entry = CalendarEntry(date: date, count: count, completed: count >= self.calendar.dailyTarget)
           store.addEntry(calendarId: self.calendar.id, entry: entry)
         }
