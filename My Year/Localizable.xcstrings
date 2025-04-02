@@ -43,7 +43,7 @@
     "Currency Symbol" : {
 
     },
-    "Daily Target: %lld" : {
+    "Daily Target" : {
 
     },
     "Danger Zone" : {
@@ -162,6 +162,9 @@
 
     },
     "Symbol" : {
+
+    },
+    "Target" : {
 
     },
     "Thank you for your support!" : {

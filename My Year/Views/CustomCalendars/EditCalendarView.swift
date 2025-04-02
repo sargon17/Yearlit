@@ -135,13 +135,20 @@ struct EditCalendarView: View {
         }
 
         if trackingType == .multipleDaily {
-          Stepper("Daily Target: \(dailyTarget)", value: $dailyTarget, in: 1...10)
+          HStack {
+            Text("Daily Target")
+            Spacer()
+            TextField("Target", value: $dailyTarget, formatter: NumberFormatter())
+                .keyboardType(.numberPad)
+                .multilineTextAlignment(.trailing)
+                .frame(maxWidth: 100)
+          }
         }
       }
       .listRowBackground(Color("surface-secondary"))
 
       // Group Unit of Measure and Currency Symbol together conditionally
-      if trackingType == .counter {
+      if trackingType == .counter || trackingType == .multipleDaily {
         Section { // Section for Unit/Symbol
           Picker("Unit of Measure", selection: $selectedUnit) {
             Text("None").tag(nil as UnitOfMeasure?)
@@ -298,9 +305,9 @@ struct EditCalendarView: View {
             recurringReminderEnabled: recurringReminderEnabled,
             reminderTime: recurringReminderEnabled ? validateReminderTime(reminderTime) : nil,
             order: calendar.order,
-            unit: trackingType == .counter ? selectedUnit : nil,
+            unit: (trackingType == .counter || trackingType == .multipleDaily) ? selectedUnit : nil,
             defaultRecordValue: (trackingType == .counter || trackingType == .multipleDaily) ? defaultRecordValue : nil,
-            currencySymbol: (trackingType == .counter && selectedUnit == .currency) ? currencySymbol : nil
+            currencySymbol: ((trackingType == .counter || trackingType == .multipleDaily) && selectedUnit == .currency) ? currencySymbol : nil
           )
           onSave(updatedCalendar)
           scheduleNotifications(for: updatedCalendar)

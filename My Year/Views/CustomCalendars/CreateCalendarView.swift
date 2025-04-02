@@ -54,9 +54,9 @@ struct CreateCalendarView: View {
         dailyTarget: dailyTarget,
         recurringReminderEnabled: recurringReminderEnabled,
         reminderTime: recurringReminderEnabled ? reminderTime : nil,
-        unit: trackingType == .counter ? selectedUnit : nil,
+        unit: (trackingType == .counter || trackingType == .multipleDaily) ? selectedUnit : nil,
         defaultRecordValue: (trackingType == .counter || trackingType == .multipleDaily) ? defaultRecordValue : nil,
-        currencySymbol: (trackingType == .counter && selectedUnit == .currency) ? currencySymbol : nil
+        currencySymbol: ((trackingType == .counter || trackingType == .multipleDaily) && selectedUnit == .currency) ? currencySymbol : nil
       )
       onCreate(calendar)
     } catch {
@@ -90,10 +90,17 @@ struct CreateCalendarView: View {
         }
 
         if trackingType == .multipleDaily {
-          Stepper("Daily Target: \(dailyTarget)", value: $dailyTarget, in: 1...10)
+          HStack {
+            Text("Daily Target")
+            Spacer()
+            TextField("Target", value: $dailyTarget, formatter: NumberFormatter())
+                .keyboardType(.numberPad)
+                .multilineTextAlignment(.trailing)
+                .frame(maxWidth: 100)
+          }
         }
 
-        if trackingType == .counter {
+        if trackingType == .counter || trackingType == .multipleDaily {
           Section {
             Picker("Unit of Measure", selection: $selectedUnit) {
               Text("None").tag(nil as UnitOfMeasure?)
