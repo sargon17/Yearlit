@@ -1,5 +1,5 @@
-import SwiftUI
 import SharedModels
+import SwiftUI
 
 struct CalendarStats {
   public let activeDays: Int
@@ -38,11 +38,21 @@ struct CalendarStatisticsView: View {
         currencySymbol: currencySymbol,
         accentColor: accentColor
       )
-      StatisticItem(title: "Total Times Logged", value: "\(stats.totalCount)", unit: unit, currencySymbol: currencySymbol, accentColor: accentColor)
-      StatisticItem(title: "Max Times Logged in a Day", value: "\(stats.maxCount)", unit: unit, currencySymbol: currencySymbol, accentColor: accentColor)
-      StatisticItem(title: "Active Days", value: "\(stats.activeDays)", unit: nil, currencySymbol: nil, accentColor: accentColor)
-      StatisticItem(title: "Longest Days in a Row", value: "\(stats.longestStreak)", unit: nil, currencySymbol: nil, accentColor: accentColor)
-      StatisticItem(title: "Current Days in a Row", value: "\(stats.currentStreak)", unit: nil, currencySymbol: nil, accentColor: accentColor)
+      StatisticItem(
+        title: "Total Times Logged", value: "\(stats.totalCount)", unit: unit,
+        currencySymbol: currencySymbol, accentColor: accentColor)
+      StatisticItem(
+        title: "Max Times Logged in a Day", value: "\(stats.maxCount)", unit: unit,
+        currencySymbol: currencySymbol, accentColor: accentColor)
+      StatisticItem(
+        title: "Active Days", value: "\(stats.activeDays)", unit: nil, currencySymbol: nil,
+        accentColor: accentColor)
+      StatisticItem(
+        title: "Longest Days in a Row", value: "\(stats.longestStreak)", unit: nil,
+        currencySymbol: nil, accentColor: accentColor)
+      StatisticItem(
+        title: "Current Days in a Row", value: "\(stats.currentStreak)", unit: nil,
+        currencySymbol: nil, accentColor: accentColor)
     }.padding(.bottom)
   }
 }
@@ -56,37 +66,37 @@ struct StatisticItem: View {
 
   var body: some View {
     VStack(spacing: 0) {
-        HStack(alignment: .center) {
-          Text(title)
+      HStack(alignment: .center) {
+        Text(title)
+          .font(.system(size: 12, design: .monospaced))
+          .foregroundColor(Color("text-tertiary"))
+
+        Spacer()
+        Text(value)
+          .font(.system(size: 64, design: .monospaced))
+          .foregroundColor(Color(accentColor))
+          .fontWeight(.black)
+          .padding(.bottom, -20)
+          .minimumScaleFactor(0.5)
+          .lineLimit(1)
+
+        if let unit = unit {
+          Text(unit == .currency ? (currencySymbol ?? "$") : unit.rawValue)
             .font(.system(size: 12, design: .monospaced))
             .foregroundColor(Color("text-tertiary"))
-
-          Spacer()
-          Text(value)
-            .font(.system(size: 64, design: .monospaced))
-            .foregroundColor(Color(accentColor))
-            .fontWeight(.black)
-            .padding(.bottom, -20)
-            .minimumScaleFactor(0.5)
-            .lineLimit(1)
-
-            if let unit = unit {
-              Text(unit == .currency ? (currencySymbol ?? "$") : unit.rawValue)
-                .font(.system(size: 12, design: .monospaced))
-                .foregroundColor(Color("text-tertiary"))
-                .padding(.top, -10)
-            }
+            .padding(.top, -10)
         }
-        .clipped()
-        .padding(0)
-        .padding(.horizontal)
-        .overlay(
-          VStack {
-            Spacer()
-            CustomSeparator()
-          }
-        ).frame(maxWidth: .infinity)
       }
+      .clipped()
+      .padding(0)
+      .padding(.horizontal)
+      .overlay(
+        VStack {
+          Spacer()
+          CustomSeparator()
+        }
+      ).frame(maxWidth: .infinity)
+    }
   }
 }
 

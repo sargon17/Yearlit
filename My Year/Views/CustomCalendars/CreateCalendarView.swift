@@ -15,7 +15,7 @@ struct CreateCalendarView: View {
   @State private var dailyTarget = 2
   @State private var recurringReminderEnabled: Bool = false
   @State private var reminderTime: Date = Date()
-  @State private var selectedUnit: UnitOfMeasure? = nil
+  @State private var selectedUnit: UnitOfMeasure?
   @State private var defaultRecordValue: Int = 1
   @State private var isPaywallPresented = false
   @State private var errorMessage: String?
@@ -38,7 +38,7 @@ struct CreateCalendarView: View {
     "mood-excellent",
     "qs-fuchsia",
     "qs-pink",
-    "qs-rose",
+    "qs-rose"
   ]
 
   func userCanCreateCalendar() -> Bool {
@@ -46,22 +46,20 @@ struct CreateCalendarView: View {
   }
 
   func createCalendar() {
-    do {
-      let calendar = CustomCalendar(
-        name: name,
-        color: selectedColor,
-        trackingType: trackingType,
-        dailyTarget: dailyTarget,
-        recurringReminderEnabled: recurringReminderEnabled,
-        reminderTime: recurringReminderEnabled ? reminderTime : nil,
-        unit: (trackingType == .counter || trackingType == .multipleDaily) ? selectedUnit : nil,
-        defaultRecordValue: (trackingType == .counter || trackingType == .multipleDaily) ? defaultRecordValue : nil,
-        currencySymbol: ((trackingType == .counter || trackingType == .multipleDaily) && selectedUnit == .currency) ? currencySymbol : nil
-      )
-      onCreate(calendar)
-    } catch {
-      errorMessage = "Error creating calendar, please try again."
-    }
+    let calendar = CustomCalendar(
+      name: name,
+      color: selectedColor,
+      trackingType: trackingType,
+      dailyTarget: dailyTarget,
+      recurringReminderEnabled: recurringReminderEnabled,
+      reminderTime: recurringReminderEnabled ? reminderTime : nil,
+      unit: (trackingType == .counter || trackingType == .multipleDaily) ? selectedUnit : nil,
+      defaultRecordValue: (trackingType == .counter || trackingType == .multipleDaily)
+        ? defaultRecordValue : nil,
+      currencySymbol: ((trackingType == .counter || trackingType == .multipleDaily)
+        && selectedUnit == .currency) ? currencySymbol : nil
+    )
+    onCreate(calendar)
   }
 
   func handleCreateCalendar() {
@@ -71,7 +69,6 @@ struct CreateCalendarView: View {
       createCalendar()
     }
   }
-
 
   var body: some View {
     Form {
@@ -94,9 +91,9 @@ struct CreateCalendarView: View {
             Text("Daily Target")
             Spacer()
             TextField("Target", value: $dailyTarget, formatter: NumberFormatter())
-                .keyboardType(.numberPad)
-                .multilineTextAlignment(.trailing)
-                .frame(maxWidth: 100)
+              .keyboardType(.numberPad)
+              .multilineTextAlignment(.trailing)
+              .frame(maxWidth: 100)
           }
         }
 
@@ -127,17 +124,17 @@ struct CreateCalendarView: View {
         }
 
         if trackingType == .counter || trackingType == .multipleDaily {
-            Section {
-                HStack {
-                    Text("Default Quick Add Value")
-                    Spacer()
-                    TextField("Value", value: $defaultRecordValue, formatter: NumberFormatter()) 
-                        .keyboardType(.numberPad)
-                        .multilineTextAlignment(.trailing)
-                        .frame(maxWidth: 100)
-                }
+          Section {
+            HStack {
+              Text("Default Quick Add Value")
+              Spacer()
+              TextField("Value", value: $defaultRecordValue, formatter: NumberFormatter())
+                .keyboardType(.numberPad)
+                .multilineTextAlignment(.trailing)
+                .frame(maxWidth: 100)
             }
-            .listRowBackground(Color("surface-secondary"))
+          }
+          .listRowBackground(Color("surface-secondary"))
         }
       }
       .listRowBackground(Color("surface-secondary"))
@@ -156,25 +153,25 @@ struct CreateCalendarView: View {
           HStack {
             ForEach(colors, id: \.self) { color in
               Circle()
-              .fill(Color(color))
-              .frame(width: 30, height: 30)
-              .overlay(
-                Circle()
-                  .stroke(Color.primary, lineWidth: selectedColor == color ? 2 : 0)
-              )
-              .onTapGesture {
-                selectedColor = color
+                .fill(Color(color))
+                .frame(width: 30, height: 30)
+                .overlay(
+                  Circle()
+                    .stroke(Color.primary, lineWidth: selectedColor == color ? 2 : 0)
+                )
+                .onTapGesture {
+                  selectedColor = color
                 }
-              }
-            }.padding(2)
+            }
+          }.padding(2)
             .padding(.horizontal, 10)
-          }.padding(.horizontal, -20)
-        } header: {
-          Text("Color")
-        }
-      .listRowBackground(Color("surface-secondary"))
+        }.padding(.horizontal, -20)
+      } header: {
+        Text("Color")
       }
-      .scrollContentBackground(.hidden)
+      .listRowBackground(Color("surface-secondary"))
+    }
+    .scrollContentBackground(.hidden)
     .background(Color("surface-muted"))
     .navigationTitle("New Calendar")
     .navigationBarTitleDisplayMode(.large)
@@ -205,13 +202,14 @@ struct CreateCalendarView: View {
       )
     }
     .onAppear {
-        Purchases.shared.getCustomerInfo { (info, error) in
-            if let e = error {
-                print("Error fetching customer info: \(e.localizedDescription)")
-                return
-            }
-            self.customerInfo = info
+      Purchases.shared.getCustomerInfo { (info, error) in
+        // swiftlint:disable:next identifier_name
+        if let e = error {
+          print("Error fetching customer info: \(e.localizedDescription)")
+          return
         }
+        self.customerInfo = info
+      }
     }
   }
 }

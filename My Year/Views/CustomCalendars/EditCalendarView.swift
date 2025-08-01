@@ -139,9 +139,9 @@ struct EditCalendarView: View {
             Text("Daily Target")
             Spacer()
             TextField("Target", value: $dailyTarget, formatter: NumberFormatter())
-                .keyboardType(.numberPad)
-                .multilineTextAlignment(.trailing)
-                .frame(maxWidth: 100)
+              .keyboardType(.numberPad)
+              .multilineTextAlignment(.trailing)
+              .frame(maxWidth: 100)
           }
         }
       }
@@ -149,7 +149,7 @@ struct EditCalendarView: View {
 
       // Group Unit of Measure and Currency Symbol together conditionally
       if trackingType == .counter || trackingType == .multipleDaily {
-        Section { // Section for Unit/Symbol
+        Section {  // Section for Unit/Symbol
           Picker("Unit of Measure", selection: $selectedUnit) {
             Text("None").tag(nil as UnitOfMeasure?)
             ForEach(UnitOfMeasure.Category.allCases, id: \.self) { category in
@@ -170,7 +170,7 @@ struct EditCalendarView: View {
                 .frame(maxWidth: 100)
             }
           }
-        } // End Section for Unit/Symbol
+        }  // End Section for Unit/Symbol
         .listRowBackground(Color("surface-secondary"))
       }
 
@@ -181,9 +181,9 @@ struct EditCalendarView: View {
             Text("Default Quick Add Value")
             Spacer()
             TextField("Value", value: $defaultRecordValue, formatter: NumberFormatter())
-                .keyboardType(.numberPad)
-                .multilineTextAlignment(.trailing)
-                .frame(maxWidth: 100)
+              .keyboardType(.numberPad)
+              .multilineTextAlignment(.trailing)
+              .frame(maxWidth: 100)
           }
         }
         .listRowBackground(Color("surface-secondary"))
@@ -192,21 +192,21 @@ struct EditCalendarView: View {
       Section {
         ScrollView(.horizontal, showsIndicators: false) {
           HStack {
-              ForEach(colors, id: \.self) { color in
-                Circle()
-                  .fill(Color(color))
-                  .frame(width: 30, height: 30)
-                  .overlay(
-                    Circle()
-                      .stroke(Color.primary, lineWidth: selectedColor == color ? 2 : 0)
-                  )
-                  .onTapGesture {
-                    selectedColor = color
-                  }
-              }
-            }.padding(2)
+            ForEach(colors, id: \.self) { color in
+              Circle()
+                .fill(Color(color))
+                .frame(width: 30, height: 30)
+                .overlay(
+                  Circle()
+                    .stroke(Color.primary, lineWidth: selectedColor == color ? 2 : 0)
+                )
+                .onTapGesture {
+                  selectedColor = color
+                }
+            }
+          }.padding(2)
             .padding(.horizontal, 10)
-          }.padding(.horizontal, -20)
+        }.padding(.horizontal, -20)
       } header: {
         Text("Color")
       }
@@ -306,8 +306,10 @@ struct EditCalendarView: View {
             reminderTime: recurringReminderEnabled ? validateReminderTime(reminderTime) : nil,
             order: calendar.order,
             unit: (trackingType == .counter || trackingType == .multipleDaily) ? selectedUnit : nil,
-            defaultRecordValue: (trackingType == .counter || trackingType == .multipleDaily) ? defaultRecordValue : nil,
-            currencySymbol: ((trackingType == .counter || trackingType == .multipleDaily) && selectedUnit == .currency) ? currencySymbol : nil
+            defaultRecordValue: (trackingType == .counter || trackingType == .multipleDaily)
+              ? defaultRecordValue : nil,
+            currencySymbol: ((trackingType == .counter || trackingType == .multipleDaily)
+              && selectedUnit == .currency) ? currencySymbol : nil
           )
           onSave(updatedCalendar)
           scheduleNotifications(for: updatedCalendar)
