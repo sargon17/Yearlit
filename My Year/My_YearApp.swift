@@ -20,12 +20,10 @@ struct My_YearApp: App {
     init() {
          Purchases.configure(withAPIKey: "appl_rQKHOkYUqJKaipHpcSXlIpPgvPe")
         
-        // Test direct UserDefaults access
         let appGroupId = "group.sargon17.My-Year"
         if let defaults = UserDefaults(suiteName: appGroupId) {
             NSLog("Successfully created UserDefaults with App Group: \(appGroupId)")
             
-            // Try writing and reading a test value
             let testKey = "appLaunchTest"
             defaults.set("test", forKey: testKey)
             defaults.synchronize()
