@@ -4,6 +4,7 @@ import SwiftUI
 
 struct CalendarsOverview: View {
   @ObservedObject var store: CustomCalendarStore
+  @ObservedObject var valuationStore: ValuationStore
   @Binding var selectedIndex: Int
   @Environment(\.dismiss) private var dismiss
   @State private var isReorderActive = false
@@ -72,7 +73,10 @@ struct CalendarsOverview: View {
               Array(store.calendars.sorted { $0.order < $1.order }.enumerated()), id: \.element.id
             ) { index, calendar in
               CalendarsOverviewsItem(
-                calendar: calendar, selectedIndex: $selectedIndex, store: store,
+                calendar: store.calendars[index],
+                valuationStore: valuationStore,
+                selectedIndex: $selectedIndex,
+                store: store,
                 isReorderActive: $isReorderActive
               )
               .onTapGesture {

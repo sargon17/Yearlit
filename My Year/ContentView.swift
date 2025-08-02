@@ -87,6 +87,7 @@ struct ContentView: View {
   @State private var showingCreateSheet = false
   @State private var selectedIndex: Int = 0
   @State private var showingOverview = false
+  @ObservedObject private var valuationStore = ValuationStore.shared
   private let impactGenerator = UIImpactFeedbackGenerator(style: .light)
   @State private var dragStarted: Bool = false
   @State private var isSettingsPresented = false
@@ -186,7 +187,7 @@ struct ContentView: View {
       .background(Color("surface-muted"))
     }
     .sheet(isPresented: $showingOverview) {
-      CalendarsOverview(store: store, selectedIndex: $selectedIndex)
+      CalendarsOverview(store: store, valuationStore: valuationStore, selectedIndex: $selectedIndex)
     }
     .sheet(isPresented: $isSettingsPresented) {
       SettingsView()

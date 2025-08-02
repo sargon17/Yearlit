@@ -84,34 +84,6 @@ struct CustomCalendarView: View {
     }
   }
 
-  private func getMaxCount() -> Int {
-    let maxCount = calendar.entries.values.map { $0.count }.max() ?? 1
-    return max(maxCount, 1)  // Ensure we don't divide by zero
-  }
-
-  private func colorForDay(_ day: Int) -> Color {
-    let dayDate = valuationStore.dateForDay(day)
-
-    if day >= valuationStore.currentDayNumber {
-      return Color("dot-inactive")
-    }
-
-    let dateKey: String = customDateFormatter(date: dayDate)
-
-    if let entry: CalendarEntry = calendar.entries[dateKey] {
-      switch calendar.trackingType {
-      case .binary:
-        return entry.completed ? Color(calendar.color) : Color("dot-active")
-      case .counter, .multipleDaily:
-        let maxCount: Int = getMaxCount()
-        let opacity = max(0.2, Double(entry.count) / Double(maxCount))
-        return Color(calendar.color).opacity(opacity)
-      }
-    }
-
-    return Color("dot-active")
-  }
-
   private func handleDayTap(_ day: Int) {
     let date: Date = valuationStore.dateForDay(day)
     if day < valuationStore.currentDayNumber {
@@ -311,9 +283,16 @@ struct CustomCalendarView: View {
               HStack(spacing: horizontalSpacing) {
                 ForEach(0..<columns, id: \.self) { col in
                   let day = row * columns + col
+                  let dayDate = valuationStore.dateForDay(day)
                   if day < store.numberOfDaysInYear {
                     RoundedRectangle(cornerRadius: 3)
-                      .fill(colorForDay(day))
+                      .fill(
+                        colorForDay(
+                          dayDate,
+                          calendar: calendar,
+                          valuationStore: valuationStore,
+                        )
+                      )
                       .frame(width: dotSize, height: dotSize)
                       .onTapGesture {
                         handleDayTap(day)

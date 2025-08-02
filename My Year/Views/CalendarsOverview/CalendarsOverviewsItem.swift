@@ -12,6 +12,7 @@ import SwiftUI
 
 struct CalendarsOverviewsItem: View {
   let calendar: CustomCalendar
+  let valuationStore: ValuationStore
   @Binding var selectedIndex: Int
   @Environment(\.dismiss) private var dismiss
   @ObservedObject var store: CustomCalendarStore
@@ -19,20 +20,21 @@ struct CalendarsOverviewsItem: View {
   @State private var showEditSheet = false
   @Binding var isReorderActive: Bool
 
-  let latestSlotsCount = 24
+  let latestSlotsCount = 28
+  let columnsCount = 7
 
   var latestsDays: [CalendarEntry] {
     Array(
       calendar.entries.values
     )
     .sorted { $0.date > $1.date }
-    .prefix(latestSlotsCount)
+    .prefix(latestSlotsCount - 1)
     .map { $0 }
   }
 
   var latestSlots: [Date] {
     let today = DateInRegion()
-    let fromDate = today - latestSlotsCount.days
+    let fromDate = today - (latestSlotsCount - 1).days
 
     let increment = DateComponents.create { $0.day = 1 }
 
@@ -80,52 +82,46 @@ struct CalendarsOverviewsItem: View {
 extension CalendarsOverviewsItem {
   var ui: some View {
     VStack(alignment: .leading, spacing: 12) {
-      HStack(alignment: .firstTextBaseline) {
-        Rectangle()
-          .fill(Color(calendar.color))
-          .frame(width: 12, height: 12)
-          .cornerRadius(3)
 
-        Text(calendar.name.capitalized)
-          .font(.system(size: 18, design: .monospaced))
-          .fontWeight(.bold)
-          .foregroundColor(Color("text-primary"))
-          .lineLimit(2)
-          .minimumScaleFactor(0.5)
-          .multilineTextAlignment(.leading)
-      }
+      Text(calendar.name.capitalized)
+        .font(.system(size: 14, design: .monospaced))
+        .fontWeight(.bold)
+        .foregroundColor(.textPrimary)
+        .lineLimit(1)
+        .minimumScaleFactor(0.5)
 
       latestSlotsView
         .frame(maxWidth: .greatestFiniteMagnitude, alignment: .leading)
-        .aspectRatio(1, contentMode: .fit)
-        .border(Color.red)
+        .aspectRatio(7 / 4, contentMode: .fit)
 
       Text(calendar.trackingType.description)
-        .font(.system(size: 11, design: .monospaced))
-        .foregroundColor(Color("text-tertiary"))
-        .lineLimit(2)
+        .font(.system(size: 10))
+        .foregroundColor(.textTertiary)
+        .lineLimit(1)
         .minimumScaleFactor(0.5)
-        .multilineTextAlignment(.leading)
     }
     .frame(maxWidth: .greatestFiniteMagnitude, alignment: .leading)
-    .padding()
-    .background(Color.surfaceSecondary)
-    .cornerRadius(12)
+    .cardStyle()
   }
 
   var latestSlotsView: some View {
     GeometryReader { geometry in
       let totalWidth = geometry.size.width
-      let itemWidth = (totalWidth - 4 * 4) / 5
+      let spacing = 6.0
+      let totalSpacing = spacing * (max(CGFloat(columnsCount) - 1.0, 0.0))
+      let itemWidth = (totalWidth - totalSpacing) / CGFloat(columnsCount)
       LazyVGrid(
-        columns: Array(repeating: GridItem(.fixed(itemWidth), spacing: 4), count: 5),
-        spacing: 4
+        columns: Array(repeating: GridItem(.fixed(itemWidth), spacing: spacing), count: columnsCount),
+        spacing: spacing
       ) {
         ForEach(latestSlots, id: \.self) { slot in
-          let isActive = latestsDays.contains(where: { Calendar.current.isDate($0.date, inSameDayAs: slot) })
           VisualEntry(
             width: itemWidth,
-            isActive: isActive
+            color: colorForDay(
+              slot,
+              calendar: calendar,
+              valuationStore: valuationStore,
+            )
           )
         }
       }
@@ -135,12 +131,12 @@ extension CalendarsOverviewsItem {
 
 struct VisualEntry: View {
   let width: CGFloat
-  let isActive: Bool
+  let color: Color
 
   var body: some View {
     Rectangle()
-      .fill(isActive ? Color.red : Color.blue)
+      .fill(color)
       .frame(width: width, height: width)
-      .cornerRadius(3)
+      .cornerRadius(4)
   }
 }
