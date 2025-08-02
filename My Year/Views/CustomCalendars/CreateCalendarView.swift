@@ -71,73 +71,66 @@ struct CreateCalendarView: View {
   }
 
   var body: some View {
-    Form {
-      Section {
-        TextField("Calendar Name", text: $name)
-          .foregroundColor(Color("text-primary"))
-          .fontWeight(.bold)
-      }
-      .listRowBackground(Color("surface-secondary"))
+    VStack {
+      TextField("Calendar Name", text: $name)
+        .foregroundColor(Color("text-primary"))
+        .fontWeight(.bold)
 
-      Section {
-        Picker("Tracking Type", selection: $trackingType) {
-          Text("Once a day").tag(TrackingType.binary)
-          Text("Multiple times (unlimited)").tag(TrackingType.counter)
-          Text("Multiple times (with target)").tag(TrackingType.multipleDaily)
+      TrackingPicker(trackingType: $trackingType)
+        .onChange(of: trackingType) { newValue in
+          print("trackingType: \(newValue)")
         }
 
-        if trackingType == .multipleDaily {
+      if trackingType == .multipleDaily {
+        HStack {
+          Text("Daily Target")
+          Spacer()
+          TextField("Target", value: $dailyTarget, formatter: NumberFormatter())
+            .keyboardType(.numberPad)
+            .multilineTextAlignment(.trailing)
+            .frame(maxWidth: 100)
+        }
+      }
+
+      if trackingType == .counter || trackingType == .multipleDaily {
+        Section {
+          Picker("Unit of Measure", selection: $selectedUnit) {
+            Text("None").tag(nil as UnitOfMeasure?)
+            ForEach(UnitOfMeasure.Category.allCases, id: \.self) { category in
+              Section(header: Text(category.rawValue)) {
+                ForEach(UnitOfMeasure.allCasesGrouped[category] ?? [], id: \.self) { unit in
+                  Text(unit.displayName).tag(unit as UnitOfMeasure?)
+                }
+              }
+            }
+          }
+
+          if selectedUnit == .currency {
+            HStack {
+              Text("Currency Symbol")
+              Spacer()
+              TextField("Symbol", text: $currencySymbol)
+                .multilineTextAlignment(.trailing)
+                .frame(maxWidth: 100)
+            }
+          }
+        }
+        .listRowBackground(Color("surface-secondary"))
+      }
+
+      if trackingType == .counter || trackingType == .multipleDaily {
+        Section {
           HStack {
-            Text("Daily Target")
+            Text("Default Quick Add Value")
             Spacer()
-            TextField("Target", value: $dailyTarget, formatter: NumberFormatter())
+            TextField("Value", value: $defaultRecordValue, formatter: NumberFormatter())
               .keyboardType(.numberPad)
               .multilineTextAlignment(.trailing)
               .frame(maxWidth: 100)
           }
         }
-
-        if trackingType == .counter || trackingType == .multipleDaily {
-          Section {
-            Picker("Unit of Measure", selection: $selectedUnit) {
-              Text("None").tag(nil as UnitOfMeasure?)
-              ForEach(UnitOfMeasure.Category.allCases, id: \.self) { category in
-                Section(header: Text(category.rawValue)) {
-                  ForEach(UnitOfMeasure.allCasesGrouped[category] ?? [], id: \.self) { unit in
-                    Text(unit.displayName).tag(unit as UnitOfMeasure?)
-                  }
-                }
-              }
-            }
-
-            if selectedUnit == .currency {
-              HStack {
-                Text("Currency Symbol")
-                Spacer()
-                TextField("Symbol", text: $currencySymbol)
-                  .multilineTextAlignment(.trailing)
-                  .frame(maxWidth: 100)
-              }
-            }
-          }
-          .listRowBackground(Color("surface-secondary"))
-        }
-
-        if trackingType == .counter || trackingType == .multipleDaily {
-          Section {
-            HStack {
-              Text("Default Quick Add Value")
-              Spacer()
-              TextField("Value", value: $defaultRecordValue, formatter: NumberFormatter())
-                .keyboardType(.numberPad)
-                .multilineTextAlignment(.trailing)
-                .frame(maxWidth: 100)
-            }
-          }
-          .listRowBackground(Color("surface-secondary"))
-        }
+        .listRowBackground(Color("surface-secondary"))
       }
-      .listRowBackground(Color("surface-secondary"))
 
       Section {
         Toggle("Recurring Reminder", isOn: $recurringReminderEnabled)
@@ -170,9 +163,12 @@ struct CreateCalendarView: View {
         Text("Color")
       }
       .listRowBackground(Color("surface-secondary"))
+
+      Spacer()
     }
+    .padding()
     .scrollContentBackground(.hidden)
-    .background(Color("surface-muted"))
+    .background(Color.surfaceMuted)
     .navigationTitle("New Calendar")
     .navigationBarTitleDisplayMode(.large)
     .toolbar {

@@ -23,15 +23,6 @@ struct CalendarsOverviewsItem: View {
   let latestSlotsCount = 28
   let columnsCount = 7
 
-  var latestsDays: [CalendarEntry] {
-    Array(
-      calendar.entries.values
-    )
-    .sorted { $0.date > $1.date }
-    .prefix(latestSlotsCount - 1)
-    .map { $0 }
-  }
-
   var latestSlots: [Date] {
     let today = DateInRegion()
     let fromDate = today - (latestSlotsCount - 1).days
@@ -72,9 +63,6 @@ struct CalendarsOverviewsItem: View {
           )
         }
         .background(Color("surface-muted"))
-      }
-      .onAppear {
-        print("latestsDays: \(latestsDays)")
       }
   }
 }

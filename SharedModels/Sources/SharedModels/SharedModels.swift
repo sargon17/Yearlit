@@ -181,7 +181,7 @@ public struct CustomCalendar: Codable, Identifiable {
   }
 }
 
-public enum TrackingType: String, Codable {
+public enum TrackingType: String, Codable, CaseIterable {
   /// A binary tracking type: done or not done (once per day).
   case binary
 
@@ -200,6 +200,30 @@ public enum TrackingType: String, Codable {
     case .multipleDaily:
       return "Multiple times (with target)"
     }
+  }
+
+  public var icon: String {
+    switch self {
+    case .binary: return "checkmark.circle"
+    case .counter: return "chevron.up.forward.dotted.2"
+    case .multipleDaily: return "target"
+    }
+  }
+
+  public var label: String {
+    switch self {
+    case .binary: return "binary"
+    case .counter: return "counter"
+    case .multipleDaily: return "target"
+    }
+  }
+
+  public static var allCasesDisplayRepresentations: [TrackingType: DisplayRepresentation] {
+    [
+      .binary: "Once a day (binary)",
+      .counter: "Multiple times (unlimited) (counter)",
+      .multipleDaily: "Multiple times (with target) (multipleDaily)"
+    ]
   }
 }
 
