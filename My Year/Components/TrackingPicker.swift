@@ -3,6 +3,7 @@ import SwiftUI
 
 struct TrackingPicker: View {
   @Binding var trackingType: TrackingType
+  let color: Color
 
   var body: some View {
     CustomSection(label: "Tracking Type") {
@@ -22,13 +23,13 @@ struct TrackingPicker: View {
                 .font(.system(size: 16))
                 .foregroundStyle(
                   trackingType == type
-                    ? .orange
+                    ? color
                     : .textTertiary
                 )
               Text(type.label)
                 .font(.system(size: 10, design: .monospaced))
                 .foregroundStyle(
-                  trackingType == type ? .orange : .textTertiary.opacity(0.5)
+                  trackingType == type ? color : .textTertiary.opacity(0.5)
                 )
             }
             .frame(maxWidth: .greatestFiniteMagnitude, maxHeight: .greatestFiniteMagnitude)

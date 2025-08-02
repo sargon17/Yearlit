@@ -10,7 +10,7 @@ struct CreateCalendarView: View {
   @State private var customerInfo: CustomerInfo?
   @ObservedObject private var store = CustomCalendarStore.shared
   @State private var name = ""
-  @State private var selectedColor = "mood-good"
+  @State private var selectedColor = "qs-amber"
   @State private var trackingType: TrackingType = .binary
   @State private var dailyTarget = 2
   @State private var recurringReminderEnabled: Bool = false
@@ -80,13 +80,13 @@ struct CreateCalendarView: View {
           TextField(
             "",
             text: $name,
-            prompt: Text("Daily Training").foregroundColor(.white.opacity(0.4))
+            prompt: Text("Daily Training").foregroundColor(.white.opacity(0.2))
           )
-          .inputStyle()
+          .inputStyle(color: Color(selectedColor))
           .focused($isNameFocused)
         }
 
-        TrackingPicker(trackingType: $trackingType)
+        TrackingPicker(trackingType: $trackingType, color: Color(selectedColor))
 
         if trackingType == .multipleDaily || trackingType == .counter {
           CustomSection(label: "Settings for \(trackingType.label)") {
@@ -104,7 +104,7 @@ struct CreateCalendarView: View {
                     .keyboardType(.numberPad)
                     .multilineTextAlignment(.trailing)
                     .frame(maxWidth: 100)
-                    .inputStyle(size: .large, radius: 4)
+                    .inputStyle(size: .large, radius: 4, color: Color(selectedColor))
                 }
                 .padding(.leading)
                 .padding(.all, 2)
@@ -130,7 +130,6 @@ struct CreateCalendarView: View {
                       }
                     }
                   }
-                  .accentColor(.orange)
                 }
                 .padding(.leading)
                 .padding(.vertical, 8)
@@ -145,7 +144,7 @@ struct CreateCalendarView: View {
                     TextField("Symbol", text: $currencySymbol)
                       .multilineTextAlignment(.trailing)
                       .frame(maxWidth: 100)
-                      .inputStyle(size: .large, radius: 4)
+                      .inputStyle(size: .large, radius: 4, color: Color(selectedColor))
                   }
                   .padding(.leading)
                   .padding(.all, 2)
@@ -165,7 +164,7 @@ struct CreateCalendarView: View {
                     .keyboardType(.numberPad)
                     .multilineTextAlignment(.trailing)
                     .frame(maxWidth: 100)
-                    .inputStyle(size: .large, radius: 4)
+                    .inputStyle(size: .large, radius: 4, color: Color(selectedColor))
                 }
                 .padding(.leading)
                 .padding(.all, 2)
@@ -181,16 +180,55 @@ struct CreateCalendarView: View {
           }
         }
 
-        Section {
-          Toggle("Recurring Reminder", isOn: $recurringReminderEnabled)
-          if recurringReminderEnabled {
-            DatePicker(
-              "Reminder Time", selection: $reminderTime, displayedComponents: [.hourAndMinute])
-          }
-        }
-        .listRowBackground(Color("surface-secondary"))
+        CustomSection(label: "Recurring Reminder") {
+          VStack(spacing: 2) {
 
-        Section {
+            HStack {
+              Text("Set a remined")
+                .font(.system(size: 12, design: .monospaced).weight(.semibold))
+                .foregroundStyle(.textTertiary)
+              Spacer()
+
+              Toggle(
+                "",
+                isOn: Binding(
+                  get: { recurringReminderEnabled },
+                  set: { newValue in
+                    withAnimation(.snappy) {
+                      recurringReminderEnabled = newValue
+                    }
+                  }
+                ))
+            }
+            .tint(Color(selectedColor))
+            .padding(.horizontal)
+            .padding(.vertical, 6)
+            .sameLevelBorder()
+
+            if recurringReminderEnabled {
+              HStack {
+                // Text("Reminder Time")
+                //   .font(.system(size: 12, design: .monospaced).weight(.semibold))
+                //   .foregroundStyle(.textTertiary)
+                // Spacer()
+                DatePicker(
+                  "", selection: $reminderTime, displayedComponents: [.hourAndMinute]
+                )
+                .tint(Color(selectedColor))
+                .datePickerStyle(.wheel)
+                .inputStyle(radius: 4, color: Color(selectedColor))
+              }
+              .padding(.all, 2)
+              .sameLevelBorder()
+            }
+          }.padding(.all, 2)
+            .background(getVoidColor())
+            .cornerRadius(6)
+            .outerSameLevelShadow(radius: 6)
+
+        }
+
+        CustomSection(label: "Color") {
           ScrollView(.horizontal, showsIndicators: false) {
             HStack {
               ForEach(colors, id: \.self) { color in
@@ -202,23 +240,35 @@ struct CreateCalendarView: View {
                       .stroke(Color.primary, lineWidth: selectedColor == color ? 2 : 0)
                   )
                   .onTapGesture {
-                    selectedColor = color
+                    withAnimation(.snappy) {
+                      selectedColor = color
+                    }
+                    Task {
+                      await hepticFeedback(option: .rigid)
+                    }
                   }
               }
             }.padding(2)
               .padding(.horizontal, 10)
-          }.padding(.horizontal, -20)
-        } header: {
-          Text("Color")
+          }
+          .padding(.vertical)
+          .scrollClipDisabled(true)
+          .sameLevelBorder(radius: 6, color: .black)
+          .outerSameLevelShadow(radius: 6)
+          .patternStyle()
+          .cornerRadius(6)
+
         }
 
         Spacer()
       }
     }
+    .accentColor(Color(selectedColor))
     .padding()
-    .scrollDismissesKeyboard(.immediately)
     .scrollClipDisabled(true)
+    .scrollDismissesKeyboard(.immediately)
     .scrollContentBackground(.hidden)
+    .scrollIndicators(.hidden)
     .background(Color.surfaceMuted)
     .navigationTitle("New Calendar")
     .navigationBarTitleDisplayMode(.large)

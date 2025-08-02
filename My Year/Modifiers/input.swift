@@ -9,17 +9,17 @@ enum InputSize {
 struct InputModifier: ViewModifier {
   let size: InputSize
   let radius: CGFloat
+  let color: Color
 
   func body(content: Content) -> some View {
     content
       .padding(padding)
       .sameLevelBorder(radius: radius, color: .black)
       .outerSameLevelShadow(radius: radius)
-      .foregroundColor(Color.orange)
+      .foregroundColor(color)
       .font(.system(size: fontSize, weight: .regular, design: .monospaced))
       .patternStyle()
       .cornerRadius(radius)
-      .accentColor(.orange)
   }
 
   var padding: CGFloat {
@@ -42,7 +42,7 @@ struct InputModifier: ViewModifier {
 }
 
 extension View {
-  func inputStyle(size: InputSize = .large, radius: CGFloat = 6) -> some View {
-    self.modifier(InputModifier(size: size, radius: radius))
+  func inputStyle(size: InputSize = .large, radius: CGFloat = 6, color: Color = .orange) -> some View {
+    self.modifier(InputModifier(size: size, radius: radius, color: color))
   }
 }
