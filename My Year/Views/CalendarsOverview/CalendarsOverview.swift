@@ -120,13 +120,13 @@ struct CalendarsOverview: View {
       }
     }
     .sheet(isPresented: $showingAddCalendarSheet) {
-      NavigationStack {
-        CreateCalendarView { newCalendar in
-          store.addCalendar(newCalendar)
-          showingAddCalendarSheet = false
-        }
-        .background(Color("surface-muted"))
+
+      CreateCalendarView { newCalendar in
+        store.addCalendar(newCalendar)
+        showingAddCalendarSheet = false
       }
+      .background(Color("surface-muted"))
+
     }
   }
 }

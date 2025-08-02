@@ -15,12 +15,14 @@ struct CreateCalendarView: View {
   @State private var dailyTarget = 2
   @State private var recurringReminderEnabled: Bool = false
   @State private var reminderTime: Date = Date()
-  @State private var selectedUnit: UnitOfMeasure?
+  @State private var selectedUnit: UnitOfMeasure = .none
   @State private var defaultRecordValue: Int = 1
   @State private var isPaywallPresented = false
   @State private var errorMessage: String?
   @State private var isAlertPresented = false
   @State private var currencySymbol: String = "$"
+
+  @FocusState private var isNameFocused: Bool
 
   private let colors = [
     "mood-terrible",
@@ -71,102 +73,151 @@ struct CreateCalendarView: View {
   }
 
   var body: some View {
-    VStack {
-      TextField("Calendar Name", text: $name)
-        .foregroundColor(Color("text-primary"))
-        .fontWeight(.bold)
+    ScrollView {
+      VStack(spacing: 24) {
 
-      TrackingPicker(trackingType: $trackingType)
-        .onChange(of: trackingType) { newValue in
-          print("trackingType: \(newValue)")
+        CustomSection(label: "Calendar Name") {
+          TextField(
+            "",
+            text: $name,
+            prompt: Text("Daily Training").foregroundColor(.white.opacity(0.4))
+          )
+          .inputStyle()
+          .focused($isNameFocused)
         }
 
-      if trackingType == .multipleDaily {
-        HStack {
-          Text("Daily Target")
-          Spacer()
-          TextField("Target", value: $dailyTarget, formatter: NumberFormatter())
-            .keyboardType(.numberPad)
-            .multilineTextAlignment(.trailing)
-            .frame(maxWidth: 100)
-        }
-      }
+        TrackingPicker(trackingType: $trackingType)
 
-      if trackingType == .counter || trackingType == .multipleDaily {
-        Section {
-          Picker("Unit of Measure", selection: $selectedUnit) {
-            Text("None").tag(nil as UnitOfMeasure?)
-            ForEach(UnitOfMeasure.Category.allCases, id: \.self) { category in
-              Section(header: Text(category.rawValue)) {
-                ForEach(UnitOfMeasure.allCasesGrouped[category] ?? [], id: \.self) { unit in
-                  Text(unit.displayName).tag(unit as UnitOfMeasure?)
+        if trackingType == .multipleDaily || trackingType == .counter {
+          CustomSection(label: "Settings for \(trackingType.label)") {
+
+            VStack(spacing: 2) {
+
+              if trackingType == .multipleDaily {
+                HStack {
+                  Text("Daily Target")
+                    .font(.system(size: 12, design: .monospaced).weight(.semibold))
+                    .foregroundStyle(.textTertiary)
+
+                  Spacer()
+                  TextField("Target", value: $dailyTarget, formatter: NumberFormatter())
+                    .keyboardType(.numberPad)
+                    .multilineTextAlignment(.trailing)
+                    .frame(maxWidth: 100)
+                    .inputStyle(size: .large, radius: 4)
                 }
+                .padding(.leading)
+                .padding(.all, 2)
+                .sameLevelBorder()
+              }
+
+              if trackingType == .counter || trackingType == .multipleDaily {
+                HStack {
+                  Text("Unit of Measure")
+                    .font(.system(size: 12, design: .monospaced).weight(.semibold))
+                    .foregroundStyle(.textTertiary)
+                  Spacer()
+                  if selectedUnit == nil {
+                    Text("None")
+                  }
+                  Picker("Unit of Measure", selection: $selectedUnit) {
+                    ForEach(UnitOfMeasure.Category.allCases, id: \.self) {
+                      category in
+                      Section(header: Text(category.rawValue)) {
+                        ForEach(UnitOfMeasure.allCasesGrouped[category] ?? [], id: \.self) { unit in
+                          Text(unit.displayName).tag(unit as UnitOfMeasure?)
+                        }
+                      }
+                    }
+                  }
+                  .accentColor(.orange)
+                }
+                .padding(.leading)
+                .padding(.vertical, 8)
+                .sameLevelBorder()
+
+                if selectedUnit == .currency {
+                  HStack {
+                    Text("Currency Symbol")
+                      .font(.system(size: 12, design: .monospaced).weight(.semibold))
+                      .foregroundStyle(.textTertiary)
+                    Spacer()
+                    TextField("Symbol", text: $currencySymbol)
+                      .multilineTextAlignment(.trailing)
+                      .frame(maxWidth: 100)
+                      .inputStyle(size: .large, radius: 4)
+                  }
+                  .padding(.leading)
+                  .padding(.all, 2)
+                  .sameLevelBorder()
+
+                }
+
+              }
+
+              if trackingType == .counter || trackingType == .multipleDaily {
+                HStack {
+                  Text("Default Quick Add Value")
+                    .font(.system(size: 12, design: .monospaced).weight(.semibold))
+                    .foregroundStyle(.textTertiary)
+                  Spacer()
+                  TextField("Value", value: $defaultRecordValue, formatter: NumberFormatter())
+                    .keyboardType(.numberPad)
+                    .multilineTextAlignment(.trailing)
+                    .frame(maxWidth: 100)
+                    .inputStyle(size: .large, radius: 4)
+                }
+                .padding(.leading)
+                .padding(.all, 2)
+                .sameLevelBorder()
+
               }
             }
-          }
+            .padding(.all, 2)
+            .background(getVoidColor())
+            .cornerRadius(6)
+            .outerSameLevelShadow(radius: 6)
 
-          if selectedUnit == .currency {
-            HStack {
-              Text("Currency Symbol")
-              Spacer()
-              TextField("Symbol", text: $currencySymbol)
-                .multilineTextAlignment(.trailing)
-                .frame(maxWidth: 100)
-            }
           }
         }
-        .listRowBackground(Color("surface-secondary"))
-      }
 
-      if trackingType == .counter || trackingType == .multipleDaily {
         Section {
-          HStack {
-            Text("Default Quick Add Value")
-            Spacer()
-            TextField("Value", value: $defaultRecordValue, formatter: NumberFormatter())
-              .keyboardType(.numberPad)
-              .multilineTextAlignment(.trailing)
-              .frame(maxWidth: 100)
+          Toggle("Recurring Reminder", isOn: $recurringReminderEnabled)
+          if recurringReminderEnabled {
+            DatePicker(
+              "Reminder Time", selection: $reminderTime, displayedComponents: [.hourAndMinute])
           }
         }
         .listRowBackground(Color("surface-secondary"))
-      }
 
-      Section {
-        Toggle("Recurring Reminder", isOn: $recurringReminderEnabled)
-        if recurringReminderEnabled {
-          DatePicker(
-            "Reminder Time", selection: $reminderTime, displayedComponents: [.hourAndMinute])
+        Section {
+          ScrollView(.horizontal, showsIndicators: false) {
+            HStack {
+              ForEach(colors, id: \.self) { color in
+                Circle()
+                  .fill(Color(color))
+                  .frame(width: 30, height: 30)
+                  .overlay(
+                    Circle()
+                      .stroke(Color.primary, lineWidth: selectedColor == color ? 2 : 0)
+                  )
+                  .onTapGesture {
+                    selectedColor = color
+                  }
+              }
+            }.padding(2)
+              .padding(.horizontal, 10)
+          }.padding(.horizontal, -20)
+        } header: {
+          Text("Color")
         }
-      }
-      .listRowBackground(Color("surface-secondary"))
 
-      Section {
-        ScrollView(.horizontal, showsIndicators: false) {
-          HStack {
-            ForEach(colors, id: \.self) { color in
-              Circle()
-                .fill(Color(color))
-                .frame(width: 30, height: 30)
-                .overlay(
-                  Circle()
-                    .stroke(Color.primary, lineWidth: selectedColor == color ? 2 : 0)
-                )
-                .onTapGesture {
-                  selectedColor = color
-                }
-            }
-          }.padding(2)
-            .padding(.horizontal, 10)
-        }.padding(.horizontal, -20)
-      } header: {
-        Text("Color")
+        Spacer()
       }
-      .listRowBackground(Color("surface-secondary"))
-
-      Spacer()
     }
     .padding()
+    .scrollDismissesKeyboard(.immediately)
+    .scrollClipDisabled(true)
     .scrollContentBackground(.hidden)
     .background(Color.surfaceMuted)
     .navigationTitle("New Calendar")
@@ -198,6 +249,7 @@ struct CreateCalendarView: View {
       )
     }
     .onAppear {
+      isNameFocused = true
       Purchases.shared.getCustomerInfo { (info, error) in
         // swiftlint:disable:next identifier_name
         if let e = error {
@@ -208,4 +260,5 @@ struct CreateCalendarView: View {
       }
     }
   }
+
 }

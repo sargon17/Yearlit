@@ -1,6 +1,9 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    "" : {
+
+    },
     "[@tymofyeyev_m](https://x.com/tymofyeyev_m)" : {
 
     },
@@ -44,6 +47,9 @@
 
     },
     "Daily Target" : {
+
+    },
+    "Daily Training" : {
 
     },
     "Danger Zone" : {

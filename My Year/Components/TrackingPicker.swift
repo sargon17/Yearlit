@@ -5,10 +5,7 @@ struct TrackingPicker: View {
   @Binding var trackingType: TrackingType
 
   var body: some View {
-    VStack(alignment: .leading) {
-      Text("Tracking Type")
-        .font(.system(size: 12, design: .monospaced).weight(.semibold))
-        .foregroundStyle(.textTertiary)
+    CustomSection(label: "Tracking Type") {
 
       HStack(spacing: 2) {
         ForEach(TrackingType.allCases, id: \.self) { type in
@@ -24,7 +21,9 @@ struct TrackingPicker: View {
               Image(systemName: type.icon)
                 .font(.system(size: 16))
                 .foregroundStyle(
-                  trackingType == type ? .orange : .textSecondary
+                  trackingType == type
+                    ? .orange
+                    : .textTertiary
                 )
               Text(type.label)
                 .font(.system(size: 10, design: .monospaced))
@@ -40,12 +39,11 @@ struct TrackingPicker: View {
 
         }
       }
-      .padding(.all, 1)
+      .padding(.all, 2)
       .frame(maxWidth: .greatestFiniteMagnitude)
       .background(getVoidColor())
-      .cornerRadius(5)
-      .sameLevelBorder(radius: 5)
-      .outerSameLevelShadow(radius: 5)
+      .cornerRadius(6)
+      .outerSameLevelShadow(radius: 6)
     }
   }
 }

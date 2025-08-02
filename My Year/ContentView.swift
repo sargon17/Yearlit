@@ -10,6 +10,7 @@ import RevenueCatUI
 import SharedModels
 import SwiftData
 import SwiftUI
+import SwiftfulRouting
 import UIKit
 
 struct ContextOrDragModifier: ViewModifier {
@@ -92,8 +93,10 @@ struct ContentView: View {
   @State private var dragStarted: Bool = false
   @State private var isSettingsPresented = false
 
+  @Environment(\.router) private var router
+
   var body: some View {
-    NavigationStack {
+    VStack {
       TabView(
         selection: $selectedIndex.onChange { _ in
           impactGenerator.impactOccurred()
@@ -124,7 +127,13 @@ struct ContentView: View {
         }
         .tag(store.calendars.count + 1)
         .onTapGesture {
-          showingCreateSheet = true
+          router.showScreen(.sheet) { _ in
+            CreateCalendarView { newCalendar in
+              store.addCalendar(newCalendar)
+              selectedIndex = store.calendars.count
+              router.dismissScreen()
+            }
+          }
         }
       }.overlay {
         // Upper separator
@@ -176,13 +185,11 @@ struct ContentView: View {
       }
     }
     .sheet(isPresented: $showingCreateSheet) {
-      NavigationStack {
-        CreateCalendarView { newCalendar in
-          store.addCalendar(newCalendar)
-          selectedIndex = store.calendars.count
-          showingCreateSheet = false
-        }
-        .background(Color("surface-muted"))
+
+      CreateCalendarView { newCalendar in
+        store.addCalendar(newCalendar)
+        selectedIndex = store.calendars.count
+        showingCreateSheet = false
       }
       .background(Color("surface-muted"))
     }

@@ -8,6 +8,7 @@
 import RevenueCat
 import SharedModels
 import SwiftUI
+import SwiftfulRouting
 
 @main
 // swiftlint:disable:next type_name
@@ -42,13 +43,15 @@ struct My_YearApp: App {
 
   var body: some Scene {
     WindowGroup {
-      ContentView()
-        .onOpenURL { url in
-          if url.scheme == "my-year" && url.host == "clear" {
-            let store = ValuationStore.shared
-            store.clearAllValuations()
-          }
+      RouterView { _ in
+        ContentView()
+      }
+      .onOpenURL { url in
+        if url.scheme == "my-year" && url.host == "clear" {
+          let store = ValuationStore.shared
+          store.clearAllValuations()
         }
+      }
     }
   }
 }

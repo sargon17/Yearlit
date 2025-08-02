@@ -13,6 +13,11 @@ import WidgetKit
 public enum UnitOfMeasure: String, Codable, CaseIterable, Identifiable {
   public var id: String { rawValue }
 
+  case none = "None"
+
+  // Currency
+  case currency = "Currency"
+
   // Quantity/Count
   case pages = "Pages"
   case items = "Items"
@@ -46,9 +51,6 @@ public enum UnitOfMeasure: String, Codable, CaseIterable, Identifiable {
   case calories = "kcal"
   case kilojoules = "kJ"
 
-  // Currency
-  case currency = "Currency"
-
   public enum Category: String, CaseIterable {
     case quantity = "Quantity/Count"
     case distance = "Distance"
@@ -61,7 +63,7 @@ public enum UnitOfMeasure: String, Codable, CaseIterable, Identifiable {
 
   public var category: Category {
     switch self {
-    case .pages, .items, .rounds, .servings, .doses:
+    case .pages, .items, .rounds, .servings, .doses, .none:
       return .quantity
     case .meters, .kilometers, .miles, .steps, .floors:
       return .distance
