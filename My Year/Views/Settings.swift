@@ -36,7 +36,7 @@ struct SettingsView: View {
         }.font(.system(size: 12, design: .monospaced))
           .foregroundColor(Color("text-secondary"))
 
-        Spacer()  // Push credits to the bottom
+        Spacer()
 
         // Credits Section
         VStack(spacing: 0) {

@@ -37,6 +37,7 @@ struct CustomCalendarView: View {
   let calendar: CustomCalendar
   @StateObject private var store: CustomCalendarStore = CustomCalendarStore.shared
   @ObservedObject private var valuationStore: ValuationStore = ValuationStore.shared
+
   @AppStorage("runtimeDebugEnabled") private var runtimeDebugEnabled: Bool = false
   @AppStorage("wandFillForce") private var wandFillForce: Double = 0.5
 
@@ -188,44 +189,18 @@ struct CustomCalendarView: View {
   }
 
   private func handleQuickAdd() {
-    // Get the date for the previous day (today is not yet available)
-    let today = valuationStore.dateForDay(valuationStore.currentDayNumber - 1)
-    var newEntry = CalendarEntry(date: today, count: 1, completed: true)  // Default entry
+    quickEntry(
+      calendar: calendar,
+      date: today,
+      calendarStore: store,
+      valuationStore: valuationStore
+    )
 
-    // Check if an entry already exists for today
-    if let existingEntry = store.getEntry(calendarId: calendar.id, date: today) {
-      // If the tracking type is counter or multipleDaily, increment the count by the defaultRecordValue
-      if calendar.trackingType == .counter || calendar.trackingType == .multipleDaily {
-        let addValue = calendar.defaultRecordValue ?? 1  // Use defaultRecordValue or 1 if nil
-        newEntry = CalendarEntry(
-          date: today,
-          count: existingEntry.count + addValue,
-          completed: existingEntry.completed
-        )
-      } else {
-        // If it's binary, toggle the completed state
-        newEntry = CalendarEntry(
-          date: today,
-          count: 1,
-          completed: !existingEntry.completed
-        )
-      }
-    } else {
-      // If no entry exists, create a new one using defaultRecordValue for count
-      if calendar.trackingType == .counter || calendar.trackingType == .multipleDaily {
-        let addValue = calendar.defaultRecordValue ?? 1  // Use defaultRecordValue or 1 if nil
-        newEntry = CalendarEntry(date: today, count: addValue, completed: addValue > 0)
-      } else {  // Binary remains count 1, completed true
-        newEntry = CalendarEntry(date: today, count: 1, completed: true)
-      }
-    }
-    store.addEntry(calendarId: calendar.id, entry: newEntry)
     WidgetCenter.shared.reloadAllTimelines()
 
-    // Vibrate to provide haptic feedback
-    let impactFeedbackgenerator = UIImpactFeedbackGenerator(style: .medium)
-    impactFeedbackgenerator.prepare()
-    impactFeedbackgenerator.impactOccurred()
+    Task {
+      await hepticFeedback()
+    }
   }
 
   var body: some View {

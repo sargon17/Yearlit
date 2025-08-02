@@ -1,5 +1,5 @@
 {
-  "originHash" : "ae080ddc860311eb53466f4a797f2d6f3fffbed6eea230d774320553b54963c5",
+  "originHash" : "e1a945d1fb96528770586711935010a91769d45a0e6dafe0174847240f1a460b",
   "pins" : [
     {
       "identity" : "purchases-ios-spm",
@@ -8,6 +8,42 @@
       "state" : {
         "revision" : "4667fb080dea489e3a9a6b5d50e1a8e7deddf878",
         "version" : "5.20.2"
+      }
+    },
+    {
+      "identity" : "swiftdate",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/malcommac/SwiftDate",
+      "state" : {
+        "revision" : "5d943224c3bb173e6ecf27295611615eba90c80e",
+        "version" : "7.0.0"
+      }
+    },
+    {
+      "identity" : "swiftfulhaptics",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/SwiftfulThinking/SwiftfulHaptics",
+      "state" : {
+        "revision" : "1a543d2a7f088747b016712e3fba70886bfe0139",
+        "version" : "1.1.1"
+      }
+    },
+    {
+      "identity" : "swiftfulrecursiveui",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/SwiftfulThinking/SwiftfulRecursiveUI.git",
+      "state" : {
+        "revision" : "3d2d5ac6efe70874fb5ffb2f8e1d5ccd457f4366",
+        "version" : "1.0.2"
+      }
+    },
+    {
+      "identity" : "swiftfului",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/SwiftfulThinking/SwiftfulUI",
+      "state" : {
+        "revision" : "7e6e2d1c29d05e1519f2f5a2ce6012fe4e4dfa19",
+        "version" : "1.2.0"
       }
     }
   ],

@@ -7,6 +7,9 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		7806CEE52E3D3B010081A843 /* SwiftDate in Frameworks */ = {isa = PBXBuildFile; productRef = 7806CEE42E3D3B010081A843 /* SwiftDate */; };
+		7806CEEE2E3E2FA60081A843 /* SwiftfulUI in Frameworks */ = {isa = PBXBuildFile; productRef = 7806CEED2E3E2FA60081A843 /* SwiftfulUI */; };
+		7806CEF12E3E307E0081A843 /* SwiftfulHaptics in Frameworks */ = {isa = PBXBuildFile; productRef = 7806CEF02E3E307E0081A843 /* SwiftfulHaptics */; };
 		7867EFF42D6B6CBD00A459CE /* WidgetKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 78B025AD2D354F0B00E70B4C /* WidgetKit.framework */; };
 		7867EFF52D6B6CBD00A459CE /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 78B025AF2D354F0B00E70B4C /* SwiftUI.framework */; };
 		7867F0042D6B6CBF00A459CE /* HabitsWidgetExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 7867EFF32D6B6CBD00A459CE /* HabitsWidgetExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
@@ -192,8 +195,11 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				7806CEE52E3D3B010081A843 /* SwiftDate in Frameworks */,
 				78BCBDEF2D36EE090075CEC0 /* RevenueCat in Frameworks */,
 				7871CFA32D35995A005FFE4E /* SharedModels in Frameworks */,
+				7806CEF12E3E307E0081A843 /* SwiftfulHaptics in Frameworks */,
+				7806CEEE2E3E2FA60081A843 /* SwiftfulUI in Frameworks */,
 				78BCBDF12D36EE090075CEC0 /* RevenueCatUI in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -324,6 +330,9 @@
 				7871CFA22D35995A005FFE4E /* SharedModels */,
 				78BCBDEE2D36EE090075CEC0 /* RevenueCat */,
 				78BCBDF02D36EE090075CEC0 /* RevenueCatUI */,
+				7806CEE42E3D3B010081A843 /* SwiftDate */,
+				7806CEED2E3E2FA60081A843 /* SwiftfulUI */,
+				7806CEF02E3E307E0081A843 /* SwiftfulHaptics */,
 			);
 			productName = "My Year";
 			productReference = 78B025672D35424100E70B4C /* My Year.app */;
@@ -465,6 +474,9 @@
 			packageReferences = (
 				78BCBD942D366E780075CEC0 /* XCLocalSwiftPackageReference "SharedModels" */,
 				78BCBDED2D36EE090075CEC0 /* XCRemoteSwiftPackageReference "purchases-ios-spm" */,
+				7806CEE32E3D3B010081A843 /* XCRemoteSwiftPackageReference "SwiftDate" */,
+				7806CEEC2E3E2FA60081A843 /* XCRemoteSwiftPackageReference "SwiftfulUI" */,
+				7806CEEF2E3E307E0081A843 /* XCRemoteSwiftPackageReference "SwiftfulHaptics" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 78B025682D35424100E70B4C /* Products */;
@@ -1119,6 +1131,30 @@
 /* End XCLocalSwiftPackageReference section */
 
 /* Begin XCRemoteSwiftPackageReference section */
+		7806CEE32E3D3B010081A843 /* XCRemoteSwiftPackageReference "SwiftDate" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/malcommac/SwiftDate";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 7.0.0;
+			};
+		};
+		7806CEEC2E3E2FA60081A843 /* XCRemoteSwiftPackageReference "SwiftfulUI" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/SwiftfulThinking/SwiftfulUI";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.2.0;
+			};
+		};
+		7806CEEF2E3E307E0081A843 /* XCRemoteSwiftPackageReference "SwiftfulHaptics" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/SwiftfulThinking/SwiftfulHaptics";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.1.1;
+			};
+		};
 		78BCBDED2D36EE090075CEC0 /* XCRemoteSwiftPackageReference "purchases-ios-spm" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/RevenueCat/purchases-ios-spm.git";
@@ -1130,6 +1166,21 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		7806CEE42E3D3B010081A843 /* SwiftDate */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 7806CEE32E3D3B010081A843 /* XCRemoteSwiftPackageReference "SwiftDate" */;
+			productName = SwiftDate;
+		};
+		7806CEED2E3E2FA60081A843 /* SwiftfulUI */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 7806CEEC2E3E2FA60081A843 /* XCRemoteSwiftPackageReference "SwiftfulUI" */;
+			productName = SwiftfulUI;
+		};
+		7806CEF02E3E307E0081A843 /* SwiftfulHaptics */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 7806CEEF2E3E307E0081A843 /* XCRemoteSwiftPackageReference "SwiftfulHaptics" */;
+			productName = SwiftfulHaptics;
+		};
 		7871CFA22D35995A005FFE4E /* SharedModels */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = SharedModels;

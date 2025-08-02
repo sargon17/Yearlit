@@ -11,93 +11,93 @@ import WidgetKit
 // MARK: - Unit of Measure Definition
 
 public enum UnitOfMeasure: String, Codable, CaseIterable, Identifiable {
-    public var id: String { rawValue }
+  public var id: String { rawValue }
 
-    // Quantity/Count
-    case pages = "Pages"
-    case items = "Items"
-    case rounds = "Rounds"
-    case servings = "Servings"
-    case doses = "Doses"
+  // Quantity/Count
+  case pages = "Pages"
+  case items = "Items"
+  case rounds = "Rounds"
+  case servings = "Servings"
+  case doses = "Doses"
 
-    // Distance
-    case meters = "m"
-    case kilometers = "km"
-    case miles = "Miles"
-    case steps = "Steps"
-    case floors = "Floors"
+  // Distance
+  case meters = "m"
+  case kilometers = "km"
+  case miles = "Miles"
+  case steps = "Steps"
+  case floors = "Floors"
 
-    // Volume
-    case milliliters = "ml"
-    case liters = "l"
-    case ounces = "oz"
-    case cups = "Cups"
+  // Volume
+  case milliliters = "ml"
+  case liters = "l"
+  case ounces = "oz"
+  case cups = "Cups"
 
-    // Time
-    case minutes = "Minutes"
-    case hours = "Hours"
+  // Time
+  case minutes = "Minutes"
+  case hours = "Hours"
 
-    // Weight
-    case grams = "g"
-    case kilograms = "kg"
-    case pounds = "Pounds"
+  // Weight
+  case grams = "g"
+  case kilograms = "kg"
+  case pounds = "Pounds"
 
-    // Energy/Calories
-    case calories = "kcal"
-    case kilojoules = "kJ"
+  // Energy/Calories
+  case calories = "kcal"
+  case kilojoules = "kJ"
 
-    // Currency
+  // Currency
+  case currency = "Currency"
+
+  public enum Category: String, CaseIterable {
+    case quantity = "Quantity/Count"
+    case distance = "Distance"
+    case volume = "Volume"
+    case time = "Time"
+    case weight = "Weight"
+    case energy = "Energy/Calories"
     case currency = "Currency"
+  }
 
-    public enum Category: String, CaseIterable {
-        case quantity = "Quantity/Count"
-        case distance = "Distance"
-        case volume = "Volume"
-        case time = "Time"
-        case weight = "Weight"
-        case energy = "Energy/Calories"
-        case currency = "Currency"
+  public var category: Category {
+    switch self {
+    case .pages, .items, .rounds, .servings, .doses:
+      return .quantity
+    case .meters, .kilometers, .miles, .steps, .floors:
+      return .distance
+    case .milliliters, .liters, .ounces, .cups:
+      return .volume
+    case .minutes, .hours:
+      return .time
+    case .grams, .kilograms, .pounds:
+      return .weight
+    case .calories, .kilojoules:
+      return .energy
+    case .currency:
+      return .currency
     }
+  }
 
-    public var category: Category {
-        switch self {
-        case .pages, .items, .rounds, .servings, .doses:
-            return .quantity
-        case .meters, .kilometers, .miles, .steps, .floors:
-            return .distance
-        case .milliliters, .liters, .ounces, .cups:
-            return .volume
-        case .minutes, .hours:
-            return .time
-        case .grams, .kilograms, .pounds:
-            return .weight
-        case .calories, .kilojoules:
-            return .energy
-        case .currency:
-            return .currency
-        }
+  // Display name might be different from raw value for units like 'km'
+  public var displayName: String {
+    switch self {
+    case .kilometers: return "Kilometers (km)"
+    case .meters: return "Meters (m)"
+    case .milliliters: return "Milliliters (ml)"
+    case .liters: return "Liters (l)"
+    case .ounces: return "Ounces (oz)"
+    case .grams: return "Grams (g)"
+    case .kilograms: return "Kilograms (kg)"
+    case .calories: return "Calories (kcal)"
+    case .kilojoules: return "Kilojoules (kJ)"
+    case .currency: return "Currency"
+    default: return rawValue
     }
+  }
 
-    // Display name might be different from raw value for units like 'km'
-    public var displayName: String {
-        switch self {
-        case .kilometers: return "Kilometers (km)"
-        case .meters: return "Meters (m)"
-        case .milliliters: return "Milliliters (ml)"
-        case .liters: return "Liters (l)"
-        case .ounces: return "Ounces (oz)"
-        case .grams: return "Grams (g)"
-        case .kilograms: return "Kilograms (kg)"
-        case .calories: return "Calories (kcal)"
-        case .kilojoules: return "Kilojoules (kJ)"
-        case .currency: return "Currency"
-        default: return rawValue
-        }
-    }
-
-    public static var allCasesGrouped: [Category: [UnitOfMeasure]] {
-        Dictionary(grouping: allCases, by: { $0.category })
-    }
+  public static var allCasesGrouped: [Category: [UnitOfMeasure]] {
+    Dictionary(grouping: allCases, by: { $0.category })
+  }
 }
 
 // MARK: - Custom Calendar Models
@@ -182,9 +182,14 @@ public struct CustomCalendar: Codable, Identifiable {
 }
 
 public enum TrackingType: String, Codable {
-  case binary  // Done/Not done
-  case counter  // GitHub-style count
-  case multipleDaily  // Fixed number of times per day
+  /// A binary tracking type: done or not done (once per day).
+  case binary
+
+  /// A counter tracking type: unlimited times per day (GitHub-style count).
+  case counter
+
+  /// A multiple-daily tracking type: fixed number of times per day (with target).
+  case multipleDaily
 
   public var description: String {
     switch self {
@@ -398,9 +403,7 @@ public class CustomCalendarStore: ObservableObject {
 
   public func addEntry(calendarId: UUID, entry: CalendarEntry) {
     guard let index = calendars.firstIndex(where: { $0.id == calendarId }) else { return }
-    let dateFormatter = DateFormatter()
-    dateFormatter.dateFormat = "yyyy-MM-dd"
-    let dateKey = dateFormatter.string(from: entry.date)
+    let dateKey = formatDate(date: entry.date)
 
     var calendar = calendars[index]
     calendar.entries[dateKey] = entry
@@ -410,9 +413,7 @@ public class CustomCalendarStore: ObservableObject {
 
   public func getEntry(calendarId: UUID, date: Date) -> CalendarEntry? {
     guard let calendar = calendars.first(where: { $0.id == calendarId }) else { return nil }
-    let dateFormatter = DateFormatter()
-    dateFormatter.dateFormat = "yyyy-MM-dd"
-    let dateKey = dateFormatter.string(from: date)
+    let dateKey = formatDate(date: date)
     return calendar.entries[dateKey]
   }
 
@@ -420,6 +421,19 @@ public class CustomCalendarStore: ObservableObject {
     guard let index = calendars.firstIndex(where: { $0.id == calendarId }) else { return }
     calendars[index].entries = [:]
     saveCalendars()
+  }
+
+  public func deleteEntry(calendarId: UUID, date: Date) {
+    guard let index = calendars.firstIndex(where: { $0.id == calendarId }) else { return }
+    let dateKey = formatDate(date: date)
+    calendars[index].entries.removeValue(forKey: dateKey)
+    saveCalendars()
+  }
+
+  private func formatDate(date: Date) -> String {
+    let dateFormatter = DateFormatter()
+    dateFormatter.dateFormat = "yyyy-MM-dd"
+    return dateFormatter.string(from: date)
   }
 }
 
@@ -570,7 +584,7 @@ public enum VisualizationType: String, Codable, AppEnum {
     [
       .full: "Full Year",
       .pastOnly: "Past Days Only",
-      .evaluatedOnly: "Evaluated Days Only",
+      .evaluatedOnly: "Evaluated Days Only"
     ]
   }
 }
