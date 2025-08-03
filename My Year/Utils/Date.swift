@@ -26,3 +26,10 @@ public func customDateFormatter(date: Date) -> String {
   dateFormatter.dateFormat = "yyyy-MM-dd"
   return dateFormatter.string(from: date)
 }
+
+public let dateFormatterLong: DateFormatter = {
+  let formatter = DateFormatter()
+  formatter.dateStyle = .long
+  formatter.timeStyle = .none
+  return formatter
+}()

@@ -2,6 +2,7 @@ import RevenueCat
 import RevenueCatUI
 import SharedModels
 import SwiftUI
+import SwiftfulRouting
 
 struct CreateCalendarView: View {
   @Environment(\.dismiss) private var dismiss
@@ -23,6 +24,8 @@ struct CreateCalendarView: View {
   @State private var currencySymbol: String = "$"
 
   @FocusState private var isNameFocused: Bool
+  @Environment(\.colorScheme) var colorScheme
+  @Environment(\.router) private var router
 
   private let colors = [
     "mood-terrible",
@@ -173,59 +176,11 @@ struct CreateCalendarView: View {
               }
             }
             .padding(.all, 2)
-            .background(getVoidColor())
+            .background(getVoidColor(colorScheme: colorScheme))
             .cornerRadius(6)
             .outerSameLevelShadow(radius: 6)
 
           }
-        }
-
-        CustomSection(label: "Recurring Reminder") {
-          VStack(spacing: 2) {
-
-            HStack {
-              Text("Set a remined")
-                .font(.system(size: 12, design: .monospaced).weight(.semibold))
-                .foregroundStyle(.textTertiary)
-              Spacer()
-
-              Toggle(
-                "",
-                isOn: Binding(
-                  get: { recurringReminderEnabled },
-                  set: { newValue in
-                    withAnimation(.snappy) {
-                      recurringReminderEnabled = newValue
-                    }
-                  }
-                ))
-            }
-            .tint(Color(selectedColor))
-            .padding(.horizontal)
-            .padding(.vertical, 6)
-            .sameLevelBorder()
-
-            if recurringReminderEnabled {
-              HStack {
-                // Text("Reminder Time")
-                //   .font(.system(size: 12, design: .monospaced).weight(.semibold))
-                //   .foregroundStyle(.textTertiary)
-                // Spacer()
-                DatePicker(
-                  "", selection: $reminderTime, displayedComponents: [.hourAndMinute]
-                )
-                .tint(Color(selectedColor))
-                .datePickerStyle(.wheel)
-                .inputStyle(radius: 4, color: Color(selectedColor))
-              }
-              .padding(.all, 2)
-              .sameLevelBorder()
-            }
-          }.padding(.all, 2)
-            .background(getVoidColor())
-            .cornerRadius(6)
-            .outerSameLevelShadow(radius: 6)
-
         }
 
         CustomSection(label: "Color") {
@@ -260,7 +215,48 @@ struct CreateCalendarView: View {
 
         }
 
-        Spacer()
+        CustomSection(label: "Recurring Reminder") {
+          VStack(spacing: 2) {
+
+            HStack {
+              Text("Set a remined")
+                .font(.system(size: 12, design: .monospaced).weight(.semibold))
+                .foregroundStyle(.textTertiary)
+              Spacer()
+
+              Toggle(
+                "",
+                isOn: Binding(
+                  get: { recurringReminderEnabled },
+                  set: { newValue in
+                    withAnimation(.snappy) {
+                      recurringReminderEnabled = newValue
+                    }
+                  }
+                ))
+            }
+            .tint(Color(selectedColor))
+            .padding(.horizontal)
+            .padding(.vertical, 6)
+            .sameLevelBorder()
+
+            if recurringReminderEnabled {
+              HStack {
+                DatePicker(
+                  "", selection: $reminderTime, displayedComponents: [.hourAndMinute]
+                )
+                .tint(Color(selectedColor))
+                .datePickerStyle(.wheel)
+                .inputStyle(radius: 4, color: Color(selectedColor))
+              }
+              .padding(.all, 2)
+              .sameLevelBorder()
+            }
+          }.padding(.all, 2)
+            .background(getVoidColor(colorScheme: colorScheme))
+            .cornerRadius(6)
+            .outerSameLevelShadow(radius: 6)
+        }
       }
     }
     .accentColor(Color(selectedColor))
@@ -275,12 +271,13 @@ struct CreateCalendarView: View {
     .toolbar {
       ToolbarItem(placement: .cancellationAction) {
         Button("Cancel") {
-          dismiss()
+          router.dismissScreen()
         }
       }
       ToolbarItem(placement: .confirmationAction) {
         Button("Create") {
           handleCreateCalendar()
+          router.dismissScreen()
         }
         .disabled(name.isEmpty)
       }

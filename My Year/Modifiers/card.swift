@@ -1,16 +1,19 @@
 import SwiftUI
 
 struct CardModifier: ViewModifier {
+  @Environment(\.colorScheme) var colorScheme
+
   func body(content: Content) -> some View {
-    content
-      .padding()
-      .background(Color.surfaceSecondary)
-      .cornerRadius(22)
-      .shadow(color: Color.black.opacity(0.04), radius: 4, x: 0, y: 2)
-      .overlay(
-        RoundedRectangle(cornerRadius: 22)
-          .stroke(Color.surfacePrimary, lineWidth: 1)
-      )
+    VStack {
+
+      content
+        .padding()
+        .sameLevelBorder(radius: 10)
+    }
+    .padding(.all, 2)
+    .background(getVoidColor(colorScheme: colorScheme))
+    .cornerRadius(12)
+    // .outerSameLevelShadow(radius: 12)
   }
 }
 

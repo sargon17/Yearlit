@@ -39,7 +39,7 @@ struct CalendarsOverviewsItem: View {
       .modifier(
         ContextOrDragModifier(
           isReorderActive: isReorderActive, calendar: calendar, store: store,
-          showEditSheet: $showEditSheet, showDeleteConfirmation: $showDeleteConfirmation)
+          showDeleteConfirmation: $showDeleteConfirmation)
       )
       .alert("Delete Calendar?", isPresented: $showDeleteConfirmation) {
         Button("Delete", role: .destructive) {
@@ -48,21 +48,6 @@ struct CalendarsOverviewsItem: View {
         Button("Cancel", role: .cancel) {}
       } message: {
         Text("Are you sure you want to delete '\(calendar.name)'? This action cannot be undone.")
-      }
-      .sheet(isPresented: $showEditSheet) {
-        NavigationView {
-          EditCalendarView(
-            calendar: calendar,
-            onSave: { _ in
-              showEditSheet = false
-            },
-            onDelete: { _ in
-              showEditSheet = false
-              store.deleteCalendar(id: calendar.id)
-            }
-          )
-        }
-        .background(Color("surface-muted"))
       }
   }
 }
@@ -125,6 +110,6 @@ struct VisualEntry: View {
     Rectangle()
       .fill(color)
       .frame(width: width, height: width)
-      .cornerRadius(4)
+      .cornerRadius(2)
   }
 }

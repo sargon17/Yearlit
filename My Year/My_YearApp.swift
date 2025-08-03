@@ -13,6 +13,7 @@ import SwiftfulRouting
 @main
 // swiftlint:disable:next type_name
 struct My_YearApp: App {
+
   #if DEBUG
     public static let isDebugMode = true
   #else

@@ -1,22 +1,7 @@
-import CoreMotion
 import SwiftUI
 
-class MotionManager: ObservableObject {
-  private let motionManager = CMMotionManager()
-  @Published var x: CGFloat = 0.0
-  @Published var y: CGFloat = 0.0
-
-  init() {
-    motionManager.startDeviceMotionUpdates(to: .main) { [weak self] (data: CMDeviceMotion?, error) in
-      guard let self = self, let motion = data?.attitude else { return }
-      self.x = motion.roll
-      self.y = motion.pitch
-    }
-  }
-}
-
 struct SameLevelBorder: ViewModifier {
-  @StateObject private var motionManager = MotionManager()
+  // @StateObject private var motionManager = MotionManager()
   let radius: CGFloat
   let color: Color
 
@@ -24,6 +9,9 @@ struct SameLevelBorder: ViewModifier {
     self.radius = radius
     self.color = color
   }
+
+  @Environment(\.colorScheme) var colorScheme
+  @StateObject private var motionManager = MotionManager.shared
 
   func body(content: Content) -> some View {
     ZStack {
@@ -33,21 +21,25 @@ struct SameLevelBorder: ViewModifier {
       RoundedRectangle(cornerRadius: radius)
         .foregroundStyle(
           color
-            .shadow(.inner(color: .white.opacity(0.1), radius: 1, x: motionManager.x, y: motionManager.y))  // inner light shadow
-            .shadow(.inner(color: .black.opacity(0.1), radius: 1, x: motionManager.x, y: motionManager.y))  // inner dark shadow
+            .shadow(
+              .inner(
+                color: .white.opacity(colorScheme == .dark ? 0.2 : 0.6), radius: 0.5, x: motionManager.x,
+                y: motionManager.y
+              )
+            )  // inner light shadow
+
+            .shadow(
+              .inner(
+                color: .black.opacity(colorScheme == .dark ? 0.6 : 0.4), radius: 0.5, x: -motionManager.x,
+                y: -motionManager.y))  // inner dark shadow
         )
-    )
-    .background(
-      RoundedRectangle(cornerRadius: radius)
-        .stroke(getVoidColor(), lineWidth: 1)
     )
   }
 
 }
 
-func getVoidColor() -> Color {
-  @Environment(\.colorScheme) var colorScheme
-  return colorScheme == .dark ? .black.opacity(0.8) : .black.opacity(0.4)
+func getVoidColor(colorScheme: ColorScheme) -> Color {
+  return colorScheme == .dark ? .black.opacity(1) : .black.opacity(0.05)
 }
 
 extension View {
@@ -57,8 +49,11 @@ extension View {
 }
 
 struct OuterSameLevelShadow: ViewModifier {
-  @StateObject private var motionManager = MotionManager()
+  // @StateObject private var motionManager = MotionManager()
   let radius: CGFloat
+  @StateObject private var motionManager = MotionManager.shared
+
+  @Environment(\.colorScheme) var colorScheme
 
   init(radius: CGFloat = 4) {
     self.radius = radius
@@ -70,8 +65,18 @@ struct OuterSameLevelShadow: ViewModifier {
         RoundedRectangle(cornerRadius: radius)
           .foregroundStyle(
             .surfaceMuted
-              .shadow(.drop(color: .white.opacity(0.1), radius: 1, x: motionManager.x, y: motionManager.y))
-              .shadow(.drop(color: .black.opacity(0.1), radius: 1, x: motionManager.x, y: motionManager.y))
+              .shadow(
+                .drop(
+                  color: .white.opacity(colorScheme == .dark ? 0.1 : 0.3), radius: 0.2, x: motionManager.x,
+                  y: motionManager.y
+                )
+              )
+              .shadow(
+                .drop(
+                  color: .black.opacity(colorScheme == .dark ? 1 : 0.7), radius: 0.2, x: -motionManager.x,
+                  y: -motionManager.y
+                )
+              )
           )
       )
   }

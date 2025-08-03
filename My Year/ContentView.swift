@@ -13,43 +13,6 @@ import SwiftUI
 import SwiftfulRouting
 import UIKit
 
-struct ContextOrDragModifier: ViewModifier {
-  let isReorderActive: Bool
-  let calendar: CustomCalendar
-  @ObservedObject var store: CustomCalendarStore
-  @Binding var showEditSheet: Bool
-  @Binding var showDeleteConfirmation: Bool
-
-  func body(content: Content) -> some View {
-    if isReorderActive {
-      content
-        .onDrag {
-          NSItemProvider(object: calendar.id.uuidString as NSString)
-
-          let vibration = UIImpactFeedbackGenerator(style: .light)
-          vibration.impactOccurred()
-
-          return NSItemProvider(object: calendar.id.uuidString as NSString)
-        }
-        .onDrop(of: [.text], delegate: CalendarDropDelegate(item: calendar, store: store))
-    } else {
-      content.contextMenu {
-        Button(action: {
-          showEditSheet = true
-        }) {
-          Text("Edit Calendar")
-        }
-        Divider()
-        Button(action: {
-          showDeleteConfirmation = true
-        }) {
-          Text("Delete Calendar")
-        }
-      }
-    }
-  }
-}
-
 struct CalendarDropDelegate: DropDelegate {
   let item: CustomCalendar
   @ObservedObject var store: CustomCalendarStore
@@ -164,12 +127,20 @@ struct ContentView: View {
 
         ToolbarItem(placement: .navigationBarTrailing) {
           HStack(spacing: 4) {
-            Button(action: { isSettingsPresented = true }) {
+            Button(action: {
+              router.showScreen(.sheet) { _ in
+                SettingsView()
+              }
+            }) {
               Image(systemName: "gearshape")
                 .foregroundColor(Color("text-tertiary"))
                 .font(.system(size: 12))
             }
-            Button(action: { showingOverview = true }) {
+            Button(action: {
+              router.showScreen(.sheet) { _ in
+                CalendarsOverview(store: store, valuationStore: valuationStore, selectedIndex: $selectedIndex)
+              }
+            }) {
               Image(systemName: "square.grid.2x2")
                 .font(.system(size: 12))
                 .foregroundColor(Color("text-tertiary"))
@@ -183,21 +154,6 @@ struct ContentView: View {
       Purchases.shared.getCustomerInfo { (customerInfo, _) in
         self.customerInfo = customerInfo
       }
-    }
-    .sheet(isPresented: $showingCreateSheet) {
-
-      CreateCalendarView { newCalendar in
-        store.addCalendar(newCalendar)
-        selectedIndex = store.calendars.count
-        showingCreateSheet = false
-      }
-      .background(Color("surface-muted"))
-    }
-    .sheet(isPresented: $showingOverview) {
-      CalendarsOverview(store: store, valuationStore: valuationStore, selectedIndex: $selectedIndex)
-    }
-    .sheet(isPresented: $isSettingsPresented) {
-      SettingsView()
     }
   }
 }

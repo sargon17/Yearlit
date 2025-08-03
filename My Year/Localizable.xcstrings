@@ -25,16 +25,10 @@
     "Are you sure you want to delete this calendar? This action cannot be undone." : {
 
     },
-    "Calendar Name" : {
-
-    },
     "Calendars" : {
 
     },
     "Cancel" : {
-
-    },
-    "Color" : {
 
     },
     "Completed" : {
@@ -50,9 +44,6 @@
 
     },
     "Daily Training" : {
-
-    },
-    "Danger Zone" : {
 
     },
     "Default Quick Add Value" : {
@@ -94,12 +85,6 @@
     "Left: " : {
 
     },
-    "Multiple times (unlimited)" : {
-
-    },
-    "Multiple times (with target)" : {
-
-    },
     "Mykhaylo Tymofyeyev" : {
 
     },
@@ -134,25 +119,16 @@
     "OK" : {
 
     },
-    "Once a day" : {
-
-    },
     "Passed: " : {
-
-    },
-    "Recurring Reminder" : {
-
-    },
-    "Reminder Time" : {
-
-    },
-    "Reminders will be sent in your local timezone" : {
 
     },
     "Save" : {
 
     },
     "Select Year" : {
+
+    },
+    "Set a remined" : {
 
     },
     "Settings" : {
@@ -174,9 +150,6 @@
 
     },
     "Track your year mood" : {
-
-    },
-    "Tracking Type" : {
 
     },
     "Unit of Measure" : {

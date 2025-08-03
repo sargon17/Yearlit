@@ -5,6 +5,8 @@ struct TrackingPicker: View {
   @Binding var trackingType: TrackingType
   let color: Color
 
+  @Environment(\.colorScheme) var colorScheme
+
   var body: some View {
     CustomSection(label: "Tracking Type") {
 
@@ -42,7 +44,7 @@ struct TrackingPicker: View {
       }
       .padding(.all, 2)
       .frame(maxWidth: .greatestFiniteMagnitude)
-      .background(getVoidColor())
+      .background(getVoidColor(colorScheme: colorScheme))
       .cornerRadius(6)
       .outerSameLevelShadow(radius: 6)
     }
