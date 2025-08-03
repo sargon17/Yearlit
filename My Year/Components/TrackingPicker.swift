@@ -17,7 +17,7 @@ struct TrackingPicker: View {
               trackingType = type
             }
             Task {
-              await hepticFeedback(option: .rigid)
+              await hapticFeedback(.rigid)
             }
           } label: {
             VStack {

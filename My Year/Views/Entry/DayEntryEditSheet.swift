@@ -31,45 +31,29 @@ struct DayEntryEditSheet: View {
   }
 
   var body: some View {
-    NavigationView {  // Wrap in NavigationView for title and buttons
-      Form {
-        Section {
-          if calendar.trackingType == .binary {
-            Toggle("Completed", isOn: $entryCompleted)
-          } else {
-            HStack {
-              Text(
-                "Count"
-                  + (calendar.unit != nil
-                    ? " (\(calendar.unit == .currency ? (calendar.currencySymbol ?? "$") : calendar.unit!.rawValue))"
-                    : ""))
-              Spacer()
-              TextField("Value", value: $entryCount, formatter: NumberFormatter())
-                .keyboardType(.numberPad)
-                .multilineTextAlignment(.trailing)
-                .frame(maxWidth: 100)
-                .onChange(of: entryCount) { newValue in
-                  // Automatically mark as completed if count > 0 for counter/multiple
-                  if calendar.trackingType == .counter || calendar.trackingType == .multipleDaily {
-                    entryCompleted = newValue > 0
-                  }
-                }
-            }
-          }
-        }
+
+    VStack {
+      switch calendar.trackingType {
+      case .binary:
+        Toggle("Completed", isOn: $entryCompleted)
+      case .counter:
+        CounterEntryModule(calendar: calendar, entryCount: $entryCount)
+      case .multipleDaily:
+        CounterEntryModule(calendar: calendar, entryCount: $entryCount)
+
+      // MultipleDailyEntryModule(calendar: calendar, entryCount: $entryCount)
       }
-      .navigationTitle(dateFormatterLong.string(from: date))
-      .navigationBarTitleDisplayMode(.large)
-      .toolbar {
-        ToolbarItem(placement: .cancellationAction) {
-          Button("Cancel") { dismiss() }
-        }
-        ToolbarItem(placement: .confirmationAction) {
-          Button("Save") { saveEntry() }
-        }
+    }
+    .padding()
+    .navigationTitle(dateFormatterLong.string(from: date))
+    .navigationBarTitleDisplayMode(.large)
+    .toolbar {
+      ToolbarItem(placement: .cancellationAction) {
+        Button("Cancel") { dismiss() }
       }
-      .background(Color("surface-muted").ignoresSafeArea())
-      .scrollContentBackground(.hidden)
+      ToolbarItem(placement: .confirmationAction) {
+        Button("Save") { saveEntry() }
+      }
     }
   }
 }

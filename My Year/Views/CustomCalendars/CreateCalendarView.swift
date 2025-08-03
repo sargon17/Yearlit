@@ -199,7 +199,7 @@ struct CreateCalendarView: View {
                       selectedColor = color
                     }
                     Task {
-                      await hepticFeedback(option: .rigid)
+                      await hapticFeedback(.rigid)
                     }
                   }
               }

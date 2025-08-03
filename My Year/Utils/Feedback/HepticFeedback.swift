@@ -35,7 +35,7 @@ import SwiftfulHaptics
 /// .custom(events: [CHHapticEvent], parameters: [CHHapticDynamicParameter])
 ///  .customCurve(events: [CHHapticEvent], parameterCurves: [CHHapticParameterCurve])
 
-func hepticFeedback(option: HapticOption = .light) async {
+func hapticFeedback(_ option: HapticOption = .light) async {
   let hapticManager = HapticManager(logger: nil)
   await hapticManager.prepare(option: option)
   await hapticManager.play(option: option)

@@ -179,7 +179,7 @@ struct CustomCalendarView: View {
     WidgetCenter.shared.reloadAllTimelines()
 
     Task {
-      await hepticFeedback()
+      await hapticFeedback()
     }
   }
 
