@@ -83,6 +83,7 @@ struct YearGrid: View {
             .foregroundColor(Color("text-tertiary"))
             .fontWeight(.regular)
         }
+        .padding(.top, 10)
         .padding(.horizontal)
 
         HStack {
@@ -172,6 +173,7 @@ struct YearGrid: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .padding(.horizontal)
       }
+      .frame(height: UIScreen.main.bounds.height - 270)
     }.overlay {
       HStack {
         Rectangle()

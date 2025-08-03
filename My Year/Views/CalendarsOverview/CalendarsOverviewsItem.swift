@@ -44,6 +44,7 @@ struct CalendarsOverviewsItem: View {
       .alert("Delete Calendar?", isPresented: $showDeleteConfirmation) {
         Button("Delete", role: .destructive) {
           store.deleteCalendar(id: calendar.id)
+          cancelNotifications(for: calendar)
         }
         Button("Cancel", role: .cancel) {}
       } message: {

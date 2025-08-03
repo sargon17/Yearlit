@@ -38,8 +38,9 @@ struct CalendarDropDelegate: DropDelegate {
       }
     }
 
-    let vibration = UIImpactFeedbackGenerator(style: .light)
-    vibration.impactOccurred()
+    Task {
+      await hapticFeedback()
+    }
 
     return true
   }
@@ -48,13 +49,8 @@ struct CalendarDropDelegate: DropDelegate {
 struct ContentView: View {
   @State private var customerInfo: CustomerInfo?
   @ObservedObject private var store = CustomCalendarStore.shared
-  @State private var showingCreateSheet = false
   @State private var selectedIndex: Int = 0
-  @State private var showingOverview = false
   @ObservedObject private var valuationStore = ValuationStore.shared
-  private let impactGenerator = UIImpactFeedbackGenerator(style: .light)
-  @State private var dragStarted: Bool = false
-  @State private var isSettingsPresented = false
 
   @Environment(\.router) private var router
 
@@ -62,7 +58,9 @@ struct ContentView: View {
     VStack {
       TabView(
         selection: $selectedIndex.onChange { _ in
-          impactGenerator.impactOccurred()
+          Task {
+            await hapticFeedback()
+          }
         }
       ) {
         // Year Grid
@@ -81,14 +79,14 @@ struct ContentView: View {
           VStack(spacing: 16) {
             Image(systemName: "plus")
               .font(.system(size: 42))
-              .foregroundStyle(Color("text-secondary"))
+              .foregroundStyle(Color("text-tertiary"))
             Text("Add Calendar")
               .font(.headline)
               .foregroundColor(Color("text-primary"))
           }
           Spacer()
         }
-        .tag(store.calendars.count + 1)
+        .tag(store.calendars.count + 3)
         .onTapGesture {
           router.showScreen(.sheet) { _ in
             CreateCalendarView { newCalendar in
@@ -153,6 +151,9 @@ struct ContentView: View {
     .onAppear {
       Purchases.shared.getCustomerInfo { (customerInfo, _) in
         self.customerInfo = customerInfo
+      }
+      Task {
+        await checkForNotificationsOfNonExistingCalendars(store: store)
       }
     }
   }

@@ -71,59 +71,6 @@ struct EditCalendarView: View {
     "qs-rose"
   ]
 
-  private func scheduleNotifications(for calendar: CustomCalendar) {
-    guard calendar.recurringReminderEnabled, let hour = calendar.reminderHour,
-      let minute = calendar.reminderMinute
-    else {
-      UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: [
-        calendar.id.uuidString
-      ])
-      return
-    }
-
-    let content = UNMutableNotificationContent()
-    content.title = String(
-      format: NSLocalizedString(
-        "notification.reminder.title", comment: "Notification title for calendar reminder"),
-      calendar.name)
-    content.body = String(
-      format: NSLocalizedString(
-        "notification.reminder.body", comment: "Notification body for calendar reminder"),
-      calendar.name, calendar.dailyTarget)
-    content.sound = .default
-
-    let components = DateComponents(hour: hour, minute: minute)
-    let trigger = UNCalendarNotificationTrigger(dateMatching: components, repeats: true)
-
-    let request = UNNotificationRequest(
-      identifier: calendar.id.uuidString, content: content, trigger: trigger)
-    UNUserNotificationCenter.current().add(request) { error in
-      if let error = error {
-        DispatchQueue.main.async {
-          self.calendarError = .notificationSchedulingFailed(error)
-        }
-      }
-    }
-  }
-
-  private func validateReminderTime(_ time: Date) -> Date {
-    let calendar = Calendar.current
-    let now = Date()
-
-    // Extract hour and minute components
-    let timeComponents = calendar.dateComponents([.hour, .minute], from: time)
-    let nowComponents = calendar.dateComponents([.hour, .minute], from: now)
-
-    // If time is in the past for today, set it for tomorrow
-    if timeComponents.hour! < nowComponents.hour!
-      || (timeComponents.hour! == nowComponents.hour!
-        && timeComponents.minute! <= nowComponents.minute!)
-    {
-      return calendar.date(byAdding: .day, value: 1, to: time)!
-    }
-    return time
-  }
-
   var body: some View {
     ScrollView {
       VStack(spacing: 24) {
@@ -329,6 +276,7 @@ struct EditCalendarView: View {
           Button("Cancel", role: .cancel) {}
           Button("Delete", role: .destructive) {
             onDelete(calendar)
+            cancelNotifications(for: calendar)
             dismiss()
           }
         } message: {
@@ -373,8 +321,8 @@ struct EditCalendarView: View {
             currencySymbol: ((trackingType == .counter || trackingType == .multipleDaily)
               && selectedUnit == .currency) ? currencySymbol : nil
           )
-          onSave(updatedCalendar)
           scheduleNotifications(for: updatedCalendar)
+          onSave(updatedCalendar)
           dismiss()
         }
         .disabled(name.isEmpty)

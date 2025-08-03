@@ -64,6 +64,7 @@ struct CreateCalendarView: View {
       currencySymbol: ((trackingType == .counter || trackingType == .multipleDaily)
         && selectedUnit == .currency) ? currencySymbol : nil
     )
+    scheduleNotifications(for: calendar)
     onCreate(calendar)
   }
 

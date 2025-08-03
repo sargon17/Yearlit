@@ -88,7 +88,7 @@ struct CustomCalendarView: View {
 
   private func handleDayTap(_ day: Int) {
     let date: Date = valuationStore.dateForDay(day)
-    if day < valuationStore.currentDayNumber {
+    if day < valuationStore.currentDayNumber && calendar.trackingType != .binary {
       router.showScreen(
         .sheetConfig(config: shortSheetConfig)
       ) { _ in
@@ -98,6 +98,11 @@ struct CustomCalendarView: View {
           store: store
         )
       }
+    } else if calendar.trackingType == .binary {
+      toggleBinaryEntry(calendarId: calendar.id, date: date, calendarStore: store)
+    }
+    Task {
+      await hapticFeedback()
     }
   }
 
@@ -289,6 +294,7 @@ struct CustomCalendarView: View {
             }
           }
           .padding(.horizontal)
+          .padding(.top, 10)
           CustomSeparator()
         }
 
