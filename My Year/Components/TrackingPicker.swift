@@ -26,12 +26,12 @@ struct TrackingPicker: View {
                 .foregroundStyle(
                   trackingType == type
                     ? color
-                    : .textTertiary
+                    : .textSecondary
                 )
               Text(type.label)
                 .font(.system(size: 10, design: .monospaced))
                 .foregroundStyle(
-                  trackingType == type ? color : .textTertiary.opacity(0.5)
+                  trackingType == type ? color : .textSecondary
                 )
             }
             .frame(maxWidth: .greatestFiniteMagnitude, maxHeight: .greatestFiniteMagnitude)

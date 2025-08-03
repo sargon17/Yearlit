@@ -37,11 +37,9 @@ struct CalendarDropDelegate: DropDelegate {
         }
       }
     }
-
     Task {
       await hapticFeedback()
     }
-
     return true
   }
 }
@@ -107,22 +105,21 @@ struct ContentView: View {
       .tabViewStyle(.page(indexDisplayMode: .never))
       .ignoresSafeArea(edges: .bottom)
       .indexViewStyle(.page(backgroundDisplayMode: .never))
-      .toolbar {
-        ToolbarItem(placement: .navigationBarLeading) {
-          HStack(spacing: 4) {
-            Text("Yearlit")
-              .font(.system(size: 12, design: .monospaced))
-              .foregroundColor(Color("text-tertiary"))
+      .overlay {
+        HStack {
+          Text("Yearlit")
+            .font(.system(size: 12, design: .monospaced))
+            .foregroundColor(Color("text-tertiary"))
 
-            if customerInfo?.entitlements["premium"]?.isActive ?? false {
-              Image(systemName: "checkmark.seal.fill")
-                .font(.caption)
-                .foregroundColor(Color("mood-excellent"))
-                .shadow(color: Color("mood-excellent").opacity(0.5), radius: 10)
-            }
+          if customerInfo?.entitlements["premium"]?.isActive ?? false {
+            Image(systemName: "checkmark.seal.fill")
+              .font(.caption)
+              .foregroundColor(Color("mood-excellent"))
+              .shadow(color: Color("mood-excellent").opacity(0.5), radius: 10)
           }
-        }
-
+        }.position(x: 50, y: -30)
+      }
+      .toolbar {
         ToolbarItem(placement: .navigationBarTrailing) {
           HStack(spacing: 4) {
             Button(action: {

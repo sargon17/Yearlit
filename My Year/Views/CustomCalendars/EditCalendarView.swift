@@ -95,8 +95,7 @@ struct EditCalendarView: View {
               if trackingType == .multipleDaily {
                 HStack {
                   Text("Daily Target")
-                    .font(.system(size: 12, design: .monospaced).weight(.semibold))
-                    .foregroundStyle(.textTertiary)
+                    .labelStyle(type: .secondary)
 
                   Spacer()
                   TextField("Target", value: $dailyTarget, formatter: NumberFormatter())
@@ -113,8 +112,7 @@ struct EditCalendarView: View {
               if trackingType == .counter || trackingType == .multipleDaily {
                 HStack {
                   Text("Unit of Measure")
-                    .font(.system(size: 12, design: .monospaced).weight(.semibold))
-                    .foregroundStyle(.textTertiary)
+                    .labelStyle(type: .secondary)
                   Spacer()
                   if selectedUnit == nil {
                     Text("None")
@@ -137,8 +135,7 @@ struct EditCalendarView: View {
                 if selectedUnit == .currency {
                   HStack {
                     Text("Currency Symbol")
-                      .font(.system(size: 12, design: .monospaced).weight(.semibold))
-                      .foregroundStyle(.textTertiary)
+                      .labelStyle(type: .secondary)
                     Spacer()
                     TextField("Symbol", text: $currencySymbol)
                       .multilineTextAlignment(.trailing)
@@ -156,8 +153,7 @@ struct EditCalendarView: View {
               if trackingType == .counter || trackingType == .multipleDaily {
                 HStack {
                   Text("Default Quick Add Value")
-                    .font(.system(size: 12, design: .monospaced).weight(.semibold))
-                    .foregroundStyle(.textTertiary)
+                    .labelStyle(type: .secondary)
                   Spacer()
                   TextField("Value", value: $defaultRecordValue, formatter: NumberFormatter())
                     .keyboardType(.numberPad)
@@ -188,7 +184,7 @@ struct EditCalendarView: View {
                   .frame(width: 30, height: 30)
                   .overlay(
                     Circle()
-                      .stroke(Color.primary, lineWidth: selectedColor == color ? 2 : 0)
+                      .stroke(.white, lineWidth: selectedColor == color ? 2 : 0)
                   )
                   .onTapGesture {
                     withAnimation(.snappy) {
@@ -215,9 +211,8 @@ struct EditCalendarView: View {
           VStack(spacing: 2) {
 
             HStack {
-              Text("Set a remined")
-                .font(.system(size: 12, design: .monospaced).weight(.semibold))
-                .foregroundStyle(.textTertiary)
+              Text("Set a reminder")
+                .labelStyle(type: .secondary)
               Spacer()
 
               Toggle(
@@ -244,6 +239,7 @@ struct EditCalendarView: View {
                 .tint(Color(selectedColor))
                 .datePickerStyle(.wheel)
                 .inputStyle(radius: 4, color: Color(selectedColor))
+                .colorScheme(.dark)
               }
               .padding(.all, 2)
               .sameLevelBorder()

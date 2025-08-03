@@ -25,7 +25,7 @@ struct CounterEntryModule: View {
 
           Text("\(entryCount)")
             .frame(maxWidth: .greatestFiniteMagnitude, maxHeight: .greatestFiniteMagnitude)
-            .inputStyle()
+            .inputStyle(color: Color(calendar.color))
             .contentTransition(.numericText())
 
           Button(action: {

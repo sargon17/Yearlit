@@ -12,8 +12,7 @@ struct CustomSection<Content: View>: View {
   var body: some View {
     VStack(alignment: .leading) {
       Text(label)
-        .font(.system(size: 12, design: .monospaced).weight(.semibold))
-        .foregroundStyle(.textTertiary)
+        .labelStyle(type: .tertiary)
 
       content()
     }
