@@ -480,7 +480,7 @@ public class ValuationStore: ObservableObject {
   }
 
   // MARK: - Date Calculations
-
+  // TODO: Remove this function (LEGACY)
   public func dateForDay(_ day: Int) -> Date {
     let calendar = Calendar.current
     let startOfYear = calendar.date(from: DateComponents(year: selectedYear, month: 1, day: 1))!

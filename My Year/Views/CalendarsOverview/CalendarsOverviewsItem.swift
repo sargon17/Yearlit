@@ -12,7 +12,6 @@ import SwiftUI
 
 struct CalendarsOverviewsItem: View {
   let calendar: CustomCalendar
-  let valuationStore: ValuationStore
   @Binding var selectedIndex: Int
   @Environment(\.dismiss) private var dismiss
   @ObservedObject var store: CustomCalendarStore
@@ -22,6 +21,8 @@ struct CalendarsOverviewsItem: View {
 
   let latestSlotsCount = 28
   let columnsCount = 7
+
+  let today = Date()
 
   var latestSlots: [Date] {
     let today = DateInRegion()
@@ -54,6 +55,7 @@ struct CalendarsOverviewsItem: View {
 }
 
 extension CalendarsOverviewsItem {
+
   var ui: some View {
     VStack(alignment: .leading, spacing: 12) {
 
@@ -94,7 +96,7 @@ extension CalendarsOverviewsItem {
             color: colorForDay(
               slot,
               calendar: calendar,
-              valuationStore: valuationStore,
+              today: today
             )
           )
         }
