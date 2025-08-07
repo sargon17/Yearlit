@@ -44,7 +44,7 @@ struct My_YearApp: App {
   }
 
   var dates: [Date] {
-    let todayInRegion = DateInRegion()
+    let todayInRegion = DateInRegion(region: .current)
     let startOfYear = todayInRegion.dateAtStartOf(.year)
     let endOfYear = todayInRegion.dateAtEndOf(.year)
     let increment = DateComponents.create { $0.day = 1 }

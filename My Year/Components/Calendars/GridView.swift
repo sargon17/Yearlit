@@ -9,7 +9,7 @@ struct GridView: View {
   let handleDayTap: (Int) -> Void
 
   @Environment(\.dates) var dates
-  let today = Date()
+  let today: Date = DateInRegion(region: .current).date
   @State var mappedDays: [(date: Date, color: Color)] = []
 
   // Cache instance for mappedDays
@@ -64,7 +64,7 @@ struct GridView: View {
       .task(
         id: calendar.entries.values.reduce(0) { $0 + $1.count }
       ) {
-        let cacheKey = "\(calendar.name)-\(calendar.entries.values.reduce(0) { $0 + $1.count })"
+        let cacheKey = "\(calendar.name)-\(calendar.entries.values.reduce(0) { $0 + $1.count } )"
         if let cachedMappedDays = Self.mappedDaysCache.get(for: cacheKey) {
           mappedDays = cachedMappedDays
         } else {
