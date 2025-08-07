@@ -63,7 +63,6 @@ struct CalendarsOverview: View {
         ) { index, calendar in
           CalendarsOverviewsItem(
             calendar: store.calendars[index],
-            valuationStore: valuationStore,
             selectedIndex: $selectedIndex,
             store: store,
             isReorderActive: $isReorderActive

@@ -35,6 +35,7 @@ enum SelectedDate: Equatable, Identifiable {
 }
 
 struct CustomCalendarView: View {
+
   let calendar: CustomCalendar
   @StateObject private var store: CustomCalendarStore = CustomCalendarStore.shared
   @ObservedObject private var valuationStore: ValuationStore = ValuationStore.shared
@@ -298,53 +299,12 @@ struct CustomCalendarView: View {
           CustomSeparator()
         }
 
-        // Calendar grid
-        GeometryReader { geometry in
-          let dotSize: CGFloat = 10
-          let padding: CGFloat = 20
-          let store = ValuationStore.shared
-
-          let availableWidth = geometry.size.width - (padding * 2)
-          let availableHeight = geometry.size.height - (padding * 2)
-
-          let aspectRatio = availableWidth / availableHeight
-          let targetColumns = Int(sqrt(Double(365) * aspectRatio))
-          let columns = min(targetColumns, 365)
-          let rows = Int(ceil(Double(365) / Double(columns)))
-
-          let horizontalSpacing =
-            (availableWidth - (dotSize * CGFloat(columns))) / CGFloat(columns - 1)
-          let verticalSpacing = (availableHeight - (dotSize * CGFloat(rows))) / CGFloat(rows - 1)
-
-          VStack(spacing: verticalSpacing) {
-            ForEach(0..<rows, id: \.self) { row in
-              HStack(spacing: horizontalSpacing) {
-                ForEach(0..<columns, id: \.self) { col in
-                  let day = row * columns + col
-                  let dayDate = valuationStore.dateForDay(day)
-                  if day < store.numberOfDaysInYear {
-                    RoundedRectangle(cornerRadius: 3)
-                      .fill(
-                        colorForDay(
-                          dayDate,
-                          calendar: calendar,
-                          valuationStore: valuationStore,
-                        )
-                      )
-                      .frame(width: dotSize, height: dotSize)
-                      .onTapGesture {
-                        handleDayTap(day)
-                      }
-                  } else {
-                    Color.clear.frame(width: dotSize, height: dotSize)
-                  }
-                }
-              }
-            }
-          }
-          .frame(maxWidth: .infinity, maxHeight: .infinity)
-          .padding(.horizontal)
-        }
+        GridView(
+          calendar: calendar,
+          store: store,
+          valuationStore: valuationStore,
+          handleDayTap: handleDayTap
+        )
 
       }
       .frame(height: UIScreen.main.bounds.height * 0.85)

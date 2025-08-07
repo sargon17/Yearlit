@@ -4,9 +4,8 @@ import SwiftUI
 func colorForDay(
   _ day: Date,
   calendar: CustomCalendar,
-  valuationStore: ValuationStore,
+  today: Date
 ) -> Color {
-  let today = Date()
 
   if day > today {
     return Color("dot-inactive")

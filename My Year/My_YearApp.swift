@@ -7,6 +7,7 @@
 
 import RevenueCat
 import SharedModels
+import SwiftDate
 import SwiftUI
 import SwiftfulRouting
 
@@ -42,11 +43,21 @@ struct My_YearApp: App {
     }
   }
 
+  var dates: [Date] {
+    let todayInRegion = DateInRegion(region: .current)
+    let startOfYear = todayInRegion.dateAtStartOf(.year)
+    let endOfYear = todayInRegion.dateAtEndOf(.year)
+    let increment = DateComponents.create { $0.day = 1 }
+    let dateInRegions = DateInRegion.enumerateDates(from: startOfYear, to: endOfYear, increment: increment)
+    return dateInRegions.map { $0.date }
+  }
+
   var body: some Scene {
     WindowGroup {
       RouterView { _ in
         ContentView()
       }
+      .environment(\.dates, dates)
       .onOpenURL { url in
         if url.scheme == "my-year" && url.host == "clear" {
           let store = ValuationStore.shared
@@ -54,5 +65,15 @@ struct My_YearApp: App {
         }
       }
     }
+  }
+}
+
+struct DatesKey: EnvironmentKey {
+  static let defaultValue: [Date] = []
+}
+extension EnvironmentValues {
+  var dates: [Date] {
+    get { self[DatesKey.self] }
+    set { self[DatesKey.self] = newValue }
   }
 }
