@@ -38,6 +38,7 @@ enum SelectedDate: Equatable, Identifiable {
 
 struct CustomCalendarView: View {
 
+  @Environment(\.colorScheme) var colorScheme
   let calendar: CustomCalendar
   @StateObject private var store: CustomCalendarStore = CustomCalendarStore.shared
   @ObservedObject private var valuationStore: ValuationStore = ValuationStore.shared
@@ -246,7 +247,8 @@ struct CustomCalendarView: View {
     let avg30 = last30Dates.isEmpty ? 0 : zSum30 / Double(last30Dates.count)
 
     // Best weekday + weekday rates over selected year up to today
-    var wdTotals: [Int: (succ: Int, denom: Int)] = [:]
+    // For binary: average completion rate (0/1). For others: average normalized progress (0..1).
+    var wdTotals: [Int: (sum: Double, denom: Int)] = [:]
     if let startOfYear = cal.date(from: DateComponents(year: year, month: 1, day: 1)),
       let endOfYear = cal.date(from: DateComponents(year: year, month: 12, day: 31))
     {
@@ -254,11 +256,17 @@ struct CustomCalendarView: View {
       let endDate = min(todayLocal, endOfYear)
       while d <= endDate {
         let wd = cal.component(.weekday, from: d)
-        if let e = entryOn(d) {
-          let s = success(e) ? 1 : 0
-          let cur = wdTotals[wd] ?? (0, 0)
-          wdTotals[wd] = (cur.succ + s, cur.denom + 1)
+        // Count every day in the denominator; value depends on tracking type
+        let e = entryOn(d)
+        let dayValue: Double
+        switch calendar.trackingType {
+        case .binary:
+          dayValue = success(e) ? 1.0 : 0.0
+        case .counter, .multipleDaily:
+          dayValue = normalizedProgress(for: e)  // already 0..1
         }
+        let cur = wdTotals[wd] ?? (0.0, 0)
+        wdTotals[wd] = (cur.sum + dayValue, cur.denom + 1)
         guard let nd = cal.date(byAdding: .day, value: 1, to: d) else { break }
         d = nd
       }
@@ -266,10 +274,17 @@ struct CustomCalendarView: View {
     var weekdayRates: [Int: Double] = [:]
     var bestWD: (day: Int, rate: Double)? = nil
     for (day, pair) in wdTotals {
-      let r = pair.denom > 0 ? Double(pair.succ) / Double(pair.denom) : 0
+      let r = pair.denom > 0 ? pair.sum / Double(pair.denom) : 0
       weekdayRates[day] = r
       if bestWD == nil || r > bestWD!.rate { bestWD = (day, r) }
     }
+
+    if let maxRate = weekdayRates.values.max(), maxRate > 0 {
+      weekdayRates = weekdayRates.mapValues { $0 / maxRate }
+    }
+
+    print(wdTotals)
+    print(weekdayRates)
 
     // Monthly breakdown over selected year
     var monthly: [Int: Double] = [:]
@@ -329,9 +344,6 @@ struct CustomCalendarView: View {
     )
     Self.statsCache.set(key, value: computed)
     return computed
-  }
-  private func isPremium() -> Bool {
-    customerInfo?.entitlements["premium"]?.isActive ?? false
   }
 
   private func isEntrySuccess(_ entry: CalendarEntry?) -> Bool {
@@ -646,9 +658,11 @@ struct CustomCalendarView: View {
         rolling7d: bundle.rolling7d,
         rolling30d: bundle.rolling30d,
         volatilityStdDev: bundle.volatilityStd,
-        isPremium: isPremium(),
-        onUpgrade: { isPaywallPresented = true }
+        isPremium: isPremium(customerInfo: customerInfo),
+        onUpgrade: { isPaywallPresented = true },
+        trackingType: calendar.trackingType
       )
+      .id(colorScheme)
       .padding(.top, 20)
 
       CustomSeparator()

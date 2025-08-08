@@ -8,6 +8,8 @@ struct GridView: View {
   let valuationStore: ValuationStore
   let handleDayTap: (Date) -> Void
 
+  @Environment(\.colorScheme) var colorScheme
+
   @Environment(\.dates) var dates
   let today: Date = Date().date
   @State var mappedDays: [(date: Date, color: Color)] = []
@@ -56,9 +58,9 @@ struct GridView: View {
       .frame(maxWidth: .infinity, maxHeight: .infinity)
       .padding(.horizontal)
       .task(
-        id: calendar.entries.values.reduce(0) { $0 + $1.count }
+        id: "\(calendar.entries.values.reduce(0) { $0 + $1.count })-\(colorScheme)"
       ) {
-        let cacheKey = "\(calendar.name)-\(calendar.entries.values.reduce(0) { $0 + $1.count } )"
+        let cacheKey = "\(calendar.name)-\(colorScheme)-\(calendar.entries.values.reduce(0) { $0 + $1.count } )"
         if let cachedMappedDays = Self.mappedDaysCache.get(for: cacheKey) {
           print("🟢 Hitting Cache")
           mappedDays = cachedMappedDays
@@ -71,7 +73,7 @@ struct GridView: View {
       }
       .onChange(of: calendar.entries.values.reduce(0) { $0 + $1.count }) { oldVal, newVal in
         //* removing old cache for entries count as the value could have changed with the same count, the cache retunred the old cached values
-        let cacheKey = "\(calendar.name)-\(oldVal)"
+        let cacheKey = "\(calendar.name)-\(colorScheme)-\(oldVal)"
         Self.mappedDaysCache.delete(for: cacheKey)
       }
     }

@@ -9,6 +9,7 @@ struct AllCalendarsRecapView: View {
   @ObservedObject private var valuationStore: ValuationStore = ValuationStore.shared
 
   @Environment(\.router) private var router
+  @Environment(\.colorScheme) private var colorScheme
 
   @State private var customerInfo: CustomerInfo?
   @State private var isPaywallPresented: Bool = false
@@ -323,8 +324,6 @@ struct AllCalendarsRecapView: View {
         )
         .frame(height: UIScreen.main.bounds.height * 0.55)
 
-        CustomSeparator()
-
         CalendarStatisticsView(
           stats: bundle.basic,
           accentColor: Color("qs-emerald"),
@@ -341,6 +340,7 @@ struct AllCalendarsRecapView: View {
           isPremium: isPremium(),
           onUpgrade: { isPaywallPresented = true }
         )
+        .id(colorScheme)
         .padding(.top, 20)
 
         CustomSeparator()
