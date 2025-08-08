@@ -95,9 +95,7 @@ struct CustomCalendarView: View {
     print(date)
     guard !date.isInFuture else { return }
 
-    // Use the tapped date directly to avoid off-by-one / stale index issues
-    let dayIndex = Calendar.current.ordinality(of: .day, in: .year, for: date) ?? 0
-    if dayIndex < valuationStore.currentDayNumber && calendar.trackingType != .binary {
+    if calendar.trackingType != .binary {
       router.showScreen(
         .sheetConfig(config: shortSheetConfig)
       ) { _ in

@@ -25,19 +25,13 @@ struct GridView: View {
       let availableHeight = geometry.size.height - (padding * 2)
 
       let aspectRatio = availableWidth / availableHeight
-      let targetColumns = Int(sqrt(Double(365) * aspectRatio))
-      let columns = min(targetColumns, 365)
-      let rows = Int(ceil(Double(365) / Double(columns)))
+      let targetColumns = Int(sqrt(Double(dates.count) * aspectRatio))
+      let columns = min(targetColumns, dates.count)
+      let rows = Int(ceil(Double(dates.count) / Double(columns)))
 
       let horizontalSpacing =
         (availableWidth - (dotSize * CGFloat(columns))) / CGFloat(columns - 1)
       let verticalSpacing = (availableHeight - (dotSize * CGFloat(rows))) / CGFloat(rows - 1)
-
-      //       public func dateForDay(_ day: Int) -> Date {
-      //   let calendar = Calendar.current
-      //   let startOfYear = calendar.date(from: DateComponents(year: selectedYear, month: 1, day: 1))!
-      //   return calendar.date(byAdding: .day, value: day, to: startOfYear)!
-      // }
 
       VStack(spacing: verticalSpacing) {
         ForEach(0..<rows, id: \.self) { row in
