@@ -43,14 +43,7 @@ struct My_YearApp: App {
     }
   }
 
-  var dates: [Date] {
-    let todayInRegion = DateInRegion(region: .current)
-    let startOfYear = todayInRegion.dateAtStartOf(.year)
-    let endOfYear = todayInRegion.dateAtEndOf(.year)
-    let increment = DateComponents.create { $0.day = 1 }
-    let dateInRegions = DateInRegion.enumerateDates(from: startOfYear, to: endOfYear, increment: increment)
-    return dateInRegions.map { $0.date }
-  }
+  var dates: [Date] = getYearDatesArray()
 
   var body: some Scene {
     WindowGroup {

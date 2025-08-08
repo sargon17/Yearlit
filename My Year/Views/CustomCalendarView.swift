@@ -1,3 +1,5 @@
+import RevenueCat
+import RevenueCatUI
 import SharedModels
 import SwiftUI
 import SwiftfulRouting
@@ -36,6 +38,7 @@ enum SelectedDate: Equatable, Identifiable {
 
 struct CustomCalendarView: View {
 
+  @Environment(\.colorScheme) var colorScheme
   let calendar: CustomCalendar
   @StateObject private var store: CustomCalendarStore = CustomCalendarStore.shared
   @ObservedObject private var valuationStore: ValuationStore = ValuationStore.shared
@@ -49,6 +52,8 @@ struct CustomCalendarView: View {
   @State private var showingYearPicker: Bool = false
   @State private var tempSelectedYear: Int = Calendar.current.component(.year, from: Date())
   @State private var calendarError: CalendarError?
+  @State private var customerInfo: CustomerInfo?
+  @State private var isPaywallPresented: Bool = false
 
   @Environment(\.router) private var router
 
@@ -87,9 +92,11 @@ struct CustomCalendarView: View {
     }
   }
 
-  private func handleDayTap(_ day: Int) {
-    let date: Date = valuationStore.dateForDay(day)
-    if day < valuationStore.currentDayNumber && calendar.trackingType != .binary {
+  private func handleDayTap(_ date: Date) {
+    print(date)
+    guard !date.isInFuture else { return }
+
+    if calendar.trackingType != .binary {
       router.showScreen(
         .sheetConfig(config: shortSheetConfig)
       ) { _ in
@@ -100,7 +107,7 @@ struct CustomCalendarView: View {
         )
       }
     } else if calendar.trackingType == .binary {
-      toggleBinaryEntry(calendarId: calendar.id, date: date, calendarStore: store)
+      _ = toggleBinaryEntry(calendarId: calendar.id, date: date, calendarStore: store)
     }
     Task {
       await hapticFeedback()
@@ -163,7 +170,9 @@ struct CustomCalendarView: View {
         switch calendar.trackingType {
         case .binary:
           return entry.completed
-        case .counter, .multipleDaily:
+        case .counter:
+          return entry.count > 0
+        case .multipleDaily:
           return entry.count >= calendar.dailyTarget
         }
       }
@@ -172,6 +181,93 @@ struct CustomCalendarView: View {
     return CalendarStats(
       activeDays: activeDays, totalCount: totalCount, maxCount: maxCount,
       longestStreak: longestStreak, currentStreak: currentStreak)
+  }
+
+  // MARK: - Optimized stats computation (single pass + cache)
+
+  private struct StatsBundle {
+    let basic: CalendarStats
+    let completionRate30d: Double
+    let bestWeekday: Int?
+    let weekdayRates: [Int: Double]
+    let monthlyRates: [Int: Double]
+    let rolling7d: Double
+    let rolling30d: Double
+    let volatilityStd: Double
+  }
+
+  private class StatsCache {
+    private var cache: [String: StatsBundle] = [:]
+    func get(_ key: String) -> StatsBundle? { cache[key] }
+    func set(_ key: String, value: StatsBundle) { cache[key] = value }
+  }
+  private static let statsCache = StatsCache()
+
+  private func makeCacheKey() -> String {
+    // Key changes when year, today, or entries change (use entries count + max timestamp proxy)
+    let year = valuationStore.selectedYear
+    let entriesSignature = calendar.entries
+      .sorted { $0.key < $1.key }
+      .map { "\($0.key):\($0.value.count):\($0.value.completed ? 1 : 0)" }
+      .joined(separator: ";")
+    return "\(calendar.id.uuidString)|\(year)|\(entriesSignature)"
+  }
+
+  private func computeStatsBundle() -> StatsBundle {
+    let key = makeCacheKey()
+    if let cached = Self.statsCache.get(key) { return cached }
+
+    let cal = Calendar.current
+    let year = valuationStore.selectedYear
+    let todayLocal = today
+
+    // Riusa: getStats() già esistente per basic
+    let basic = getStats()
+
+    // Adattatori leggeri
+    func entryOn(_ date: Date) -> CalendarEntry? {
+      store.getEntry(calendarId: calendar.id, date: date)
+    }
+    func isSuccessOn(_ date: Date) -> Bool {
+      isEntrySuccess(entryOn(date), calendar: calendar)
+    }
+    func zOn(_ date: Date) -> Double {
+      normalizedProgress(for: calendar, entry: entryOn(date))
+    }
+
+    let (cr30, avg7, avg30) = computeRollingStatsSingle(
+      cal: cal, todayLocal: todayLocal, zOn: zOn, isSuccessOn: isSuccessOn
+    )
+
+    // Nuovo: weekday rates per singolo calendario + best day (normalizzati a max=1)
+    let (weekdayRates, bestWD) = computeWeekdayRatesSingle(
+      cal: cal, year: year, todayLocal: todayLocal,
+      trackingType: calendar.trackingType, zOn: zOn, isSuccessOn: isSuccessOn,
+      normalizeToMax: true
+    )
+
+    // Nuovo: breakdown mensile (CR binaria sul mese)
+    let monthly = computeMonthlyBinaryRates(
+      cal: cal, year: year, todayLocal: todayLocal, isSuccessOn: isSuccessOn
+    )
+
+    // Riusa schema: volatilità settimanale su CR (12 settimane)
+    let volatility = computeWeeklyVolatilityFromSuccess(
+      cal: cal, todayLocal: todayLocal, isSuccessOn: isSuccessOn
+    )
+
+    let bundle = StatsBundle(
+      basic: basic,
+      completionRate30d: cr30,
+      bestWeekday: bestWD?.day,
+      weekdayRates: weekdayRates,
+      monthlyRates: monthly,
+      rolling7d: avg7,
+      rolling30d: avg30,
+      volatilityStd: volatility
+    )
+    Self.statsCache.set(key, value: bundle)
+    return bundle
   }
 
   private func handleQuickAdd() {
@@ -313,13 +409,26 @@ struct CustomCalendarView: View {
       let todayDateString = customDateFormatter(date: today)
       let todaysLogCount = calendar.entries[todayDateString]?.count ?? 0
 
+      let bundle = computeStatsBundle()
+
       CalendarStatisticsView(
-        stats: getStats(),
+        stats: bundle.basic,
         accentColor: Color(calendar.color),
-        todaysCount: todaysLogCount,  // Pass today's count
-        unit: calendar.unit,  // Pass the unit
-        currencySymbol: calendar.currencySymbol  // Pass the currency symbol
+        todaysCount: todaysLogCount,
+        unit: calendar.unit,
+        currencySymbol: calendar.currencySymbol,
+        completionRateLast30d: bundle.completionRate30d,
+        bestWeekday: bundle.bestWeekday,
+        weekdayRates: bundle.weekdayRates,
+        monthlyRates: bundle.monthlyRates,
+        rolling7d: bundle.rolling7d,
+        rolling30d: bundle.rolling30d,
+        volatilityStdDev: bundle.volatilityStd,
+        isPremium: isPremium(customerInfo: customerInfo),
+        onUpgrade: { isPaywallPresented = true },
+        trackingType: calendar.trackingType
       )
+      .id(colorScheme)
       .padding(.top, 20)
 
       CustomSeparator()
@@ -382,7 +491,11 @@ struct CustomCalendarView: View {
         }
         .background(Color("surface-muted"))
         .presentationDetents([.height(280)])
-      }.overlay {
+      }
+      .sheet(isPresented: $isPaywallPresented) {
+        PaywallView()
+      }
+      .overlay {
         HStack {
           Rectangle()
             .fill(Color("devider-bottom"))
@@ -397,11 +510,17 @@ struct CustomCalendarView: View {
             .frame(maxWidth: 1)
 
         }
-      }.ignoresSafeArea(edges: .bottom)
+      }
+      .ignoresSafeArea(edges: .bottom)
       .alert(item: $calendarError) { error in
         Alert(
           title: Text(error.title), message: Text(error.message),
           dismissButton: .default(Text("OK")))
+      }
+      .onAppear {
+        Purchases.shared.getCustomerInfo { info, _ in
+          self.customerInfo = info
+        }
       }
   }
 }

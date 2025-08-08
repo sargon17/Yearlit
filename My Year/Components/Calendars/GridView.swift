@@ -6,10 +6,12 @@ struct GridView: View {
   let calendar: CustomCalendar
   let store: CustomCalendarStore
   let valuationStore: ValuationStore
-  let handleDayTap: (Int) -> Void
+  let handleDayTap: (Date) -> Void
+
+  @Environment(\.colorScheme) var colorScheme
 
   @Environment(\.dates) var dates
-  let today: Date = DateInRegion(region: .current).date
+  let today: Date = Date().date
   @State var mappedDays: [(date: Date, color: Color)] = []
 
   // Cache instance for mappedDays
@@ -25,19 +27,13 @@ struct GridView: View {
       let availableHeight = geometry.size.height - (padding * 2)
 
       let aspectRatio = availableWidth / availableHeight
-      let targetColumns = Int(sqrt(Double(365) * aspectRatio))
-      let columns = min(targetColumns, 365)
-      let rows = Int(ceil(Double(365) / Double(columns)))
+      let targetColumns = Int(sqrt(Double(dates.count) * aspectRatio))
+      let columns = min(targetColumns, dates.count)
+      let rows = Int(ceil(Double(dates.count) / Double(columns)))
 
       let horizontalSpacing =
         (availableWidth - (dotSize * CGFloat(columns))) / CGFloat(columns - 1)
       let verticalSpacing = (availableHeight - (dotSize * CGFloat(rows))) / CGFloat(rows - 1)
-
-      //       public func dateForDay(_ day: Int) -> Date {
-      //   let calendar = Calendar.current
-      //   let startOfYear = calendar.date(from: DateComponents(year: selectedYear, month: 1, day: 1))!
-      //   return calendar.date(byAdding: .day, value: day, to: startOfYear)!
-      // }
 
       VStack(spacing: verticalSpacing) {
         ForEach(0..<rows, id: \.self) { row in
@@ -50,7 +46,7 @@ struct GridView: View {
                   dotSize: dotSize
                 )
                 .onTapGesture {
-                  handleDayTap(day)
+                  handleDayTap(mappedDays[day].date)
                 }
               } else {
                 Color.clear.frame(width: dotSize, height: dotSize)
@@ -62,15 +58,23 @@ struct GridView: View {
       .frame(maxWidth: .infinity, maxHeight: .infinity)
       .padding(.horizontal)
       .task(
-        id: calendar.entries.values.reduce(0) { $0 + $1.count }
+        id: "\(calendar.entries.values.reduce(0) { $0 + $1.count })-\(colorScheme)"
       ) {
-        let cacheKey = "\(calendar.name)-\(calendar.entries.values.reduce(0) { $0 + $1.count } )"
+        let cacheKey = "\(calendar.name)-\(colorScheme)-\(calendar.entries.values.reduce(0) { $0 + $1.count } )"
         if let cachedMappedDays = Self.mappedDaysCache.get(for: cacheKey) {
+          print("🟢 Hitting Cache")
           mappedDays = cachedMappedDays
         } else {
+          print("🔴 Missing Cache")
+          // Self.mappedDaysCache.clear()  // is that cleaning the cache right?
           mappedDays = dates.map { (date: $0, color: colorForDay($0, calendar: calendar, today: today)) }
           Self.mappedDaysCache.set(mappedDays, for: cacheKey)
         }
+      }
+      .onChange(of: calendar.entries.values.reduce(0) { $0 + $1.count }) { oldVal, newVal in
+        //* removing old cache for entries count as the value could have changed with the same count, the cache retunred the old cached values
+        let cacheKey = "\(calendar.name)-\(colorScheme)-\(oldVal)"
+        Self.mappedDaysCache.delete(for: cacheKey)
       }
     }
   }
@@ -86,6 +90,13 @@ private class DaysCache<Key: Hashable, Value> {
 
   func set(_ value: Value, for key: Key) {
     cache[key] = value
+  }
+
+  func delete(for key: Key) {
+    let index = cache.firstIndex { $0.key == key }
+    guard index != nil else { return }
+
+    cache.remove(at: index!)
   }
 
   func clear() {

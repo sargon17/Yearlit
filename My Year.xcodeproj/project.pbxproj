@@ -25,6 +25,8 @@
 		78BCBD962D366E780075CEC0 /* SharedModels in Frameworks */ = {isa = PBXBuildFile; productRef = 78BCBD952D366E780075CEC0 /* SharedModels */; };
 		78BCBDEF2D36EE090075CEC0 /* RevenueCat in Frameworks */ = {isa = PBXBuildFile; productRef = 78BCBDEE2D36EE090075CEC0 /* RevenueCat */; };
 		78BCBDF12D36EE090075CEC0 /* RevenueCatUI in Frameworks */ = {isa = PBXBuildFile; productRef = 78BCBDF02D36EE090075CEC0 /* RevenueCatUI */; };
+		78C551E02E4630380045E664 /* Garnish in Frameworks */ = {isa = PBXBuildFile; productRef = 78C551DF2E4630380045E664 /* Garnish */; };
+		78C551E22E4630380045E664 /* GarnishTheme in Frameworks */ = {isa = PBXBuildFile; productRef = 78C551E12E4630380045E664 /* GarnishTheme */; };
 		78FAADA52D71EAAE0093A704 /* SharedModels in Frameworks */ = {isa = PBXBuildFile; productRef = 78FAADA42D71EAAE0093A704 /* SharedModels */; };
 /* End PBXBuildFile section */
 
@@ -199,6 +201,8 @@
 				7806CEE52E3D3B010081A843 /* SwiftDate in Frameworks */,
 				7806CF132E3EAA030081A843 /* SwiftfulRouting in Frameworks */,
 				78BCBDEF2D36EE090075CEC0 /* RevenueCat in Frameworks */,
+				78C551E22E4630380045E664 /* GarnishTheme in Frameworks */,
+				78C551E02E4630380045E664 /* Garnish in Frameworks */,
 				7871CFA32D35995A005FFE4E /* SharedModels in Frameworks */,
 				7806CEF12E3E307E0081A843 /* SwiftfulHaptics in Frameworks */,
 				7806CEEE2E3E2FA60081A843 /* SwiftfulUI in Frameworks */,
@@ -336,6 +340,8 @@
 				7806CEED2E3E2FA60081A843 /* SwiftfulUI */,
 				7806CEF02E3E307E0081A843 /* SwiftfulHaptics */,
 				7806CF122E3EAA030081A843 /* SwiftfulRouting */,
+				78C551DF2E4630380045E664 /* Garnish */,
+				78C551E12E4630380045E664 /* GarnishTheme */,
 			);
 			productName = "My Year";
 			productReference = 78B025672D35424100E70B4C /* My Year.app */;
@@ -481,6 +487,7 @@
 				7806CEEC2E3E2FA60081A843 /* XCRemoteSwiftPackageReference "SwiftfulUI" */,
 				7806CEEF2E3E307E0081A843 /* XCRemoteSwiftPackageReference "SwiftfulHaptics" */,
 				7806CF112E3EAA030081A843 /* XCRemoteSwiftPackageReference "SwiftfulRouting" */,
+				78C551DE2E4630380045E664 /* XCRemoteSwiftPackageReference "Garnish" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 78B025682D35424100E70B4C /* Products */;
@@ -1175,6 +1182,14 @@
 				minimumVersion = 5.14.6;
 			};
 		};
+		78C551DE2E4630380045E664 /* XCRemoteSwiftPackageReference "Garnish" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/Aeastr/Garnish";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 0.0.3;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -1219,6 +1234,16 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 78BCBDED2D36EE090075CEC0 /* XCRemoteSwiftPackageReference "purchases-ios-spm" */;
 			productName = RevenueCatUI;
+		};
+		78C551DF2E4630380045E664 /* Garnish */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 78C551DE2E4630380045E664 /* XCRemoteSwiftPackageReference "Garnish" */;
+			productName = Garnish;
+		};
+		78C551E12E4630380045E664 /* GarnishTheme */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 78C551DE2E4630380045E664 /* XCRemoteSwiftPackageReference "Garnish" */;
+			productName = GarnishTheme;
 		};
 		78FAADA42D71EAAE0093A704 /* SharedModels */ = {
 			isa = XCSwiftPackageProductDependency;

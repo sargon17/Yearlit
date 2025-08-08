@@ -4,6 +4,8 @@ import SwiftUI
 import SwiftfulRouting
 
 struct CalendarsOverview: View {
+  @AppStorage("isMoodTrackingEnabled") var isMoodTrackingEnabled: Bool = true
+
   @ObservedObject var store: CustomCalendarStore
   @ObservedObject var valuationStore: ValuationStore
   @Binding var selectedIndex: Int
@@ -23,39 +25,41 @@ struct CalendarsOverview: View {
         ], spacing: 8
       ) {
         // Year Grid Card
-        VStack(alignment: .leading, spacing: 12) {
-          HStack(alignment: .firstTextBaseline) {
-            Rectangle()
-              .fill(Color("mood-excellent"))
-              .frame(width: 12, height: 12)
-              .cornerRadius(3)
+        if isMoodTrackingEnabled {
+          VStack(alignment: .leading, spacing: 12) {
+            HStack(alignment: .firstTextBaseline) {
+              Rectangle()
+                .fill(Color("mood-excellent"))
+                .frame(width: 12, height: 12)
+                .cornerRadius(3)
 
-            Text("Year")
-              .font(.system(size: 18, design: .monospaced))
-              .fontWeight(.bold)
-              .foregroundColor(Color("text-primary"))
+              Text("Year")
+                .font(.system(size: 18, design: .monospaced))
+                .fontWeight(.bold)
+                .foregroundColor(Color("text-primary"))
+                .lineLimit(2)
+                .minimumScaleFactor(0.5)
+                .multilineTextAlignment(.leading)
+
+              Spacer()
+            }
+
+            Spacer()
+
+            Text("Track your year mood")
+              .font(.system(size: 11, design: .monospaced))
+              .foregroundColor(Color("text-tertiary"))
               .lineLimit(2)
               .minimumScaleFactor(0.5)
               .multilineTextAlignment(.leading)
-
-            Spacer()
           }
-
-          Spacer()
-
-          Text("Track your year mood")
-            .font(.system(size: 11, design: .monospaced))
-            .foregroundColor(Color("text-tertiary"))
-            .lineLimit(2)
-            .minimumScaleFactor(0.5)
-            .multilineTextAlignment(.leading)
+          .cardStyle()
+          .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
+          .onTapGesture {
+            selectedIndex = 0
+            dismiss()
+          }.opacity(isReorderActive ? 0.5 : 1)
         }
-        .cardStyle()
-        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
-        .onTapGesture {
-          selectedIndex = 0
-          dismiss()
-        }.opacity(isReorderActive ? 0.5 : 1)
 
         // Custom Calendar Cards
         ForEach(
@@ -68,7 +72,7 @@ struct CalendarsOverview: View {
             isReorderActive: $isReorderActive
           )
           .onTapGesture {
-            selectedIndex = index + 2
+            selectedIndex = index
             dismiss()
           }
         }

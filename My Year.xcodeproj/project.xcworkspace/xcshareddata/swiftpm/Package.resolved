@@ -1,6 +1,15 @@
 {
-  "originHash" : "ff87d13e05acbf6070d58a727715c2a67ba0dd869d91b2d5a204abae9131d20d",
+  "originHash" : "3bc722b4afa17fe6abd71c51bda83c4959dedb2aadf1128e26315fe44b57a72a",
   "pins" : [
+    {
+      "identity" : "garnish",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/Aeastr/Garnish",
+      "state" : {
+        "revision" : "31017c25a79848d51eb44e7801818afcc92b3345",
+        "version" : "0.0.3"
+      }
+    },
     {
       "identity" : "purchases-ios-spm",
       "kind" : "remoteSourceControl",

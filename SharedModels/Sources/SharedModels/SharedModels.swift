@@ -13,7 +13,7 @@ import WidgetKit
 public enum UnitOfMeasure: String, Codable, CaseIterable, Identifiable {
   public var id: String { rawValue }
 
-  case none = "None"
+  case none = "Times"
 
   // Currency
   case currency = "Currency"

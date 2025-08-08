@@ -13,7 +13,7 @@ struct CardModifier: ViewModifier {
     .padding(.all, 2)
     .background(getVoidColor(colorScheme: colorScheme))
     .cornerRadius(12)
-    // .outerSameLevelShadow(radius: 12)
+    .outerSameLevelShadow(radius: 12)
   }
 }
 
