@@ -12,7 +12,7 @@ import os
 
 private let logger = Logger(subsystem: "com.sargon17.My-Year", category: "Views")
 
-struct YearGrid: View {
+struct MoodTrackingCalendar: View {
   let store = ValuationStore.shared
   @AppStorage("isMoodTrackingEnabled") var isMoodTrackingEnabled: Bool = true
 
@@ -230,8 +230,4 @@ enum VisualizationType {
   case full
   case pastOnly
   case evaluatedOnly
-}
-
-#Preview {
-  YearGrid()
 }

@@ -45,9 +45,10 @@ struct CalendarDropDelegate: DropDelegate {
 }
 
 struct ContentView: View {
+  @AppStorage("isMoodTrackingEnabled") var isMoodTrackingEnabled: Bool = true
   @State private var customerInfo: CustomerInfo?
   @ObservedObject private var store = CustomCalendarStore.shared
-  @State private var selectedIndex: Int = 0
+  @State private var selectedIndex: Int = 1
   @ObservedObject private var valuationStore = ValuationStore.shared
 
   @Environment(\.router) private var router
@@ -62,13 +63,18 @@ struct ContentView: View {
         }
       ) {
         // Year Grid
-        YearGrid()
+        if isMoodTrackingEnabled {
+          MoodTrackingCalendar()
+            .tag(-10)
+        }
+
+        AllCalendarsRecapView()
           .tag(0)
 
         // Custom Calendars
         ForEach(Array(store.calendars.enumerated()), id: \.element.id) { index, calendar in
           CustomCalendarView(calendar: calendar)
-            .tag(index + 2)
+            .tag(index + 1)
         }
 
         // Add Calendar Button

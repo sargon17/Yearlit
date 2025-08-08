@@ -7,8 +7,8 @@ func colorForDay(
   today: Date
 ) -> Color {
 
-  if day > today {
-    return Color("dot-inactive")
+  guard !day.isInFuture else {
+    return Color.dotInactive
   }
 
   let dateKey: String = customDateFormatter(date: day)
