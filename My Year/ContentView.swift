@@ -48,7 +48,7 @@ struct ContentView: View {
   @AppStorage("isMoodTrackingEnabled") var isMoodTrackingEnabled: Bool = true
   @State private var customerInfo: CustomerInfo?
   @ObservedObject private var store = CustomCalendarStore.shared
-  @State private var selectedIndex: Int = 1
+  @State private var selectedIndex: Int = 0
   @ObservedObject private var valuationStore = ValuationStore.shared
 
   @Environment(\.router) private var router
@@ -69,12 +69,12 @@ struct ContentView: View {
         }
 
         AllCalendarsRecapView()
-          .tag(0)
+          .tag(-1)
 
         // Custom Calendars
         ForEach(Array(store.calendars.enumerated()), id: \.element.id) { index, calendar in
           CustomCalendarView(calendar: calendar)
-            .tag(index + 1)
+            .tag(index)
         }
 
         // Add Calendar Button

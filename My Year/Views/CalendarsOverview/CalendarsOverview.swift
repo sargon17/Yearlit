@@ -72,7 +72,7 @@ struct CalendarsOverview: View {
             isReorderActive: $isReorderActive
           )
           .onTapGesture {
-            selectedIndex = index + 2
+            selectedIndex = index
             dismiss()
           }
         }

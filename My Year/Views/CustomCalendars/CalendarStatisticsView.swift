@@ -137,6 +137,17 @@ struct CalendarStatisticsView: View {
             isLocked: !isPremium
           )
           .padding(.horizontal)
+          .onTapGesture {
+            guard !isPremium else { return }
+
+            router.showScreen(.sheet) { _ in
+              PaywallView()
+            }
+
+            Task {
+              await hapticFeedback()
+            }
+          }
 
           monthlyBars(
             ratesByMonth: monthlyRates,
@@ -145,21 +156,47 @@ struct CalendarStatisticsView: View {
           )
           .padding(.vertical, 8)
           .overlay(bottomDivider)
+          .onTapGesture {
+            guard !isPremium else { return }
+
+            router.showScreen(.sheet) { _ in
+              PaywallView()
+            }
+
+            Task {
+              await hapticFeedback()
+            }
+          }
+
         }
       }
 
-      // Section: Patterns
-      sectionHeader("Patterns", premium: !isPremium)
-        .padding(.horizontal)
-        .padding(.top)
-      VStack(spacing: 8) {
-        labeledValueRow(
-          title: "Best Weekday",
-          value: bestWeekday.map { weekdayName($0) } ?? "—",
-          accentColor: accentColor,
-          isLocked: !isPremium
-        )
-        .padding(.horizontal)
+      VStack {
+
+        // Section: Patterns
+        sectionHeader("Patterns", premium: !isPremium)
+          .padding(.horizontal)
+          .padding(.top)
+        VStack(spacing: 8) {
+          labeledValueRow(
+            title: "Best Weekday",
+            value: bestWeekday.map { weekdayName($0) } ?? "—",
+            accentColor: accentColor,
+            isLocked: !isPremium
+          )
+          .padding(.horizontal)
+          .onTapGesture {
+            guard !isPremium else { return }
+
+            router.showScreen(.sheet) { _ in
+              PaywallView()
+            }
+
+            Task {
+              await hapticFeedback()
+            }
+          }
+        }
 
         weekdayRibbon(
           rates: weekdayRates,
@@ -168,8 +205,20 @@ struct CalendarStatisticsView: View {
         )
         .frame(maxWidth: .greatestFiniteMagnitude)
         .overlay(bottomDivider)
-        .clipped()
+        .onTapGesture {
+          guard !isPremium else { return }
+
+          router.showScreen(.sheet) { _ in
+            PaywallView()
+          }
+
+          Task {
+            await hapticFeedback()
+          }
+        }
+
       }
+      .clipped()
 
       // Section: Trends (Premium)
       sectionHeader("Trends", premium: !isPremium)
@@ -204,6 +253,18 @@ struct CalendarStatisticsView: View {
           accentColor: accentColor,
           isLocked: !isPremium
         )
+        .onTapGesture {
+          guard !isPremium else { return }
+
+          router.showScreen(.sheet) { _ in
+            PaywallView()
+          }
+
+          Task {
+            await hapticFeedback()
+          }
+        }
+
       }.padding(.horizontal)
     }
   }
@@ -273,14 +334,12 @@ private func percent(_ value: Double) -> String {
 }
 
 @ViewBuilder
-@MainActor
 private func labeledValueRow(
   title: String,
   value: String,
   accentColor: Color,
   isLocked: Bool = false
 ) -> some View {
-  @Environment(\.router) var router
 
   HStack(alignment: .center) {
     Text(title)
@@ -294,15 +353,6 @@ private func labeledValueRow(
       .minimumScaleFactor(0.5)
       .lineLimit(1)
       .blur(radius: isLocked ? 10 : 0)
-      .onTapGesture {
-        guard isLocked else { return }
-        Task { @MainActor in
-          router.showScreen(.sheet) { _ in
-            PaywallView()
-          }
-          await hapticFeedback()
-        }
-      }
   }
   .background(.surfaceMuted)
 }
