@@ -1,3 +1,4 @@
+import Garnish
 import SharedModels
 import SwiftDate
 import SwiftUI
@@ -7,6 +8,7 @@ struct OverallGridView: View {
   let store: CustomCalendarStore
 
   @Environment(\.dates) var dates
+  @Environment(\.colorScheme) var colorScheme
   let today: Date = DateInRegion(region: .current).date
   @State private var mappedDays: [(date: Date, color: Color)] = []
   @State private var counterPct75: [UUID: Double] = [:]
@@ -18,18 +20,22 @@ struct OverallGridView: View {
       let dotSize: CGFloat = 10
       let padding: CGFloat = 20
 
-      let availableWidth = geometry.size.width - (padding * 2)
-      let availableHeight = geometry.size.height - (padding * 2)
+      let availableWidth = max(0, geometry.size.width - (padding * 2))
+      let availableHeight = max(1, geometry.size.height - (padding * 2))  // avoid /0
 
-      let aspectRatio = availableWidth / availableHeight
-      let targetColumns = Int(sqrt(Double(365) * aspectRatio))
-      let columns = min(targetColumns, 365)
-      let rows = Int(ceil(Double(365) / Double(columns)))
+      let aspectRatio = max(0.001, availableWidth / availableHeight)
+      let targetColumns = max(1, min(365, Int(sqrt(365.0 * aspectRatio))))
+      let columns = max(1, min(targetColumns, 365))
+      let rows = max(1, Int(ceil(365.0 / Double(columns))))
 
-      let horizontalSpacing =
+      let horizontalSpacing = max(
+        0,
         (availableWidth - (dotSize * CGFloat(columns))) / CGFloat(max(1, columns - 1))
-      let verticalSpacing = (availableHeight - (dotSize * CGFloat(rows))) / CGFloat(max(1, rows - 1))
-
+      )
+      let verticalSpacing = max(
+        0,
+        (availableHeight - (dotSize * CGFloat(rows))) / CGFloat(max(1, rows - 1))
+      )
       VStack(spacing: verticalSpacing) {
         ForEach(0..<rows, id: \.self) { row in
           HStack(spacing: horizontalSpacing) {
@@ -93,6 +99,9 @@ struct OverallGridView: View {
       }
     }
 
+    // Include UI-related factors that affect colors so cache invalidates on appearance changes
+    hasher.combine(colorScheme == .dark ? "dark" : "light")
+
     return "overall-grid-\(hasher.finalize())"
   }
 
@@ -106,12 +115,10 @@ struct OverallGridView: View {
   }
 
   private func overallColorForDay(_ day: Date) -> Color {
-    if day > today { return Color("dot-inactive") }
+    let inactiveColor = GarnishColor.blend(.surfaceMuted, with: .textPrimary, ratio: 0.02)
+    let activeColor = GarnishColor.blend(.surfaceMuted, with: .textPrimary, ratio: 0.08)
 
-    // If no data across all calendars for this day, use a very light tint to indicate no data
-    if !dataPresent(on: day) {
-      return Color("dot-inactive").opacity(0.15)
-    }
+    if day > today { return inactiveColor }
 
     // Average normalized progress across calendars for shading
     var zSum: Double = 0
@@ -122,7 +129,7 @@ struct OverallGridView: View {
       denom += 1
     }
     let z = denom > 0 ? zSum / denom : 0
-    if z <= 0 { return Color("dot-active").opacity(0.25) }
+    if z <= 0 { return activeColor }
     let opacity = min(1, max(0.2, z))
     return accentColor.opacity(opacity)
   }

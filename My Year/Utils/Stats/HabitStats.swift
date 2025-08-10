@@ -13,6 +13,14 @@ public struct BasicHabitStats {
   public let maxCount: Int
   public let longestStreak: Int
   public let currentStreak: Int
+
+  public init(activeDays: Int, totalCount: Int, maxCount: Int, longestStreak: Int, currentStreak: Int) {
+    self.activeDays = activeDays
+    self.totalCount = totalCount
+    self.maxCount = maxCount
+    self.longestStreak = longestStreak
+    self.currentStreak = currentStreak
+  }
 }
 
 public struct HabitRatesSnapshot {
@@ -20,18 +28,39 @@ public struct HabitRatesSnapshot {
   public let attainmentRate: Double?  // target type only, 0...1
   public let nearMissRate: Double?  // target type only, 0...1
   public let overAchievementRate: Double?  // target type only, 0...1
+
+  public init(completionRate: Double, attainmentRate: Double?, nearMissRate: Double?, overAchievementRate: Double?) {
+    self.completionRate = completionRate
+    self.attainmentRate = attainmentRate
+    self.nearMissRate = nearMissRate
+    self.overAchievementRate = overAchievementRate
+  }
 }
 
 public struct WeekdayBreakdown {
   public let ratesByWeekday: [Int: Double]  // 1...7 (Calendar.current)
   public let bestWeekday: Int?  // 1...7
+
+  public init(ratesByWeekday: [Int: Double], bestWeekday: Int?) {
+    self.ratesByWeekday = ratesByWeekday
+    self.bestWeekday = bestWeekday
+  }
 }
 
 public struct RollingConsistencySnapshot {
   public let average7d: Double  // 0...1
   public let average30d: Double  // 0...1
+
+  public init(average7d: Double, average30d: Double) {
+    self.average7d = average7d
+    self.average30d = average30d
+  }
 }
 
 public struct VolatilitySnapshot {
   public let weeklyCompletionRateStdDev: Double
+
+  public init(weeklyCompletionRateStdDev: Double) {
+    self.weeklyCompletionRateStdDev = weeklyCompletionRateStdDev
+  }
 }
