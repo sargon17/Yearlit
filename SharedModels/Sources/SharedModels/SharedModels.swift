@@ -13,7 +13,7 @@ import WidgetKit
 public enum UnitOfMeasure: String, Codable, CaseIterable, Identifiable {
   public var id: String { rawValue }
 
-  case none = "Times"
+  case none = "None"
 
   // Currency
   case currency = "Currency"
@@ -83,6 +83,7 @@ public enum UnitOfMeasure: String, Codable, CaseIterable, Identifiable {
   // Display name might be different from raw value for units like 'km'
   public var displayName: String {
     switch self {
+    case .none: return "Times"
     case .kilometers: return "Kilometers (km)"
     case .meters: return "Meters (m)"
     case .milliliters: return "Milliliters (ml)"

@@ -14,7 +14,7 @@ private let logger = Logger(subsystem: "com.sargon17.My-Year", category: "Views"
 
 struct MoodTrackingCalendar: View {
   let store = ValuationStore.shared
-  @AppStorage("isMoodTrackingEnabled") var isMoodTrackingEnabled: Bool = true
+  @AppStorage("isMoodTrackingEnabled") var isMoodTrackingEnabled: Bool = false
 
   @State private var valuationPopup: (isPresented: Bool, date: Date)?
   @State private var dayTypesQuantity: [DayMoodType: Int] = [:]

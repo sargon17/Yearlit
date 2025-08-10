@@ -149,7 +149,17 @@ struct OverallGridView: View {
 
 private class DaysCache<Key: Hashable, Value> {
   private var cache: [Key: Value] = [:]
-  func get(for key: Key) -> Value? { cache[key] }
-  func set(_ value: Value, for key: Key) { cache[key] = value }
-  func clear() { cache.removeAll() }
+  private let queue = DispatchQueue(label: "OverallGridView.DaysCache", attributes: .concurrent)
+
+  func get(for key: Key) -> Value? {
+    queue.sync { cache[key] }
+  }
+
+  func set(_ value: Value, for key: Key) {
+    queue.sync(flags: .barrier) { cache[key] = value }
+  }
+
+  func clear() {
+    queue.sync(flags: .barrier) { cache.removeAll() }
+  }
 }
