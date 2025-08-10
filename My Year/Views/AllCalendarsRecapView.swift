@@ -16,28 +16,13 @@ struct AllCalendarsRecapView: View {
 
   private let today = Date()
 
-  private struct StatsBundle {
-    let basic: CalendarStats
-    let completionRate30d: Double
-    let bestWeekday: Int?
-    let weekdayRates: [Int: Double]
-    let monthlyRates: [Int: Double]
-    let rolling7d: Double
-    let rolling30d: Double
-    let volatilityStd: Double
-    let todaysCount: Int
-  }
-
-  private class StatsCache {
-    private var cache: [String: StatsBundle] = [:]
-    func get(_ key: String) -> StatsBundle? { cache[key] }
-    func set(_ key: String, value: StatsBundle) { cache[key] = value }
-  }
-
   private static let statsCache = StatsCache()
 
   private func makeCacheKey() -> String {
     let year = valuationStore.selectedYear
+    // Seed by current local day to invalidate after midnight
+    let daySeed = Calendar.current.startOfDay(for: today)
+    let daySeedStr = ISO8601DateFormatter().string(from: daySeed)
     let calendarsSignature = store.calendars
       .sorted { $0.id.uuidString < $1.id.uuidString }
       .map { calendar in
@@ -48,7 +33,7 @@ struct AllCalendarsRecapView: View {
         return "\(calendar.id.uuidString)|\(entriesSig)"
       }
       .joined(separator: ";")
-    return "overall|\(year)|\(calendarsSignature)"
+    return "overall|\(year)|\(daySeedStr)|\(calendarsSignature)"
   }
 
   private func computeOverallStats() -> StatsBundle {
@@ -72,7 +57,7 @@ struct AllCalendarsRecapView: View {
     )
 
     let activeDays = anySuccessByDay.values.filter { $0 }.count
-    let (longestStreak, currentStreak) = computeStreaks(anySuccessByDay)
+    let (longestStreak, currentStreak) = computeStreaks(cal: cal, anySuccessByDay)
 
     let todayKeyCount = computeTodayKeyCount(
       cal: cal, todayLocal: todayLocal, calendars: activeCalendars, store: store
@@ -161,7 +146,7 @@ struct AllCalendarsRecapView: View {
         CalendarStatisticsView(
           stats: bundle.basic,
           accentColor: Color("qs-emerald"),
-          todaysCount: bundle.todaysCount,
+          todaysCount: bundle.todaysCount ?? 0,
           unit: nil,
           currencySymbol: nil,
           completionRateLast30d: bundle.completionRate30d,

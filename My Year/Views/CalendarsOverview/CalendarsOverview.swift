@@ -4,7 +4,7 @@ import SwiftUI
 import SwiftfulRouting
 
 struct CalendarsOverview: View {
-  @AppStorage("isMoodTrackingEnabled") var isMoodTrackingEnabled: Bool = true
+  @AppStorage("isMoodTrackingEnabled") var isMoodTrackingEnabled: Bool = false
 
   @ObservedObject var store: CustomCalendarStore
   @ObservedObject var valuationStore: ValuationStore

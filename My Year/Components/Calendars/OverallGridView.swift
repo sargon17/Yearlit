@@ -125,27 +125,13 @@ struct OverallGridView: View {
     var denom: Double = 0
     for cal in store.calendars {
       let entry = store.getEntry(calendarId: cal.id, date: day)
-      zSum += normalizedProgress(calendar: cal, entry: entry)
+      zSum += normalizedProgress(for: cal, entry: entry, q75: counterPct75[cal.id])
       denom += 1
     }
     let z = denom > 0 ? zSum / denom : 0
     if z <= 0 { return activeColor }
     let opacity = min(1, max(0.2, z))
     return accentColor.opacity(opacity)
-  }
-
-  private func normalizedProgress(calendar: CustomCalendar, entry: CalendarEntry?) -> Double {
-    guard let entry = entry else { return 0 }
-    switch calendar.trackingType {
-    case .binary:
-      return entry.completed ? 1 : 0
-    case .counter:
-      let q = counterPct75[calendar.id] ?? 1.0
-      return min(Double(entry.count) / q, 1.0)
-    case .multipleDaily:
-      let t = max(1, calendar.dailyTarget)
-      return min(Double(entry.count) / Double(t), 1.0)
-    }
   }
 
   private func percentile(_ values: [Int], p: Double) -> Int {

@@ -6,22 +6,25 @@ func computeWeeklyVolatility(
   anySuccessByDay: [Date: Bool]
 ) -> Double {
   var weekly: [Double] = []
-  var endOfWeek = todayLocal
+  // Normalize to start-of-day so keys match [Date: Bool] entries.
+  var endOfWeek = cal.startOfDay(for: todayLocal)
 
   for _ in 0..<12 {
-    guard let startOfWeek = cal.date(byAdding: .day, value: -6, to: endOfWeek) else { break }
+    guard let startOfWeekRaw = cal.date(byAdding: .day, value: -6, to: endOfWeek) else { break }
+    let startOfWeek = cal.startOfDay(for: startOfWeekRaw)
     var succ = 0
     var denom = 0
     var d = startOfWeek
     while d <= endOfWeek {
-      succ += (anySuccessByDay[d] == true) ? 1 : 0
+      let key = cal.startOfDay(for: d)
+      succ += (anySuccessByDay[key] == true) ? 1 : 0
       denom += 1
       guard let nd = cal.date(byAdding: .day, value: 1, to: d) else { break }
       d = nd
     }
     weekly.append(denom > 0 ? Double(succ) / Double(denom) : 0)
-    guard let prev = cal.date(byAdding: .day, value: -7, to: endOfWeek) else { break }
-    endOfWeek = prev
+    guard let prevRaw = cal.date(byAdding: .day, value: -7, to: endOfWeek) else { break }
+    endOfWeek = cal.startOfDay(for: prevRaw)
   }
 
   guard !weekly.isEmpty else { return 0 }

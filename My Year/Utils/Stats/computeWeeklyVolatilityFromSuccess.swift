@@ -16,7 +16,8 @@ func computeWeeklyVolatilityFromSuccess(
     while d <= endOfWeek {
       if isSuccessOn(d) { succ += 1 }
       denom += 1
-      d = cal.date(byAdding: .day, value: 1, to: d)!
+      guard let nd = cal.date(byAdding: .day, value: 1, to: d) else { break }
+      d = nd
     }
     weekly.append(denom > 0 ? Double(succ) / Double(denom) : 0)
     guard let prev = cal.date(byAdding: .day, value: -7, to: endOfWeek) else { break }

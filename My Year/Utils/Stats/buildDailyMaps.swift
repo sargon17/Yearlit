@@ -24,7 +24,7 @@ func buildDailyMaps(
 
       for c in calendars {
         let e = entry(for: c, d, store: store)
-        if isSuccess(for: c, entry: e) { any = true }
+        if isEntrySuccess(e, calendar: c) { any = true }
         if e != nil {
           zAccum += normalizedProgress(for: c, entry: e)
           zDenom += 1

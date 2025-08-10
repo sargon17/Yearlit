@@ -182,24 +182,6 @@ struct CustomCalendarView: View {
       longestStreak: longestStreak, currentStreak: currentStreak)
   }
 
-  // MARK: - Optimized stats computation (single pass + cache)
-
-  private struct StatsBundle {
-    let basic: CalendarStats
-    let completionRate30d: Double
-    let bestWeekday: Int?
-    let weekdayRates: [Int: Double]
-    let monthlyRates: [Int: Double]
-    let rolling7d: Double
-    let rolling30d: Double
-    let volatilityStd: Double
-  }
-
-  private class StatsCache {
-    private var cache: [String: StatsBundle] = [:]
-    func get(_ key: String) -> StatsBundle? { cache[key] }
-    func set(_ key: String, value: StatsBundle) { cache[key] = value }
-  }
   private static let statsCache = StatsCache()
 
   private func makeCacheKey() -> String {
