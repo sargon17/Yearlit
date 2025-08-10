@@ -28,8 +28,8 @@ struct GridView: View {
 
       let aspectRatio = availableWidth / availableHeight
       let targetColumns = Int(sqrt(Double(dates.count) * aspectRatio))
-      let columns = min(targetColumns, dates.count)
-      let rows = Int(ceil(Double(dates.count) / Double(columns)))
+      let columns = max(min(targetColumns, dates.count), 1)
+      let rows = max(Int(ceil(Double(dates.count) / Double(columns))), 1)
 
       let horizontalSpacing =
         (availableWidth - (dotSize * CGFloat(columns))) / CGFloat(columns - 1)
