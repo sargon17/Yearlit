@@ -9,6 +9,7 @@ struct OverallGridView: View {
   @Environment(\.dates) var dates
   let today: Date = DateInRegion(region: .current).date
   @State private var mappedDays: [(date: Date, color: Color)] = []
+  @State private var counterPct75: [UUID: Double] = [:]
 
   private static let mappedDaysCache = DaysCache<String, [(date: Date, color: Color)]>()
 
@@ -53,6 +54,15 @@ struct OverallGridView: View {
         if let cached = Self.mappedDaysCache.get(for: cacheKey) {
           mappedDays = cached
         } else {
+          // Precompute 75th-percentile counts per calendar (cache once per recompute)
+          let pct75 = Dictionary(
+            uniqueKeysWithValues: store.calendars.map { cal in
+              let counts = cal.entries.values.map { $0.count }
+              let q = max(1, percentile(counts, p: 0.75))
+              return (cal.id, Double(q))
+            })
+          counterPct75 = pct75
+
           mappedDays = dates.map { (date: $0, color: overallColorForDay($0)) }
           Self.mappedDaysCache.set(mappedDays, for: cacheKey)
         }
@@ -61,10 +71,29 @@ struct OverallGridView: View {
   }
 
   private func cacheSignature() -> String {
-    let total = store.calendars.reduce(0) { sum, cal in
-      sum + cal.entries.values.reduce(0) { $0 + $1.count }
+    var hasher = Hasher()
+
+    // Sort calendars to ensure deterministic order
+    let calendars = store.calendars.sorted { $0.id.uuidString < $1.id.uuidString }
+    hasher.combine(calendars.count)
+
+    for cal in calendars {
+      hasher.combine(cal.id)
+      hasher.combine(cal.dailyTarget)
+      hasher.combine(cal.trackingType)
+
+      // Sort entries by date for deterministic order
+      let entries = cal.entries.sorted { $0.key < $1.key }
+      hasher.combine(entries.count)
+
+      for (date, e) in entries {
+        hasher.combine(date)
+        hasher.combine(e.count)
+        hasher.combine(e.completed)
+      }
     }
-    return "overall-grid-\(total)"
+
+    return "overall-grid-\(hasher.finalize())"
   }
 
   private func dataPresent(on day: Date) -> Bool {
@@ -104,9 +133,8 @@ struct OverallGridView: View {
     case .binary:
       return entry.completed ? 1 : 0
     case .counter:
-      let counts = calendar.entries.values.map { $0.count }
-      let q = max(1, percentile(counts, p: 0.75))
-      return min(Double(entry.count) / Double(q), 1.0)
+      let q = counterPct75[calendar.id] ?? 1.0
+      return min(Double(entry.count) / q, 1.0)
     case .multipleDaily:
       let t = max(1, calendar.dailyTarget)
       return min(Double(entry.count) / Double(t), 1.0)
