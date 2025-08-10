@@ -62,10 +62,10 @@ struct GridView: View {
       ) {
         let cacheKey = "\(calendar.name)-\(colorScheme)-\(calendar.entries.values.reduce(0) { $0 + $1.count } )"
         if let cachedMappedDays = Self.mappedDaysCache.get(for: cacheKey) {
-          print("🟢 Hitting Cache")
+          // print("🟢 Hitting Cache")
           mappedDays = cachedMappedDays
         } else {
-          print("🔴 Missing Cache")
+          // print("🔴 Missing Cache")
           // Self.mappedDaysCache.clear()  // is that cleaning the cache right?
           mappedDays = dates.map { (date: $0, color: colorForDay($0, calendar: calendar, today: today)) }
           Self.mappedDaysCache.set(mappedDays, for: cacheKey)

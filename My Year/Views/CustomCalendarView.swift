@@ -93,7 +93,6 @@ struct CustomCalendarView: View {
   }
 
   private func handleDayTap(_ date: Date) {
-    print(date)
     guard !date.isInFuture else { return }
 
     if calendar.trackingType != .binary {

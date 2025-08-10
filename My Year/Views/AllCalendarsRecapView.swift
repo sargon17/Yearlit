@@ -16,9 +16,6 @@ struct AllCalendarsRecapView: View {
 
   private let today = Date()
 
-  private func isPremium() -> Bool {
-    customerInfo?.entitlements["premium"]?.isActive ?? false
-  }
   private struct StatsBundle {
     let basic: CalendarStats
     let completionRate30d: Double
@@ -174,7 +171,7 @@ struct AllCalendarsRecapView: View {
           rolling7d: bundle.rolling7d,
           rolling30d: bundle.rolling30d,
           volatilityStdDev: bundle.volatilityStd,
-          isPremium: isPremium(),
+          isPremium: isPremium(customerInfo: customerInfo),
           onUpgrade: { isPaywallPresented = true }
         )
         .id(colorScheme)
