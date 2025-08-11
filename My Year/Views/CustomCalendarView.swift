@@ -237,6 +237,9 @@ struct CustomCalendarView: View {
       cal: cal, todayLocal: todayLocal, isSuccessOn: isSuccessOn
     )
 
+    // Today's count for this calendar (optional)
+    let todaysCount: Int? = store.getEntry(calendarId: calendar.id, date: todayLocal)?.count
+
     let bundle = StatsBundle(
       basic: basic,
       completionRate30d: cr30,
@@ -245,7 +248,8 @@ struct CustomCalendarView: View {
       monthlyRates: monthly,
       rolling7d: avg7,
       rolling30d: avg30,
-      volatilityStd: volatility
+      volatilityStd: volatility,
+      todaysCount: todaysCount
     )
     Self.statsCache.set(key, value: bundle)
     return bundle

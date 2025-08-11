@@ -36,6 +36,7 @@ struct OverallGridView: View {
         0,
         (availableHeight - (dotSize * CGFloat(rows))) / CGFloat(max(1, rows - 1))
       )
+      let sig = cacheSignature()
       VStack(spacing: verticalSpacing) {
         ForEach(0..<rows, id: \.self) { row in
           HStack(spacing: horizontalSpacing) {
@@ -55,22 +56,62 @@ struct OverallGridView: View {
       }
       .frame(maxWidth: .infinity, maxHeight: .infinity)
       .padding(.horizontal)
-      .task(id: cacheSignature()) {
-        let cacheKey = cacheSignature()
+      .task(id: sig) {
+        let cacheKey = sig
         if let cached = Self.mappedDaysCache.get(for: cacheKey) {
-          mappedDays = cached
+          await MainActor.run { mappedDays = cached }
         } else {
-          // Precompute 75th-percentile counts per calendar (cache once per recompute)
-          let pct75 = Dictionary(
-            uniqueKeysWithValues: store.calendars.map { cal in
-              let counts = cal.entries.values.map { $0.count }
-              let q = max(1, percentile(counts, p: 0.75))
-              return (cal.id, Double(q))
-            })
-          counterPct75 = pct75
+          // Snapshot minimal values we’ll need across threads
+          let calendars = store.calendars
+          let datesArray = Array(dates)
+          let todayLocal = today
+          let accent = accentColor
 
-          mappedDays = dates.map { (date: $0, color: overallColorForDay($0)) }
-          Self.mappedDaysCache.set(mappedDays, for: cacheKey)
+          // Heavy work off-main: compute q75 and numeric shades only
+          let result = await Task.detached(priority: .userInitiated) { () -> ([UUID: Double], [(Date, Double)]) in
+            let pct75: [UUID: Double] = Dictionary(
+              uniqueKeysWithValues: calendars.map { cal in
+                if cal.trackingType == .counter {
+                  let counts = cal.entries.values.map { $0.count }
+                  let q = max(1, Int(percentile(counts, p: 0.75)))
+                  return (cal.id, Double(q))
+                } else {
+                  return (cal.id, 1.0)
+                }
+              })
+
+            let shades: [(Date, Double)] = datesArray.map { day in
+              if day > todayLocal { return (day, 0.0) }
+              var zSum: Double = 0
+              var denom: Double = 0
+              for cal in calendars {
+                let entry = store.getEntry(calendarId: cal.id, date: day)
+                zSum += normalizedProgress(for: cal, entry: entry, q75: pct75[cal.id])
+                denom += 1
+              }
+              let z = denom > 0 ? zSum / denom : 0
+              return (day, z)
+            }
+
+            return (pct75, shades)
+          }.value
+
+          await MainActor.run {
+            counterPct75 = result.0
+            mappedDays = result.1.map { (date, z) in
+              let inactiveColor = GarnishColor.blend(.surfaceMuted, with: .textPrimary, ratio: 0.02)
+              let activeColor = GarnishColor.blend(.surfaceMuted, with: .textPrimary, ratio: 0.08)
+              if date > today {  // future days stay inactive
+                return (date: date, color: inactiveColor)
+              }
+              if z <= 0 {  // no data or zero progress → neutral active shade (not accent)
+                return (date: date, color: activeColor)
+              }
+              let opacity = min(1, max(0.2, z))
+              return (date: date, color: accent.opacity(opacity))
+            }
+            Self.mappedDaysCache.set(mappedDays, for: cacheKey)
+          }
         }
       }
     }
@@ -132,18 +173,6 @@ struct OverallGridView: View {
     if z <= 0 { return activeColor }
     let opacity = min(1, max(0.2, z))
     return accentColor.opacity(opacity)
-  }
-
-  private func percentile(_ values: [Int], p: Double) -> Int {
-    let sorted = values.sorted()
-    if sorted.isEmpty { return 1 }
-    let pos = max(0, min(Double(sorted.count - 1), p * Double(sorted.count - 1)))
-    let lower = Int(floor(pos))
-    let upper = Int(ceil(pos))
-    if lower == upper { return sorted[lower] }
-    let weight = pos - Double(lower)
-    let interpolated = Double(sorted[lower]) * (1 - weight) + Double(sorted[upper]) * weight
-    return max(1, Int(interpolated.rounded()))
   }
 }
 

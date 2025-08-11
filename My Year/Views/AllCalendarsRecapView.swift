@@ -14,14 +14,12 @@ struct AllCalendarsRecapView: View {
   @State private var customerInfo: CustomerInfo?
   @State private var isPaywallPresented: Bool = false
 
-  private let today = Date()
-
   private static let statsCache = StatsCache()
 
   private func makeCacheKey() -> String {
     let year = valuationStore.selectedYear
     // Seed by current local day to invalidate after midnight
-    let daySeed = Calendar.current.startOfDay(for: today)
+    let daySeed = Calendar.current.startOfDay(for: Date())
     let daySeedStr = ISO8601DateFormatter().string(from: daySeed)
     let calendarsSignature = store.calendars
       .sorted { $0.id.uuidString < $1.id.uuidString }
@@ -43,8 +41,7 @@ struct AllCalendarsRecapView: View {
     let cal = Calendar.current
     let year = valuationStore.selectedYear
     let activeCalendars = store.calendars
-    let todayLocal = today
-
+    let todayLocal = Date()
     let (totalCount, perDayTotal) = aggregateCounts(cal: cal, calendars: activeCalendars)
     let maxCount = perDayTotal.values.max() ?? 0
 

@@ -12,19 +12,19 @@ struct StatsBundle {
   var todaysCount: Int?
 }
 
-class StatsCache {
-  var cache: [String: StatsBundle] = [:]
-  let queue = DispatchQueue(label: "StatsCache", attributes: .concurrent)
+final class StatsCache {
+  private var cache: [String: StatsBundle] = [:]
+  private let queue = DispatchQueue(label: "StatsCache", attributes: .concurrent)
 
   func get(_ key: String) -> StatsBundle? {
     queue.sync { cache[key] }
   }
 
   func set(_ key: String, value: StatsBundle) {
-    queue.sync(flags: .barrier) { cache[key] = value }
+    queue.async(flags: .barrier) { self.cache[key] = value }
   }
 
   func clear() {
-    queue.sync(flags: .barrier) { cache.removeAll() }
+    queue.async(flags: .barrier) { self.cache.removeAll() }
   }
 }
