@@ -41,6 +41,15 @@ struct My_YearApp: App {
     } else {
       NSLog("Failed to create UserDefaults with App Group!")
     }
+
+    // * Reviews Promt Manager
+    print("start review prompter")
+    ReviewPrompter.shared.rules = .init(
+      minEvents: 3,
+      cooldownDays: 30,
+      oncePerVersion: true
+    )
+
   }
 
   var dates: [Date] = getYearDatesArray()

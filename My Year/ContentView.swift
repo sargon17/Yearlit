@@ -97,6 +97,7 @@ struct ContentView: View {
               store.addCalendar(newCalendar)
               selectedIndex = store.calendars.count
               router.dismissScreen()
+              addPositiveEvent(.createdCalendar)
             }
           }
         }

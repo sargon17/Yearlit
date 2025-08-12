@@ -14,7 +14,7 @@ enum SelectedDate: Equatable, Identifiable {
     switch self {
     case .none:
       return nil
-    case .selected(let date):
+    case let .selected(date):
       return date
     }
   }
@@ -23,7 +23,7 @@ enum SelectedDate: Equatable, Identifiable {
     switch self {
     case .none:
       return nil
-    case .selected(let date):
+    case let .selected(date):
       return date
     }
   }
@@ -37,11 +37,10 @@ enum SelectedDate: Equatable, Identifiable {
 }
 
 struct CustomCalendarView: View {
-
   @Environment(\.colorScheme) var colorScheme
   let calendar: CustomCalendar
-  @StateObject private var store: CustomCalendarStore = CustomCalendarStore.shared
-  @ObservedObject private var valuationStore: ValuationStore = ValuationStore.shared
+  @StateObject private var store: CustomCalendarStore = .shared
+  @ObservedObject private var valuationStore: ValuationStore = .shared
 
   @AppStorage("runtimeDebugEnabled") private var runtimeDebugEnabled: Bool = false
   @AppStorage("wandFillForce") private var wandFillForce: Double = 0.5
@@ -73,7 +72,7 @@ struct CustomCalendarView: View {
     for day in 0..<valuationStore.currentDayNumber {
       let date = calendar.date(byAdding: .day, value: day, to: startOfYear)!
 
-      if date <= today && Double.random(in: 0.0...1.0) < wandFillForce {
+      if date <= today, Double.random(in: 0.0...1.0) < wandFillForce {
         switch self.calendar.trackingType {
         case .binary:
           let entry = CalendarEntry(date: date, count: 1, completed: true)
@@ -85,7 +84,8 @@ struct CustomCalendarView: View {
         case .multipleDaily:
           let count = Int.random(in: 1...self.calendar.dailyTarget)
           let entry = CalendarEntry(
-            date: date, count: count, completed: count >= self.calendar.dailyTarget)
+            date: date, count: count, completed: count >= self.calendar.dailyTarget
+          )
           store.addEntry(calendarId: self.calendar.id, entry: entry)
         }
       }
@@ -108,6 +108,7 @@ struct CustomCalendarView: View {
     } else if calendar.trackingType == .binary {
       _ = toggleBinaryEntry(calendarId: calendar.id, date: date, calendarStore: store)
     }
+    checkIfReachedThreeDays(calendar)
     Task {
       await hapticFeedback()
     }
@@ -179,7 +180,8 @@ struct CustomCalendarView: View {
     }
     return CalendarStats(
       activeDays: activeDays, totalCount: totalCount, maxCount: maxCount,
-      longestStreak: longestStreak, currentStreak: currentStreak)
+      longestStreak: longestStreak, currentStreak: currentStreak
+    )
   }
 
   private static let statsCache = StatsCache()
@@ -264,6 +266,7 @@ struct CustomCalendarView: View {
     )
 
     WidgetCenter.shared.reloadAllTimelines()
+    checkIfReachedThreeDays(calendar)
 
     Task {
       await hapticFeedback()
@@ -295,7 +298,6 @@ struct CustomCalendarView: View {
                           store.deleteCalendar(id: calendar.id)
                         }
                       )
-
                     }
                   }
                   .padding(.top)
@@ -329,7 +331,6 @@ struct CustomCalendarView: View {
                     .foregroundColor(Color(calendar.color))
                   }
                 }.frame(width: 24, height: 24)
-
               }
 
               HStack(spacing: 4) {
@@ -368,7 +369,6 @@ struct CustomCalendarView: View {
                           store.deleteCalendar(id: calendar.id)
                         }
                       )
-
                     }
                   }
                 }
@@ -386,7 +386,6 @@ struct CustomCalendarView: View {
           valuationStore: valuationStore,
           handleDayTap: handleDayTap
         )
-
       }
       .frame(height: UIScreen.main.bounds.height * 0.85)
 
@@ -493,14 +492,14 @@ struct CustomCalendarView: View {
             .fill(Color("devider-top"))
             .frame(maxHeight: .infinity, alignment: .trailing)
             .frame(maxWidth: 1)
-
         }
       }
       .ignoresSafeArea(edges: .bottom)
       .alert(item: $calendarError) { error in
         Alert(
           title: Text(error.title), message: Text(error.message),
-          dismissButton: .default(Text("OK")))
+          dismissButton: .default(Text("OK"))
+        )
       }
       .onAppear {
         Purchases.shared.getCustomerInfo { info, _ in
@@ -516,7 +515,7 @@ enum CalendarError: LocalizedError, Identifiable {
   case notificationSchedulingFailed(Error)
   case errorAddingEntry(Error)
 
-  var id: String { self.localizedDescription }
+  var id: String { localizedDescription }
 
   var title: String {
     switch self {
@@ -541,9 +540,9 @@ enum CalendarError: LocalizedError, Identifiable {
       return "Please enter a valid name (1-50 characters)"
     case .notificationPermissionDenied:
       return "Please enable notifications in Settings to receive reminders."
-    case .notificationSchedulingFailed(let error):
+    case let .notificationSchedulingFailed(error):
       return "Failed to schedule notification: \(error.localizedDescription)"
-    case .errorAddingEntry(let error):
+    case let .errorAddingEntry(error):
       return "Failed to add entry: \(error.localizedDescription)"
     }
   }
