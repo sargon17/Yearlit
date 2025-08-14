@@ -161,22 +161,7 @@ struct AllCalendarsRecapView: View {
 
         CustomSeparator()
 
-        VStack(spacing: 0) {
-          Text("Thank you for your support!")
-          Spacer()
-          HStack(spacing: 4) {
-            Text("Mykhaylo Tymofyeyev")
-            Text("•")
-            Text("[@tymofyeyev_m](https://x.com/tymofyeyev_m)")
-              .foregroundColor(Color("qs-emerald"))
-          }
-          .foregroundColor(Color("text-tertiary"))
-        }
-        .padding(.horizontal)
-        .font(.system(size: 9, design: .monospaced))
-        .foregroundColor(Color("text-tertiary").opacity(0.5))
-        .multilineTextAlignment(.center)
-        .padding(.bottom, 40)
+        DevCredits()
       }
     }
     .scrollIndicators(.hidden)

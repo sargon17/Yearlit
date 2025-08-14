@@ -417,23 +417,7 @@ struct CustomCalendarView: View {
 
       CustomSeparator()
 
-      VStack(spacing: 0) {
-        Text("Independently engineered. Lovingly crafted.")
-        Text("Thank you for your support!")
-
-        Spacer()
-        HStack(spacing: 4) {
-          Text("Mykhaylo Tymofyeyev")
-          Text("•")
-          Text("[@tymofyeyev_m](https://x.com/tymofyeyev_m)").foregroundColor(Color(calendar.color))
-        }
-        .foregroundColor(Color("text-tertiary"))
-
-      }.padding(.horizontal)
-        .font(.system(size: 9, design: .monospaced))
-        .foregroundColor(Color("text-tertiary").opacity(0.5))
-        .multilineTextAlignment(.center)
-        .padding(.bottom, 40)
+      DevCredits()
 
     }.scrollIndicators(.hidden)
       .refreshable {
@@ -494,7 +478,6 @@ struct CustomCalendarView: View {
             .frame(maxWidth: 1)
         }
       }
-      .ignoresSafeArea(edges: .bottom)
       .alert(item: $calendarError) { error in
         Alert(
           title: Text(error.title), message: Text(error.message),

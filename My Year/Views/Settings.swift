@@ -6,7 +6,7 @@ struct SettingsView: View {
   @AppStorage("wandFillForce") var wandFillForce: Double = 0.5  // Default wand fill force
 
   var body: some View {
-    NavigationView {  // Add NavigationView for title
+    VStack {  // Add NavigationView for title
       VStack(spacing: 0) {
         HStack {
           Text("Settings")
@@ -33,29 +33,17 @@ struct SettingsView: View {
               }
             #endif
           }
+
+          About()
+          Contacts()
+          DevSupport()
         }.font(.system(size: 12, design: .monospaced))
           .foregroundColor(Color("text-secondary"))
 
         Spacer()
 
         // Credits Section
-        VStack(spacing: 0) {
-          Text("Independently engineered. Lovingly crafted.")
-          Text("Thank you for your support!")
-
-          Spacer().frame(height: 10)  // Add some space before the name
-          HStack(spacing: 4) {
-            Text("Mykhaylo Tymofyeyev")
-            Text("•")
-            // Assuming you want the link here too, using a default color for now
-            Text("[@tymofyeyev_m](https://x.com/tymofyeyev_m)").foregroundColor(.blue)
-          }
-          .foregroundColor(Color("text-tertiary"))
-
-        }
-        .font(.system(size: 9, design: .monospaced))
-        .foregroundColor(Color("text-tertiary").opacity(0.5))
-        .multilineTextAlignment(.center)
+        DevCredits()
       }
       .padding(.vertical, 20)
     }

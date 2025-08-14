@@ -472,7 +472,7 @@ private func sectionHeader(_ title: String, premium: Bool = false) -> some View 
       .font(.system(size: 14, design: .monospaced))
       .foregroundColor(Color.textPrimary)
     if premium {
-      Text("Premium")
+      Text("PRO")
         .font(.system(size: 8, design: .monospaced))
         .padding(.horizontal, 6)
         .padding(.vertical, 2)
@@ -481,7 +481,7 @@ private func sectionHeader(_ title: String, premium: Bool = false) -> some View 
             .stroke(
               style: .init(
                 lineWidth: 1, lineCap: .round, lineJoin: .bevel, miterLimit: 1, dash: [2],
-                dashPhase: 2
+                dashPhase: 3
               )
             )
         )
