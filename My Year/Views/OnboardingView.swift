@@ -7,6 +7,7 @@ struct OnboardingView: View {
   enum OnboardingPage: Int, CaseIterable, Identifiable {
     case whatItIs = 0
     case habitsMatter
+    case habitsLoop
     case howItWorks
     case whyItWorks
 
@@ -36,6 +37,9 @@ struct OnboardingView: View {
 
         HabitsMatter(onNext: goNext)
           .tag(OnboardingView.OnboardingPage.habitsMatter)
+
+        HabitsLoop(onNext: goNext)
+          .tag(OnboardingView.OnboardingPage.habitsLoop)
 
         // 2) How it works
         VStack(spacing: 16) {
@@ -145,96 +149,6 @@ extension OnboardingView {
           .background(.surfaceMuted)
         }
         .background(.surfaceMuted)
-      }
-    }
-  }
-
-  struct WhatItIs: View {
-    let onNext: () -> Void
-
-    var body: some View {
-      OnboardingSlide(onNext: onNext) {
-        GeometryReader { geometry in
-          let height = geometry.size.height
-          let width = geometry.size.width
-          ZStack {
-            Image("onboarding_1")
-              .resizable()
-              .scaledToFit()
-              .frame(maxWidth: width * 0.9)
-              .offset(y: height * 0.15)
-
-            LinearGradient(
-              gradient: Gradient(colors: [Color.clear, .surfaceMuted]),
-              startPoint: .center,
-              endPoint: .bottom
-            )
-            .padding(.top, height * 0.35)
-            .ignoresSafeArea()
-
-            Image("icon")
-              .resizable()
-              .scaledToFit()
-              .frame(maxWidth: width * 0.15)
-              .offset(x: 0, y: -(height * 0.35))
-              .rotationEffect(Angle(degrees: 35))
-              .shadow(color: .black, radius: 4, x: 0, y: 5)
-          }
-        }
-      } lower: {
-        VStack(alignment: .leading, spacing: 8) {
-          Spacer()
-          Text("Yearlit")
-            .font(.system(size: 36, weight: .black, design: .monospaced))
-            .foregroundStyle(.qsOrange)
-
-          VStack(alignment: .leading) {
-            Text("A simple habit calendar.")
-            Text("Tap once each day you do your habit.")
-            Text("Watch your chain grow.")
-          }
-          .multilineTextAlignment(.leading)
-          .font(.system(size: 14, design: .monospaced))
-          .foregroundStyle(.secondary)
-        }
-      }
-    }
-  }
-
-  struct HabitsMatter: View {
-    let onNext: () -> Void
-
-    var body: some View {
-      OnboardingSlide(onNext: onNext) {
-        ZStack {
-          Image("onboarding_2")
-            .resizable()
-            .scaledToFill()
-            .ignoresSafeArea(.all)
-
-          LinearGradient(
-            gradient: Gradient(colors: [Color.clear, .surfaceMuted]),
-            startPoint: .top,
-            endPoint: .bottom
-          )
-        }
-      } lower: {
-        VStack(alignment: .leading, spacing: 8) {
-          Spacer()
-
-          Text("Why Habits Matter")
-            .font(.system(size: 24, weight: .black, design: .monospaced))
-            .foregroundStyle(.textPrimary)
-
-          VStack(alignment: .leading) {
-            Text("Habits shape your days.")
-            Text("Your days shape your life.")
-            Text("Small changes → Big results.")
-          }
-          .multilineTextAlignment(.leading)
-          .font(.system(size: 14, design: .monospaced))
-          .foregroundStyle(.secondary)
-        }
       }
     }
   }
