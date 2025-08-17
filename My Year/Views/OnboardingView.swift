@@ -9,6 +9,7 @@ struct OnboardingView: View {
     case habitsMatter
     case habitsLoop
     case identityFirst
+    case coumpoundEffect
 
     var id: Int { rawValue }
   }
@@ -42,6 +43,8 @@ struct OnboardingView: View {
         IdentityFirst(onNext: goNext)
           .tag(OnboardingView.OnboardingPage.identityFirst)
 
+        CompoundEffect(onNext: goNext)
+          .tag(OnboardingView.OnboardingPage.coumpoundEffect)
       }
       .ignoresSafeArea()
       .tabViewStyle(.page(indexDisplayMode: .never))
