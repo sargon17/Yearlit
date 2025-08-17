@@ -14,6 +14,8 @@ import SwiftfulRouting
 @main
 // swiftlint:disable:next type_name
 struct My_YearApp: App {
+  // * Onboarding Manager
+  @StateObject private var onboarding = OnboardingManager()
 
   #if DEBUG
     public static let isDebugMode = true
@@ -64,6 +66,12 @@ struct My_YearApp: App {
         if url.scheme == "my-year" && url.host == "clear" {
           let store = ValuationStore.shared
           store.clearAllValuations()
+        }
+      }
+      .environmentObject(onboarding)
+      .fullScreenCover(isPresented: .constant(!onboarding.hasSeenOnboarding)) {
+        OnboardingView {
+          onboarding.markAsSeen()
         }
       }
     }

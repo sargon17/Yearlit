@@ -50,6 +50,7 @@ struct ContentView: View {
   @ObservedObject private var store = CustomCalendarStore.shared
   @State private var selectedIndex: Int = 0
   @ObservedObject private var valuationStore = ValuationStore.shared
+  @EnvironmentObject var onboarding: OnboardingManager
 
   @Environment(\.router) private var router
 
@@ -129,6 +130,18 @@ struct ContentView: View {
       .toolbar {
         ToolbarItem(placement: .navigationBarTrailing) {
           HStack(spacing: 4) {
+
+            #if DEBUG
+              Button(action: {
+                onboarding.reset()
+              }) {
+                Image(systemName: "point.bottomleft.forward.to.point.topright.filled.scurvepath")
+                  .foregroundColor(Color("text-tertiary"))
+                  .font(.system(size: 12))
+              }
+
+            #endif
+
             Button(action: {
               router.showScreen(.sheet) { _ in
                 SettingsView()
