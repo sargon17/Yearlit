@@ -8,8 +8,7 @@ struct OnboardingView: View {
     case whatItIs = 0
     case habitsMatter
     case habitsLoop
-    case howItWorks
-    case whyItWorks
+    case identityFirst
 
     var id: Int { rawValue }
   }
@@ -31,7 +30,6 @@ struct OnboardingView: View {
         .ignoresSafeArea()
 
       TabView(selection: $currentPage) {
-        // 1) What it is
         WhatItIs(onNext: goNext)
           .tag(OnboardingView.OnboardingPage.whatItIs)
 
@@ -41,78 +39,9 @@ struct OnboardingView: View {
         HabitsLoop(onNext: goNext)
           .tag(OnboardingView.OnboardingPage.habitsLoop)
 
-        // 2) How it works
-        VStack(spacing: 16) {
-          Spacer()
-          Image(systemName: "hand.tap")
-            .font(.system(size: 64, weight: .semibold))
-            .padding(.bottom, 4)
+        IdentityFirst(onNext: goNext)
+          .tag(OnboardingView.OnboardingPage.identityFirst)
 
-          Text("How it works")
-            .font(.largeTitle).bold()
-
-          VStack(alignment: .leading, spacing: 8) {
-            HStack(alignment: .top, spacing: 8) {
-              Text("1.").bold()
-              Text("Pick one habit you want to do every day.")
-            }
-            HStack(alignment: .top, spacing: 8) {
-              Text("2.").bold()
-              Text("Each day you do it, tap that day on the calendar.")
-            }
-            HStack(alignment: .top, spacing: 8) {
-              Text("3.").bold()
-              Text("Keep the chain going. Small taps add up fast.")
-            }
-          }
-          .padding(.horizontal)
-
-          Spacer()
-
-          Button(action: goNext) {
-            Text("Next")
-              .frame(maxWidth: .infinity)
-              .padding()
-              .background(Color.accentColor)
-              .foregroundColor(.white)
-              .clipShape(RoundedRectangle(cornerRadius: 12))
-              .accessibilityIdentifier("onboarding_next_howItWorks")
-          }
-          .padding(.horizontal)
-        }
-        .tag(OnboardingView.OnboardingPage.howItWorks)
-
-        // 3) Why it helps + CTA
-        VStack(spacing: 16) {
-          Spacer()
-          Image(systemName: "flame.fill")
-            .font(.system(size: 64, weight: .semibold))
-            .padding(.bottom, 4)
-
-          Text("Why it works")
-            .font(.largeTitle).bold()
-
-          VStack(alignment: .leading, spacing: 8) {
-            Label("Streaks feel good, so you come back.", systemImage: "sparkles")
-            Label("One screen. No clutter. Just your wins.", systemImage: "rectangle.grid.1x2")
-            Label("Gentle reminders keep you steady.", systemImage: "bell")
-          }
-          .padding(.horizontal)
-
-          Spacer()
-
-          Button(action: goNext) {
-            Text("Next")
-              .frame(maxWidth: .infinity)
-              .padding()
-              .background(Color.accentColor)
-              .foregroundColor(.white)
-              .clipShape(RoundedRectangle(cornerRadius: 12))
-              .accessibilityIdentifier("onboarding_next_whyItWorks")
-          }
-          .padding(.horizontal)
-        }
-        .tag(OnboardingView.OnboardingPage.whyItWorks)
       }
       .ignoresSafeArea()
       .tabViewStyle(.page(indexDisplayMode: .never))
