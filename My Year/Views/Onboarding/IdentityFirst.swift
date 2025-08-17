@@ -20,6 +20,9 @@ struct TwinkleImage: View {
   @State private var currentScaleJitter: CGFloat = 1.0
   @State private var currentRotation: Double = 0.0
 
+  // Task lifecycle
+  @State private var twinkleTask: Task<Void, Never>? = nil
+
   // Effect ranges (keep subtle)
   private let blurRange: ClosedRange<Double> = 0.0...2.0
   private let jitterRange: ClosedRange<CGFloat> = (-6)...(6)
@@ -37,12 +40,25 @@ struct TwinkleImage: View {
       .position(position)
       .offset(x: currentDX, y: currentDY)
       .compositingGroup()
-      .task { await twinkleLoop() }
+      .onAppear { startTwinkle() }
+      .onDisappear { stopTwinkle() }
+  }
+
+  private func startTwinkle() {
+    // Avoid spawning multiple loops
+    if twinkleTask == nil {
+      twinkleTask = Task { await twinkleLoop() }
+    }
+  }
+
+  private func stopTwinkle() {
+    twinkleTask?.cancel()
+    twinkleTask = nil
   }
 
   @MainActor
   private func twinkleLoop() async {
-    // Start from base state
+    // Reset to base state each time we (re)start
     currentOpacity = minOpacity
     currentBlur = 0
     currentDX = 0
@@ -50,9 +66,10 @@ struct TwinkleImage: View {
     currentScaleJitter = 1.0
     currentRotation = 0
 
-    while true {
+    while !Task.isCancelled {
       let initialDelay = Double.random(in: 0.0...1.2)
       try? await Task.sleep(nanoseconds: UInt64(initialDelay * 1_000_000_000))
+      if Task.isCancelled { break }
 
       let rise = Double.random(in: 0.8...1.8)
       let fall = Double.random(in: 0.8...1.8)
@@ -60,7 +77,6 @@ struct TwinkleImage: View {
       let rest = Double.random(in: 0.3...1.5)
       let peak = Double.random(in: minOpacity...maxOpacity)
 
-      // Random targets for this pulse (kept subtle)
       let targetBlur = reduceMotion ? 0 : Double.random(in: blurRange)
       let targetDX = reduceMotion ? 0 : CGFloat.random(in: jitterRange)
       let targetDY = reduceMotion ? 0 : CGFloat.random(in: jitterRange)
@@ -76,6 +92,7 @@ struct TwinkleImage: View {
         currentRotation = targetRotation
       }
       try? await Task.sleep(nanoseconds: UInt64((rise + wait) * 1_000_000_000))
+      if Task.isCancelled { break }
 
       withAnimation(.easeInOut(duration: fall)) {
         currentOpacity = minOpacity
@@ -90,6 +107,15 @@ struct TwinkleImage: View {
   }
 }
 
+extension CGPoint {
+  static func polar(center: CGPoint, radius: CGFloat, degrees: Double) -> CGPoint {
+    let radians = degrees * .pi / 180
+    return CGPoint(
+      x: center.x + CGFloat(cos(radians)) * radius,
+      y: center.y + CGFloat(sin(radians)) * radius)
+  }
+}
+
 struct IdentityFirst: View {
   let onNext: () -> Void
 
@@ -100,92 +126,120 @@ struct IdentityFirst: View {
           let height = proxy.size.height
           let width = proxy.size.width
 
+          // Center & radii
+          let center = CGPoint(x: width * 0.5, y: height * 0.45)
+          let base = min(width, height)
+          let r1: CGFloat = base * 0.22
+          let r2: CGFloat = base * 0.34
+          let r3: CGFloat = base * 0.46
+
+          // Background concentric circles
+          Group {
+            Circle()
+              .stroke(.textPrimary.opacity(0.08), lineWidth: 1)
+              .frame(width: r1 * 2, height: r1 * 2)
+              .position(center)
+            Circle()
+              .stroke(.textPrimary.opacity(0.06), lineWidth: 1)
+              .frame(width: r2 * 2, height: r2 * 2)
+              .position(center)
+            Circle()
+              .stroke(.textPrimary.opacity(0.05), lineWidth: 1)
+              .frame(width: r3 * 2, height: r3 * 2)
+              .position(center)
+          }
+
+          // Center person icon
+          Image(systemName: "person.circle.fill")
+            .resizable()
+            .scaledToFit()
+            .frame(width: 84, height: 84)
+            .foregroundStyle(.textPrimary.opacity(0.08))
+            .position(center)
+
+          // Ring 1 (inner) — 3 items
           TwinkleImage(
-            name: "habit_01",
+            name: "habit_06",  // teeth brush
+            maxWidth: 70,
+            maxHeight: 100,
+            position: .polar(center: center, radius: r1, degrees: -20),
+            scale: 0.6,
+            minOpacity: 0.0,
+            maxOpacity: 0.9
+          )
+          TwinkleImage(
+            name: "habit_07",  // pen
+            maxWidth: 70,
+            maxHeight: 100,
+            position: .polar(center: center, radius: r1, degrees: 120),
+            scale: 0.6,
+            minOpacity: 0.0,
+            maxOpacity: 0.9
+          )
+          TwinkleImage(
+            name: "habit_01",  // calendar
             maxWidth: 85,
             maxHeight: 85,
-            position: CGPoint(x: width * 0.9, y: height * 0.9),
-            scale: 1.0,
+            position: .polar(center: center, radius: r1, degrees: 210),
+            scale: 0.6,
             minOpacity: 0.0,
             maxOpacity: 0.9
           )
 
+          // Ring 2 (middle) — 3 items
           TwinkleImage(
-            name: "habit_02",
+            name: "habit_02",  // forks
             maxWidth: 100,
             maxHeight: 90,
-            position: CGPoint(x: width * 0.8, y: height * 0.3),
-            scale: 1.0,
+            position: .polar(center: center, radius: r2, degrees: 20),
+            scale: 0.6,
             minOpacity: 0.0,
             maxOpacity: 0.9
           )
-
           TwinkleImage(
-            name: "habit_03",
+            name: "habit_03",  // scale
             maxWidth: 100,
             maxHeight: 90,
-            position: CGPoint(x: width * 0.4, y: height * 0.75),
-            scale: 1.0,
+            position: .polar(center: center, radius: r2, degrees: 155),
+            scale: 0.6,
+            minOpacity: 0.0,
+            maxOpacity: 0.9
+          )
+          TwinkleImage(
+            name: "habit_08",  // shoe
+            maxWidth: 100,
+            maxHeight: 90,
+            position: .polar(center: center, radius: r2, degrees: 260),
+            scale: 0.6,
             minOpacity: 0.0,
             maxOpacity: 0.9
           )
 
+          // Ring 3 (outer) — 3 items
           TwinkleImage(
-            name: "habit_04",
+            name: "habit_04",  // watch
             maxWidth: 90,
             maxHeight: 80,
-            position: CGPoint(x: width * 0.1, y: height * 0.45),
-            scale: 1.0,
+            position: .polar(center: center, radius: r3, degrees: 70),
+            scale: 0.6,
             minOpacity: 0.0,
             maxOpacity: 0.9
           )
-
           TwinkleImage(
-            name: "habit_05",
+            name: "habit_05",  // mat
             maxWidth: 90,
             maxHeight: 80,
-            position: CGPoint(x: width * 0.2, y: height * 0.1),
-            scale: 1.0,
+            position: .polar(center: center, radius: r3, degrees: 180),
+            scale: 0.6,
             minOpacity: 0.0,
             maxOpacity: 0.9
           )
-
           TwinkleImage(
-            name: "habit_06",
+            name: "habit_09",  // glass
             maxWidth: 70,
             maxHeight: 100,
-            position: CGPoint(x: width * 0.5, y: height * 0.45),
-            scale: 1.0,
-            minOpacity: 0.0,
-            maxOpacity: 0.9
-          )
-
-          TwinkleImage(
-            name: "habit_07",
-            maxWidth: 70,
-            maxHeight: 100,
-            position: CGPoint(x: width * 0.75, y: height * 0.65),
-            scale: 1.0,
-            minOpacity: 0.0,
-            maxOpacity: 0.9
-          )
-
-          TwinkleImage(
-            name: "habit_08",
-            maxWidth: 100,
-            maxHeight: 90,
-            position: CGPoint(x: width * 0.1, y: height * 0.85),
-            scale: 1.0,
-            minOpacity: 0.0,
-            maxOpacity: 0.9
-          )
-
-          TwinkleImage(
-            name: "habit_09",
-            maxWidth: 70,
-            maxHeight: 100,
-            position: CGPoint(x: width * 0.53, y: height * 0.18),
-            scale: 0.9,
+            position: .polar(center: center, radius: r3, degrees: 300),
+            scale: 0.5,
             minOpacity: 0.0,
             maxOpacity: 0.9
           )
