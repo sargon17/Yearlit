@@ -104,16 +104,20 @@ struct ExponentialGraph: View {
         .stroke(.qsOrange.opacity(0.95), style: StrokeStyle(lineWidth: 4, lineCap: .round, lineJoin: .round))
         .shadow(color: .qsOrange.opacity(0.35), radius: 6, x: 0, y: 2)
 
-        // Data label
+        //* Data label
         Text("37×")
           .font(.system(size: 11, design: .monospaced))
           .foregroundStyle(.secondary)
           .position(x: w - pad - 22, y: pad + 6)
       }
+      .animation(.linear(duration: 3.0), value: progress)
       .onAppear {
+        print("appeared")
+
         rebuildTable(width: w, height: h, pad: pad)
-        // Move at constant speed along arc length
-        withAnimation(.linear(duration: 3.0).repeatForever(autoreverses: true)) {
+        // Animate from 0 → 1 once the view appears
+        progress = 0.0
+        DispatchQueue.main.async {
           progress = 1.0
         }
       }
@@ -131,16 +135,8 @@ struct CompoundEffect: View {
         let width = geometry.size.width
         ZStack {
           ExponentialGraph()
-            .frame(width: width * 0.9, height: height * 0.45)
-            .offset(y: height * 0.15)
-
-          LinearGradient(
-            gradient: Gradient(colors: [Color.clear, .surfaceMuted]),
-            startPoint: .center,
-            endPoint: .bottom
-          )
-          .padding(.top, height * 0.35)
-          .ignoresSafeArea()
+            .frame(width: width * 0.9, height: height * 0.8)
+            .offset(x: width * 0.05, y: height * 0.1)
         }
       }
     } lower: {

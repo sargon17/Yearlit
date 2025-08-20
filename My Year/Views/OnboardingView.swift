@@ -9,7 +9,9 @@ struct OnboardingView: View {
     case habitsMatter
     case habitsLoop
     case identityFirst
-    case coumpoundEffect
+    case compoundEffect
+    case fourRules
+    case howYearlitHelps
 
     var id: Int { rawValue }
   }
@@ -44,7 +46,14 @@ struct OnboardingView: View {
           .tag(OnboardingView.OnboardingPage.identityFirst)
 
         CompoundEffect(onNext: goNext)
-          .tag(OnboardingView.OnboardingPage.coumpoundEffect)
+          .tag(OnboardingView.OnboardingPage.compoundEffect)
+
+        FourRules(onNext: goNext)
+          .tag(OnboardingView.OnboardingPage.fourRules)
+
+        HowYearlitHelps(onNext: goNext)
+          .tag(OnboardingView.OnboardingPage.howYearlitHelps)
+
       }
       .ignoresSafeArea()
       .tabViewStyle(.page(indexDisplayMode: .never))
@@ -89,8 +98,6 @@ extension OnboardingView {
     let onTap: () -> Void
     @Environment(\.colorScheme) var colorScheme
 
-    let textColor = try! Garnish.contrastingColor(.surfaceMuted, against: .qsOrange)
-
     var body: some View {
       VStack {
         Button(action: {
@@ -99,8 +106,8 @@ extension OnboardingView {
           Text("Next")
             .frame(maxWidth: .infinity)
             .padding()
-            .background(.qsOrange)
-            .foregroundColor(.qsOrangeSecondary)
+            .background(Color.brand)
+            .foregroundColor(.brandInverted)
             .font(.system(size: 18, weight: .bold, design: .monospaced))
             .clipShape(RoundedRectangle(cornerRadius: 4))
             .accessibilityIdentifier("next_slide")
