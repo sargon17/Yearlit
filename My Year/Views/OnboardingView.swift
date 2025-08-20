@@ -12,6 +12,7 @@ struct OnboardingView: View {
     case compoundEffect
     case fourRules
     case howYearlitHelps
+    case createFirstHabit
 
     var id: Int { rawValue }
   }
@@ -54,6 +55,8 @@ struct OnboardingView: View {
         HowYearlitHelps(onNext: goNext)
           .tag(OnboardingView.OnboardingPage.howYearlitHelps)
 
+        CreateFirstHabit(onNext: goNext)
+          .tag(OnboardingView.OnboardingPage.createFirstHabit)
       }
       .ignoresSafeArea()
       .tabViewStyle(.page(indexDisplayMode: .never))
@@ -64,6 +67,8 @@ struct OnboardingView: View {
 extension OnboardingView {
   struct OnboardingSlide<Upper: View, Lower: View>: View {
     let onNext: () -> Void
+    var disabled: Bool = false
+    var withSkip: Bool = false
     @ViewBuilder let upper: () -> Upper
     @ViewBuilder let lower: () -> Lower
 
@@ -83,7 +88,13 @@ extension OnboardingView {
           VStack(alignment: .leading, spacing: 16) {
             lower()
             Spacer()
-            ForwardButton(onTap: onNext)
+
+            HStack {
+              if withSkip {
+                SkipButton(onTap: onNext)
+              }
+              ForwardButton(onTap: onNext, disabled: disabled)
+            }
           }
           .frame(maxHeight: height * 0.3)
           .padding(.horizontal)
@@ -94,9 +105,55 @@ extension OnboardingView {
     }
   }
 
-  struct ForwardButton: View {
+  struct SkipButton: View {
     let onTap: () -> Void
     @Environment(\.colorScheme) var colorScheme
+
+    var body: some View {
+      VStack {
+        Button(action: {
+          onTap()
+        }) {
+          Text("Skip")
+            .frame(maxWidth: .infinity)
+            .padding()
+            .background(.surfaceMuted)
+            .foregroundColor(.textPrimary)
+            .font(.system(size: 18, weight: .bold, design: .monospaced))
+            .clipShape(RoundedRectangle(cornerRadius: 4))
+            .accessibilityIdentifier("skip")
+        }
+        .sameLevelBorder()
+      }
+      .padding(.all, 2)
+      .background(
+        RoundedRectangle(cornerRadius: 6)
+          .foregroundStyle(
+            getVoidColor(colorScheme: colorScheme)
+          )
+      )
+      .clipped()
+      .outerSameLevelShadow()
+    }
+
+  }
+
+  struct ForwardButton: View {
+    let onTap: () -> Void
+    var disabled: Bool = false
+    @Environment(\.colorScheme) var colorScheme
+
+    var foregroundColor: Color {
+      withAnimation {
+        return disabled ? .black : .brandInverted
+      }
+    }
+
+    var backgroundColor: Color {
+      withAnimation {
+        return disabled ? .gray : .brand
+      }
+    }
 
     var body: some View {
       VStack {
@@ -106,13 +163,14 @@ extension OnboardingView {
           Text("Next")
             .frame(maxWidth: .infinity)
             .padding()
-            .background(Color.brand)
-            .foregroundColor(.brandInverted)
+            .background(backgroundColor)
+            .foregroundColor(foregroundColor)
             .font(.system(size: 18, weight: .bold, design: .monospaced))
             .clipShape(RoundedRectangle(cornerRadius: 4))
             .accessibilityIdentifier("next_slide")
         }
         .sameLevelBorder()
+        .disabled(disabled)
       }
       .padding(.all, 2)
       .background(
