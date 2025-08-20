@@ -7,6 +7,7 @@ struct HabitsLoop: View {
   var body: some View {
     OnboardingView.OnboardingSlide(onNext: onNext) {
       HabitLoopGraphic()
+        .background(.surfaceMuted)
     } lower: {
       VStack(alignment: .leading, spacing: 8) {
         Spacer()
@@ -25,6 +26,7 @@ struct HabitsLoop: View {
         .font(.system(size: 14, design: .monospaced))
         .foregroundStyle(.secondary)
       }
+      .background(.surfaceMuted)
     }
   }
 }

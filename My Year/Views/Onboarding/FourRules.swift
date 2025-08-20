@@ -39,7 +39,7 @@ private struct DynamicBento: View {
     .init(
       title: "Attractive",
       text: "Pair it with something you already enjoy.",
-      color: .brandSecondary, image: "habit_rules_03", aspectRatio: 1.1
+      color: .brandSecondary, image: "habit_rules_03", aspectRatio: 1.15
     ),
     .init(
       title: "Easy", text: "Shrink it down — start small and simple.",
@@ -52,12 +52,21 @@ private struct DynamicBento: View {
     )
   ]
 
+  @Environment(\.colorScheme) var colorScheme
+
   var body: some View {
-    LazyVGrid(columns: columns, alignment: .center, spacing: 6) {
-      ForEach(items) { item in
-        BentoCard(item: item)
-          .aspectRatio(1, contentMode: .fill)
+    VStack {
+
+      LazyVGrid(columns: columns, alignment: .center, spacing: 6) {
+        ForEach(items) { item in
+          BentoCard(item: item)
+            .aspectRatio(1, contentMode: .fill)
+        }
       }
+      .padding(.all, 6)
+      .background(getVoidColor(colorScheme: colorScheme))
+      .cornerRadius(10)
+      .outerSameLevelShadow(radius: 10)
     }
     .padding(.horizontal)
     .accessibilityElement(children: .contain)
@@ -86,49 +95,48 @@ private struct BentoCard: View {
   var body: some View {
     ZStack {
       VStack {
-        // RoundedRectangle(cornerRadius: 4, style: .continuous)
-        //   .fill(item.color)
-        //   .sameLevelBorder(radius: 4, color: item.color)
-        //   .frame(maxWidth: .greatestFiniteMagnitude)
+        ZStack {
 
-        TwinkleImage(
-          name: item.image,
-          maxWidth: width,
-          maxHeight: width * item.aspectRatio,
-          position: .polar(center: CGPoint(x: 30, y: 30), radius: 0, degrees: 20),
-          scale: 1,
-          minOpacity: 0.9,
-          maxOpacity: 1.0
-        )
+          TwinkleImage(
+            name: item.image,
+            maxWidth: width,
+            maxHeight: width * item.aspectRatio,
+            position: .polar(center: CGPoint(x: 30, y: 30), radius: 0, degrees: 30),
+            scale: 1.4,
+            minOpacity: 1.0,
+            maxOpacity: 1.0
+          )
 
-        HStack {
-          VStack(alignment: .leading, spacing: 8) {
-            Spacer()
-            HStack(spacing: 4) {
-              Text(item.title)
-                .font(.system(size: 14, weight: .black, design: .monospaced))
-                .minimumScaleFactor(0.8)
-                .lineLimit(1)
+          HStack {
+            VStack(alignment: .leading, spacing: 8) {
+              Spacer()
+              HStack(spacing: 4) {
+                Text(item.title)
+                  .font(.system(size: 14, weight: .black, design: .monospaced))
+                  .minimumScaleFactor(0.8)
+                  .lineLimit(1)
+              }
+
+              Text(item.text)
+                .font(.system(size: 10, weight: .regular, design: .monospaced))
             }
+            .foregroundStyle(try! Garnish.contrastingShade(of: item.color))
+            .padding()
 
-            Text(item.text)
-              .font(.system(size: 10, weight: .regular, design: .monospaced))
+            Spacer()
           }
-          .foregroundStyle(try! Garnish.contrastingShade(of: item.color))
-          .padding()
-
-          Spacer()
         }
         .frame(maxWidth: .greatestFiniteMagnitude, maxHeight: .greatestFiniteMagnitude)
+        .cornerRadius(4)
+        .clipped()
       }
       .sameLevelBorder(radius: 4, color: item.color)
     }
-    .clipped()
     .frame(maxWidth: .greatestFiniteMagnitude)
-    .padding(.all, 2)
-    .background(getVoidColor(colorScheme: colorScheme))
-    .cornerRadius(6)
-    .outerSameLevelShadow(radius: 6)
+    // .padding(.all, 2)
+    // .background(getVoidColor(colorScheme: colorScheme))
+    // .cornerRadius(6)
+    // .outerSameLevelShadow(radius: 6)
     .accessibilityLabel(Text(item.title))
   }
 

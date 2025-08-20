@@ -13,6 +13,7 @@ struct OnboardingView: View {
     case fourRules
     case howYearlitHelps
     case createFirstHabit
+    case Paywall
 
     var id: Int { rawValue }
   }
@@ -25,6 +26,10 @@ struct OnboardingView: View {
     } else {
       onDone()
     }
+
+    Task {
+      await hapticFeedback()
+    }
   }
 
   var body: some View {
@@ -33,7 +38,13 @@ struct OnboardingView: View {
       Color(.systemGroupedBackground)
         .ignoresSafeArea()
 
-      TabView(selection: $currentPage) {
+      TabView(
+        selection: $currentPage.onChange { _ in
+          Task {
+            await hapticFeedback()
+          }
+        }
+      ) {
         WhatItIs(onNext: goNext)
           .tag(OnboardingView.OnboardingPage.whatItIs)
 
@@ -57,9 +68,13 @@ struct OnboardingView: View {
 
         CreateFirstHabit(onNext: goNext)
           .tag(OnboardingView.OnboardingPage.createFirstHabit)
+
+        OnboardingPaywall(onNext: goNext)
+          .tag(OnboardingView.OnboardingPage.Paywall)
       }
       .ignoresSafeArea()
       .tabViewStyle(.page(indexDisplayMode: .never))
+      .scrollDismissesKeyboard(.immediately)
     }
   }
 }
@@ -101,6 +116,22 @@ extension OnboardingView {
           .background(.surfaceMuted)
         }
         .background(.surfaceMuted)
+        .overlay {
+          HStack {
+            Rectangle()
+              .fill(Color("devider-bottom"))
+              .frame(maxHeight: .infinity, alignment: .trailing)
+              .frame(maxWidth: 1)
+
+            Spacer()
+
+            Rectangle()
+              .fill(Color("devider-top"))
+              .frame(maxHeight: .infinity, alignment: .trailing)
+              .frame(maxWidth: 1)
+          }.ignoresSafeArea()
+        }
+
       }
     }
   }
@@ -117,13 +148,12 @@ extension OnboardingView {
           Text("Skip")
             .frame(maxWidth: .infinity)
             .padding()
-            .background(.surfaceMuted)
             .foregroundColor(.textPrimary)
             .font(.system(size: 18, weight: .bold, design: .monospaced))
             .clipShape(RoundedRectangle(cornerRadius: 4))
             .accessibilityIdentifier("skip")
         }
-        .sameLevelBorder()
+        .sameLevelBorder(color: .surfaceMuted)
       }
       .padding(.all, 2)
       .background(
@@ -163,13 +193,12 @@ extension OnboardingView {
           Text("Next")
             .frame(maxWidth: .infinity)
             .padding()
-            .background(backgroundColor)
             .foregroundColor(foregroundColor)
             .font(.system(size: 18, weight: .bold, design: .monospaced))
             .clipShape(RoundedRectangle(cornerRadius: 4))
             .accessibilityIdentifier("next_slide")
         }
-        .sameLevelBorder()
+        .sameLevelBorder(radius: 4, color: backgroundColor)
         .disabled(disabled)
       }
       .padding(.all, 2)
