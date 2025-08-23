@@ -14,6 +14,8 @@ import SwiftfulRouting
 @main
 // swiftlint:disable:next type_name
 struct My_YearApp: App {
+  // * Onboarding Manager
+  @StateObject private var onboarding = OnboardingManager()
 
   #if DEBUG
     public static let isDebugMode = true
@@ -41,16 +43,18 @@ struct My_YearApp: App {
     } else {
       NSLog("Failed to create UserDefaults with App Group!")
     }
+
+    // * Reviews Promt Manager
+    print("start review prompter")
+    ReviewPrompter.shared.rules = .init(
+      minEvents: 3,
+      cooldownDays: 30,
+      oncePerVersion: true
+    )
+
   }
 
-  var dates: [Date] {
-    let todayInRegion = DateInRegion(region: .current)
-    let startOfYear = todayInRegion.dateAtStartOf(.year)
-    let endOfYear = todayInRegion.dateAtEndOf(.year)
-    let increment = DateComponents.create { $0.day = 1 }
-    let dateInRegions = DateInRegion.enumerateDates(from: startOfYear, to: endOfYear, increment: increment)
-    return dateInRegions.map { $0.date }
-  }
+  var dates: [Date] = getYearDatesArray()
 
   var body: some Scene {
     WindowGroup {
@@ -62,6 +66,12 @@ struct My_YearApp: App {
         if url.scheme == "my-year" && url.host == "clear" {
           let store = ValuationStore.shared
           store.clearAllValuations()
+        }
+      }
+      .environmentObject(onboarding)
+      .fullScreenCover(isPresented: .constant(!onboarding.hasSeenOnboarding)) {
+        OnboardingView {
+          onboarding.markAsSeen()
         }
       }
     }

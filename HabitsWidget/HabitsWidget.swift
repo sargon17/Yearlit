@@ -356,7 +356,6 @@ struct HabitQuickAddIntent: AppIntent, SetValueIntent {
       impactFeedbackgenerator.prepare()
       impactFeedbackgenerator.impactOccurred()
     } catch {
-      print("Error adding entry: \(error) \(newEntry)")
       return .result()
     }
 

@@ -1,3 +1,5 @@
+import RevenueCat
+import RevenueCatUI
 import SharedModels
 import SwiftUI
 import SwiftfulRouting
@@ -12,7 +14,7 @@ enum SelectedDate: Equatable, Identifiable {
     switch self {
     case .none:
       return nil
-    case .selected(let date):
+    case let .selected(date):
       return date
     }
   }
@@ -21,7 +23,7 @@ enum SelectedDate: Equatable, Identifiable {
     switch self {
     case .none:
       return nil
-    case .selected(let date):
+    case let .selected(date):
       return date
     }
   }
@@ -35,10 +37,10 @@ enum SelectedDate: Equatable, Identifiable {
 }
 
 struct CustomCalendarView: View {
-
+  @Environment(\.colorScheme) var colorScheme
   let calendar: CustomCalendar
-  @StateObject private var store: CustomCalendarStore = CustomCalendarStore.shared
-  @ObservedObject private var valuationStore: ValuationStore = ValuationStore.shared
+  @StateObject private var store: CustomCalendarStore = .shared
+  @ObservedObject private var valuationStore: ValuationStore = .shared
 
   @AppStorage("runtimeDebugEnabled") private var runtimeDebugEnabled: Bool = false
   @AppStorage("wandFillForce") private var wandFillForce: Double = 0.5
@@ -49,6 +51,8 @@ struct CustomCalendarView: View {
   @State private var showingYearPicker: Bool = false
   @State private var tempSelectedYear: Int = Calendar.current.component(.year, from: Date())
   @State private var calendarError: CalendarError?
+  @State private var customerInfo: CustomerInfo?
+  @State private var isPaywallPresented: Bool = false
 
   @Environment(\.router) private var router
 
@@ -68,7 +72,7 @@ struct CustomCalendarView: View {
     for day in 0..<valuationStore.currentDayNumber {
       let date = calendar.date(byAdding: .day, value: day, to: startOfYear)!
 
-      if date <= today && Double.random(in: 0.0...1.0) < wandFillForce {
+      if date <= today, Double.random(in: 0.0...1.0) < wandFillForce {
         switch self.calendar.trackingType {
         case .binary:
           let entry = CalendarEntry(date: date, count: 1, completed: true)
@@ -80,16 +84,18 @@ struct CustomCalendarView: View {
         case .multipleDaily:
           let count = Int.random(in: 1...self.calendar.dailyTarget)
           let entry = CalendarEntry(
-            date: date, count: count, completed: count >= self.calendar.dailyTarget)
+            date: date, count: count, completed: count >= self.calendar.dailyTarget
+          )
           store.addEntry(calendarId: self.calendar.id, entry: entry)
         }
       }
     }
   }
 
-  private func handleDayTap(_ day: Int) {
-    let date: Date = valuationStore.dateForDay(day)
-    if day < valuationStore.currentDayNumber && calendar.trackingType != .binary {
+  private func handleDayTap(_ date: Date) {
+    guard !date.isInFuture else { return }
+
+    if calendar.trackingType != .binary {
       router.showScreen(
         .sheetConfig(config: shortSheetConfig)
       ) { _ in
@@ -100,8 +106,9 @@ struct CustomCalendarView: View {
         )
       }
     } else if calendar.trackingType == .binary {
-      toggleBinaryEntry(calendarId: calendar.id, date: date, calendarStore: store)
+      _ = toggleBinaryEntry(calendarId: calendar.id, date: date, calendarStore: store)
     }
+    checkIfReachedThreeDays(calendar)
     Task {
       await hapticFeedback()
     }
@@ -163,7 +170,9 @@ struct CustomCalendarView: View {
         switch calendar.trackingType {
         case .binary:
           return entry.completed
-        case .counter, .multipleDaily:
+        case .counter:
+          return entry.count > 0
+        case .multipleDaily:
           return entry.count >= calendar.dailyTarget
         }
       }
@@ -171,7 +180,81 @@ struct CustomCalendarView: View {
     }
     return CalendarStats(
       activeDays: activeDays, totalCount: totalCount, maxCount: maxCount,
-      longestStreak: longestStreak, currentStreak: currentStreak)
+      longestStreak: longestStreak, currentStreak: currentStreak
+    )
+  }
+
+  private static let statsCache = StatsCache()
+
+  private func makeCacheKey() -> String {
+    // Key changes when year, today, or entries change (use entries count + max timestamp proxy)
+    let year = valuationStore.selectedYear
+    let entriesSignature = calendar.entries
+      .sorted { $0.key < $1.key }
+      .map { "\($0.key):\($0.value.count):\($0.value.completed ? 1 : 0)" }
+      .joined(separator: ";")
+    return "\(calendar.id.uuidString)|\(year)|\(entriesSignature)"
+  }
+
+  private func computeStatsBundle() -> StatsBundle {
+    let key = makeCacheKey()
+    if let cached = Self.statsCache.get(key) { return cached }
+
+    let cal = Calendar.current
+    let year = valuationStore.selectedYear
+    let todayLocal = today
+
+    // Riusa: getStats() già esistente per basic
+    let basic = getStats()
+
+    // Adattatori leggeri
+    func entryOn(_ date: Date) -> CalendarEntry? {
+      store.getEntry(calendarId: calendar.id, date: date)
+    }
+    func isSuccessOn(_ date: Date) -> Bool {
+      isEntrySuccess(entryOn(date), calendar: calendar)
+    }
+    func zOn(_ date: Date) -> Double {
+      normalizedProgress(for: calendar, entry: entryOn(date))
+    }
+
+    let (cr30, avg7, avg30) = computeRollingStatsSingle(
+      cal: cal, todayLocal: todayLocal, zOn: zOn, isSuccessOn: isSuccessOn
+    )
+
+    // Nuovo: weekday rates per singolo calendario + best day (normalizzati a max=1)
+    let (weekdayRates, bestWD) = computeWeekdayRatesSingle(
+      cal: cal, year: year, todayLocal: todayLocal,
+      trackingType: calendar.trackingType, zOn: zOn, isSuccessOn: isSuccessOn,
+      normalizeToMax: true
+    )
+
+    // Nuovo: breakdown mensile (CR binaria sul mese)
+    let monthly = computeMonthlyBinaryRates(
+      cal: cal, year: year, todayLocal: todayLocal, isSuccessOn: isSuccessOn
+    )
+
+    // Riusa schema: volatilità settimanale su CR (12 settimane)
+    let volatility = computeWeeklyVolatilityFromSuccess(
+      cal: cal, todayLocal: todayLocal, isSuccessOn: isSuccessOn
+    )
+
+    // Today's count for this calendar (optional)
+    let todaysCount: Int? = store.getEntry(calendarId: calendar.id, date: todayLocal)?.count
+
+    let bundle = StatsBundle(
+      basic: basic,
+      completionRate30d: cr30,
+      bestWeekday: bestWD?.day,
+      weekdayRates: weekdayRates,
+      monthlyRates: monthly,
+      rolling7d: avg7,
+      rolling30d: avg30,
+      volatilityStd: volatility,
+      todaysCount: todaysCount
+    )
+    Self.statsCache.set(key, value: bundle)
+    return bundle
   }
 
   private func handleQuickAdd() {
@@ -183,6 +266,7 @@ struct CustomCalendarView: View {
     )
 
     WidgetCenter.shared.reloadAllTimelines()
+    checkIfReachedThreeDays(calendar)
 
     Task {
       await hapticFeedback()
@@ -214,7 +298,6 @@ struct CustomCalendarView: View {
                           store.deleteCalendar(id: calendar.id)
                         }
                       )
-
                     }
                   }
                   .padding(.top)
@@ -248,7 +331,6 @@ struct CustomCalendarView: View {
                     .foregroundColor(Color(calendar.color))
                   }
                 }.frame(width: 24, height: 24)
-
               }
 
               HStack(spacing: 4) {
@@ -287,7 +369,6 @@ struct CustomCalendarView: View {
                           store.deleteCalendar(id: calendar.id)
                         }
                       )
-
                     }
                   }
                 }
@@ -305,7 +386,6 @@ struct CustomCalendarView: View {
           valuationStore: valuationStore,
           handleDayTap: handleDayTap
         )
-
       }
       .frame(height: UIScreen.main.bounds.height * 0.85)
 
@@ -313,34 +393,31 @@ struct CustomCalendarView: View {
       let todayDateString = customDateFormatter(date: today)
       let todaysLogCount = calendar.entries[todayDateString]?.count ?? 0
 
+      let bundle = computeStatsBundle()
+
       CalendarStatisticsView(
-        stats: getStats(),
+        stats: bundle.basic,
         accentColor: Color(calendar.color),
-        todaysCount: todaysLogCount,  // Pass today's count
-        unit: calendar.unit,  // Pass the unit
-        currencySymbol: calendar.currencySymbol  // Pass the currency symbol
+        todaysCount: todaysLogCount,
+        unit: calendar.unit,
+        currencySymbol: calendar.currencySymbol,
+        completionRateLast30d: bundle.completionRate30d,
+        bestWeekday: bundle.bestWeekday,
+        weekdayRates: bundle.weekdayRates,
+        monthlyRates: bundle.monthlyRates,
+        rolling7d: bundle.rolling7d,
+        rolling30d: bundle.rolling30d,
+        volatilityStdDev: bundle.volatilityStd,
+        isPremium: isPremium(customerInfo: customerInfo),
+        onUpgrade: { isPaywallPresented = true },
+        trackingType: calendar.trackingType
       )
+      .id(colorScheme)
       .padding(.top, 20)
 
       CustomSeparator()
 
-      VStack(spacing: 0) {
-        Text("Independently engineered. Lovingly crafted.")
-        Text("Thank you for your support!")
-
-        Spacer()
-        HStack(spacing: 4) {
-          Text("Mykhaylo Tymofyeyev")
-          Text("•")
-          Text("[@tymofyeyev_m](https://x.com/tymofyeyev_m)").foregroundColor(Color(calendar.color))
-        }
-        .foregroundColor(Color("text-tertiary"))
-
-      }.padding(.horizontal)
-        .font(.system(size: 9, design: .monospaced))
-        .foregroundColor(Color("text-tertiary").opacity(0.5))
-        .multilineTextAlignment(.center)
-        .padding(.bottom, 40)
+      DevCredits()
 
     }.scrollIndicators(.hidden)
       .refreshable {
@@ -382,7 +459,11 @@ struct CustomCalendarView: View {
         }
         .background(Color("surface-muted"))
         .presentationDetents([.height(280)])
-      }.overlay {
+      }
+      .sheet(isPresented: $isPaywallPresented) {
+        PaywallView()
+      }
+      .overlay {
         HStack {
           Rectangle()
             .fill(Color("devider-bottom"))
@@ -395,13 +476,18 @@ struct CustomCalendarView: View {
             .fill(Color("devider-top"))
             .frame(maxHeight: .infinity, alignment: .trailing)
             .frame(maxWidth: 1)
-
         }
-      }.ignoresSafeArea(edges: .bottom)
+      }
       .alert(item: $calendarError) { error in
         Alert(
           title: Text(error.title), message: Text(error.message),
-          dismissButton: .default(Text("OK")))
+          dismissButton: .default(Text("OK"))
+        )
+      }
+      .onAppear {
+        Purchases.shared.getCustomerInfo { info, _ in
+          self.customerInfo = info
+        }
       }
   }
 }
@@ -412,7 +498,7 @@ enum CalendarError: LocalizedError, Identifiable {
   case notificationSchedulingFailed(Error)
   case errorAddingEntry(Error)
 
-  var id: String { self.localizedDescription }
+  var id: String { localizedDescription }
 
   var title: String {
     switch self {
@@ -437,9 +523,9 @@ enum CalendarError: LocalizedError, Identifiable {
       return "Please enter a valid name (1-50 characters)"
     case .notificationPermissionDenied:
       return "Please enable notifications in Settings to receive reminders."
-    case .notificationSchedulingFailed(let error):
+    case let .notificationSchedulingFailed(error):
       return "Failed to schedule notification: \(error.localizedDescription)"
-    case .errorAddingEntry(let error):
+    case let .errorAddingEntry(error):
       return "Failed to add entry: \(error.localizedDescription)"
     }
   }

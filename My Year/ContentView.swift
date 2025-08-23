@@ -45,10 +45,12 @@ struct CalendarDropDelegate: DropDelegate {
 }
 
 struct ContentView: View {
+  @AppStorage("isMoodTrackingEnabled") var isMoodTrackingEnabled: Bool = true
   @State private var customerInfo: CustomerInfo?
   @ObservedObject private var store = CustomCalendarStore.shared
   @State private var selectedIndex: Int = 0
   @ObservedObject private var valuationStore = ValuationStore.shared
+  @EnvironmentObject var onboarding: OnboardingManager
 
   @Environment(\.router) private var router
 
@@ -62,13 +64,18 @@ struct ContentView: View {
         }
       ) {
         // Year Grid
-        YearGrid()
-          .tag(0)
+        if isMoodTrackingEnabled {
+          MoodTrackingCalendar()
+            .tag(-10)
+        }
+
+        AllCalendarsRecapView()
+          .tag(-1)
 
         // Custom Calendars
         ForEach(Array(store.calendars.enumerated()), id: \.element.id) { index, calendar in
           CustomCalendarView(calendar: calendar)
-            .tag(index + 2)
+            .tag(index)
         }
 
         // Add Calendar Button
@@ -91,6 +98,7 @@ struct ContentView: View {
               store.addCalendar(newCalendar)
               selectedIndex = store.calendars.count
               router.dismissScreen()
+              addPositiveEvent(.createdCalendar)
             }
           }
         }
@@ -122,6 +130,18 @@ struct ContentView: View {
       .toolbar {
         ToolbarItem(placement: .navigationBarTrailing) {
           HStack(spacing: 4) {
+
+            #if DEBUG
+              Button(action: {
+                onboarding.reset()
+              }) {
+                Image(systemName: "point.bottomleft.forward.to.point.topright.filled.scurvepath")
+                  .foregroundColor(Color("text-tertiary"))
+                  .font(.system(size: 12))
+              }
+
+            #endif
+
             Button(action: {
               router.showScreen(.sheet) { _ in
                 SettingsView()
