@@ -108,38 +108,42 @@ struct CalendarsSection: View {
       }
       .toolbar {
         ToolbarItem(placement: .navigationBarTrailing) {
-          HStack(spacing: 4) {
-            #if DEBUG
-              Button(action: {
-                onboarding.reset()
-              }) {
-                Image(systemName: "point.bottomleft.forward.to.point.topright.filled.scurvepath")
-                  .foregroundColor(Color("text-tertiary"))
-                  .font(.system(size: 12))
-              }
-
-            #endif
-
-            Button(action: {
-              router.showScreen(.sheet) { _ in
-                SettingsView()
-              }
-            }) {
-              Image(systemName: "gearshape")
-                .foregroundColor(Color("text-tertiary"))
-                .font(.system(size: 12))
-            }
-            Button(action: {
-              router.showScreen(.sheet) { _ in
-                CalendarsOverview(store: store, valuationStore: valuationStore, scrollPosition: $position)
-              }
-            }) {
-              Image(systemName: "square.grid.2x2")
-                .font(.system(size: 12))
-                .foregroundColor(Color("text-tertiary"))
-            }
-          }
+          toolbar
         }
+      }
+    }
+  }
+
+  var toolbar: some View {
+    HStack(spacing: 4) {
+      #if DEBUG
+        Button(action: {
+          onboarding.reset()
+        }) {
+          Image(systemName: "point.bottomleft.forward.to.point.topright.filled.scurvepath")
+            .foregroundColor(Color("text-tertiary"))
+            .font(.system(size: 12))
+        }
+
+      #endif
+
+      Button(action: {
+        router.showScreen(.sheet) { _ in
+          SettingsView()
+        }
+      }) {
+        Image(systemName: "gearshape")
+          .foregroundColor(Color("text-tertiary"))
+          .font(.system(size: 12))
+      }
+      Button(action: {
+        router.showScreen(.sheet) { _ in
+          CalendarsOverview(store: store, valuationStore: valuationStore, scrollPosition: $position)
+        }
+      }) {
+        Image(systemName: "square.grid.2x2")
+          .font(.system(size: 12))
+          .foregroundColor(Color("text-tertiary"))
       }
     }
   }
