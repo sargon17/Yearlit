@@ -58,7 +58,7 @@ struct My_YearApp: App {
 
   var body: some Scene {
     WindowGroup {
-      RouterView { _ in
+      RouterView(addNavigationStack: false, addModuleSupport: true) { _ in
         ContentView()
       }
       .environment(\.dates, dates)

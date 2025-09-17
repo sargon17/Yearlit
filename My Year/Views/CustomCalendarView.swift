@@ -417,8 +417,6 @@ struct CustomCalendarView: View {
 
       CustomSeparator()
 
-      DevCredits()
-
     }.scrollIndicators(.hidden)
       .refreshable {
         store.loadCalendars()
