@@ -1,6 +1,7 @@
 import AppIntents
 import Foundation
 import Observation
+import SwiftData
 import SwiftUI
 import WidgetKit
 
@@ -221,6 +222,7 @@ public enum TrackingType: String, Codable, CaseIterable {
     }
   }
 
+  @available(iOS 17.0, macOS 13.0, *)
   public static var allCasesDisplayRepresentations: [TrackingType: DisplayRepresentation] {
     [
       .binary: "Once a day (binary)",
@@ -304,9 +306,7 @@ public struct DayValuation: Codable, Identifiable, Equatable {
   public let timestamp: Date
 
   public init(date: Date = Date(), mood: DayMood) {
-    let formatter = DateFormatter()
-    formatter.dateFormat = "yyyy-MM-dd"
-    self.id = formatter.string(from: date)
+    self.id = DayKeyFormatter.shared.string(from: date)
     self.mood = mood
     self.timestamp = date
   }
@@ -318,81 +318,70 @@ public struct DayValuation: Codable, Identifiable, Equatable {
 
 // MARK: - Custom Calendar Store
 
-@available(macOS 10.15, *)
-public class CustomCalendarStore: ObservableObject {
+@available(iOS 17.0, macOS 14.0, *)
+public final class CustomCalendarStore: ObservableObject {
   public static let shared = CustomCalendarStore()
-
-  private let defaults: UserDefaults
-  private let calendarsKey = "customCalendars"
-  private let appGroupId = "group.sargon17.My-Year"
 
   @Published public private(set) var calendars: [CustomCalendar] = []
   @Published public private(set) var isLoading: Bool = false
 
-  public init() {
-    UserDefaults.standard.addSuite(named: appGroupId)
+  private let container: ModelContainer
 
-    guard let defaults = UserDefaults(suiteName: appGroupId) else {
-      fatalError("Failed to initialize UserDefaults with App Group: \(appGroupId)")
-    }
-    self.defaults = defaults
+  public init(container: ModelContainer = SwiftDataManager.container) {
+    self.container = container
 
+    LegacyDataMigrator.migrateIfNeeded(container: container)
     loadCalendars()
   }
 
-  public func loadCalendars() {
-    isLoading = true
-    defer { isLoading = false }
-
-    CFPreferencesAppSynchronize(appGroupId as CFString)
-
-    guard let data = defaults.data(forKey: calendarsKey) else {
-      calendars = []
-      return
+  public func loadCalendars(showLoadingIndicator: Bool = true) {
+    if showLoadingIndicator {
+      isLoading = true
     }
-
-    // Try to decode with new model
-    if let decodedCalendars = try? JSONDecoder().decode([CustomCalendar].self, from: data) {
-      calendars = decodedCalendars.sorted { $0.order < $1.order }
-      return
-    }
-
-    // If that fails, try to decode old model and migrate
-    struct OldCalendar: Codable {
-      let id: UUID
-      var name: String
-      var color: String
-      var trackingType: TrackingType
-      var entries: [String: CalendarEntry]
-    }
-
-    if let oldCalendars = try? JSONDecoder().decode([OldCalendar].self, from: data) {
-      calendars = oldCalendars.enumerated().map { index, old in
-        CustomCalendar(
-          id: old.id,
-          name: old.name,
-          color: old.color,
-          trackingType: old.trackingType,
-          dailyTarget: old.trackingType == .multipleDaily ? 2 : 1,
-          entries: old.entries,
-          recurringReminderEnabled: false,
-          order: index,
-          unit: nil,
-          defaultRecordValue: nil,
-          currencySymbol: nil
-        )
+    defer {
+      if showLoadingIndicator {
+        isLoading = false
       }
-      // Save the migrated data
-      saveCalendars()
-    } else {
+    }
+
+    do {
+      let context = makeContext()
+      let calendarsDescriptor = FetchDescriptor<HabitCalendarEntity>(
+        sortBy: [SortDescriptor(\HabitCalendarEntity.order)]
+      )
+      let calendarEntities = try context.fetch(calendarsDescriptor)
+      let entryEntities = try context.fetch(FetchDescriptor<CalendarEntryEntity>())
+      let groupedEntries = Dictionary(grouping: entryEntities, by: { $0.calendarId })
+
+      let deduplicatedCalendars = calendarEntities.reduce(into: [UUID: CustomCalendar]()) { partialResult, entity in
+        let entries = groupedEntries[entity.id, default: []]
+          .reduce(into: [String: CalendarEntry]()) { partialEntries, entry in
+            let key = entry.dayKey
+            let converted = entry.toCalendarEntry()
+            if let existing = partialEntries[key] {
+              if converted.date > existing.date {
+                partialEntries[key] = converted
+              }
+            } else {
+              partialEntries[key] = converted
+            }
+          }
+
+        let calendar = entity.toCustomCalendar(entries: entries)
+        if let existing = partialResult[calendar.id] {
+          if calendar.order < existing.order {
+            partialResult[calendar.id] = calendar
+          }
+        } else {
+          partialResult[calendar.id] = calendar
+        }
+      }
+
+      calendars = deduplicatedCalendars.values.sorted { $0.order < $1.order }
+    } catch {
+      NSLog("Failed to load calendars from SwiftData: \(error)")
       calendars = []
     }
-  }
-
-  private func saveCalendars() {
-    guard let data = try? JSONEncoder().encode(calendars) else { return }
-    defaults.set(data, forKey: calendarsKey)
-    defaults.synchronize()
   }
 
   // MARK: - Calendar Management
@@ -400,85 +389,222 @@ public class CustomCalendarStore: ObservableObject {
   public func addCalendar(_ calendar: CustomCalendar) {
     var newCalendar = calendar
     newCalendar.order = calendars.count
-    calendars.append(newCalendar)
-    saveCalendars()
+
+    do {
+      let context = makeContext()
+      let entity = HabitCalendarEntity.make(from: newCalendar)
+      context.insert(entity)
+
+      for (dayKey, entry) in newCalendar.entries {
+        let entryEntity = CalendarEntryEntity(
+          compositeKey: CalendarEntryEntity.makeCompositeKey(calendarId: entity.id, dayKey: dayKey),
+          calendarId: entity.id,
+          dayKey: dayKey,
+          date: entry.date,
+          count: entry.count,
+          completed: entry.completed
+        )
+        context.insert(entryEntity)
+      }
+
+      try persistChanges(in: context)
+    } catch {
+      NSLog("Failed to add calendar: \(error)")
+    }
+    loadCalendars(showLoadingIndicator: false)
   }
 
   public func updateCalendar(_ calendar: CustomCalendar) {
-    guard let index = calendars.firstIndex(where: { $0.id == calendar.id }) else { return }
-    calendars[index] = calendar
-    saveCalendars()
+    do {
+      let context = makeContext()
+      guard let entity = fetchCalendarEntity(id: calendar.id, in: context) else { return }
+      entity.apply(from: calendar)
+
+      let existingEntries = try fetchEntries(for: calendar.id, in: context)
+      var existingByKey = existingEntries.reduce(into: [String: CalendarEntryEntity]()) { partialResult, entry in
+        if let existing = partialResult[entry.dayKey] {
+          if entry.date > existing.date {
+            partialResult[entry.dayKey] = entry
+          }
+        } else {
+          partialResult[entry.dayKey] = entry
+        }
+      }
+
+      for (key, entryModel) in calendar.entries {
+        if let entryEntity = existingByKey.removeValue(forKey: key) {
+          entryEntity.apply(from: entryModel, calendarId: calendar.id, overrideDayKey: key)
+        } else {
+          let entryEntity = CalendarEntryEntity(
+            compositeKey: CalendarEntryEntity.makeCompositeKey(calendarId: calendar.id, dayKey: key),
+            calendarId: calendar.id,
+            dayKey: key,
+            date: entryModel.date,
+            count: entryModel.count,
+            completed: entryModel.completed
+          )
+          context.insert(entryEntity)
+        }
+      }
+
+      for redundant in existingByKey.values {
+        context.delete(redundant)
+      }
+
+      try persistChanges(in: context)
+      loadCalendars(showLoadingIndicator: false)
+    } catch {
+      NSLog("Failed to update calendar: \(error)")
+    }
   }
 
   public func deleteCalendar(id: UUID) {
-    calendars.removeAll { $0.id == id }
-    saveCalendars()
+    do {
+      let context = makeContext()
+      guard let entity = fetchCalendarEntity(id: id, in: context) else { return }
+      let entries = try fetchEntries(for: id, in: context)
+      for entry in entries {
+        context.delete(entry)
+      }
+      context.delete(entity)
+      try persistChanges(in: context)
+      loadCalendars(showLoadingIndicator: false)
+    } catch {
+      NSLog("Failed to delete calendar: \(error)")
+    }
   }
 
   public func moveCalendar(fromOffsets indices: IndexSet, toOffset destination: Int) {
-    var newCalendars = calendars
-    newCalendars.move(fromOffsets: indices, toOffset: destination)
-    for (index, var calendar) in newCalendars.enumerated() {
-      calendar.order = index
-      newCalendars[index] = calendar
+    var reordered = calendars
+    reordered.move(fromOffsets: indices, toOffset: destination)
+
+    do {
+      let context = makeContext()
+      for (index, var calendar) in reordered.enumerated() {
+        calendar.order = index
+        reordered[index] = calendar
+        if let entity = fetchCalendarEntity(id: calendar.id, in: context) {
+          entity.order = index
+        }
+      }
+
+      calendars = reordered
+      try persistChanges(in: context)
+      loadCalendars(showLoadingIndicator: false)
+    } catch {
+      NSLog("Failed to move calendars: \(error)")
     }
-    calendars = newCalendars
-    saveCalendars()
   }
 
   // MARK: - Entry Management
 
   public func addEntry(calendarId: UUID, entry: CalendarEntry) {
-    guard let index = calendars.firstIndex(where: { $0.id == calendarId }) else { return }
-    let dateKey = formatDate(date: entry.date)
+    do {
+      let context = makeContext()
+      guard fetchCalendarEntity(id: calendarId, in: context) != nil else { return }
+      let dayKey = formatDate(date: entry.date)
+      let compositeKey = CalendarEntryEntity.makeCompositeKey(calendarId: calendarId, dayKey: dayKey)
 
-    var calendar = calendars[index]
-    calendar.entries[dateKey] = entry
-    calendars[index] = calendar
-    saveCalendars()
+      if let entryEntity = fetchEntry(compositeKey: compositeKey, in: context) {
+        entryEntity.apply(from: entry, calendarId: calendarId, overrideDayKey: dayKey)
+      } else {
+        let entryEntity = CalendarEntryEntity(
+          compositeKey: compositeKey,
+          calendarId: calendarId,
+          dayKey: dayKey,
+          date: entry.date,
+          count: entry.count,
+          completed: entry.completed
+        )
+        context.insert(entryEntity)
+      }
+
+      try persistChanges(in: context)
+      loadCalendars(showLoadingIndicator: false)
+    } catch {
+      NSLog("Failed to add entry: \(error)")
+    }
   }
 
   public func getEntry(calendarId: UUID, date: Date) -> CalendarEntry? {
-    guard let calendar = calendars.first(where: { $0.id == calendarId }) else { return nil }
-    let dateKey = formatDate(date: date)
-    return calendar.entries[dateKey]
+    let context = makeContext()
+    let dayKey = formatDate(date: date)
+    let compositeKey = CalendarEntryEntity.makeCompositeKey(calendarId: calendarId, dayKey: dayKey)
+    return fetchEntry(compositeKey: compositeKey, in: context)?.toCalendarEntry()
   }
 
   public func clearEntries(calendarId: UUID) {
-    guard let index = calendars.firstIndex(where: { $0.id == calendarId }) else { return }
-    calendars[index].entries = [:]
-    saveCalendars()
+    do {
+      let context = makeContext()
+      let entries = try fetchEntries(for: calendarId, in: context)
+      for entry in entries {
+        context.delete(entry)
+      }
+      try persistChanges(in: context)
+      loadCalendars(showLoadingIndicator: false)
+    } catch {
+      NSLog("Failed to clear entries: \(error)")
+    }
   }
 
   public func deleteEntry(calendarId: UUID, date: Date) {
-    guard let index = calendars.firstIndex(where: { $0.id == calendarId }) else { return }
-    let dateKey = formatDate(date: date)
-    calendars[index].entries.removeValue(forKey: dateKey)
-    saveCalendars()
+    do {
+      let context = makeContext()
+      let dayKey = formatDate(date: date)
+      let compositeKey = CalendarEntryEntity.makeCompositeKey(calendarId: calendarId, dayKey: dayKey)
+      guard let target = fetchEntry(compositeKey: compositeKey, in: context) else { return }
+      context.delete(target)
+      try persistChanges(in: context)
+      loadCalendars(showLoadingIndicator: false)
+    } catch {
+      NSLog("Failed to delete entry: \(error)")
+    }
+  }
+
+  private func fetchCalendarEntity(id: UUID, in context: ModelContext) -> HabitCalendarEntity? {
+    let predicate = #Predicate<HabitCalendarEntity> { $0.id == id }
+    var descriptor = FetchDescriptor(predicate: predicate)
+    descriptor.fetchLimit = 1
+    return try? context.fetch(descriptor).first
+  }
+
+  private func fetchEntries(for calendarId: UUID, in context: ModelContext) throws -> [CalendarEntryEntity] {
+    let predicate = #Predicate<CalendarEntryEntity> { $0.calendarId == calendarId }
+    return try context.fetch(FetchDescriptor(predicate: predicate))
+  }
+
+  private func fetchEntry(compositeKey: String, in context: ModelContext) -> CalendarEntryEntity? {
+    let predicate = #Predicate<CalendarEntryEntity> { $0.compositeKey == compositeKey }
+    var descriptor = FetchDescriptor(predicate: predicate)
+    descriptor.fetchLimit = 1
+    return try? context.fetch(descriptor).first
+  }
+
+  private func persistChanges(in context: ModelContext) throws {
+    if context.hasChanges {
+      try context.save()
+    }
+  }
+
+  private func makeContext() -> ModelContext {
+    let context = ModelContext(container)
+    context.autosaveEnabled = false
+    return context
   }
 
   private func formatDate(date: Date) -> String {
-    let dateFormatter = DateFormatter()
-    dateFormatter.dateFormat = "yyyy-MM-dd"
-    return dateFormatter.string(from: date)
+    DayKeyFormatter.shared.string(from: date)
   }
 }
 
-public class ValuationStore: ObservableObject {
+@available(iOS 17.0, macOS 14.0, *)
+public final class ValuationStore: ObservableObject {
   public static let shared = ValuationStore()
-  private let appGroupId = "group.sargon17.My-Year"
-  private let valuationsKey = "dayValuations"
-  private let defaults: UserDefaults
-  private var isLoading = false
 
   @Published public var selectedYear: Int = Calendar.current.component(.year, from: Date())
-  @Published public var valuations: [String: DayValuation] = [:] {
-    didSet {
-      if !isLoading {
-        saveValuations()
-      }
-    }
-  }
+  @Published public private(set) var valuations: [String: DayValuation] = [:]
+
+  private let container: ModelContainer
 
   // MARK: - Date Calculations
   // TODO: Remove this function (LEGACY)
@@ -521,78 +647,106 @@ public class ValuationStore: ObservableObject {
 
   // MARK: - Initialization
 
-  public init() {
-    UserDefaults.standard.addSuite(named: appGroupId)
+  public init(container: ModelContainer = SwiftDataManager.container) {
+    self.container = container
 
-    guard let defaults = UserDefaults(suiteName: appGroupId) else {
-      fatalError("Failed to initialize UserDefaults with App Group: \(appGroupId)")
-    }
-    self.defaults = defaults
-
+    LegacyDataMigrator.migrateIfNeeded(container: container)
     loadValuations()
   }
 
   public func loadValuations() {
-    isLoading = true
-    defer { isLoading = false }
-
-    CFPreferencesAppSynchronize(appGroupId as CFString)
-
-    guard let data = defaults.data(forKey: valuationsKey),
-      let decoded = try? JSONDecoder().decode([String: DayValuation].self, from: data)
-    else {
-      return
-    }
-
-    if #available(macOS 10.15, *) {
-      valuations = decoded
+    do {
+      let context = makeContext()
+      let descriptor = FetchDescriptor<DayValuationEntity>(
+        sortBy: [SortDescriptor(\DayValuationEntity.dayKey)]
+      )
+      let entities = try context.fetch(descriptor)
+      valuations = entities.reduce(into: [String: DayValuation]()) { partialResult, entity in
+        let valuation = entity.toDayValuation()
+        if let existing = partialResult[entity.dayKey] {
+          if valuation.timestamp > existing.timestamp {
+            partialResult[entity.dayKey] = valuation
+          }
+        } else {
+          partialResult[entity.dayKey] = valuation
+        }
+      }
+    } catch {
+      NSLog("Failed to load valuations: \(error)")
+      valuations = [:]
     }
   }
 
   public func getValuation(for date: Date) -> DayValuation? {
-    let formatter = DateFormatter()
-    formatter.dateFormat = "yyyy-MM-dd"
-    let key = formatter.string(from: date)
+    let key = DayKeyFormatter.shared.string(from: date)
     return valuations[key]
   }
 
   public func setValuation(_ mood: DayMood, for date: Date = Date()) {
     let valuation = DayValuation(date: date, mood: mood)
-    var newValuations = valuations
-    newValuations[valuation.id] = valuation
-    valuations = newValuations
+    do {
+      let context = makeContext()
+      if let entity = fetchEntity(dayKey: valuation.id, in: context) {
+        entity.apply(from: valuation)
+      } else {
+        let entity = DayValuationEntity(
+          dayKey: valuation.id,
+          timestamp: valuation.timestamp,
+          moodRawValue: valuation.mood.rawValue
+        )
+        context.insert(entity)
+      }
 
-    #if os(iOS)
-      WidgetCenter.shared.reloadAllTimelines()
-    #endif
-  }
+      try persistChanges(in: context)
 
-  private func saveValuations() {
-    guard let encoded = try? JSONEncoder().encode(valuations) else {
-      return
+      var newValuations = valuations
+      newValuations[valuation.id] = valuation
+      valuations = newValuations
+
+      #if os(iOS)
+        WidgetCenter.shared.reloadAllTimelines()
+      #endif
+    } catch {
+      NSLog("Failed to set valuation: \(error)")
     }
-
-    CFPreferencesSetAppValue(
-      valuationsKey as CFString,
-      encoded as CFData,
-      appGroupId as CFString)
-    CFPreferencesAppSynchronize(appGroupId as CFString)
-
-    defaults.set(encoded, forKey: valuationsKey)
-
-    #if os(iOS)
-      WidgetCenter.shared.reloadAllTimelines()
-    #endif
   }
 
   public func clearAllValuations() {
-    valuations = [:]
-    defaults.removeObject(forKey: valuationsKey)
-    defaults.synchronize()
+    do {
+      let context = makeContext()
+      let descriptor = FetchDescriptor<DayValuationEntity>()
+      let entities = try context.fetch(descriptor)
+      for entity in entities {
+        context.delete(entity)
+      }
+      try persistChanges(in: context)
+      valuations = [:]
 
-    #if os(iOS)
-      WidgetCenter.shared.reloadAllTimelines()
-    #endif
+      #if os(iOS)
+        WidgetCenter.shared.reloadAllTimelines()
+      #endif
+    } catch {
+      NSLog("Failed to clear valuations: \(error)")
+    }
+  }
+
+  private func fetchEntity(dayKey: String, in context: ModelContext) -> DayValuationEntity? {
+    let predicate = #Predicate<DayValuationEntity> { $0.dayKey == dayKey }
+    var descriptor = FetchDescriptor(predicate: predicate)
+    descriptor.fetchLimit = 1
+    return try? context.fetch(descriptor).first
+  }
+
+  private func persistChanges(in context: ModelContext) throws {
+    if context.hasChanges {
+      try context.save()
+    }
+  }
+
+  private func makeContext() -> ModelContext {
+    let context = ModelContext(container)
+    context.autosaveEnabled = false
+    return context
   }
 }
 
@@ -716,6 +870,7 @@ public struct MosaicChart: View {
   }
 }
 
+@available(iOS 17.0, macOS 14.0, *)
 public func updateDayTypesQuantity(store: ValuationStore) -> [DayMoodType: Int] {
   let evaluatedDays = store.valuations.values.reduce(into: [:]) { counts, valuation in
     counts[DayMoodType.from(valuation.mood), default: 0] += 1
