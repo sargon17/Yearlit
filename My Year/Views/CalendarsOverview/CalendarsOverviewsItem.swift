@@ -12,7 +12,6 @@ import SwiftUI
 
 struct CalendarsOverviewsItem: View {
   let calendar: CustomCalendar
-  @Binding var selectedIndex: Int
   @Environment(\.dismiss) private var dismiss
   @ObservedObject var store: CustomCalendarStore
   @State private var showDeleteConfirmation = false

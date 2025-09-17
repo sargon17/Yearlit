@@ -8,7 +8,7 @@ struct CalendarsOverview: View {
 
   @ObservedObject var store: CustomCalendarStore
   @ObservedObject var valuationStore: ValuationStore
-  @Binding var selectedIndex: Int
+  @Binding var scrollPosition: ScrollPosition
   @Environment(\.dismiss) private var dismiss
   @State private var isReorderActive = false
 
@@ -56,7 +56,7 @@ struct CalendarsOverview: View {
           .cardStyle()
           .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
           .onTapGesture {
-            selectedIndex = 0
+            scrollPosition.scrollTo(id: "mood")
             dismiss()
           }.opacity(isReorderActive ? 0.5 : 1)
         }
@@ -67,13 +67,12 @@ struct CalendarsOverview: View {
         ) { index, calendar in
           CalendarsOverviewsItem(
             calendar: store.calendars[index],
-            selectedIndex: $selectedIndex,
             store: store,
             isReorderActive: $isReorderActive
           )
           .onTapGesture {
-            selectedIndex = index
             dismiss()
+            scrollPosition.scrollTo(id: index.description)
           }
         }
 
@@ -94,7 +93,8 @@ struct CalendarsOverview: View {
           router.showScreen(.sheet) { _ in
             CreateCalendarView { newCalendar in
               store.addCalendar(newCalendar)
-              selectedIndex = store.calendars.count
+              scrollPosition.scrollTo(id: store.calendars.count)
+
               router.dismissScreen()
 
               addPositiveEvent(.createdCalendar)

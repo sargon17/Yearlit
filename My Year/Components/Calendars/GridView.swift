@@ -60,24 +60,27 @@ struct GridView: View {
       .task(
         id: "\(calendar.entries.values.reduce(0) { $0 + $1.count })-\(colorScheme)"
       ) {
-        let cacheKey = "\(calendar.name)-\(colorScheme)-\(calendar.entries.values.reduce(0) { $0 + $1.count } )"
+        let cacheKey = "\(calendar.name)-\(colorScheme)-\(calendar.entries.values.reduce(0) { $0 + $1.count })"
         if let cachedMappedDays = Self.mappedDaysCache.get(for: cacheKey) {
           // print("🟢 Hitting Cache")
           mappedDays = cachedMappedDays
         } else {
           // print("🔴 Missing Cache")
           // Self.mappedDaysCache.clear()  // is that cleaning the cache right?
+          Self.mappedDaysCache.clearByCalendarTitle(title: calendar.name)
           mappedDays = dates.map { (date: $0, color: colorForDay($0, calendar: calendar, today: today)) }
           Self.mappedDaysCache.set(mappedDays, for: cacheKey)
         }
       }
-      .onChange(of: calendar.entries.values.reduce(0) { $0 + $1.count }) { oldVal, newVal in
-        //* removing old cache for entries count as the value could have changed with the same count, the cache retunred the old cached values
+      .onChange(of: calendar.entries.values.reduce(0) { $0 + $1.count }) { oldVal, _ in
+        // * removing old cache for entries count as the value could have changed with the same count, the cache retunred the old cached values
         let cacheKey = "\(calendar.name)-\(colorScheme)-\(oldVal)"
         Self.mappedDaysCache.delete(for: cacheKey)
       }
     }
   }
+
+  func updateData() {}
 }
 
 // Simple in-memory cache using a dictionary
@@ -99,7 +102,20 @@ private class DaysCache<Key: Hashable, Value> {
     cache.remove(at: index!)
   }
 
+  func clearByCalendarTitle(title: String) {
+    let keysToRemove = cache.keys.filter {
+      guard let strKey = $0 as? String else { return false }
+      return strKey.contains(title)
+    }
+
+    for key in keysToRemove {
+      cache.removeValue(forKey: key)
+    }
+  }
+
   func clear() {
+    print(cache.count)
+
     cache.removeAll()
   }
 }

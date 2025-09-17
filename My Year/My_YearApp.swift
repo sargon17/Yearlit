@@ -60,6 +60,7 @@ struct My_YearApp: App {
     WindowGroup {
       RouterView(addNavigationStack: false, addModuleSupport: true) { _ in
         ContentView()
+          .background(Color.surfaceMuted)
       }
       .environment(\.dates, dates)
       .onOpenURL { url in

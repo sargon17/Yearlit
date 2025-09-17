@@ -386,8 +386,8 @@ struct CustomCalendarView: View {
           valuationStore: valuationStore,
           handleDayTap: handleDayTap
         )
+        .frame(height: UIScreen.main.bounds.height * 0.55)
       }
-      .frame(height: UIScreen.main.bounds.height * 0.85)
 
       // Calculate today's count
       let todayDateString = customDateFormatter(date: today)
@@ -415,78 +415,62 @@ struct CustomCalendarView: View {
       .id(colorScheme)
       .padding(.top, 20)
 
-      CustomSeparator()
-
-    }.scrollIndicators(.hidden)
-      .refreshable {
-        store.loadCalendars()
-        WidgetCenter.shared.reloadAllTimelines()
-      }
-      .sheet(isPresented: $showingYearPicker) {
-        NavigationStack {
-          VStack {
-            Picker("Select Year", selection: $tempSelectedYear) {
-              ForEach(availableYears, id: \.self) { year in
-                Text(year.description)
-                  .foregroundColor(Color("text-primary"))
-                  .tag(year)
-              }
-            }
-            .pickerStyle(.wheel)
-          }
-          .navigationTitle("Select Year")
-          .navigationBarTitleDisplayMode(.large)
-          .toolbar {
-            ToolbarItem(placement: .cancellationAction) {
-              Button("Cancel") {
-                tempSelectedYear = valuationStore.selectedYear
-                showingYearPicker = false
-              }
-            }
-            ToolbarItem(placement: .confirmationAction) {
-              Button("Done") {
-                valuationStore.selectedYear = tempSelectedYear
-                showingYearPicker = false
-              }
+    }
+    .scrollIndicators(.hidden)
+    .refreshable {
+      store.loadCalendars()
+      WidgetCenter.shared.reloadAllTimelines()
+    }
+    .sheet(isPresented: $showingYearPicker) {
+      NavigationStack {
+        VStack {
+          Picker("Select Year", selection: $tempSelectedYear) {
+            ForEach(availableYears, id: \.self) { year in
+              Text(year.description)
+                .foregroundColor(Color("text-primary"))
+                .tag(year)
             }
           }
-          .onAppear {
-            tempSelectedYear = valuationStore.selectedYear
+          .pickerStyle(.wheel)
+        }
+        .navigationTitle("Select Year")
+        .navigationBarTitleDisplayMode(.large)
+        .toolbar {
+          ToolbarItem(placement: .cancellationAction) {
+            Button("Cancel") {
+              tempSelectedYear = valuationStore.selectedYear
+              showingYearPicker = false
+            }
           }
-          .background(Color("surface-muted"))
+          ToolbarItem(placement: .confirmationAction) {
+            Button("Done") {
+              valuationStore.selectedYear = tempSelectedYear
+              showingYearPicker = false
+            }
+          }
+        }
+        .onAppear {
+          tempSelectedYear = valuationStore.selectedYear
         }
         .background(Color("surface-muted"))
-        .presentationDetents([.height(280)])
       }
-      .sheet(isPresented: $isPaywallPresented) {
-        PaywallView()
+      .background(Color("surface-muted"))
+      .presentationDetents([.height(280)])
+    }
+    .sheet(isPresented: $isPaywallPresented) {
+      PaywallView()
+    }
+    .alert(item: $calendarError) { error in
+      Alert(
+        title: Text(error.title), message: Text(error.message),
+        dismissButton: .default(Text("OK"))
+      )
+    }
+    .onAppear {
+      Purchases.shared.getCustomerInfo { info, _ in
+        self.customerInfo = info
       }
-      .overlay {
-        HStack {
-          Rectangle()
-            .fill(Color("devider-bottom"))
-            .frame(maxHeight: .infinity, alignment: .trailing)
-            .frame(maxWidth: 1)
-
-          Spacer()
-
-          Rectangle()
-            .fill(Color("devider-top"))
-            .frame(maxHeight: .infinity, alignment: .trailing)
-            .frame(maxWidth: 1)
-        }
-      }
-      .alert(item: $calendarError) { error in
-        Alert(
-          title: Text(error.title), message: Text(error.message),
-          dismissButton: .default(Text("OK"))
-        )
-      }
-      .onAppear {
-        Purchases.shared.getCustomerInfo { info, _ in
-          self.customerInfo = info
-        }
-      }
+    }
   }
 }
 

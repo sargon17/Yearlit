@@ -159,9 +159,6 @@ struct AllCalendarsRecapView: View {
         .id(colorScheme)
         .padding(.top, 20)
 
-        CustomSeparator()
-
-        DevCredits()
       }
     }
     .scrollIndicators(.hidden)

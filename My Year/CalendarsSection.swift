@@ -14,83 +14,97 @@ struct CalendarsSection: View {
 
   @Environment(\.router) private var router
 
+  @State private var position = ScrollPosition(edge: .leading)
+
   var body: some View {
     RouterView { _ in
-      VStack {
-        TabView(
-          selection: $selectedIndex.onChange { _ in
-            Task {
-              await hapticFeedback()
-            }
-          }
-        ) {
-          // Year Grid
-          if isMoodTrackingEnabled {
-            MoodTrackingCalendar()
-              .tag(-10)
-          }
+      GeometryReader { geometry in
+        let width = geometry.size.width
+        ScrollView(.horizontal) {
+          LazyHStack(spacing: 0) {
+            // Year Grid
+            if isMoodTrackingEnabled {
+              MoodTrackingCalendar()
+                .id("mood")
+                .frame(width: width)
+                .containerRelativeFrame(.horizontal, count: 1, spacing: 0)
+                .slide()
 
-          AllCalendarsRecapView()
-            .tag(-1)
-
-          // Custom Calendars
-          ForEach(Array(store.calendars.enumerated()), id: \.element.id) { index, calendar in
-            CustomCalendarView(calendar: calendar)
-              .tag(index)
-              .padding(.bottom, 46)
-          }
-
-          // Add Calendar Button
-          VStack {
-            Spacer()
-            VStack(spacing: 16) {
-              Image(systemName: "plus")
-                .font(.system(size: 42))
-                .foregroundStyle(Color("text-tertiary"))
-              Text("Add Calendar")
-                .font(.headline)
-                .foregroundColor(Color("text-primary"))
             }
-            Spacer()
-          }
-          .tag(store.calendars.count + 3)
-          .onTapGesture {
-            router.showScreen(.sheet) { _ in
-              CreateCalendarView { newCalendar in
-                store.addCalendar(newCalendar)
-                selectedIndex = store.calendars.count
-                router.dismissScreen()
-                addPositiveEvent(.createdCalendar)
-              }
+
+            AllCalendarsRecapView()
+              .id("recap")
+              .frame(width: width)
+              .containerRelativeFrame(.horizontal, count: 1, spacing: 0)
+              .slide()
+
+            // Custom Calendars
+            ForEach(Array(store.calendars.enumerated()), id: \.element.id) { index, calendar in
+              CustomCalendarView(calendar: calendar)
+                .id(index.description)
+                .frame(width: width)
+                .containerRelativeFrame(.horizontal, count: 1, spacing: 0)
+                .slide()
+
             }
-          }
-        }.ignoresSafeArea(.all, edges: .bottom)
-          .offset(y: 0)
-          .overlay {
-            // Upper separator
+
+            // Add Calendar Button
             VStack {
-              CustomSeparator()
+              Spacer()
+              VStack(spacing: 16) {
+                Image(systemName: "plus")
+                  .font(.system(size: 42))
+                  .foregroundStyle(Color("text-tertiary"))
+                Text("Add Calendar")
+                  .font(.headline)
+                  .foregroundColor(Color("text-primary"))
+              }
+              .containerRelativeFrame(.horizontal, count: 1, spacing: 0)
               Spacer()
             }
-            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
+            .frame(width: width)
+            .slide()
+            .id("add_calendar")
+            .onTapGesture {
+              router.showScreen(.sheet) { _ in
+                CreateCalendarView { newCalendar in
+                  store.addCalendar(newCalendar)
+                  if let index = store.calendars.firstIndex(where: { $0.id == newCalendar.id }) {
+                    position.scrollTo(id: index.description)
+                  }
+                  router.dismissScreen()
+                  addPositiveEvent(.createdCalendar)
+                }
+              }
+            }
           }
-          .tabViewStyle(.page(indexDisplayMode: .never))
-          .indexViewStyle(.page(backgroundDisplayMode: .never))
+          .scrollTargetLayout()
           .overlay {
             HStack {
-              Text("Yearlit")
-                .font(.system(size: 12, design: .monospaced))
-                .foregroundColor(Color("text-tertiary"))
+              Rectangle()
+                .fill(Color("devider-top"))
+                .frame(maxHeight: .infinity, alignment: .trailing)
+                .frame(maxWidth: 1)
+                .ignoresSafeArea(.all, edges: .vertical)
+                .offset(x: -1)
 
-              if customerInfo?.entitlements["premium"]?.isActive ?? false {
-                Image(systemName: "checkmark.seal.fill")
-                  .font(.caption)
-                  .foregroundColor(Color("mood-excellent"))
-                  .shadow(color: Color("mood-excellent").opacity(0.5), radius: 10)
-              }
-            }.position(x: 50, y: -30)
+              Spacer()
+
+              Rectangle()
+                .fill(Color("devider-bottom"))
+                .frame(maxHeight: .infinity, alignment: .trailing)
+                .frame(maxWidth: 1)
+                .ignoresSafeArea(.all, edges: .vertical)
+                .offset(x: 1)
+            }
           }
-          .background(Color("surface-muted"))
+        }
+        .scrollTargetBehavior(.paging)
+        .scrollBounceBehavior(.basedOnSize)
+        .scrollIndicators(.hidden)
+        .scrollPosition($position)
+        .scrollContentBackground(.hidden)
+        .background(Color("surface-muted"))
       }
       .toolbar {
         ToolbarItem(placement: .navigationBarTrailing) {
@@ -117,7 +131,7 @@ struct CalendarsSection: View {
             }
             Button(action: {
               router.showScreen(.sheet) { _ in
-                CalendarsOverview(store: store, valuationStore: valuationStore, selectedIndex: $selectedIndex)
+                CalendarsOverview(store: store, valuationStore: valuationStore, scrollPosition: $position)
               }
             }) {
               Image(systemName: "square.grid.2x2")
