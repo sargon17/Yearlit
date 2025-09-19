@@ -18,4 +18,12 @@ extension Color {
     return try! Garnish.contrastingShade(of: Color.brandSecondary)
   }
 
+  public static var buttonBackground: Color {
+    return try! GarnishColor.blend(.surfaceMuted, with: .textPrimary, ratio: 0.05)
+  }
+
+  public static var buttonForeground: Color {
+    return try! Garnish.contrastingShade(of: Color.buttonBackground)
+  }
+
 }

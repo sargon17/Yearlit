@@ -79,7 +79,7 @@ struct My_YearApp: App {
     WindowGroup {
       RouterView(addNavigationStack: false, addModuleSupport: true) { _ in
         ContentView()
-          .tint(.textPrimary)
+          .tint(.textSecondary)
       }
       .environment(\.dates, dates)
       .onOpenURL { url in

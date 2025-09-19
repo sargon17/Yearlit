@@ -19,7 +19,7 @@ struct HabitStackRow: View {
     VStack(alignment: .leading, spacing: 6) {
       HStack {
         Text(stack.name)
-          .font(.headline)
+          .h4()
         Spacer()
         if let scheduleLabel {
           Label(scheduleLabel, systemImage: "alarm")
@@ -30,14 +30,15 @@ struct HabitStackRow: View {
 
       if let prompt = stack.prompt, !prompt.isEmpty {
         Text(prompt)
-          .font(.subheadline)
-          .foregroundStyle(.secondary)
+          .body()
       }
 
       HStack(spacing: 12) {
         Label("\(stack.steps.count) steps", systemImage: "list.number")
+          .caption()
         if let first = stack.stepsSorted.first {
           Text("Starts with \(first.title)")
+            .caption()
         }
       }
       .font(.caption)

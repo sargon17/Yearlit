@@ -27,15 +27,34 @@ struct SameLevelBorder: ViewModifier {
                 y: motionManager.y
               )
             )  // inner light shadow
+            .shadow(
+              .inner(
+                color: .white.opacity(colorScheme == .dark ? 0.05 : 0.35),
+                radius: 4,
+                x: motionManager.x * 4,
+                y: motionManager.y * 4
+              )
+            )
 
             .shadow(
               .inner(
-                color: .black.opacity(colorScheme == .dark ? 0.6 : 0.4), radius: 0.5, x: -motionManager.x,
-                y: -motionManager.y))  // inner dark shadow
+                color: .black.opacity(colorScheme == .dark ? 0.8 : 0.4),
+                radius: 0.5,
+                x: -motionManager.x,
+                y: -motionManager.y
+              )
+            )  // inner dark shadow
+            .shadow(
+              .inner(
+                color: .black.opacity(colorScheme == .dark ? 0.4 : 0.1),
+                radius: 4,
+                x: -motionManager.x * 4,
+                y: -motionManager.y * 4
+              )
+            )  // inner dark shadow
         )
     )
   }
-
 }
 
 func getVoidColor(colorScheme: ColorScheme) -> Color {
@@ -44,7 +63,7 @@ func getVoidColor(colorScheme: ColorScheme) -> Color {
 
 extension View {
   func sameLevelBorder(radius: CGFloat = 4, color: Color = .surfaceMuted) -> some View {
-    self.modifier(SameLevelBorder(radius: radius, color: color))
+    modifier(SameLevelBorder(radius: radius, color: color))
   }
 }
 
@@ -73,7 +92,18 @@ struct OuterSameLevelShadow: ViewModifier {
               )
               .shadow(
                 .drop(
-                  color: .black.opacity(colorScheme == .dark ? 1 : 0.7), radius: 0.2, x: -motionManager.x,
+                  color: .white.opacity(colorScheme == .dark ? 0.05 : 0.35),
+                  radius: 1,
+                  x: motionManager.x * 2,
+                  y: motionManager.y * 2
+                )
+              )
+
+              .shadow(
+                .drop(
+                  color: .black.opacity(colorScheme == .dark ? 1 : 0.4),
+                  radius: 0.2,
+                  x: -motionManager.x,
                   y: -motionManager.y
                 )
               )
@@ -84,6 +114,6 @@ struct OuterSameLevelShadow: ViewModifier {
 
 extension View {
   func outerSameLevelShadow(radius: CGFloat = 6) -> some View {
-    self.modifier(OuterSameLevelShadow(radius: radius))
+    modifier(OuterSameLevelShadow(radius: radius))
   }
 }

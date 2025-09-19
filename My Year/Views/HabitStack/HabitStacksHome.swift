@@ -8,42 +8,55 @@ struct HabitStacksHome: View {
   @State private var lastErrorMessage: String?
 
   var body: some View {
-    List {
-      if store.stacks.isEmpty {
-        Section {
-          VStack(spacing: 16) {
-            ContentUnavailableView(
-              "No habit stacks yet",
-              systemImage: "rectangle.stack.badge.plus",
-              description: Text("Create your first stack to chain habits together.")
-            )
+    VStack {
+      List {
+        if store.stacks.isEmpty {
+          VStack(alignment: .leading, spacing: 16) {
+            VStack(alignment: .leading, spacing: 6) {
+              Text("No habit stacks yet").h4()
+              Text("Create your first stack to chain habits together.").body()
+            }
 
             Button(action: addSampleStack) {
-              Label("Add Morning Routine Sample", systemImage: "sun.and.horizon")
-                .frame(maxWidth: .infinity)
+              Text("Add Morning Routine Sample")
+                .buttonLabel()
             }
-            .buttonStyle(.borderedProminent)
+            .button()
           }
           .padding(.vertical, 16)
-        }
-      } else {
-        Section("Your Stacks") {
-          ForEach(store.stacks) { stack in
-            Button {
-              editingStack = stack
-            } label: {
-              HabitStackRow(stack: stack)
+          .listRowBackground(Color.clear)
+          .listRowSeparator(.hidden)
+          .overlay(
+            VStack {
+              CustomSeparator()
+              Spacer()
+              CustomSeparator()
             }
-            .buttonStyle(.plain)
+          )
+        } else {
+          Section {
+            ForEach(store.stacks) { stack in
+              VStack {
+                Button {
+                  editingStack = stack
+                } label: {
+                  HabitStackRow(stack: stack)
+                }
+                .buttonStyle(.plain)
+                CustomSeparator()
+              }
+            }
+            .onDelete(perform: deleteStacks)
+            .onMove(perform: moveStacks)
           }
-          .onDelete(perform: deleteStacks)
-          .onMove(perform: moveStacks)
+          .listRowBackground(Color.clear)
+          .listRowSeparator(.hidden)
         }
       }
+      .scrollContentBackground(.hidden)
+      .listStyle(.inset)
+      .navigationTitle("Stacks")
     }
-    .scrollContentBackground(.hidden)
-    .listStyle(.insetGrouped)
-    .navigationTitle("Stacks")
     .toolbar {
       ToolbarItem(placement: .navigationBarLeading) {
         if !store.stacks.isEmpty {
