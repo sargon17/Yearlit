@@ -8,75 +8,74 @@ struct HabitStacksHome: View {
   @State private var lastErrorMessage: String?
 
   var body: some View {
-    NavigationStack {
-      List {
-        if store.stacks.isEmpty {
-          Section {
-            VStack(spacing: 16) {
-              ContentUnavailableView(
-                "No habit stacks yet",
-                systemImage: "rectangle.stack.badge.plus",
-                description: Text("Create your first stack to chain habits together.")
-              )
+    List {
+      if store.stacks.isEmpty {
+        Section {
+          VStack(spacing: 16) {
+            ContentUnavailableView(
+              "No habit stacks yet",
+              systemImage: "rectangle.stack.badge.plus",
+              description: Text("Create your first stack to chain habits together.")
+            )
 
-              Button(action: addSampleStack) {
-                Label("Add Morning Routine Sample", systemImage: "sun.and.horizon")
-                  .frame(maxWidth: .infinity)
-              }
-              .buttonStyle(.borderedProminent)
+            Button(action: addSampleStack) {
+              Label("Add Morning Routine Sample", systemImage: "sun.and.horizon")
+                .frame(maxWidth: .infinity)
             }
-            .padding(.vertical, 16)
+            .buttonStyle(.borderedProminent)
           }
-        } else {
-          Section("Your Stacks") {
-            ForEach(store.stacks) { stack in
-              Button {
-                editingStack = stack
-              } label: {
-                HabitStackRow(stack: stack)
-              }
-              .buttonStyle(.plain)
+          .padding(.vertical, 16)
+        }
+      } else {
+        Section("Your Stacks") {
+          ForEach(store.stacks) { stack in
+            Button {
+              editingStack = stack
+            } label: {
+              HabitStackRow(stack: stack)
             }
-            .onDelete(perform: deleteStacks)
-            .onMove(perform: moveStacks)
+            .buttonStyle(.plain)
           }
+          .onDelete(perform: deleteStacks)
+          .onMove(perform: moveStacks)
         }
       }
-      .listStyle(.insetGrouped)
-      .navigationTitle("Habit Stacks")
-      .toolbar {
-        ToolbarItem(placement: .navigationBarLeading) {
-          if !store.stacks.isEmpty {
-            EditButton()
-          }
+    }
+    .scrollContentBackground(.hidden)
+    .listStyle(.insetGrouped)
+    .navigationTitle("Stacks")
+    .toolbar {
+      ToolbarItem(placement: .navigationBarLeading) {
+        if !store.stacks.isEmpty {
+          EditButton()
         }
+      }
 
-        ToolbarItem(placement: .primaryAction) {
-          Button {
-            isPresentingCreate = true
-          } label: {
-            Label("New Stack", systemImage: "plus")
-          }
+      ToolbarItem(placement: .primaryAction) {
+        Button {
+          isPresentingCreate = true
+        } label: {
+          Label("New Stack", systemImage: "plus")
         }
       }
-      .sheet(isPresented: $isPresentingCreate) {
-        HabitStackEditorView(mode: .create, store: store)
-          .presentationDetents([.medium, .large])
-      }
-      .sheet(item: $editingStack) { stack in
-        HabitStackEditorView(mode: .edit(stack), store: store)
-          .presentationDetents([.medium, .large])
-      }
-      .alert(
-        "Oops",
-        isPresented: Binding(
-          get: { lastErrorMessage != nil },
-          set: { newValue in if !newValue { lastErrorMessage = nil } }
-        ), actions: {}
-      ) {
-        if let message = lastErrorMessage {
-          Text(message)
-        }
+    }
+    .sheet(isPresented: $isPresentingCreate) {
+      HabitStackEditorView(mode: .create, store: store)
+        .presentationDetents([.medium, .large])
+    }
+    .sheet(item: $editingStack) { stack in
+      HabitStackEditorView(mode: .edit(stack), store: store)
+        .presentationDetents([.medium, .large])
+    }
+    .alert(
+      "Oops",
+      isPresented: Binding(
+        get: { lastErrorMessage != nil },
+        set: { newValue in if !newValue { lastErrorMessage = nil } }
+      ), actions: {}
+    ) {
+      if let message = lastErrorMessage {
+        Text(message)
       }
     }
   }

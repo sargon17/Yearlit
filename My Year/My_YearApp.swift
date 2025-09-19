@@ -52,6 +52,25 @@ struct My_YearApp: App {
       oncePerVersion: true
     )
 
+    let appearance = UINavigationBarAppearance()
+    appearance.configureWithDefaultBackground()
+
+    // Large title → SF monospaced
+    appearance.largeTitleTextAttributes = [
+      .font: UIFont.monospacedSystemFont(ofSize: 34, weight: .heavy),
+      .foregroundColor: UIColor.label
+    ]
+
+    // Inline title → SF monospaced
+    appearance.titleTextAttributes = [
+      .font: UIFont.monospacedSystemFont(ofSize: 18, weight: .bold),
+      .foregroundColor: UIColor.label
+    ]
+
+    UINavigationBar.appearance().standardAppearance = appearance
+    UINavigationBar.appearance().scrollEdgeAppearance = appearance
+    UINavigationBar.appearance().compactAppearance = appearance
+
   }
 
   var dates: [Date] = getYearDatesArray()
@@ -60,6 +79,7 @@ struct My_YearApp: App {
     WindowGroup {
       RouterView(addNavigationStack: false, addModuleSupport: true) { _ in
         ContentView()
+          .tint(.textPrimary)
       }
       .environment(\.dates, dates)
       .onOpenURL { url in

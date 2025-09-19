@@ -27,6 +27,7 @@ struct ContentView: View {
           await checkForNotificationsOfNonExistingCalendars(store: store)
         }
       }
+      .font(.system(.body, design: .monospaced))
   }
 }
 

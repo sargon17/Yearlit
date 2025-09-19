@@ -8,6 +8,7 @@ struct StackSection: View {
   var body: some View {
     RouterView { _ in
       HabitStacksHome(store: store)
+        .page()
     }
   }
 }
