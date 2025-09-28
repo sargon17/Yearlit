@@ -1,6 +1,10 @@
 import SwiftUI
+import SwiftfulRouting
 
 struct Contacts: View {
+
+  @Environment(\.router) private var router
+
   var body: some View {
     Section(header: Text("Contacts")) {
       VStack(alignment: .leading, spacing: 4) {
@@ -26,6 +30,14 @@ struct Contacts: View {
       } label: {
         Label("Message on Telegram", systemImage: "paperplane")
       }
+      Button {
+        router.showScreen(.push) { _ in
+          FeatureRequestList()
+        }
+      } label: {
+        Label("Request a Feature", systemImage: "flask")
+      }
+
     }
   }
 }

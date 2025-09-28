@@ -16,7 +16,7 @@ struct DevSupport: View {
 
   var body: some View {
     Section(header: Text("Support the Developer")) {
-      Button("Leave a Review") {
+      Button {
         if let scene = UIApplication.shared.connectedScenes.first as? UIWindowScene {
           if #available(iOS 18.0, *) {
             AppStore.requestReview(in: scene)
@@ -24,12 +24,16 @@ struct DevSupport: View {
             SKStoreReviewController.requestReview(in: scene)
           }
         }
+      } label: {
+        Label("Leave a Review", systemImage: "bubble.and.pencil")
       }
       if !isPremium() {
-        Button("Get PRO") {
+        Button {
           router.showScreen(.sheet) { AnyRouter in
             PaywallView()
           }
+        } label: {
+          Label("Get PRO", systemImage: "star")
         }
       }
     }
