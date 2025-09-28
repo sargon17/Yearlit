@@ -3,36 +3,125 @@ import SwiftUI
 
 struct EditableStepRow: View {
   @Binding var step: EditableStep
+  let accentColor: Color
   let calendars: [CustomCalendar]
+  let index: Int
+  let canMoveUp: Bool
+  let canMoveDown: Bool
+  let onMoveUp: () -> Void
+  let onMoveDown: () -> Void
+  let onDelete: () -> Void
+
+  @Environment(\.colorScheme) private var colorScheme
 
   var body: some View {
-    VStack(alignment: .leading, spacing: 12) {
-      TextField("Step title", text: $step.title)
-        .textInputAutocapitalization(.sentences)
+    VStack(spacing: 12) {
+      HStack(spacing: 12) {
+        Text("Step \(index + 1)")
+          .labelStyle(type: .secondary)
 
-      TextField("Detail (optional)", text: $step.detail, axis: .vertical)
-        .lineLimit(1...4)
+        Spacer()
 
-      if calendars.isEmpty {
-        Label("Link calendars to habits once you have them.", systemImage: "calendar")
-          .font(.caption)
-          .foregroundStyle(.secondary)
-      } else {
-        Picker(
-          "Linked calendar",
-          selection: Binding(
-            get: { step.linkedCalendarId },
-            set: { step.linkedCalendarId = $0 }
+        HStack(spacing: 8) {
+          Button(
+            action: onMoveUp,
+            label: {
+              Image(systemName: "chevron.up")
+                .font(.system(size: 14, weight: .semibold, design: .monospaced))
+                .foregroundStyle(canMoveUp ? .textSecondary : .textTertiary)
+            }
           )
-        ) {
-          Text("None").tag(UUID?.none)
-          ForEach(calendars) { calendar in
-            Text(calendar.name).tag(Optional(calendar.id))
-          }
+          .buttonStyle(.plain)
+          .disabled(!canMoveUp)
+
+          Button(
+            action: onMoveDown,
+            label: {
+              Image(systemName: "chevron.down")
+                .font(.system(size: 14, weight: .semibold, design: .monospaced))
+                .foregroundStyle(canMoveDown ? .textSecondary : .textTertiary)
+            }
+          )
+          .buttonStyle(.plain)
+          .disabled(!canMoveDown)
+
+          Button(
+            role: .destructive, action: onDelete,
+            label: {
+              Image(systemName: "trash")
+                .font(.system(size: 14, weight: .semibold, design: .monospaced))
+                .foregroundStyle(.moodTerrible)
+            }
+          )
+          .buttonStyle(.plain)
         }
-        .pickerStyle(.menu)
       }
+      .padding(.horizontal)
+      .padding(.vertical)
+
+      VStack(spacing: 6) {
+
+        TextField(
+          "",
+          text: $step.title,
+          prompt: Text("Brew coffee").foregroundColor(.white.opacity(0.2))
+        )
+        .textInputAutocapitalization(.sentences)
+        .inputStyle(color: colorScheme == .dark ? .textPrimary : .surfacePrimary)
+
+        TextField(
+          "",
+          text: $step.detail,
+          prompt: Text("Optional detail").foregroundColor(.white.opacity(0.2)),
+          axis: .vertical
+        )
+        .lineLimit(3...3)
+        .inputStyle(size: .small, radius: 4, color: colorScheme == .dark ? .textSecondary : .surfaceMuted)
+        .scrollDismissesKeyboard(.immediately)
+
+        if calendars.isEmpty {
+          Label("Link calendars once you create them.", systemImage: "calendar.badge.plus")
+            .font(.system(size: 12, design: .monospaced))
+            .foregroundStyle(.textTertiary)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(.horizontal)
+            .padding(.vertical, 6)
+            .sameLevelBorder()
+        } else {
+          VStack {
+            HStack(spacing: 12) {
+              Text("Linked calendar")
+                .labelStyle(type: .secondary)
+              Spacer()
+              Picker(
+                "",
+                selection: Binding(
+                  get: { step.linkedCalendarId },
+                  set: { step.linkedCalendarId = $0 }
+                )
+              ) {
+                Text("None").tag(UUID?.none)
+                ForEach(calendars) { calendar in
+                  Text(calendar.name).tag(Optional(calendar.id))
+                }
+              }
+              .labelsHidden()
+              .pickerStyle(.menu)
+              .tint(.textPrimary)
+            }
+            .padding(.horizontal)
+            .padding(.vertical, 6)
+            .sameLevelBorder()
+          }
+          .padding(1)
+          .background(getVoidColor(colorScheme: colorScheme))
+          .cornerRadius(5)
+          .outerSameLevelShadow(radius: 5)
+        }
+      }
+
     }
-    .padding(.vertical, 6)
+    // .padding(4)
+    // .sameLevelBorder(radius: 5)
   }
 }

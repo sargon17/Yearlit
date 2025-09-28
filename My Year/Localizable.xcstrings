@@ -22,6 +22,9 @@
     "%lld" : {
 
     },
+    "%lld steps" : {
+
+    },
     "•" : {
 
     },
@@ -70,7 +73,19 @@
     "About" : {
 
     },
+    "Add at least one habit to the stack." : {
+
+    },
     "Add Calendar" : {
+
+    },
+    "Add Morning Routine Sample" : {
+
+    },
+    "Add Step" : {
+
+    },
+    "After I wake up" : {
 
     },
     "And along the way, I realized I wasn’t the only one who needed this." : {
@@ -88,6 +103,9 @@
     "Because every update, every improvement, comes from " : {
 
     },
+    "Brew coffee" : {
+
+    },
     "Calendars" : {
 
     },
@@ -101,6 +119,9 @@
 
     },
     "Create" : {
+
+    },
+    "Create your first stack to chain habits together." : {
 
     },
     "Currency Symbol" : {
@@ -137,6 +158,9 @@
 
     },
     "Edit Calendar" : {
+
+    },
+    "Edit Stack" : {
 
     },
     "Enable Mood Tracking" : {
@@ -202,6 +226,12 @@
     "Left: " : {
 
     },
+    "Link calendars once you create them." : {
+
+    },
+    "Linked calendar" : {
+
+    },
     "Mail the Developer" : {
 
     },
@@ -209,6 +239,9 @@
 
     },
     "Monthly Breakdown" : {
+
+    },
+    "Morning Routine" : {
 
     },
     "My goal is to make Yearlit the most useful tool out there for building consistency — but I can’t do that alone." : {
@@ -226,7 +259,13 @@
     "New Calendar" : {
 
     },
+    "New Stack" : {
+
+    },
     "Next" : {
+
+    },
+    "No habit stacks yet" : {
 
     },
     "None" : {
@@ -258,6 +297,12 @@
 
     },
     "OK" : {
+
+    },
+    "Oops" : {
+
+    },
+    "Optional detail" : {
 
     },
     "Overview" : {
@@ -299,7 +344,19 @@
     "So if something’s missing, or something could work better, let me know." : {
 
     },
+    "Stack" : {
+
+    },
+    "Stacks" : {
+
+    },
+    "Starts with %@" : {
+
+    },
     "Statistics" : {
+
+    },
+    "Step %lld" : {
 
     },
     "Step 1: Choose your focus (reading, learning, fitness, mindfulness)" : {
@@ -345,6 +402,9 @@
 
     },
     "Track your year mood" : {
+
+    },
+    "Unable to save" : {
 
     },
     "Unit of Measure" : {

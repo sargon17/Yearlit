@@ -10,10 +10,10 @@ struct ButtonModifier: ViewModifier {
         .sameLevelBorder(color: .buttonBackground)
         .foregroundStyle(Color.buttonForeground)
     }
-    .padding(.all, 2)
+    .padding(1)
     .background(getVoidColor(colorScheme: colorScheme))
-    .cornerRadius(6)
-    .outerSameLevelShadow(radius: 6)
+    .cornerRadius(5)
+    .outerSameLevelShadow(radius: 5)
   }
 }
 

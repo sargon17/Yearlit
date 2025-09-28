@@ -23,7 +23,7 @@ struct SameLevelBorder: ViewModifier {
           color
             .shadow(
               .inner(
-                color: .white.opacity(colorScheme == .dark ? 0.2 : 0.6), radius: 0.5, x: motionManager.x,
+                color: .white.opacity(colorScheme == .dark ? 0.1 : 0.6), radius: 0.5, x: motionManager.x,
                 y: motionManager.y
               )
             )  // inner light shadow
@@ -31,8 +31,8 @@ struct SameLevelBorder: ViewModifier {
               .inner(
                 color: .white.opacity(colorScheme == .dark ? 0.05 : 0.35),
                 radius: 4,
-                x: motionManager.x * 4,
-                y: motionManager.y * 4
+                x: motionManager.x * 2,
+                y: motionManager.y * 2
               )
             )
 
@@ -48,8 +48,8 @@ struct SameLevelBorder: ViewModifier {
               .inner(
                 color: .black.opacity(colorScheme == .dark ? 0.4 : 0.1),
                 radius: 4,
-                x: -motionManager.x * 4,
-                y: -motionManager.y * 4
+                x: -motionManager.x * 2,
+                y: -motionManager.y * 2
               )
             )  // inner dark shadow
         )
@@ -58,7 +58,7 @@ struct SameLevelBorder: ViewModifier {
 }
 
 func getVoidColor(colorScheme: ColorScheme) -> Color {
-  return colorScheme == .dark ? .black.opacity(1) : .black.opacity(0.05)
+  return colorScheme == .dark ? .black.opacity(1) : .black.opacity(0.10)
 }
 
 extension View {
@@ -86,18 +86,20 @@ struct OuterSameLevelShadow: ViewModifier {
             .surfaceMuted
               .shadow(
                 .drop(
-                  color: .white.opacity(colorScheme == .dark ? 0.1 : 0.3), radius: 0.2, x: motionManager.x,
+                  color: .white.opacity(colorScheme == .dark ? 0.05 : 0.3),
+                  radius: 0.2,
+                  x: motionManager.x,
                   y: motionManager.y
                 )
               )
-              .shadow(
-                .drop(
-                  color: .white.opacity(colorScheme == .dark ? 0.05 : 0.35),
-                  radius: 1,
-                  x: motionManager.x * 2,
-                  y: motionManager.y * 2
-                )
-              )
+              // .shadow(
+              //   .drop(
+              //     color: .white.opacity(colorScheme == .dark ? 0.05 : 0.35),
+              //     radius: 1,
+              //     x: motionManager.x * 2,
+              //     y: motionManager.y * 2
+              //   )
+              // )
 
               .shadow(
                 .drop(

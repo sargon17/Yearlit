@@ -20,12 +20,13 @@ struct InputModifier: ViewModifier {
       .font(.system(size: fontSize, weight: .regular, design: .monospaced))
       .patternStyle()
       .cornerRadius(radius)
+
   }
 
   var padding: CGFloat {
     switch size {
     case .small:
-      return 4
+      return 8
     case .large:
       return 12
     }
