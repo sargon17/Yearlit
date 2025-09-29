@@ -4,6 +4,7 @@ import SwiftfulRouting
 struct FeatureRequestsList: View {
   @State private var response: FeatureRequestsListResponse?
 
+  @EnvironmentObject private var featureRequestManager: FeatureRequestManager
   @Environment(\.router) private var router
 
   var body: some View {
@@ -33,7 +34,7 @@ struct FeatureRequestsList: View {
 
   func fetchRequests() async {
     let endpoint =
-      "https://qualified-viper-293.convex.site/api/project/jd76a32gr7hqyp30trwnds7c5x7rfdxq/requests/"
+      "https://qualified-viper-293.convex.site/api/project/\(featureRequestManager.appID)/requests/"
 
     do {
       response = try await HTTP.get(

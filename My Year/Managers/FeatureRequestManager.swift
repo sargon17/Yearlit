@@ -31,4 +31,8 @@ final class FeatureRequestManager: ObservableObject {
     defaults.set(newUUID.uuidString, forKey: Constants.userDefaultsKey)
     return newUUID
   }
+
+  public func getUserId() -> String {
+    return self.user.id.uuidString
+  }
 }
