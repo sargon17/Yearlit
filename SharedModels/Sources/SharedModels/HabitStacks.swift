@@ -337,7 +337,7 @@ public final class HabitStackStore: ObservableObject {
     }
 
     do {
-      let context = makeContext()
+      let context: ModelContext = makeContext()
       let stackDescriptor = FetchDescriptor<HabitStackEntity>(
         sortBy: [
           SortDescriptor(\HabitStackEntity.order),

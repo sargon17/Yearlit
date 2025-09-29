@@ -32,7 +32,7 @@ struct Contacts: View {
       }
       Button {
         router.showScreen(.push) { _ in
-          FeatureRequestList()
+          FeatureRequestsList()
         }
       } label: {
         Label("Request a Feature", systemImage: "flask")

@@ -16,6 +16,8 @@ import SwiftfulRouting
 struct My_YearApp: App {
   // * Onboarding Manager
   @StateObject private var onboarding = OnboardingManager()
+  @StateObject private var featureRequest = FeatureRequestManager(
+    appID: "jd76a32gr7hqyp30trwnds7c5x7rfdxq")
 
   #if DEBUG
     public static let isDebugMode = true
@@ -89,6 +91,7 @@ struct My_YearApp: App {
         }
       }
       .environmentObject(onboarding)
+      .environmentObject(featureRequest)
       .fullScreenCover(isPresented: .constant(!onboarding.hasSeenOnboarding)) {
         OnboardingView {
           onboarding.markAsSeen()
