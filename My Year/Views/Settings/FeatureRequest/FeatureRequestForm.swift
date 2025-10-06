@@ -39,6 +39,7 @@ struct FeatureRequestForm: View {
         )
       )
 
+      featureRequestManager.invalidateRequests()
       router.dismissScreen()
 
     } catch {

@@ -2,48 +2,63 @@ import SwiftUI
 import SwiftfulRouting
 
 struct FeatureRequestsList: View {
-  @State private var response: FeatureRequestsListResponse?
+  @State private var requestsList: FeatureRequestsListResponse?
 
   @EnvironmentObject private var featureRequestManager: FeatureRequestManager
   @Environment(\.router) private var router
 
   var body: some View {
     VStack {
-      List(response?.requests ?? []) { request in
-        FeatureRequestsListItem(request: request)
+      List(requestsList?.requests ?? []) { request in
+        FeatureRequestsListItem(
+          request: request
+        )
+        .contentShape(Rectangle())
+        .onTapGesture {
+          router.showScreen(.push) { _ in
+            FeatureRequestDetailView(request: request)
+          }
+        }
       }
     }
     .navigationTitle("Feature Requests")
     .toolbar {
       ToolbarItem(placement: .primaryAction) {
-        Button {
-          router.showScreen(.push) { _ in
-            FeatureRequestForm()
-          }
-        } label: {
-          Label("New Request", systemImage: "plus")
-        }
+        createRequestButton
       }
     }
     .task {
-      await fetchRequests()
     }.refreshable {
-      await fetchRequests()
+      await updateList()
+    }
+    .onAppear {
+      Task {
+        requestsList = await featureRequestManager.getRequests()
+      }
+    }
+  }
+}
+
+extension FeatureRequestsList {
+  var createRequestButton: some View {
+    Button {
+      router.showScreen(
+        .push,
+        // onDismiss: {
+        //   Task {
+        //     await updateList()
+        //   }
+        // }
+      ) { _ in
+        FeatureRequestForm()
+      }
+    } label: {
+      Label("New Request", systemImage: "plus")
     }
   }
 
-  func fetchRequests() async {
-    let endpoint =
-      "https://qualified-viper-293.convex.site/api/project/\(featureRequestManager.appID)/requests/"
-
-    do {
-      response = try await HTTP.get(
-        endpoint: endpoint,
-        type: FeatureRequestsListResponse
-          .self
-      )
-    } catch {
-      print("error")
-    }
+  func updateList() async {
+    print("hello there")
+    requestsList = await featureRequestManager.reloadRequests()
   }
 }

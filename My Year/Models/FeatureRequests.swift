@@ -1,4 +1,5 @@
 import Foundation
+
 struct WishAppUser: Codable, Equatable {
   let id: UUID
 

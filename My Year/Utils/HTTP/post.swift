@@ -2,7 +2,6 @@ import SwiftUI
 
 extension HTTP {
   public static func post(endpoint: String, data: Codable) async throws {
-    print("hello there is post function")
     guard let url = URL(string: endpoint) else {
       print("error 1")
       throw POSTError.error1

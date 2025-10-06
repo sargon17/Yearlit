@@ -9,9 +9,9 @@ struct FeatureRequestsListItem: View {
     VStack(alignment: .leading) {
       HStack {
         Text(request.text).h4()
-        if request.clientId == featureRequestManager.getUserId() {
+        if featureRequestManager.isCurrentUser(id: request.clientId) {
           HStack {
-            Text("you")
+            Text("your")
               .padding(.horizontal, 4)
           }.background(.surfaceMuted)
             .foregroundColor(.textSecondary)
