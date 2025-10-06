@@ -7,28 +7,31 @@ struct FeatureRequestDetailView: View {
   @Environment(\.router) private var router
 
   var body: some View {
-    VStack(alignment: .leading) {
-      ScrollView {
-        Text(request.computedStatus.displayName).body()
+    HStack {
+      VStack(alignment: .leading) {
+        FeatureStatusBadge(label: request.computedStatus.displayName)
+        // Text(request.computedStatus.displayName).body()
         if let description = request.description {
           Text(description).body()
         }
 
+        Spacer()
       }
-    }.navigationTitle(request.text)
-      .toolbar {
-        if featureRequestManager.isCurrentUser(id: request.clientId) {
-          ToolbarItem(placement: .destructiveAction) {
-            deleteButton
-          }
+      Spacer()
+    }
+    .padding(.horizontal)
+    .navigationTitle(request.text)
+    .toolbar {
+      if featureRequestManager.isCurrentUser(id: request.clientId) {
+        ToolbarItem(placement: .destructiveAction) {
+          deleteButton
         }
       }
+    }
   }
-
 }
 
 extension FeatureRequestDetailView {
-
   var deleteButton: some View {
     Button(role: .destructive) {
       handleDelete()
