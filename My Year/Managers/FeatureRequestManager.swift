@@ -20,7 +20,7 @@ final class FeatureRequestManager: ObservableObject {
     self.defaults = defaults
 
     let identifier = Self.loadOrCreateIdentifier(from: defaults)
-    self.user = WishAppUser(id: identifier)
+    user = WishAppUser(id: identifier)
   }
 
   private static func loadOrCreateIdentifier(from defaults: UserDefaults) -> UUID {
@@ -35,16 +35,16 @@ final class FeatureRequestManager: ObservableObject {
     return newUUID
   }
 
-  public func getUserId() -> String {
-    return self.user.id.uuidString
+  func getUserId() -> String {
+    return user.id.uuidString
   }
 
-  public func isCurrentUser(id: String) -> Bool {
+  func isCurrentUser(id: String) -> Bool {
     return id == getUserId()
   }
 
   // returns the requests with a layer of caching (will not update the already saved requests in any case)
-  public func getRequests() async -> FeatureRequestsListResponse? {
+  func getRequests() async -> FeatureRequestsListResponse? {
     if requests != nil {
       return requests
     } else {
@@ -53,13 +53,12 @@ final class FeatureRequestManager: ObservableObject {
     }
   }
 
-  public func reloadRequests() async -> FeatureRequestsListResponse? {
+  func reloadRequests() async -> FeatureRequestsListResponse? {
     await fetchRequests()
     return requests
   }
 
-  public func invalidateRequests() {
-    print("⚠️ invalidating requests")
+  func invalidateRequests() {
     requests = nil
   }
 
@@ -79,9 +78,9 @@ final class FeatureRequestManager: ObservableObject {
     }
   }
 
-  public func deleteRequest(id: String) async {
+  func deleteRequest(id: String) async {
     let endpoint =
-      "\(baseURL)project/\(appID)/request/delete/\(id)"
+      "\(baseURL)project/\(appID)/request/\(id)"
 
     do {
       try await HTTP.delete(endpoint: endpoint)
@@ -91,4 +90,27 @@ final class FeatureRequestManager: ObservableObject {
     }
   }
 
+  func createRequest(
+    text: String,
+    description: String?,
+    onSuccess: (() -> Void)? = nil,
+    onError: (() -> Void)? = nil
+  ) async {
+    do {
+      try await HTTP.post(
+        endpoint: "\(baseURL)project/\(appID)/request/",
+        data: CreateRequest(
+          text: text,
+          description: description,
+          clientId: user.id.uuidString,
+          project: appID
+        )
+      )
+
+      invalidateRequests()
+      onSuccess?()
+    } catch {
+      onError?()
+    }
+  }
 }

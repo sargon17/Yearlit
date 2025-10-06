@@ -25,26 +25,13 @@ struct FeatureRequestForm: View {
   }
 
   func handleSubmit() async {
-    do {
-      let projectID = featureRequestManager.appID
-      let clientID = featureRequestManager.user.id.uuidString
-
-      try await HTTP.post(
-        endpoint: "https://qualified-viper-293.convex.site/api/project/\(projectID)/request/",
-        data: CreateRequest(
-          text: text,
-          description: description,
-          clientId: clientID,
-          project: projectID
-        )
-      )
-
-      featureRequestManager.invalidateRequests()
-      router.dismissScreen()
-
-    } catch {
-      print("error posting")
-      router.showAlert(title: "Something went wrong, please retry later")
-    }
+    await featureRequestManager.createRequest(
+      text: text,
+      description: description,
+      onSuccess: { router.dismissScreen() },
+      onError: {
+        router.showAlert(title: "Something went wrong, please retry later")
+      }
+    )
   }
 }
