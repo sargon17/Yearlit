@@ -223,7 +223,7 @@ private func labeledValueRow(title: String, value: String, accentColor: Color) -
       .minimumScaleFactor(0.5)
       .lineLimit(1)
   }
-  .background(.surfaceMuted)
+  // .background(.surfaceMuted)
 }
 
 @ViewBuilder

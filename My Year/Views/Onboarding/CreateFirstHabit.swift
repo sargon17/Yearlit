@@ -92,8 +92,6 @@ struct CreateFirstHabit: View {
             }
           }.padding(.all, 2)
             .background(getVoidColor(colorScheme: colorScheme))
-            .cornerRadius(6)
-            .outerSameLevelShadow(radius: 6)
         }
 
       }.padding()

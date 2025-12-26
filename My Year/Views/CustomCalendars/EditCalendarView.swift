@@ -169,8 +169,6 @@ struct EditCalendarView: View {
             }
             .padding(.all, 2)
             .background(getVoidColor(colorScheme: colorScheme))
-            .cornerRadius(6)
-            .outerSameLevelShadow(radius: 6)
 
           }
         }
@@ -201,7 +199,6 @@ struct EditCalendarView: View {
           .padding(.vertical)
           .scrollClipDisabled(true)
           .sameLevelBorder(radius: 6, color: .black)
-          .outerSameLevelShadow(radius: 6)
           .patternStyle()
           .cornerRadius(6)
 
@@ -246,8 +243,6 @@ struct EditCalendarView: View {
             }
           }.padding(.all, 2)
             .background(getVoidColor(colorScheme: colorScheme))
-            .cornerRadius(6)
-            .outerSameLevelShadow(radius: 6)
 
         }
 
@@ -260,13 +255,12 @@ struct EditCalendarView: View {
                 .frame(maxWidth: .infinity, alignment: .center)
                 .fontWeight(.bold)
                 .padding()
-            }.sameLevelBorder(color: .moodTerrible)
-              .foregroundStyle(.surfaceMuted)
+            }
+            .sameLevelBorder(color: .moodTerrible)
+            .foregroundStyle(.surfaceMuted)
           }
           .padding(.all, 2)
           .background(getVoidColor(colorScheme: colorScheme))
-          .cornerRadius(6)
-          .outerSameLevelShadow(radius: 6)
         }
         .alert("Delete Calendar", isPresented: $showingDeleteConfirmation) {
           Button("Cancel", role: .cancel) {}

@@ -179,8 +179,6 @@ struct CreateCalendarView: View {
             }
             .padding(.all, 2)
             .background(getVoidColor(colorScheme: colorScheme))
-            .cornerRadius(6)
-            .outerSameLevelShadow(radius: 6)
 
           }
         }
@@ -211,7 +209,6 @@ struct CreateCalendarView: View {
           .padding(.vertical)
           .scrollClipDisabled(true)
           .sameLevelBorder(radius: 6, color: .black)
-          .outerSameLevelShadow(radius: 6)
           .patternStyle()
           .cornerRadius(6)
 
@@ -257,8 +254,6 @@ struct CreateCalendarView: View {
             }
           }.padding(.all, 2)
             .background(getVoidColor(colorScheme: colorScheme))
-            .cornerRadius(6)
-            .outerSameLevelShadow(radius: 6)
         }
       }
       .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)

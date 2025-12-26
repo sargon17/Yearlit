@@ -23,7 +23,7 @@ struct SameLevelBorder: ViewModifier {
           color
             .shadow(
               .inner(
-                color: .white.opacity(colorScheme == .dark ? 0.05 : 1),
+                color: .white.opacity(colorScheme == .dark ? 0.05 : 0.3),
                 radius: 1,
                 x: lightOffset,
                 y: lightOffset
@@ -31,8 +31,8 @@ struct SameLevelBorder: ViewModifier {
             )  // inner light shadow
             .shadow(
               .inner(
-                color: .white.opacity(colorScheme == .dark ? 0.05 : 0.8),
-                radius: 4,
+                color: .white.opacity(colorScheme == .dark ? 0.05 : 0.6),
+                radius: 8,
                 x: lightOffset * 2,
                 y: lightOffset * 2
               )
@@ -40,7 +40,7 @@ struct SameLevelBorder: ViewModifier {
 
             .shadow(
               .inner(
-                color: .black.opacity(colorScheme == .dark ? 0.6 : 0.4),
+                color: .black.opacity(colorScheme == .dark ? 0.5 : 0.4),
                 radius: 0.5,
                 x: darkOffset,
                 y: darkOffset
@@ -55,6 +55,10 @@ struct SameLevelBorder: ViewModifier {
               )
             )  // inner dark shadow
         )
+      .overlay(
+        NoiseLayer(opacity: 0.35, blendMode: nil)
+          .mask(RoundedRectangle(cornerRadius: radius))
+      )
       .shadow(
         color: .black.opacity(colorScheme == .dark ? 0.4 : 0.4),
         radius: 2,
