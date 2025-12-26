@@ -47,6 +47,8 @@ struct DayValuationPopup: View {
       .padding(.top)
     }
     .padding(24)
+    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+    .surfaceBackground(Color("surface-muted"))
     .presentationDetents([.height(320)])
     .presentationBackground(Color("surface-muted"))
   }

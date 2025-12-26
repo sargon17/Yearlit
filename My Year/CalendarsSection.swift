@@ -79,6 +79,7 @@ struct CalendarsSection: View {
             }
           }
           .scrollTargetLayout()
+          .surfaceBackground(Color("surface-muted"), ignoresSafeArea: true)
           .overlay {
             HStack {
               Rectangle()
@@ -104,7 +105,6 @@ struct CalendarsSection: View {
         .scrollIndicators(.hidden)
         .scrollPosition($position)
         .scrollContentBackground(.hidden)
-        .background(Color("surface-muted"))
       }
       .toolbar {
         ToolbarItem(placement: .navigationBarTrailing) {

@@ -101,11 +101,13 @@ struct HabitStackEditorView: View {
           )
         }
         .padding()
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+        .surfaceBackground(Color("surface-muted"), ignoresSafeArea: true)
       }
       .scrollDismissesKeyboard(.immediately)
       .scrollIndicators(.hidden)
       .scrollClipDisabled(true)
-      .background(Color("surface-muted"))
+      .surfaceBackground(Color("surface-muted"), ignoresSafeArea: true)
       .navigationTitle(isEditing ? "Edit Stack" : "New Stack")
       .navigationBarTitleDisplayMode(.large)
       .toolbar {

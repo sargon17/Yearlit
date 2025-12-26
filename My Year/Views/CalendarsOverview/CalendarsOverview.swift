@@ -17,13 +17,14 @@ struct CalendarsOverview: View {
   var body: some View {
 
     ScrollView {
-      CustomSeparator()
-      LazyVGrid(
-        columns: [
-          GridItem(.flexible()),
-          GridItem(.flexible())
-        ], spacing: 8
-      ) {
+      VStack(spacing: 0) {
+        CustomSeparator()
+        LazyVGrid(
+          columns: [
+            GridItem(.flexible()),
+            GridItem(.flexible())
+          ], spacing: 8
+        ) {
         // Year Grid Card
         if isMoodTrackingEnabled {
           VStack(alignment: .leading, spacing: 12) {
@@ -101,12 +102,15 @@ struct CalendarsOverview: View {
             }
           }
         }
+        }
+        .padding()
+        .animation(.spring(), value: store.calendars.map { $0.order })
       }
-      .padding()
-      .animation(.spring(), value: store.calendars.map { $0.order })
+      .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+      .surfaceBackground(Color("surface-muted"), ignoresSafeArea: true)
     }
+    .surfaceBackground(Color("surface-muted"), ignoresSafeArea: true)
     .navigationTitle("Calendars")
-    .background(Color("surface-muted"))
     .toolbar {
       ToolbarItem(placement: .navigationBarTrailing) {
         Button(action: { isReorderActive.toggle() }) {

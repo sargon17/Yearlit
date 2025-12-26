@@ -45,6 +45,8 @@ struct DayEntryEditSheet: View {
       }
     }
     .padding()
+    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+    .surfaceBackground(Color("surface-muted"), ignoresSafeArea: true)
     .navigationTitle(dateFormatterLong.string(from: date))
     .navigationBarTitleDisplayMode(.large)
     .toolbar {

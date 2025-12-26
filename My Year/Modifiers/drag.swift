@@ -33,7 +33,7 @@ struct ContextOrDragModifier: ViewModifier {
                 store.deleteCalendar(id: calendar.id)
               }
             )
-            .background(Color("surface-muted"))
+            .surfaceBackground(Color("surface-muted"))
 
           }
 

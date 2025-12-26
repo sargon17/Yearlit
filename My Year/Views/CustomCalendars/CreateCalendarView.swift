@@ -261,6 +261,8 @@ struct CreateCalendarView: View {
             .outerSameLevelShadow(radius: 6)
         }
       }
+      .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+      .surfaceBackground(Color("surface-muted"), ignoresSafeArea: true)
     }
     .accentColor(Color(selectedColor))
     .padding()
@@ -268,7 +270,7 @@ struct CreateCalendarView: View {
     .scrollDismissesKeyboard(.immediately)
     .scrollContentBackground(.hidden)
     .scrollIndicators(.hidden)
-    .background(Color.surfaceMuted)
+    .surfaceBackground(Color("surface-muted"), ignoresSafeArea: true)
     .navigationTitle("New Calendar")
     .navigationBarTitleDisplayMode(.large)
     .toolbar {

@@ -160,9 +160,10 @@ struct AllCalendarsRecapView: View {
         .padding(.top, 20)
 
       }
+      .frame(maxWidth: .infinity, alignment: .top)
+      .surfaceBackground(Color("surface-muted"), ignoresSafeArea: true)
     }
     .scrollIndicators(.hidden)
-    .background(Color("surface-muted"))
     .sheet(isPresented: $isPaywallPresented) {
       PaywallView()
     }

@@ -1,7 +1,6 @@
 import SwiftUI
 
 struct SameLevelBorder: ViewModifier {
-  // @StateObject private var motionManager = MotionManager()
   let radius: CGFloat
   let color: Color
 
@@ -11,7 +10,8 @@ struct SameLevelBorder: ViewModifier {
   }
 
   @Environment(\.colorScheme) var colorScheme
-  @StateObject private var motionManager = MotionManager.shared
+  private let lightOffset: CGFloat = 2.6
+  private let darkOffset: CGFloat = -2.6
 
   func body(content: Content) -> some View {
     ZStack {
@@ -23,42 +23,50 @@ struct SameLevelBorder: ViewModifier {
           color
             .shadow(
               .inner(
-                color: .white.opacity(colorScheme == .dark ? 0.1 : 0.6), radius: 0.5, x: motionManager.x,
-                y: motionManager.y
+                color: .white.opacity(colorScheme == .dark ? 0.05 : 1),
+                radius: 1,
+                x: lightOffset,
+                y: lightOffset
               )
             )  // inner light shadow
             .shadow(
               .inner(
-                color: .white.opacity(colorScheme == .dark ? 0.05 : 0.35),
+                color: .white.opacity(colorScheme == .dark ? 0.05 : 0.8),
                 radius: 4,
-                x: motionManager.x * 2,
-                y: motionManager.y * 2
+                x: lightOffset * 2,
+                y: lightOffset * 2
               )
             )
 
             .shadow(
               .inner(
-                color: .black.opacity(colorScheme == .dark ? 0.8 : 0.4),
+                color: .black.opacity(colorScheme == .dark ? 0.6 : 0.4),
                 radius: 0.5,
-                x: -motionManager.x,
-                y: -motionManager.y
+                x: darkOffset,
+                y: darkOffset
               )
             )  // inner dark shadow
             .shadow(
               .inner(
                 color: .black.opacity(colorScheme == .dark ? 0.4 : 0.1),
                 radius: 4,
-                x: -motionManager.x * 2,
-                y: -motionManager.y * 2
+                x: darkOffset * 2,
+                y: darkOffset * 2
               )
             )  // inner dark shadow
         )
+      .shadow(
+        color: .black.opacity(colorScheme == .dark ? 0.4 : 0.4),
+        radius: 2,
+        x: 4,
+        y: 6,
+      )
     )
   }
 }
 
 func getVoidColor(colorScheme: ColorScheme) -> Color {
-  return colorScheme == .dark ? .black.opacity(1) : .black.opacity(0.10)
+  return colorScheme == .dark ? .black.opacity(1) : .black.opacity(0.9)
 }
 
 extension View {
@@ -68,13 +76,13 @@ extension View {
 }
 
 struct OuterSameLevelShadow: ViewModifier {
-  // @StateObject private var motionManager = MotionManager()
   let radius: CGFloat
-  @StateObject private var motionManager = MotionManager.shared
+  private let lightOffset: CGFloat = 0.6
+  private let darkOffset: CGFloat = -0.6
 
   @Environment(\.colorScheme) var colorScheme
 
-  init(radius: CGFloat = 4) {
+  init(radius: CGFloat = 0.5) {
     self.radius = radius
   }
 
@@ -88,25 +96,17 @@ struct OuterSameLevelShadow: ViewModifier {
                 .drop(
                   color: .white.opacity(colorScheme == .dark ? 0.05 : 0.3),
                   radius: 0.2,
-                  x: motionManager.x,
-                  y: motionManager.y
+                  x: lightOffset,
+                  y: lightOffset
                 )
               )
-              // .shadow(
-              //   .drop(
-              //     color: .white.opacity(colorScheme == .dark ? 0.05 : 0.35),
-              //     radius: 1,
-              //     x: motionManager.x * 2,
-              //     y: motionManager.y * 2
-              //   )
-              // )
 
               .shadow(
                 .drop(
                   color: .black.opacity(colorScheme == .dark ? 1 : 0.4),
                   radius: 0.2,
-                  x: -motionManager.x,
-                  y: -motionManager.y
+                  x: darkOffset,
+                  y: darkOffset
                 )
               )
           )

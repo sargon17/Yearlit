@@ -6,7 +6,7 @@ struct PageModifier: ViewModifier {
   func body(content: Content) -> some View {
     // VStack {
     content
-      .background(Color("surface-muted"))
+      .surfaceBackground(Color("surface-muted"), ignoresSafeArea: true)
     // .padding()
     // }
     // .sameLevelBorder(radius: 10)

@@ -279,13 +279,15 @@ struct EditCalendarView: View {
           Text("Are you sure you want to delete this calendar? This action cannot be undone.")
         }
       }
+      .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+      .surfaceBackground(Color("surface-muted"), ignoresSafeArea: true)
     }
     .padding()
     .accentColor(Color(selectedColor))
     .scrollClipDisabled(true)
     .scrollContentBackground(.hidden)
     .scrollIndicators(.hidden)
-    .background(Color("surface-muted"))
+    .surfaceBackground(Color("surface-muted"), ignoresSafeArea: true)
     .navigationTitle("Edit Calendar")
     .navigationBarTitleDisplayMode(.large)
     .toolbar {

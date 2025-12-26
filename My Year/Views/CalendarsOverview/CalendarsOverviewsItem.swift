@@ -69,8 +69,8 @@ extension CalendarsOverviewsItem {
         .frame(maxWidth: .greatestFiniteMagnitude, alignment: .leading)
         .aspectRatio(7 / 4, contentMode: .fit)
 
-      Text(calendar.trackingType.description)
-        .font(.system(size: 10))
+      Text("[\(calendar.trackingType.description)]".lowercased())
+        .font(.system(size: 10, design: .monospaced))
         .foregroundColor(.textTertiary)
         .lineLimit(1)
         .minimumScaleFactor(0.5)

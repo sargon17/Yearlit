@@ -45,8 +45,6 @@ struct TrackingPicker: View {
       .padding(.all, 2)
       .frame(maxWidth: .greatestFiniteMagnitude)
       .background(getVoidColor(colorScheme: colorScheme))
-      .cornerRadius(6)
-      .outerSameLevelShadow(radius: 6)
     }
   }
 }

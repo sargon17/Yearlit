@@ -387,33 +387,35 @@ struct CustomCalendarView: View {
           handleDayTap: handleDayTap
         )
         .frame(height: UIScreen.main.bounds.height * 0.55)
+
+        // Calculate today's count
+        let todayDateString = customDateFormatter(date: today)
+        let todaysLogCount = calendar.entries[todayDateString]?.count ?? 0
+
+        let bundle = computeStatsBundle()
+
+        CalendarStatisticsView(
+          stats: bundle.basic,
+          accentColor: Color(calendar.color),
+          todaysCount: todaysLogCount,
+          unit: calendar.unit,
+          currencySymbol: calendar.currencySymbol,
+          completionRateLast30d: bundle.completionRate30d,
+          bestWeekday: bundle.bestWeekday,
+          weekdayRates: bundle.weekdayRates,
+          monthlyRates: bundle.monthlyRates,
+          rolling7d: bundle.rolling7d,
+          rolling30d: bundle.rolling30d,
+          volatilityStdDev: bundle.volatilityStd,
+          isPremium: isPremium(customerInfo: customerInfo),
+          onUpgrade: { isPaywallPresented = true }
+        )
+        .id(colorScheme)
+        .padding(.top, 20)
+
       }
-
-      // Calculate today's count
-      let todayDateString = customDateFormatter(date: today)
-      let todaysLogCount = calendar.entries[todayDateString]?.count ?? 0
-
-      let bundle = computeStatsBundle()
-
-      CalendarStatisticsView(
-        stats: bundle.basic,
-        accentColor: Color(calendar.color),
-        todaysCount: todaysLogCount,
-        unit: calendar.unit,
-        currencySymbol: calendar.currencySymbol,
-        completionRateLast30d: bundle.completionRate30d,
-        bestWeekday: bundle.bestWeekday,
-        weekdayRates: bundle.weekdayRates,
-        monthlyRates: bundle.monthlyRates,
-        rolling7d: bundle.rolling7d,
-        rolling30d: bundle.rolling30d,
-        volatilityStdDev: bundle.volatilityStd,
-        isPremium: isPremium(customerInfo: customerInfo),
-        onUpgrade: { isPaywallPresented = true }
-      )
-      .id(colorScheme)
-      .padding(.top, 20)
-
+      .frame(maxWidth: .infinity, alignment: .top)
+      .surfaceBackground(Color("surface-muted"), ignoresSafeArea: true)
     }
     .scrollIndicators(.hidden)
     .refreshable {
@@ -451,9 +453,9 @@ struct CustomCalendarView: View {
         .onAppear {
           tempSelectedYear = valuationStore.selectedYear
         }
-        .background(Color("surface-muted"))
+        .surfaceBackground(Color("surface-muted"))
       }
-      .background(Color("surface-muted"))
+      .surfaceBackground(Color("surface-muted"))
       .presentationDetents([.height(280)])
     }
     .sheet(isPresented: $isPaywallPresented) {

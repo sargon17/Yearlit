@@ -307,7 +307,7 @@ struct PremiumGate<Content: View>: View {
               .font(.system(size: 12, design: .monospaced))
               .padding(.horizontal, 10)
               .padding(.vertical, 6)
-              .background(Color("surface-secondary").opacity(0.5))
+              .surfaceBackground(Color("surface-secondary").opacity(0.5))
               .cornerRadius(6)
           }
         }

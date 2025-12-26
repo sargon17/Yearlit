@@ -24,10 +24,14 @@ struct SettingsView: View {
         About()
         Contacts()
         DevSupport()
-      }.font(.system(size: 12, design: .monospaced))
-        .foregroundColor(Color("text-secondary"))
+      }
+      .scrollContentBackground(.hidden)
+      .font(.system(size: 12, design: .monospaced))
+      .foregroundColor(Color("text-secondary"))
       DevCredits().padding(.top, 8)
     }
+    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+    .surfaceBackground(Color("surface-muted"), ignoresSafeArea: true)
     .navigationTitle("Settings")
 
   }
