@@ -61,6 +61,12 @@
     "4. Reward" : {
 
     },
+    "7d" : {
+
+    },
+    "30d" : {
+
+    },
     "37×" : {
 
     },
@@ -139,6 +145,9 @@
     "Default Quick Add Value" : {
 
     },
+    "delete" : {
+
+    },
     "Delete" : {
 
     },
@@ -170,6 +179,9 @@
 
     },
     "Error" : {
+
+    },
+    "Feature Requests" : {
 
     },
     "Features" : {
@@ -259,6 +271,9 @@
     "New Calendar" : {
 
     },
+    "New Request" : {
+
+    },
     "New Stack" : {
 
     },
@@ -311,10 +326,10 @@
     "Passed: " : {
 
     },
-    "PRO" : {
+    "real feedback" : {
 
     },
-    "real feedback" : {
+    "Request a Feature" : {
 
     },
     "Save" : {
@@ -324,6 +339,9 @@
 
     },
     "Select Year" : {
+
+    },
+    "Send request" : {
 
     },
     "Set a reminder" : {
@@ -342,6 +360,9 @@
 
     },
     "So if something’s missing, or something could work better, let me know." : {
+
+    },
+    "Some more context" : {
 
     },
     "Stack" : {
@@ -398,6 +419,9 @@
     "Tiny actions → Massive change." : {
 
     },
+    "Title" : {
+
+    },
     "To make habits stick, keep them:" : {
 
     },
@@ -444,6 +468,9 @@
 
     },
     "Yearlit is still growing — just like the people who use it." : {
+
+    },
+    "your" : {
 
     },
     "Your days shape your life." : {

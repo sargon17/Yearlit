@@ -409,8 +409,7 @@ struct CustomCalendarView: View {
         rolling30d: bundle.rolling30d,
         volatilityStdDev: bundle.volatilityStd,
         isPremium: isPremium(customerInfo: customerInfo),
-        onUpgrade: { isPaywallPresented = true },
-        trackingType: calendar.trackingType
+        onUpgrade: { isPaywallPresented = true }
       )
       .id(colorScheme)
       .padding(.top, 20)

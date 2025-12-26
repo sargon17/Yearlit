@@ -17,14 +17,15 @@ struct FeatureRequestsListItem: View {
             .foregroundColor(.textSecondary)
             .cornerRadius(4)
             .font(.system(size: 9))
-
         }
       }
       FeatureStatusBadge(
         label: request.computedStatus.displayName
       )
       if let description = request.description {
-        Text(description).body()
+        Text(description)
+          .body()
+          .lineLimit(3)
       }
     }
   }
