@@ -16,6 +16,7 @@ import UIKit
 struct ContentView: View {
   @State private var customerInfo: CustomerInfo?
   @ObservedObject private var store = CustomCalendarStore.shared
+  @State private var lastCleanupVersion: Int = -1
 
   var body: some View {
     AppRouter()
@@ -23,9 +24,11 @@ struct ContentView: View {
         Purchases.shared.getCustomerInfo { (customerInfo, _) in
           self.customerInfo = customerInfo
         }
-        Task {
-          await checkForNotificationsOfNonExistingCalendars(store: store)
-        }
+      }
+      .task(id: store.dataVersion) {
+        guard lastCleanupVersion != store.dataVersion else { return }
+        lastCleanupVersion = store.dataVersion
+        await checkForNotificationsOfNonExistingCalendars(store: store)
       }
       .font(.system(.body, design: .monospaced))
   }

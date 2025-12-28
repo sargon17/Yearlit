@@ -42,8 +42,9 @@ func cancelNotifications(for calendar: CustomCalendar) {
 
 func checkForNotificationsOfNonExistingCalendars(store: CustomCalendarStore) async {
   let requests = await UNUserNotificationCenter.current().pendingNotificationRequests()
+  let calendarIds = Set(store.calendars.map { $0.id.uuidString })
   for request in requests {
-    if !store.calendars.contains(where: { $0.id.uuidString == request.identifier }) {
+    if !calendarIds.contains(request.identifier) {
       print("Found notification for non-existing calendar: \(request.identifier)")
       UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: [
         request.identifier
