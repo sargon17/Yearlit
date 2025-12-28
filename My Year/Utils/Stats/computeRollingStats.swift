@@ -5,8 +5,7 @@ func computeRollingStats(
   cal: Calendar,
   todayLocal: Date,
   calendars: [CustomCalendar],
-  anySuccessByDay: [Date: Bool],
-  store: CustomCalendarStore
+  anySuccessByDay: [Date: Bool]
 ) -> (cr30: Double, avg7: Double, avg30: Double) {
   let d30 = lastNDates(cal: cal, todayLocal: todayLocal, n: 30)
   var succ30 = 0
@@ -19,7 +18,7 @@ func computeRollingStats(
     var zAccum = 0.0
     var zCount = 0.0
     for c in calendars {
-      if let e = entry(for: c, d, store: store) {
+      if let e = entry(for: c, d) {
         zAccum += normalizedProgress(for: c, entry: e)
         zCount += 1
       }

@@ -13,15 +13,13 @@ struct AllCalendarsRecapView: View {
 
   @State private var customerInfo: CustomerInfo?
   @State private var isPaywallPresented: Bool = false
+  @State private var statsBundle: StatsBundle?
 
   private static let statsCache = StatsCache()
 
-  private func makeCacheKey() -> String {
-    let year = valuationStore.selectedYear
-    // Seed by current local day to invalidate after midnight
-    let daySeed = Calendar.current.startOfDay(for: Date())
+  private func makeCacheKey(calendars: [CustomCalendar], year: Int, daySeed: Date) -> String {
     let daySeedStr = ISO8601DateFormatter().string(from: daySeed)
-    let calendarsSignature = store.calendars
+    let calendarsSignature = calendars
       .sorted { $0.id.uuidString < $1.id.uuidString }
       .map { calendar in
         let entriesSig = calendar.entries
@@ -34,38 +32,37 @@ struct AllCalendarsRecapView: View {
     return "overall|\(year)|\(daySeedStr)|\(calendarsSignature)"
   }
 
-  private func computeOverallStats() -> StatsBundle {
-    let key = makeCacheKey()
-    if let cached = Self.statsCache.get(key) { return cached }
+  private func computeOverallStats(
+    cacheKey: String,
+    calendars: [CustomCalendar],
+    year: Int,
+    todayLocal: Date
+  ) -> StatsBundle {
+    if let cached = Self.statsCache.get(cacheKey) { return cached }
 
     let cal = Calendar.current
-    let year = valuationStore.selectedYear
-    let activeCalendars = store.calendars
-    let todayLocal = Date()
-    let (totalCount, perDayTotal) = aggregateCounts(cal: cal, calendars: activeCalendars)
+    let (totalCount, perDayTotal) = aggregateCounts(cal: cal, calendars: calendars)
     let maxCount = perDayTotal.values.max() ?? 0
 
     let (anySuccessByDay, dayMeanZ) = buildDailyMaps(
       cal: cal,
       year: year,
       todayLocal: todayLocal,
-      calendars: activeCalendars,
-      store: store
+      calendars: calendars
     )
 
     let activeDays = anySuccessByDay.values.filter { $0 }.count
     let (longestStreak, currentStreak) = computeStreaks(cal: cal, anySuccessByDay)
 
     let todayKeyCount = computeTodayKeyCount(
-      cal: cal, todayLocal: todayLocal, calendars: activeCalendars, store: store
+      cal: cal, todayLocal: todayLocal, calendars: calendars
     )
 
     let (cr30, avg7, avg30) = computeRollingStats(
       cal: cal,
       todayLocal: todayLocal,
-      calendars: activeCalendars,
-      anySuccessByDay: anySuccessByDay,
-      store: store
+      calendars: calendars,
+      anySuccessByDay: anySuccessByDay
     )
 
     let (weekdayRates, bestWD) = computeWeekdayRates(cal: cal, dayMeanZ: dayMeanZ)
@@ -98,11 +95,16 @@ struct AllCalendarsRecapView: View {
       todaysCount: todayKeyCount
     )
 
-    Self.statsCache.set(key, value: bundle)
+    Self.statsCache.set(cacheKey, value: bundle)
     return bundle
   }
 
   var body: some View {
+    let selectedYear = valuationStore.selectedYear
+    let calendars = store.calendars
+    let daySeed = Calendar.current.startOfDay(for: Date())
+    let statsSignature = makeCacheKey(calendars: calendars, year: selectedYear, daySeed: daySeed)
+
     ScrollView {
       VStack(spacing: 10) {
         VStack(spacing: 10) {
@@ -132,32 +134,35 @@ struct AllCalendarsRecapView: View {
           CustomSeparator()
         }
 
-        let bundle = computeOverallStats()
-
         OverallGridView(
           accentColor: Color("qs-emerald"),
           store: store
         )
         .frame(height: UIScreen.main.bounds.height * 0.55)
 
-        CalendarStatisticsView(
-          stats: bundle.basic,
-          accentColor: Color("qs-emerald"),
-          todaysCount: bundle.todaysCount ?? 0,
-          unit: nil,
-          currencySymbol: nil,
-          completionRateLast30d: bundle.completionRate30d,
-          bestWeekday: bundle.bestWeekday,
-          weekdayRates: bundle.weekdayRates,
-          monthlyRates: bundle.monthlyRates,
-          rolling7d: bundle.rolling7d,
-          rolling30d: bundle.rolling30d,
-          volatilityStdDev: bundle.volatilityStd,
-          isPremium: isPremium(customerInfo: customerInfo),
-          onUpgrade: { isPaywallPresented = true }
-        )
-        .id(colorScheme)
-        .padding(.top, 20)
+        if let bundle = statsBundle {
+          CalendarStatisticsView(
+            stats: bundle.basic,
+            accentColor: Color("qs-emerald"),
+            todaysCount: bundle.todaysCount ?? 0,
+            unit: nil,
+            currencySymbol: nil,
+            completionRateLast30d: bundle.completionRate30d,
+            bestWeekday: bundle.bestWeekday,
+            weekdayRates: bundle.weekdayRates,
+            monthlyRates: bundle.monthlyRates,
+            rolling7d: bundle.rolling7d,
+            rolling30d: bundle.rolling30d,
+            volatilityStdDev: bundle.volatilityStd,
+            isPremium: isPremium(customerInfo: customerInfo),
+            onUpgrade: { isPaywallPresented = true }
+          )
+          .id(colorScheme)
+          .padding(.top, 20)
+        } else {
+          ProgressView()
+            .padding(.top, 20)
+        }
 
       }
       .frame(maxWidth: .infinity, alignment: .top)
@@ -171,6 +176,18 @@ struct AllCalendarsRecapView: View {
       Purchases.shared.getCustomerInfo { info, _ in
         self.customerInfo = info
       }
+    }
+    .task(id: statsSignature) {
+      statsBundle = nil
+      let bundle = await Task.detached(priority: .userInitiated) {
+        computeOverallStats(
+          cacheKey: statsSignature,
+          calendars: calendars,
+          year: selectedYear,
+          todayLocal: Date()
+        )
+      }.value
+      statsBundle = bundle
     }
   }
 }

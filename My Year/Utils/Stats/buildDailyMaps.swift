@@ -5,8 +5,7 @@ func buildDailyMaps(
   cal: Calendar,
   year: Int,
   todayLocal: Date,
-  calendars: [CustomCalendar],
-  store: CustomCalendarStore
+  calendars: [CustomCalendar]
 ) -> (anySuccessByDay: [Date: Bool], dayMeanZ: [Date: Double]) {
   var anySuccessByDay: [Date: Bool] = [:]
   var dayMeanZ: [Date: Double] = [:]
@@ -23,7 +22,7 @@ func buildDailyMaps(
       var zDenom = 0.0
 
       for c in calendars {
-        let e = entry(for: c, d, store: store)
+        let e = entry(for: c, d)
         if isEntrySuccess(e, calendar: c) { any = true }
         if e != nil {
           zAccum += normalizedProgress(for: c, entry: e)
