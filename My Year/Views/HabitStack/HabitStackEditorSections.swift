@@ -82,6 +82,7 @@ struct HabitStackReminderSection: View {
             .inputStyle(radius: 4, color: .textPrimary)
             .colorScheme(.dark)
           }
+          .frame(maxWidth: .infinity, alignment: .center)
           .padding(.all, 2)
           .sameLevelBorder()
         }

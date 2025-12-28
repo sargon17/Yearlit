@@ -81,7 +81,8 @@ struct CreateCalendarView: View {
   var body: some View {
     ScrollView {
       VStack(spacing: 24) {
-
+        CustomSeparator()
+          .padding(.horizontal, -16)
         CustomSection(label: "Calendar Name") {
           TextField(
             "",
@@ -244,10 +245,12 @@ struct CreateCalendarView: View {
                 DatePicker(
                   "", selection: $reminderTime, displayedComponents: [.hourAndMinute]
                 )
+                .labelsHidden()
                 .tint(Color(selectedColor))
                 .datePickerStyle(.wheel)
                 .inputStyle(radius: 4, color: Color(selectedColor))
               }
+              .frame(maxWidth: .infinity, alignment: .center)
               .padding(.all, 2)
               .sameLevelBorder()
               .colorScheme(.dark)
@@ -255,12 +258,14 @@ struct CreateCalendarView: View {
           }.padding(.all, 2)
             .background(getVoidColor(colorScheme: colorScheme))
         }
+        CustomSeparator()
+          .padding(.horizontal, -16)
       }
+      .padding()
       .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
       .surfaceBackground(Color("surface-muted"), ignoresSafeArea: true)
     }
     .accentColor(Color(selectedColor))
-    .padding()
     .scrollClipDisabled(true)
     .scrollDismissesKeyboard(.immediately)
     .scrollContentBackground(.hidden)

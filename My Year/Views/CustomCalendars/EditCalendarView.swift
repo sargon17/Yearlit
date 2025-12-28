@@ -74,7 +74,8 @@ struct EditCalendarView: View {
   var body: some View {
     ScrollView {
       VStack(spacing: 24) {
-
+        CustomSeparator()
+          .padding(.horizontal, -16)
         CustomSection(label: "Calendar Name") {
           TextField(
             "",
@@ -233,11 +234,13 @@ struct EditCalendarView: View {
                 DatePicker(
                   "", selection: $reminderTime, displayedComponents: [.hourAndMinute]
                 )
+                .labelsHidden()
                 .tint(Color(selectedColor))
                 .datePickerStyle(.wheel)
                 .inputStyle(radius: 4, color: Color(selectedColor))
                 .colorScheme(.dark)
               }
+              .frame(maxWidth: .infinity, alignment: .center)
               .padding(.all, 2)
               .sameLevelBorder()
             }
@@ -272,11 +275,13 @@ struct EditCalendarView: View {
         } message: {
           Text("Are you sure you want to delete this calendar? This action cannot be undone.")
         }
+        CustomSeparator()
+          .padding(.horizontal, -16)
       }
+      .padding()
       .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
       .surfaceBackground(Color("surface-muted"), ignoresSafeArea: true)
     }
-    .padding()
     .accentColor(Color(selectedColor))
     .scrollClipDisabled(true)
     .scrollContentBackground(.hidden)

@@ -82,10 +82,12 @@ struct CreateFirstHabit: View {
                 DatePicker(
                   "", selection: $reminderTime, displayedComponents: [.hourAndMinute]
                 )
+                .labelsHidden()
                 .tint(Color.brand)
                 .datePickerStyle(.wheel)
                 .inputStyle(radius: 4, color: Color.brand)
               }
+              .frame(maxWidth: .infinity, alignment: .center)
               .padding(.all, 2)
               .sameLevelBorder()
               .colorScheme(.dark)
