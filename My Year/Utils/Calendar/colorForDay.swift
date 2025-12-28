@@ -2,10 +2,22 @@ import Garnish
 import SharedModels
 import SwiftUI
 
+private enum DayKeyFormatterLocal {
+  static let shared: DateFormatter = {
+    let formatter = DateFormatter()
+    formatter.calendar = Calendar(identifier: .gregorian)
+    formatter.locale = Locale(identifier: "en_US_POSIX")
+    formatter.timeZone = TimeZone(secondsFromGMT: 0)
+    formatter.dateFormat = "yyyy-MM-dd"
+    return formatter
+  }()
+}
+
 func colorForDay(
   _ day: Date,
   calendar: CustomCalendar,
-  today: Date
+  today: Date,
+  maxCount: Int
 ) -> Color {
 
   let inactiveColor = GarnishColor.blend(.surfaceMuted, with: .textPrimary, ratio: 0.02)
@@ -15,7 +27,7 @@ func colorForDay(
     return inactiveColor
   }
 
-  let dateKey: String = customDateFormatter(date: day)
+  let dateKey: String = DayKeyFormatterLocal.shared.string(from: day)
 
   if let entry: CalendarEntry = calendar.entries[dateKey] {
     switch calendar.trackingType {
@@ -23,8 +35,8 @@ func colorForDay(
       return entry.completed ? Color(calendar.color) : activeColor
     case .counter:
       if entry.count > 0 {
-        let maxCount: Int = getMaxCount(calendar: calendar)
-        let ratio = max(0.1, Double(entry.count) / Double(maxCount))
+        let safeMax = max(maxCount, 1)
+        let ratio = max(0.1, Double(entry.count) / Double(safeMax))
         return GarnishColor.blend(.surfaceMuted, with: Color(calendar.color), ratio: ratio)
       } else {
         return activeColor

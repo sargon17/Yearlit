@@ -324,6 +324,7 @@ public final class CustomCalendarStore: ObservableObject {
 
   @Published public private(set) var calendars: [CustomCalendar] = []
   @Published public private(set) var isLoading: Bool = false
+  @Published public private(set) var dataVersion: Int = 0
 
   private let container: ModelContainer
 
@@ -340,6 +341,7 @@ public final class CustomCalendarStore: ObservableObject {
           guard let self else { return }
           self.calendars = calendars
           self.isLoading = false
+          self.bumpDataVersion()
         }
       } catch {
         NSLog("Failed to load calendars from SwiftData: \(error)")
@@ -347,6 +349,7 @@ public final class CustomCalendarStore: ObservableObject {
           guard let self else { return }
           self.calendars = []
           self.isLoading = false
+          self.bumpDataVersion()
         }
       }
     }
@@ -369,6 +372,7 @@ public final class CustomCalendarStore: ObservableObject {
           if showLoadingIndicator {
             self.isLoading = false
           }
+          self.bumpDataVersion()
         }
       } catch {
         NSLog("Failed to load calendars from SwiftData: \(error)")
@@ -378,6 +382,7 @@ public final class CustomCalendarStore: ObservableObject {
           if showLoadingIndicator {
             self.isLoading = false
           }
+          self.bumpDataVersion()
         }
       }
     }
@@ -488,6 +493,7 @@ public final class CustomCalendarStore: ObservableObject {
       }
 
       calendars = reordered
+      bumpDataVersion()
       try persistChanges(in: context)
       loadCalendars(showLoadingIndicator: false)
     } catch {
@@ -597,6 +603,10 @@ public final class CustomCalendarStore: ObservableObject {
 
   private func formatDate(date: Date) -> String {
     DayKeyFormatter.shared.string(from: date)
+  }
+
+  private func bumpDataVersion() {
+    dataVersion &+= 1
   }
 
   private static func fetchCalendars(container: ModelContainer) throws -> [CustomCalendar] {

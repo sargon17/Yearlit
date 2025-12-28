@@ -36,7 +36,8 @@ struct OverallGridView: View {
         0,
         (availableHeight - (dotSize * CGFloat(rows))) / CGFloat(max(1, rows - 1))
       )
-      let sig = cacheSignature()
+      let dataVersion = store.dataVersion
+      let sig = cacheSignature(dataVersion: dataVersion)
       VStack(spacing: verticalSpacing) {
         ForEach(0..<rows, id: \.self) { row in
           HStack(spacing: horizontalSpacing) {
@@ -117,33 +118,9 @@ struct OverallGridView: View {
     }
   }
 
-  private func cacheSignature() -> String {
-    var hasher = Hasher()
-
-    // Sort calendars to ensure deterministic order
-    let calendars = store.calendars.sorted { $0.id.uuidString < $1.id.uuidString }
-    hasher.combine(calendars.count)
-
-    for cal in calendars {
-      hasher.combine(cal.id)
-      hasher.combine(cal.dailyTarget)
-      hasher.combine(cal.trackingType)
-
-      // Sort entries by date for deterministic order
-      let entries = cal.entries.sorted { $0.key < $1.key }
-      hasher.combine(entries.count)
-
-      for (date, e) in entries {
-        hasher.combine(date)
-        hasher.combine(e.count)
-        hasher.combine(e.completed)
-      }
-    }
-
-    // Include UI-related factors that affect colors so cache invalidates on appearance changes
-    hasher.combine(colorScheme == .dark ? "dark" : "light")
-
-    return "overall-grid-\(hasher.finalize())"
+  private func cacheSignature(dataVersion: Int) -> String {
+    let schemeKey = colorScheme == .dark ? "dark" : "light"
+    return "overall-grid-\(dataVersion)-\(schemeKey)"
   }
 
   private func dataPresent(on day: Date) -> Bool {

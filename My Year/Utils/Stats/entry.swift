@@ -12,7 +12,14 @@ private enum EntryKeyFormatter {
   }()
 }
 
-func entry(for calendar: CustomCalendar, _ date: Date) -> CalendarEntry? {
-  let key = EntryKeyFormatter.shared.string(from: date)
-  return calendar.entries[key]
+func dayKey(for date: Date) -> String {
+  EntryKeyFormatter.shared.string(from: date)
+}
+
+func entry(
+  for calendarId: UUID,
+  dayKey: String,
+  entriesByCalendar: [UUID: [String: CalendarEntry]]
+) -> CalendarEntry? {
+  entriesByCalendar[calendarId]?[dayKey]
 }

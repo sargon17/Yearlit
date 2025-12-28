@@ -57,7 +57,7 @@ struct My_YearApp: App {
 
   }
 
-  var dates: [Date] = getYearDatesArray()
+  static let cachedDates: [Date] = getYearDatesArray()
 
   var body: some Scene {
     WindowGroup {
@@ -65,7 +65,7 @@ struct My_YearApp: App {
         ContentView()
           .tint(.textSecondary)
       }
-      .environment(\.dates, dates)
+      .environment(\.dates, Self.cachedDates)
       .onOpenURL { url in
         if url.scheme == "my-year" && url.host == "clear" {
           let store = ValuationStore.shared

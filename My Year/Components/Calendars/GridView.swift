@@ -60,6 +60,7 @@ struct GridView: View {
       .task(
         id: "\(calendar.entries.values.reduce(0) { $0 + $1.count })-\(colorScheme)"
       ) {
+        let maxCount = getMaxCount(calendar: calendar)
         let cacheKey = "\(calendar.name)-\(colorScheme)-\(calendar.entries.values.reduce(0) { $0 + $1.count })"
         if let cachedMappedDays = Self.mappedDaysCache.get(for: cacheKey) {
           // print("🟢 Hitting Cache")
@@ -68,7 +69,9 @@ struct GridView: View {
           // print("🔴 Missing Cache")
           // Self.mappedDaysCache.clear()  // is that cleaning the cache right?
           Self.mappedDaysCache.clearByCalendarTitle(title: calendar.name)
-          mappedDays = dates.map { (date: $0, color: colorForDay($0, calendar: calendar, today: today)) }
+          mappedDays = dates.map {
+            (date: $0, color: colorForDay($0, calendar: calendar, today: today, maxCount: maxCount))
+          }
           Self.mappedDaysCache.set(mappedDays, for: cacheKey)
         }
       }

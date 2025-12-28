@@ -17,19 +17,9 @@ struct AllCalendarsRecapView: View {
 
   private static let statsCache = StatsCache()
 
-  private func makeCacheKey(calendars: [CustomCalendar], year: Int, daySeed: Date) -> String {
+  private func makeCacheKey(year: Int, daySeed: Date, dataVersion: Int) -> String {
     let daySeedStr = ISO8601DateFormatter().string(from: daySeed)
-    let calendarsSignature = calendars
-      .sorted { $0.id.uuidString < $1.id.uuidString }
-      .map { calendar in
-        let entriesSig = calendar.entries
-          .sorted { $0.key < $1.key }
-          .map { "\($0.key):\($0.value.count):\($0.value.completed ? 1 : 0)" }
-          .joined(separator: ",")
-        return "\(calendar.id.uuidString)|\(entriesSig)"
-      }
-      .joined(separator: ";")
-    return "overall|\(year)|\(daySeedStr)|\(calendarsSignature)"
+    return "overall|\(year)|\(daySeedStr)|v\(dataVersion)"
   }
 
   private func computeOverallStats(
@@ -41,6 +31,7 @@ struct AllCalendarsRecapView: View {
     if let cached = Self.statsCache.get(cacheKey) { return cached }
 
     let cal = Calendar.current
+    let entriesByCalendar = Dictionary(uniqueKeysWithValues: calendars.map { ($0.id, $0.entries) })
     let (totalCount, perDayTotal) = aggregateCounts(cal: cal, calendars: calendars)
     let maxCount = perDayTotal.values.max() ?? 0
 
@@ -48,21 +39,23 @@ struct AllCalendarsRecapView: View {
       cal: cal,
       year: year,
       todayLocal: todayLocal,
-      calendars: calendars
+      calendars: calendars,
+      entriesByCalendar: entriesByCalendar
     )
 
     let activeDays = anySuccessByDay.values.filter { $0 }.count
     let (longestStreak, currentStreak) = computeStreaks(cal: cal, anySuccessByDay)
 
     let todayKeyCount = computeTodayKeyCount(
-      cal: cal, todayLocal: todayLocal, calendars: calendars
+      cal: cal, todayLocal: todayLocal, calendars: calendars, entriesByCalendar: entriesByCalendar
     )
 
     let (cr30, avg7, avg30) = computeRollingStats(
       cal: cal,
       todayLocal: todayLocal,
       calendars: calendars,
-      anySuccessByDay: anySuccessByDay
+      anySuccessByDay: anySuccessByDay,
+      entriesByCalendar: entriesByCalendar
     )
 
     let (weekdayRates, bestWD) = computeWeekdayRates(cal: cal, dayMeanZ: dayMeanZ)
@@ -102,8 +95,9 @@ struct AllCalendarsRecapView: View {
   var body: some View {
     let selectedYear = valuationStore.selectedYear
     let calendars = store.calendars
+    let dataVersion = store.dataVersion
     let daySeed = Calendar.current.startOfDay(for: Date())
-    let statsSignature = makeCacheKey(calendars: calendars, year: selectedYear, daySeed: daySeed)
+    let statsSignature = makeCacheKey(year: selectedYear, daySeed: daySeed, dataVersion: dataVersion)
 
     ScrollView {
       VStack(spacing: 10) {

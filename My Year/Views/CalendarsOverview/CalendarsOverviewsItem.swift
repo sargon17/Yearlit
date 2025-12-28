@@ -85,6 +85,7 @@ extension CalendarsOverviewsItem {
       let spacing = 6.0
       let totalSpacing = spacing * (max(CGFloat(columnsCount) - 1.0, 0.0))
       let itemWidth = (totalWidth - totalSpacing) / CGFloat(columnsCount)
+      let maxCount = getMaxCount(calendar: calendar)
       LazyVGrid(
         columns: Array(repeating: GridItem(.fixed(itemWidth), spacing: spacing), count: columnsCount),
         spacing: spacing
@@ -95,7 +96,8 @@ extension CalendarsOverviewsItem {
             color: colorForDay(
               slot,
               calendar: calendar,
-              today: today
+              today: today,
+              maxCount: maxCount
             )
           )
         }
