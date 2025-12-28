@@ -6,10 +6,14 @@ struct DayValuationPopup: View {
   let store = ValuationStore.shared
   let date: Date
 
-  var formattedDate: String {
+  private static let dateFormatter: DateFormatter = {
     let formatter = DateFormatter()
     formatter.dateStyle = .long
-    return formatter.string(from: date)
+    return formatter
+  }()
+
+  var formattedDate: String {
+    Self.dateFormatter.string(from: date)
   }
 
   var body: some View {
