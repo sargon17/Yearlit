@@ -330,57 +330,56 @@ public final class CustomCalendarStore: ObservableObject {
   public init(container: ModelContainer = SwiftDataManager.container) {
     self.container = container
 
-    LegacyDataMigrator.migrateIfNeeded(container: container)
-    loadCalendars()
+    isLoading = true
+    let container = container
+    Task.detached(priority: .userInitiated) { [weak self] in
+      LegacyDataMigrator.migrateIfNeeded(container: container)
+      do {
+        let calendars = try Self.fetchCalendars(container: container)
+        await MainActor.run {
+          guard let self else { return }
+          self.calendars = calendars
+          self.isLoading = false
+        }
+      } catch {
+        NSLog("Failed to load calendars from SwiftData: \(error)")
+        await MainActor.run {
+          guard let self else { return }
+          self.calendars = []
+          self.isLoading = false
+        }
+      }
+    }
   }
 
   public func loadCalendars(showLoadingIndicator: Bool = true) {
     if showLoadingIndicator {
-      isLoading = true
-    }
-    defer {
-      if showLoadingIndicator {
-        isLoading = false
+      Task { @MainActor in
+        self.isLoading = true
       }
     }
 
-    do {
-      let context = makeContext()
-      let calendarsDescriptor = FetchDescriptor<HabitCalendarEntity>(
-        sortBy: [SortDescriptor(\HabitCalendarEntity.order)]
-      )
-      let calendarEntities = try context.fetch(calendarsDescriptor)
-      let entryEntities = try context.fetch(FetchDescriptor<CalendarEntryEntity>())
-      let groupedEntries = Dictionary(grouping: entryEntities, by: { $0.calendarId })
-
-      let deduplicatedCalendars = calendarEntities.reduce(into: [UUID: CustomCalendar]()) { partialResult, entity in
-        let entries = groupedEntries[entity.id, default: []]
-          .reduce(into: [String: CalendarEntry]()) { partialEntries, entry in
-            let key = entry.dayKey
-            let converted = entry.toCalendarEntry()
-            if let existing = partialEntries[key] {
-              if converted.date > existing.date {
-                partialEntries[key] = converted
-              }
-            } else {
-              partialEntries[key] = converted
-            }
+    let container = container
+    Task.detached(priority: .userInitiated) { [weak self] in
+      do {
+        let calendars = try Self.fetchCalendars(container: container)
+        await MainActor.run {
+          guard let self else { return }
+          self.calendars = calendars
+          if showLoadingIndicator {
+            self.isLoading = false
           }
-
-        let calendar = entity.toCustomCalendar(entries: entries)
-        if let existing = partialResult[calendar.id] {
-          if calendar.order < existing.order {
-            partialResult[calendar.id] = calendar
+        }
+      } catch {
+        NSLog("Failed to load calendars from SwiftData: \(error)")
+        await MainActor.run {
+          guard let self else { return }
+          self.calendars = []
+          if showLoadingIndicator {
+            self.isLoading = false
           }
-        } else {
-          partialResult[calendar.id] = calendar
         }
       }
-
-      calendars = deduplicatedCalendars.values.sorted { $0.order < $1.order }
-    } catch {
-      NSLog("Failed to load calendars from SwiftData: \(error)")
-      calendars = []
     }
   }
 
@@ -587,6 +586,10 @@ public final class CustomCalendarStore: ObservableObject {
   }
 
   private func makeContext() -> ModelContext {
+    Self.makeContext(container: container)
+  }
+
+  private static func makeContext(container: ModelContainer) -> ModelContext {
     let context = ModelContext(container)
     context.autosaveEnabled = false
     return context
@@ -594,6 +597,42 @@ public final class CustomCalendarStore: ObservableObject {
 
   private func formatDate(date: Date) -> String {
     DayKeyFormatter.shared.string(from: date)
+  }
+
+  private static func fetchCalendars(container: ModelContainer) throws -> [CustomCalendar] {
+    let context = makeContext(container: container)
+    let calendarsDescriptor = FetchDescriptor<HabitCalendarEntity>(
+      sortBy: [SortDescriptor(\HabitCalendarEntity.order)]
+    )
+    let calendarEntities = try context.fetch(calendarsDescriptor)
+    let entryEntities = try context.fetch(FetchDescriptor<CalendarEntryEntity>())
+    let groupedEntries = Dictionary(grouping: entryEntities, by: { $0.calendarId })
+
+    let deduplicatedCalendars = calendarEntities.reduce(into: [UUID: CustomCalendar]()) { partialResult, entity in
+      let entries = groupedEntries[entity.id, default: []]
+        .reduce(into: [String: CalendarEntry]()) { partialEntries, entry in
+          let key = entry.dayKey
+          let converted = entry.toCalendarEntry()
+          if let existing = partialEntries[key] {
+            if converted.date > existing.date {
+              partialEntries[key] = converted
+            }
+          } else {
+            partialEntries[key] = converted
+          }
+        }
+
+      let calendar = entity.toCustomCalendar(entries: entries)
+      if let existing = partialResult[calendar.id] {
+        if calendar.order < existing.order {
+          partialResult[calendar.id] = calendar
+        }
+      } else {
+        partialResult[calendar.id] = calendar
+      }
+    }
+
+    return deduplicatedCalendars.values.sorted { $0.order < $1.order }
   }
 }
 
@@ -650,30 +689,41 @@ public final class ValuationStore: ObservableObject {
   public init(container: ModelContainer = SwiftDataManager.container) {
     self.container = container
 
-    LegacyDataMigrator.migrateIfNeeded(container: container)
-    loadValuations()
+    let container = container
+    Task.detached(priority: .userInitiated) { [weak self] in
+      LegacyDataMigrator.migrateIfNeeded(container: container)
+      do {
+        let valuations = try Self.fetchValuations(container: container)
+        await MainActor.run {
+          guard let self else { return }
+          self.valuations = valuations
+        }
+      } catch {
+        NSLog("Failed to load valuations: \(error)")
+        await MainActor.run {
+          guard let self else { return }
+          self.valuations = [:]
+        }
+      }
+    }
   }
 
   public func loadValuations() {
-    do {
-      let context = makeContext()
-      let descriptor = FetchDescriptor<DayValuationEntity>(
-        sortBy: [SortDescriptor(\DayValuationEntity.dayKey)]
-      )
-      let entities = try context.fetch(descriptor)
-      valuations = entities.reduce(into: [String: DayValuation]()) { partialResult, entity in
-        let valuation = entity.toDayValuation()
-        if let existing = partialResult[entity.dayKey] {
-          if valuation.timestamp > existing.timestamp {
-            partialResult[entity.dayKey] = valuation
-          }
-        } else {
-          partialResult[entity.dayKey] = valuation
+    let container = container
+    Task.detached(priority: .userInitiated) { [weak self] in
+      do {
+        let valuations = try Self.fetchValuations(container: container)
+        await MainActor.run {
+          guard let self else { return }
+          self.valuations = valuations
+        }
+      } catch {
+        NSLog("Failed to load valuations: \(error)")
+        await MainActor.run {
+          guard let self else { return }
+          self.valuations = [:]
         }
       }
-    } catch {
-      NSLog("Failed to load valuations: \(error)")
-      valuations = [:]
     }
   }
 
@@ -744,9 +794,31 @@ public final class ValuationStore: ObservableObject {
   }
 
   private func makeContext() -> ModelContext {
+    Self.makeContext(container: container)
+  }
+
+  private static func makeContext(container: ModelContainer) -> ModelContext {
     let context = ModelContext(container)
     context.autosaveEnabled = false
     return context
+  }
+
+  private static func fetchValuations(container: ModelContainer) throws -> [String: DayValuation] {
+    let context = makeContext(container: container)
+    let descriptor = FetchDescriptor<DayValuationEntity>(
+      sortBy: [SortDescriptor(\DayValuationEntity.dayKey)]
+    )
+    let entities = try context.fetch(descriptor)
+    return entities.reduce(into: [String: DayValuation]()) { partialResult, entity in
+      let valuation = entity.toDayValuation()
+      if let existing = partialResult[entity.dayKey] {
+        if valuation.timestamp > existing.timestamp {
+          partialResult[entity.dayKey] = valuation
+        }
+      } else {
+        partialResult[entity.dayKey] = valuation
+      }
+    }
   }
 }
 
