@@ -13,7 +13,8 @@ struct AllCalendarsRecapView: View {
 
   @State private var customerInfo: CustomerInfo?
   @State private var isPaywallPresented: Bool = false
-  @State private var statsBundle: StatsBundle?
+  @State private var statsBundle: StatsBundle? = nil
+  @State private var cachedStatsBundle: StatsBundle? = nil
 
   private static let statsCache = StatsCache()
   private static let daySeedFormatter = ISO8601DateFormatter()
@@ -98,6 +99,7 @@ struct AllCalendarsRecapView: View {
     let calendars = store.calendars
     let dataVersion = store.dataVersion
     let daySeed = Calendar.current.startOfDay(for: Date())
+    let daySeedKey = Self.daySeedFormatter.string(from: daySeed)
     let statsSignature = makeCacheKey(year: selectedYear, daySeed: daySeed, dataVersion: dataVersion)
 
     ScrollView {
@@ -135,7 +137,7 @@ struct AllCalendarsRecapView: View {
         )
         .frame(height: UIScreen.main.bounds.height * 0.55)
 
-        if let bundle = statsBundle {
+        if let bundle = statsBundle ?? cachedStatsBundle {
           CalendarStatisticsView(
             stats: bundle.basic,
             accentColor: Color("qs-emerald"),
@@ -182,6 +184,12 @@ struct AllCalendarsRecapView: View {
         )
       }.value
       statsBundle = bundle
+      OverviewStatsCache.save(bundle, year: selectedYear, daySeedKey: daySeedKey)
+    }
+    .task(id: daySeedKey) {
+      if cachedStatsBundle == nil {
+        cachedStatsBundle = OverviewStatsCache.load(year: selectedYear, daySeedKey: daySeedKey)
+      }
     }
   }
 }

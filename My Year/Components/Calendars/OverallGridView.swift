@@ -38,6 +38,8 @@ struct OverallGridView: View {
       )
       let dataVersion = store.dataVersion
       let sig = cacheSignature(dataVersion: dataVersion)
+      let daySeedKey = dayKey(for: Calendar.current.startOfDay(for: today))
+      let year = Calendar.current.component(.year, from: today)
       VStack(spacing: verticalSpacing) {
         ForEach(0..<rows, id: \.self) { row in
           HStack(spacing: horizontalSpacing) {
@@ -114,8 +116,26 @@ struct OverallGridView: View {
               return (date: date, color: accent.opacity(opacity))
             }
             Self.mappedDaysCache.set(mappedDays, for: cacheKey)
+            let zByDay = Dictionary(uniqueKeysWithValues: result.1.map { (date, z) in
+              (dayKey(for: date), z)
+            })
+            OverviewGridCache.save(zByDay: zByDay, year: year, daySeedKey: daySeedKey)
           }
         }
+      }
+      .task(id: daySeedKey) {
+        guard mappedDays.isEmpty else { return }
+        guard let zByDay = OverviewGridCache.load(year: year, daySeedKey: daySeedKey) else { return }
+        let inactiveColor = GarnishColor.blend(.surfaceMuted, with: .textPrimary, ratio: 0.02)
+        let activeColor = GarnishColor.blend(.surfaceMuted, with: .textPrimary, ratio: 0.08)
+        let cachedMappedDays = dates.map { day -> (date: Date, color: Color) in
+          if day > today { return (day, inactiveColor) }
+          let z = zByDay[dayKey(for: day)] ?? 0
+          if z <= 0 { return (day, activeColor) }
+          let opacity = min(1, max(0.2, z))
+          return (day, accentColor.opacity(opacity))
+        }
+        mappedDays = cachedMappedDays
       }
     }
   }
