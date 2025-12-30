@@ -26,7 +26,7 @@ struct DayEntryEditSheet: View {
   private func saveEntry() {
     let newEntry = CalendarEntry(date: date, count: entryCount, completed: entryCompleted)
     store.addEntry(calendarId: calendar.id, entry: newEntry)
-    WidgetCenter.shared.reloadAllTimelines()
+    WidgetReload.scheduleAllTimelinesReload()
     dismiss()
   }
 

@@ -265,7 +265,7 @@ struct CustomCalendarView: View {
       valuationStore: valuationStore
     )
 
-    WidgetCenter.shared.reloadAllTimelines()
+    WidgetReload.scheduleAllTimelinesReload()
     checkIfReachedThreeDays(calendar)
 
     Task {
@@ -427,7 +427,7 @@ struct CustomCalendarView: View {
     .scrollIndicators(.hidden)
     .refreshable {
       store.loadCalendars()
-      WidgetCenter.shared.reloadAllTimelines()
+      WidgetReload.scheduleAllTimelinesReload()
     }
     .sheet(isPresented: $showingYearPicker) {
       NavigationStack {

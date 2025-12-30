@@ -764,7 +764,7 @@ public final class ValuationStore: ObservableObject {
       valuations = newValuations
 
       #if os(iOS)
-        WidgetCenter.shared.reloadAllTimelines()
+        WidgetReload.scheduleAllTimelinesReload()
       #endif
     } catch {
       NSLog("Failed to set valuation: \(error)")
@@ -783,7 +783,7 @@ public final class ValuationStore: ObservableObject {
       valuations = [:]
 
       #if os(iOS)
-        WidgetCenter.shared.reloadAllTimelines()
+        WidgetReload.scheduleAllTimelinesReload()
       #endif
     } catch {
       NSLog("Failed to clear valuations: \(error)")
