@@ -22,9 +22,15 @@ public func isToday(date: Date) -> Bool {
 /// Output: "2024-01-15"
 /// ```
 public func customDateFormatter(date: Date) -> String {
-  let dateFormatter = DateFormatter()
-  dateFormatter.dateFormat = "yyyy-MM-dd"
-  return dateFormatter.string(from: date)
+  DayKeyFormatterLocal.shared.string(from: date)
+}
+
+private enum DayKeyFormatterLocal {
+  static let shared: DateFormatter = {
+    let formatter = DateFormatter()
+    formatter.dateFormat = "yyyy-MM-dd"
+    return formatter
+  }()
 }
 
 public let dateFormatterLong: DateFormatter = {
