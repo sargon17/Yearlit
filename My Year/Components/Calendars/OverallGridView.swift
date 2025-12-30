@@ -67,6 +67,7 @@ struct OverallGridView: View {
           let datesArray = Array(dates)
           let todayLocal = today
           let accent = accentColor
+          let entriesByCalendar = Dictionary(uniqueKeysWithValues: calendars.map { ($0.id, $0.entries) })
 
           // Heavy work off-main: compute q75 and numeric shades only
           let result = await Task.detached(priority: .userInitiated) { () -> ([UUID: Double], [(Date, Double)]) in
@@ -83,10 +84,11 @@ struct OverallGridView: View {
 
             let shades: [(Date, Double)] = datesArray.map { day in
               if day > todayLocal { return (day, 0.0) }
+              let key = dayKey(for: day)
               var zSum: Double = 0
               var denom: Double = 0
               for cal in calendars {
-                let entry = store.getEntry(calendarId: cal.id, date: day)
+                let entry = entriesByCalendar[cal.id]?[key]
                 zSum += normalizedProgress(for: cal, entry: entry, q75: pct75[cal.id])
                 denom += 1
               }

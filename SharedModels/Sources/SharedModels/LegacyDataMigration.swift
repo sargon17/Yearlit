@@ -81,7 +81,6 @@ enum LegacyDataMigrator {
         try context.save()
       }
       defaults.set(true, forKey: LegacyPersistenceKeys.migrationFlagKey)
-      defaults.synchronize()
     } catch {
       // If the migration fails we keep the legacy data and try again next launch.
       NSLog("SwiftData migration failed: \(error)")

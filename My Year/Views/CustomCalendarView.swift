@@ -53,6 +53,7 @@ struct CustomCalendarView: View {
   @State private var calendarError: CalendarError?
   @State private var customerInfo: CustomerInfo?
   @State private var isPaywallPresented: Bool = false
+  @State private var statsBundle: StatsBundle?
 
   @Environment(\.router) private var router
 
@@ -186,30 +187,29 @@ struct CustomCalendarView: View {
 
   private static let statsCache = StatsCache()
 
-  private func makeCacheKey() -> String {
-    // Key changes when year, today, or entries change (use entries count + max timestamp proxy)
+  private func makeCacheKey(daySeed: Date, dataVersion: Int) -> String {
     let year = valuationStore.selectedYear
-    let entriesSignature = calendar.entries
-      .sorted { $0.key < $1.key }
-      .map { "\($0.key):\($0.value.count):\($0.value.completed ? 1 : 0)" }
-      .joined(separator: ";")
-    return "\(calendar.id.uuidString)|\(year)|\(entriesSignature)"
+    let dayKeySeed = dayKey(for: daySeed)
+    return "\(calendar.id.uuidString)|\(year)|\(dayKeySeed)|v\(dataVersion)"
   }
 
-  private func computeStatsBundle() -> StatsBundle {
-    let key = makeCacheKey()
-    if let cached = Self.statsCache.get(key) { return cached }
+  private func computeStatsBundle(
+    cacheKey: String,
+    calendar: CustomCalendar,
+    year: Int,
+    todayLocal: Date
+  ) -> StatsBundle {
+    if let cached = Self.statsCache.get(cacheKey) { return cached }
 
     let cal = Calendar.current
-    let year = valuationStore.selectedYear
-    let todayLocal = today
+    let entries = calendar.entries
 
     // Riusa: getStats() già esistente per basic
     let basic = getStats()
 
     // Adattatori leggeri
     func entryOn(_ date: Date) -> CalendarEntry? {
-      store.getEntry(calendarId: calendar.id, date: date)
+      entries[dayKey(for: date)]
     }
     func isSuccessOn(_ date: Date) -> Bool {
       isEntrySuccess(entryOn(date), calendar: calendar)
@@ -240,7 +240,7 @@ struct CustomCalendarView: View {
     )
 
     // Today's count for this calendar (optional)
-    let todaysCount: Int? = store.getEntry(calendarId: calendar.id, date: todayLocal)?.count
+    let todaysCount: Int? = entries[dayKey(for: todayLocal)]?.count
 
     let bundle = StatsBundle(
       basic: basic,
@@ -253,7 +253,7 @@ struct CustomCalendarView: View {
       volatilityStd: volatility,
       todaysCount: todaysCount
     )
-    Self.statsCache.set(key, value: bundle)
+    Self.statsCache.set(cacheKey, value: bundle)
     return bundle
   }
 
@@ -274,6 +274,10 @@ struct CustomCalendarView: View {
   }
 
   var body: some View {
+    let daySeed = Calendar.current.startOfDay(for: Date())
+    let dataVersion = store.dataVersion
+    let statsSignature = makeCacheKey(daySeed: daySeed, dataVersion: dataVersion)
+
     ScrollView {
       VStack(spacing: 10) {
         // Stats header
@@ -389,29 +393,32 @@ struct CustomCalendarView: View {
         .frame(height: UIScreen.main.bounds.height * 0.55)
 
         // Calculate today's count
-        let todayDateString = customDateFormatter(date: today)
-        let todaysLogCount = calendar.entries[todayDateString]?.count ?? 0
+        let todayKey = dayKey(for: today)
+        let todaysLogCount = calendar.entries[todayKey]?.count ?? 0
 
-        let bundle = computeStatsBundle()
-
-        CalendarStatisticsView(
-          stats: bundle.basic,
-          accentColor: Color(calendar.color),
-          todaysCount: todaysLogCount,
-          unit: calendar.unit,
-          currencySymbol: calendar.currencySymbol,
-          completionRateLast30d: bundle.completionRate30d,
-          bestWeekday: bundle.bestWeekday,
-          weekdayRates: bundle.weekdayRates,
-          monthlyRates: bundle.monthlyRates,
-          rolling7d: bundle.rolling7d,
-          rolling30d: bundle.rolling30d,
-          volatilityStdDev: bundle.volatilityStd,
-          isPremium: isPremium(customerInfo: customerInfo),
-          onUpgrade: { isPaywallPresented = true }
-        )
-        .id(colorScheme)
-        .padding(.top, 20)
+        if let bundle = statsBundle {
+          CalendarStatisticsView(
+            stats: bundle.basic,
+            accentColor: Color(calendar.color),
+            todaysCount: todaysLogCount,
+            unit: calendar.unit,
+            currencySymbol: calendar.currencySymbol,
+            completionRateLast30d: bundle.completionRate30d,
+            bestWeekday: bundle.bestWeekday,
+            weekdayRates: bundle.weekdayRates,
+            monthlyRates: bundle.monthlyRates,
+            rolling7d: bundle.rolling7d,
+            rolling30d: bundle.rolling30d,
+            volatilityStdDev: bundle.volatilityStd,
+            isPremium: isPremium(customerInfo: customerInfo),
+            onUpgrade: { isPaywallPresented = true }
+          )
+          .id(colorScheme)
+          .padding(.top, 20)
+        } else {
+          ProgressView()
+            .padding(.top, 20)
+        }
 
       }
       .frame(maxWidth: .infinity, alignment: .top)
@@ -471,6 +478,17 @@ struct CustomCalendarView: View {
       Purchases.shared.getCustomerInfo { info, _ in
         self.customerInfo = info
       }
+    }
+    .task(id: statsSignature) {
+      let bundle = await Task.detached(priority: .userInitiated) {
+        computeStatsBundle(
+          cacheKey: statsSignature,
+          calendar: calendar,
+          year: valuationStore.selectedYear,
+          todayLocal: Date()
+        )
+      }.value
+      statsBundle = bundle
     }
   }
 }

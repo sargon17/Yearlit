@@ -172,7 +172,6 @@ struct AllCalendarsRecapView: View {
       }
     }
     .task(id: statsSignature) {
-      statsBundle = nil
       let bundle = await Task.detached(priority: .userInitiated) {
         computeOverallStats(
           cacheKey: statsSignature,
