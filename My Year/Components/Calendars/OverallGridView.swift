@@ -12,6 +12,7 @@ struct OverallGridView: View {
   let today: Date = DateInRegion(region: .current).date
   @State private var mappedDays: [(date: Date, color: Color)] = []
   @State private var counterPct75: [UUID: Double] = [:]
+  @State private var didUseDiskGridCache: Bool = false
 
   private static let mappedDaysCache = DaysCache<String, [(date: Date, color: Color)]>()
 
@@ -60,6 +61,13 @@ struct OverallGridView: View {
       .frame(maxWidth: .infinity, maxHeight: .infinity)
       .padding(.horizontal)
       .task(id: sig) {
+        if didUseDiskGridCache { return }
+        if OverviewGridCache.load(year: year, daySeedKey: daySeedKey) != nil {
+          didUseDiskGridCache = true
+          return
+        }
+        if store.isLoading { return }
+        guard store.dataVersion == dataVersion else { return }
         let cacheKey = sig
         if let cached = Self.mappedDaysCache.get(for: cacheKey) {
           await MainActor.run { mappedDays = cached }
@@ -126,6 +134,7 @@ struct OverallGridView: View {
       .task(id: daySeedKey) {
         guard mappedDays.isEmpty else { return }
         guard let zByDay = OverviewGridCache.load(year: year, daySeedKey: daySeedKey) else { return }
+        didUseDiskGridCache = true
         let inactiveColor = GarnishColor.blend(.surfaceMuted, with: .textPrimary, ratio: 0.02)
         let activeColor = GarnishColor.blend(.surfaceMuted, with: .textPrimary, ratio: 0.08)
         let cachedMappedDays = dates.map { day -> (date: Date, color: Color) in

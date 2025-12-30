@@ -330,6 +330,7 @@ public final class CustomCalendarStore: ObservableObject {
 
   public init(container: ModelContainer = SwiftDataManager.container) {
     self.container = container
+    dataVersion = Self.loadDataVersion()
 
     isLoading = true
     let container = container
@@ -341,7 +342,6 @@ public final class CustomCalendarStore: ObservableObject {
           guard let self else { return }
           self.calendars = calendars
           self.isLoading = false
-          self.bumpDataVersion()
         }
       } catch {
         NSLog("Failed to load calendars from SwiftData: \(error)")
@@ -349,7 +349,6 @@ public final class CustomCalendarStore: ObservableObject {
           guard let self else { return }
           self.calendars = []
           self.isLoading = false
-          self.bumpDataVersion()
         }
       }
     }
@@ -372,7 +371,6 @@ public final class CustomCalendarStore: ObservableObject {
           if showLoadingIndicator {
             self.isLoading = false
           }
-          self.bumpDataVersion()
         }
       } catch {
         NSLog("Failed to load calendars from SwiftData: \(error)")
@@ -382,7 +380,6 @@ public final class CustomCalendarStore: ObservableObject {
           if showLoadingIndicator {
             self.isLoading = false
           }
-          self.bumpDataVersion()
         }
       }
     }
@@ -412,6 +409,7 @@ public final class CustomCalendarStore: ObservableObject {
       }
 
       try persistChanges(in: context)
+      bumpDataVersion()
     } catch {
       NSLog("Failed to add calendar: \(error)")
     }
@@ -456,6 +454,7 @@ public final class CustomCalendarStore: ObservableObject {
       }
 
       try persistChanges(in: context)
+      bumpDataVersion()
       loadCalendars(showLoadingIndicator: false)
     } catch {
       NSLog("Failed to update calendar: \(error)")
@@ -472,6 +471,7 @@ public final class CustomCalendarStore: ObservableObject {
       }
       context.delete(entity)
       try persistChanges(in: context)
+      bumpDataVersion()
       loadCalendars(showLoadingIndicator: false)
     } catch {
       NSLog("Failed to delete calendar: \(error)")
@@ -525,6 +525,7 @@ public final class CustomCalendarStore: ObservableObject {
       }
 
       try persistChanges(in: context)
+      bumpDataVersion()
       loadCalendars(showLoadingIndicator: false)
     } catch {
       NSLog("Failed to add entry: \(error)")
@@ -546,6 +547,7 @@ public final class CustomCalendarStore: ObservableObject {
         context.delete(entry)
       }
       try persistChanges(in: context)
+      bumpDataVersion()
       loadCalendars(showLoadingIndicator: false)
     } catch {
       NSLog("Failed to clear entries: \(error)")
@@ -560,6 +562,7 @@ public final class CustomCalendarStore: ObservableObject {
       guard let target = fetchEntry(compositeKey: compositeKey, in: context) else { return }
       context.delete(target)
       try persistChanges(in: context)
+      bumpDataVersion()
       loadCalendars(showLoadingIndicator: false)
     } catch {
       NSLog("Failed to delete entry: \(error)")
@@ -605,8 +608,15 @@ public final class CustomCalendarStore: ObservableObject {
     DayKeyFormatter.shared.string(from: date)
   }
 
+  private static let dataVersionKey = "CustomCalendarStore.dataVersion"
+
+  private static func loadDataVersion() -> Int {
+    UserDefaults.standard.integer(forKey: dataVersionKey)
+  }
+
   private func bumpDataVersion() {
     dataVersion &+= 1
+    UserDefaults.standard.set(dataVersion, forKey: Self.dataVersionKey)
   }
 
   private static func fetchCalendars(container: ModelContainer) throws -> [CustomCalendar] {

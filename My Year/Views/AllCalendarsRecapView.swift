@@ -15,6 +15,7 @@ struct AllCalendarsRecapView: View {
   @State private var isPaywallPresented: Bool = false
   @State private var statsBundle: StatsBundle? = nil
   @State private var cachedStatsBundle: StatsBundle? = nil
+  @State private var didUseDiskStatsCache: Bool = false
 
   private static let statsCache = StatsCache()
   private static let daySeedFormatter = ISO8601DateFormatter()
@@ -175,6 +176,13 @@ struct AllCalendarsRecapView: View {
       }
     }
     .task(id: statsSignature) {
+      if didUseDiskStatsCache { return }
+      if OverviewStatsCache.load(year: selectedYear, daySeedKey: daySeedKey) != nil {
+        didUseDiskStatsCache = true
+        return
+      }
+      if store.isLoading { return }
+      guard store.dataVersion == dataVersion else { return }
       let bundle = await Task.detached(priority: .userInitiated) {
         computeOverallStats(
           cacheKey: statsSignature,
@@ -188,7 +196,10 @@ struct AllCalendarsRecapView: View {
     }
     .task(id: daySeedKey) {
       if cachedStatsBundle == nil {
-        cachedStatsBundle = OverviewStatsCache.load(year: selectedYear, daySeedKey: daySeedKey)
+        if let cached = OverviewStatsCache.load(year: selectedYear, daySeedKey: daySeedKey) {
+          cachedStatsBundle = cached
+          didUseDiskStatsCache = true
+        }
       }
     }
   }
