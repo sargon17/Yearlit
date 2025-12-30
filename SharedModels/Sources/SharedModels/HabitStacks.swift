@@ -330,68 +330,28 @@ public final class HabitStackStore: ObservableObject {
     if showLoadingIndicator {
       isLoading = true
     }
-    defer {
-      if showLoadingIndicator {
-        isLoading = false
-      }
-    }
 
-    do {
-      let context: ModelContext = makeContext()
-      let stackDescriptor = FetchDescriptor<HabitStackEntity>(
-        sortBy: [
-          SortDescriptor(\HabitStackEntity.order),
-          SortDescriptor(\HabitStackEntity.createdAt)
-        ]
-      )
-      let stepDescriptor = FetchDescriptor<HabitStackStepEntity>(
-        sortBy: [
-          SortDescriptor(\HabitStackStepEntity.stackId),
-          SortDescriptor(\HabitStackStepEntity.order)
-        ]
-      )
-      let stackEntities = try context.fetch(stackDescriptor)
-      let stepEntities = try context.fetch(stepDescriptor)
-      let groupedSteps = Dictionary(grouping: stepEntities, by: { $0.stackId })
-
-      stacks = stackEntities.map { entity in
-        let steps = groupedSteps[entity.id, default: []]
-          .sorted { lhs, rhs in
-            if lhs.order == rhs.order {
-              return lhs.createdAt < rhs.createdAt
-            }
-            return lhs.order < rhs.order
+    let container = container
+    Task.detached(priority: .userInitiated) { [weak self] in
+      do {
+        let stacks = try Self.fetchStacks(container: container)
+        await MainActor.run {
+          guard let self else { return }
+          self.stacks = stacks
+          if showLoadingIndicator {
+            self.isLoading = false
           }
-          .map { $0.toHabitStackStep() }
-        if let stack = try? HabitStack(
-          id: entity.id,
-          name: entity.name,
-          prompt: entity.prompt,
-          scheduledHour: entity.scheduledHour,
-          scheduledMinute: entity.scheduledMinute,
-          order: entity.order,
-          steps: steps,
-          createdAt: entity.createdAt,
-          updatedAt: entity.updatedAt
-        ) {
-          return stack
         }
-
-        return HabitStack(
-          uncheckedId: entity.id,
-          name: entity.name,
-          prompt: entity.prompt,
-          scheduledHour: nil,
-          scheduledMinute: nil,
-          order: entity.order,
-          steps: steps,
-          createdAt: entity.createdAt,
-          updatedAt: entity.updatedAt
-        )
+      } catch {
+        NSLog("Failed to load habit stacks: \(error)")
+        await MainActor.run {
+          guard let self else { return }
+          self.stacks = []
+          if showLoadingIndicator {
+            self.isLoading = false
+          }
+        }
       }
-    } catch {
-      NSLog("Failed to load habit stacks: \(error)")
-      stacks = []
     }
   }
 
@@ -544,9 +504,68 @@ public final class HabitStackStore: ObservableObject {
   }
 
   private func makeContext() -> ModelContext {
+    Self.makeContext(container: container)
+  }
+
+  private nonisolated static func makeContext(container: ModelContainer) -> ModelContext {
     let context = ModelContext(container)
     context.autosaveEnabled = false
     return context
+  }
+
+  private nonisolated static func fetchStacks(container: ModelContainer) throws -> [HabitStack] {
+    let context: ModelContext = makeContext(container: container)
+    let stackDescriptor = FetchDescriptor<HabitStackEntity>(
+      sortBy: [
+        SortDescriptor(\HabitStackEntity.order),
+        SortDescriptor(\HabitStackEntity.createdAt)
+      ]
+    )
+    let stepDescriptor = FetchDescriptor<HabitStackStepEntity>(
+      sortBy: [
+        SortDescriptor(\HabitStackStepEntity.stackId),
+        SortDescriptor(\HabitStackStepEntity.order)
+      ]
+    )
+    let stackEntities = try context.fetch(stackDescriptor)
+    let stepEntities = try context.fetch(stepDescriptor)
+    let groupedSteps = Dictionary(grouping: stepEntities, by: { $0.stackId })
+
+    return stackEntities.map { entity in
+      let steps = groupedSteps[entity.id, default: []]
+        .sorted { lhs, rhs in
+          if lhs.order == rhs.order {
+            return lhs.createdAt < rhs.createdAt
+          }
+          return lhs.order < rhs.order
+        }
+        .map { $0.toHabitStackStep() }
+      if let stack = try? HabitStack(
+        id: entity.id,
+        name: entity.name,
+        prompt: entity.prompt,
+        scheduledHour: entity.scheduledHour,
+        scheduledMinute: entity.scheduledMinute,
+        order: entity.order,
+        steps: steps,
+        createdAt: entity.createdAt,
+        updatedAt: entity.updatedAt
+      ) {
+        return stack
+      }
+
+      return HabitStack(
+        uncheckedId: entity.id,
+        name: entity.name,
+        prompt: entity.prompt,
+        scheduledHour: nil,
+        scheduledMinute: nil,
+        order: entity.order,
+        steps: steps,
+        createdAt: entity.createdAt,
+        updatedAt: entity.updatedAt
+      )
+    }
   }
 
   private func moveElements<T>(
