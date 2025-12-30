@@ -16,9 +16,10 @@ struct AllCalendarsRecapView: View {
   @State private var statsBundle: StatsBundle?
 
   private static let statsCache = StatsCache()
+  private static let daySeedFormatter = ISO8601DateFormatter()
 
   private func makeCacheKey(year: Int, daySeed: Date, dataVersion: Int) -> String {
-    let daySeedStr = ISO8601DateFormatter().string(from: daySeed)
+    let daySeedStr = Self.daySeedFormatter.string(from: daySeed)
     return "overall|\(year)|\(daySeedStr)|v\(dataVersion)"
   }
 
