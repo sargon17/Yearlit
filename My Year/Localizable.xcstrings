@@ -175,6 +175,9 @@
     "Enable Mood Tracking" : {
 
     },
+    "Enable Runtime Debug" : {
+
+    },
     "Error" : {
 
     },
@@ -422,9 +425,6 @@
     "To make habits stick, keep them:" : {
 
     },
-    "Track your year mood" : {
-
-    },
     "Unable to save" : {
 
     },
@@ -440,6 +440,9 @@
     "Value" : {
 
     },
+    "Wand Fill Force: %.2f" : {
+
+    },
     "Watch your chain grow." : {
 
     },
@@ -450,9 +453,6 @@
 
     },
     "Why I’m Building Yearlit" : {
-
-    },
-    "Year" : {
 
     },
     "Yearlit" : {

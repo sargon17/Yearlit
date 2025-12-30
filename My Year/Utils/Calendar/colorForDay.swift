@@ -2,15 +2,9 @@ import Garnish
 import SharedModels
 import SwiftUI
 
-private enum DayKeyFormatterLocal {
-  static let shared: DateFormatter = {
-    let formatter = DateFormatter()
-    formatter.calendar = Calendar(identifier: .gregorian)
-    formatter.locale = Locale(identifier: "en_US_POSIX")
-    formatter.timeZone = TimeZone(secondsFromGMT: 0)
-    formatter.dateFormat = "yyyy-MM-dd"
-    return formatter
-  }()
+private enum DayColors {
+  static let inactive = GarnishColor.blend(.surfaceMuted, with: .textPrimary, ratio: 0.02)
+  static let active = GarnishColor.blend(.surfaceMuted, with: .textPrimary, ratio: 0.08)
 }
 
 func colorForDay(
@@ -20,36 +14,33 @@ func colorForDay(
   maxCount: Int
 ) -> Color {
 
-  let inactiveColor = GarnishColor.blend(.surfaceMuted, with: .textPrimary, ratio: 0.02)
-  let activeColor = GarnishColor.blend(.surfaceMuted, with: .textPrimary, ratio: 0.08)
-
   guard !day.isInFuture else {
-    return inactiveColor
+    return DayColors.inactive
   }
 
-  let dateKey: String = DayKeyFormatterLocal.shared.string(from: day)
+  let dateKey: String = dayKey(for: day)
 
   if let entry: CalendarEntry = calendar.entries[dateKey] {
     switch calendar.trackingType {
     case .binary:
-      return entry.completed ? Color(calendar.color) : activeColor
+      return entry.completed ? Color(calendar.color) : DayColors.active
     case .counter:
       if entry.count > 0 {
         let safeMax = max(maxCount, 1)
         let ratio = max(0.1, Double(entry.count) / Double(safeMax))
         return GarnishColor.blend(.surfaceMuted, with: Color(calendar.color), ratio: ratio)
       } else {
-        return activeColor
+        return DayColors.active
       }
     case .multipleDaily:
       if entry.count > 0 {
         let opacity = min(1, max(0.2, Double(entry.count) / Double(calendar.dailyTarget)))
         return Color(calendar.color).opacity(opacity)
       } else {
-        return activeColor
+        return DayColors.active
       }
     }
   }
 
-  return activeColor
+  return DayColors.active
 }

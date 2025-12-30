@@ -5,23 +5,21 @@
 //  Created by Mykhaylo Tymofyeyev  on 01/08/25.
 //
 
+import Garnish
 import SharedModels
-import SwiftData
 import SwiftDate
 import SwiftUI
 
 struct CalendarsOverviewsItem: View {
   let calendar: CustomCalendar
-  @Environment(\.dismiss) private var dismiss
   @ObservedObject var store: CustomCalendarStore
   @State private var showDeleteConfirmation = false
-  @State private var showEditSheet = false
-  @Binding var isReorderActive: Bool
 
-  let latestSlotsCount = 28
-  let columnsCount = 7
+  private let latestSlotsCount = 56
+  private let rowsCount = 4
+  private let today = Date()
 
-  let today = Date()
+  private static let slotColorsCache = SlotsCache<String, [Color]>()
 
   var latestSlots: [Date] {
     let today = DateInRegion()
@@ -38,8 +36,10 @@ struct CalendarsOverviewsItem: View {
     ui
       .modifier(
         ContextOrDragModifier(
-          isReorderActive: isReorderActive, calendar: calendar, store: store,
-          showDeleteConfirmation: $showDeleteConfirmation)
+          calendar: calendar,
+          store: store,
+          showDeleteConfirmation: $showDeleteConfirmation
+        )
       )
       .alert("Delete Calendar?", isPresented: $showDeleteConfirmation) {
         Button("Delete", role: .destructive) {
@@ -67,7 +67,7 @@ extension CalendarsOverviewsItem {
 
       latestSlotsView
         .frame(maxWidth: .greatestFiniteMagnitude, alignment: .leading)
-        .aspectRatio(7 / 4, contentMode: .fit)
+        .aspectRatio(latestGridAspectRatio, contentMode: .fit)
 
       Text("[\(calendar.trackingType.description)]".lowercased())
         .font(.system(size: 10, design: .monospaced))
@@ -76,33 +76,76 @@ extension CalendarsOverviewsItem {
         .minimumScaleFactor(0.5)
     }
     .frame(maxWidth: .greatestFiniteMagnitude, alignment: .leading)
-    .cardStyle()
+    .padding(EdgeInsets(top: 12, leading: 16, bottom: 12, trailing: 16))
   }
 
   var latestSlotsView: some View {
     GeometryReader { geometry in
-      let totalWidth = geometry.size.width
       let spacing = 6.0
-      let totalSpacing = spacing * (max(CGFloat(columnsCount) - 1.0, 0.0))
-      let itemWidth = (totalWidth - totalSpacing) / CGFloat(columnsCount)
-      let maxCount = getMaxCount(calendar: calendar)
-      LazyVGrid(
-        columns: Array(repeating: GridItem(.fixed(itemWidth), spacing: spacing), count: columnsCount),
+      let totalHeight = geometry.size.height
+      let totalSpacing = spacing * (max(CGFloat(rowsCount) - 1.0, 0.0))
+      let itemSize = max(0, (totalHeight - totalSpacing) / CGFloat(rowsCount))
+      let colors = latestSlotColors
+      LazyHGrid(
+        rows: Array(repeating: GridItem(.fixed(itemSize), spacing: spacing), count: rowsCount),
         spacing: spacing
       ) {
-        ForEach(latestSlots, id: \.self) { slot in
+        ForEach(Array(colors.enumerated()), id: \.offset) { _, color in
           VisualEntry(
-            width: itemWidth,
-            color: colorForDay(
-              slot,
-              calendar: calendar,
-              today: today,
-              maxCount: maxCount
-            )
+            width: itemSize,
+            color: color
           )
         }
       }
     }
+  }
+}
+
+extension CalendarsOverviewsItem {
+  private var columnsCount: Int {
+    max(1, Int(ceil(Double(latestSlotsCount) / Double(rowsCount))))
+  }
+
+  private var latestGridAspectRatio: CGFloat {
+    CGFloat(columnsCount) / CGFloat(rowsCount)
+  }
+
+  private var latestSlotColors: [Color] {
+    let daySeedKey = dayKey(for: Calendar.current.startOfDay(for: today))
+    let cacheKey = "\(calendar.id.uuidString)|\(store.dataVersion)|\(daySeedKey)|\(latestSlotsCount)"
+    if let cached = Self.slotColorsCache.get(for: cacheKey) { return cached }
+
+    let entries = calendar.entries
+    let inactiveColor = GarnishColor.blend(.surfaceMuted, with: .textPrimary, ratio: 0.02)
+    let activeColor = GarnishColor.blend(.surfaceMuted, with: .textPrimary, ratio: 0.08)
+    let maxCount = calendar.trackingType == .counter ? getMaxCount(calendar: calendar) : 1
+
+    let colors = latestSlots.map { day -> Color in
+      if day > today { return inactiveColor }
+      let key = dayKey(for: day)
+      guard let entry = entries[key] else { return activeColor }
+      switch calendar.trackingType {
+      case .binary:
+        return entry.completed ? Color(calendar.color) : activeColor
+      case .counter:
+        if entry.count > 0 {
+          let ratio = max(0.1, Double(entry.count) / Double(max(maxCount, 1)))
+          return GarnishColor.blend(.surfaceMuted, with: Color(calendar.color), ratio: ratio)
+        } else {
+          return activeColor
+        }
+      case .multipleDaily:
+        if entry.count > 0 {
+          let opacity = min(1, max(0.2, Double(entry.count) / Double(calendar.dailyTarget)))
+          return Color(calendar.color).opacity(opacity)
+        } else {
+          return activeColor
+        }
+      }
+    }
+
+    Self.slotColorsCache.set(colors, for: cacheKey)
+    return colors
   }
 }
 
@@ -115,5 +158,18 @@ struct VisualEntry: View {
       .fill(color)
       .frame(width: width, height: width)
       .cornerRadius(2)
+  }
+}
+
+private final class SlotsCache<Key: Hashable, Value> {
+  private var cache: [Key: Value] = [:]
+  private let queue = DispatchQueue(label: "CalendarsOverviewsItem.SlotsCache", attributes: .concurrent)
+
+  func get(for key: Key) -> Value? {
+    queue.sync { cache[key] }
+  }
+
+  func set(_ value: Value, for key: Key) {
+    queue.sync(flags: .barrier) { cache[key] = value }
   }
 }
