@@ -38,7 +38,6 @@ enum SelectedDate: Equatable, Identifiable {
 
 struct CustomCalendarView: View {
   @Environment(\.colorScheme) var colorScheme
-  @Environment(\.dates) var dates
   let calendar: CustomCalendar
   @StateObject private var store: CustomCalendarStore = .shared
   @ObservedObject private var valuationStore: ValuationStore = .shared
@@ -47,6 +46,10 @@ struct CustomCalendarView: View {
   @AppStorage("wandFillForce") private var wandFillForce: Double = 0.5
 
   private let today = Date()
+
+  private var calendarDates: [Date] {
+    getYearDatesArray(for: valuationStore.selectedYear)
+  }
 
   @State private var showingEditSheet: Bool = false
   @State private var showingYearPicker: Bool = false
@@ -258,7 +261,7 @@ struct CustomCalendarView: View {
   }
 
   private func handleQuickAdd() {
-    let entryDate = dates.first { Calendar.current.isDate($0, inSameDayAs: Date()) } ?? Date()
+    let entryDate = calendarDates.first { Calendar.current.isDate($0, inSameDayAs: Date()) } ?? Date()
     quickEntry(
       calendar: calendar,
       date: entryDate,
@@ -317,24 +320,26 @@ struct CustomCalendarView: View {
                   .padding(.horizontal, 4)
                 }
 
-                Button(action: {
-                  handleQuickAdd()
-                }) {
-                  ZStack {
-                    RoundedRectangle(cornerRadius: 3)
-                      .fill(Color(calendar.color).opacity(0.1))
-                      .frame(width: 20, height: 20)
+                if valuationStore.selectedYear == Calendar.current.component(.year, from: Date()) {
+                  Button(action: {
+                    handleQuickAdd()
+                  }) {
+                    ZStack {
+                      RoundedRectangle(cornerRadius: 3)
+                        .fill(Color(calendar.color).opacity(0.1))
+                        .frame(width: 20, height: 20)
 
-                    Image(
-                      systemName: calendar.trackingType == .binary
-                        && store.getEntry(calendarId: calendar.id, date: today) != nil
-                        && store.getEntry(calendarId: calendar.id, date: today)!.completed
-                        ? "minus" : "plus"
-                    )
-                    .font(.system(size: 16))
-                    .foregroundColor(Color(calendar.color))
-                  }
-                }.frame(width: 24, height: 24)
+                      Image(
+                        systemName: calendar.trackingType == .binary
+                          && store.getEntry(calendarId: calendar.id, date: today) != nil
+                          && store.getEntry(calendarId: calendar.id, date: today)!.completed
+                          ? "minus" : "plus"
+                      )
+                      .font(.system(size: 16))
+                      .foregroundColor(Color(calendar.color))
+                    }
+                  }.frame(width: 24, height: 24)
+                }
               }
 
               HStack(spacing: 4) {
@@ -387,8 +392,9 @@ struct CustomCalendarView: View {
         GridView(
           calendar: calendar,
           store: store,
-          valuationStore: valuationStore,
-          handleDayTap: handleDayTap
+          handleDayTap: handleDayTap,
+          dates: calendarDates,
+          year: valuationStore.selectedYear
         )
         .frame(height: UIScreen.main.bounds.height * 0.55)
 
@@ -460,9 +466,7 @@ struct CustomCalendarView: View {
         .onAppear {
           tempSelectedYear = valuationStore.selectedYear
         }
-        .surfaceBackground(Color("surface-muted"))
       }
-      .surfaceBackground(Color("surface-muted"))
       .presentationDetents([.height(280)])
     }
     .sheet(isPresented: $isPaywallPresented) {

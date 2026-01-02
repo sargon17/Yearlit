@@ -6,8 +6,9 @@ import SwiftUI
 struct OverallGridView: View {
   let accentColor: Color
   let store: CustomCalendarStore
+  let dates: [Date]
+  let year: Int
 
-  @Environment(\.dates) var dates
   @Environment(\.colorScheme) var colorScheme
   let today: Date = DateInRegion(region: .current).date
   @State private var mappedDays: [(date: Date, color: Color)] = []
@@ -36,9 +37,8 @@ struct OverallGridView: View {
         (availableHeight - (dotSize * CGFloat(rows))) / CGFloat(max(1, rows - 1))
       )
       let dataVersion = store.dataVersion
-      let sig = cacheSignature(dataVersion: dataVersion)
+      let sig = cacheSignature(dataVersion: dataVersion, year: year)
       let daySeedKey = dayKey(for: Calendar.current.startOfDay(for: today))
-      let year = Calendar.current.component(.year, from: today)
       let cacheKey = CacheKey(scope: .overviewGridMappedDays, identifier: sig)
       let diskKey = CacheKey(
         scope: .overviewGridZByDay,
@@ -68,8 +68,9 @@ struct OverallGridView: View {
       }
       .task(id: sig) {
         if didUseDiskGridCache { return }
-        if CacheStore.shared.loadDisk(diskKey, as: [String: Double].self) != nil {
+        if let zByDay: [String: Double] = CacheStore.shared.loadDisk(diskKey) {
           didUseDiskGridCache = true
+          mappedDays = mappedDays(from: zByDay)
           return
         }
         if store.isLoading { return }
@@ -136,27 +137,24 @@ struct OverallGridView: View {
           }
         }
       }
-      .task(id: daySeedKey) {
-        guard mappedDays.isEmpty else { return }
-        guard let zByDay: [String: Double] = CacheStore.shared.loadDisk(diskKey) else { return }
-        didUseDiskGridCache = true
-        let inactiveColor = GarnishColor.blend(.surfaceMuted, with: .textPrimary, ratio: 0.02)
-        let activeColor = GarnishColor.blend(.surfaceMuted, with: .textPrimary, ratio: 0.08)
-        let cachedMappedDays = dates.map { day -> (date: Date, color: Color) in
-          if day > today { return (day, inactiveColor) }
-          let z = zByDay[dayKey(for: day)] ?? 0
-          if z <= 0 { return (day, activeColor) }
-          let opacity = min(1, max(0.2, z))
-          return (day, accentColor.opacity(opacity))
-        }
-        mappedDays = cachedMappedDays
-      }
     }
   }
 
-  private func cacheSignature(dataVersion: Int) -> String {
+  private func cacheSignature(dataVersion: Int, year: Int) -> String {
     let schemeKey = colorScheme == .dark ? "dark" : "light"
-    return "overall-grid-\(dataVersion)-\(schemeKey)"
+    return "overall-grid-\(year)-\(dataVersion)-\(schemeKey)"
+  }
+
+  private func mappedDays(from zByDay: [String: Double]) -> [(date: Date, color: Color)] {
+    let inactiveColor = GarnishColor.blend(.surfaceMuted, with: .textPrimary, ratio: 0.02)
+    let activeColor = GarnishColor.blend(.surfaceMuted, with: .textPrimary, ratio: 0.08)
+    return dates.map { day -> (date: Date, color: Color) in
+      if day > today { return (day, inactiveColor) }
+      let z = zByDay[dayKey(for: day)] ?? 0
+      if z <= 0 { return (day, activeColor) }
+      let opacity = min(1, max(0.2, z))
+      return (day, accentColor.opacity(opacity))
+    }
   }
 
   private func dataPresent(on day: Date) -> Bool {

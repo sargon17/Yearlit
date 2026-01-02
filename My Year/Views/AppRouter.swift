@@ -2,6 +2,7 @@ import SwiftUI
 import SwiftfulRouting
 
 struct AppRouter: View {
+  /*
   @State private var selectedIndex: Int = 0
 
   var body: some View {
@@ -19,5 +20,11 @@ struct AppRouter: View {
         .tag(1)
     }
     .ignoresSafeArea(edges: .bottom)
+  }
+  */
+
+  var body: some View {
+    CalendarsSection()
+      .ignoresSafeArea(edges: .bottom)
   }
 }

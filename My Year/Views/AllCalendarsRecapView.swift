@@ -16,8 +16,14 @@ struct AllCalendarsRecapView: View {
   @State private var statsBundle: StatsBundle? = nil
   @State private var cachedStatsBundle: StatsBundle? = nil
   @State private var didUseDiskStatsCache: Bool = false
+  @State private var showingYearPicker: Bool = false
+  @State private var tempSelectedYear: Int = Calendar.current.component(.year, from: Date())
 
   private static let daySeedFormatter = ISO8601DateFormatter()
+  private let availableYears: [Int] = {
+    let currentYear: Int = Calendar.current.component(.year, from: Date())
+    return Array((currentYear - 10)...currentYear).reversed()
+  }()
 
   private func makeCacheKey(year: Int, daySeed: Date, dataVersion: Int) -> CacheKey {
     let daySeedStr = Self.daySeedFormatter.string(from: daySeed)
@@ -119,7 +125,7 @@ struct AllCalendarsRecapView: View {
                 Spacer()
               }
               HStack(spacing: 4) {
-                Button(action: {}) {
+                Button(action: { showingYearPicker = true }) {
                   Text("\(valuationStore.year.description)")
                     .font(.system(size: 12, design: .monospaced))
                     .foregroundColor(Color("text-tertiary"))
@@ -134,7 +140,9 @@ struct AllCalendarsRecapView: View {
 
         OverallGridView(
           accentColor: Color("qs-emerald"),
-          store: store
+          store: store,
+          dates: getYearDatesArray(for: selectedYear),
+          year: selectedYear
         )
         .frame(height: UIScreen.main.bounds.height * 0.55)
 
@@ -170,6 +178,40 @@ struct AllCalendarsRecapView: View {
     .sheet(isPresented: $isPaywallPresented) {
       PaywallView()
     }
+    .sheet(isPresented: $showingYearPicker) {
+      NavigationStack {
+        VStack {
+          Picker("Select Year", selection: $tempSelectedYear) {
+            ForEach(availableYears, id: \.self) { year in
+              Text(year.description)
+                .foregroundColor(Color("text-primary"))
+                .tag(year)
+            }
+          }
+          .pickerStyle(.wheel)
+        }
+        .navigationTitle("Select Year")
+        .navigationBarTitleDisplayMode(.large)
+        .toolbar {
+          ToolbarItem(placement: .cancellationAction) {
+            Button("Cancel") {
+              tempSelectedYear = valuationStore.selectedYear
+              showingYearPicker = false
+            }
+          }
+          ToolbarItem(placement: .confirmationAction) {
+            Button("Done") {
+              valuationStore.selectedYear = tempSelectedYear
+              showingYearPicker = false
+            }
+          }
+        }
+        .onAppear {
+          tempSelectedYear = valuationStore.selectedYear
+        }
+      }
+      .presentationDetents([.height(280)])
+    }
     .onAppear {
       Purchases.shared.getCustomerInfo { info, _ in
         self.customerInfo = info
@@ -197,7 +239,7 @@ struct AllCalendarsRecapView: View {
       statsBundle = bundle
       saveStatsBundleToDisk(bundle, cacheKey: statsSignature)
     }
-    .task(id: daySeedKey) {
+    .task(id: statsSignature) {
       if cachedStatsBundle == nil {
         if let cached = loadStatsBundleFromDisk(cacheKey: statsSignature) {
           cachedStatsBundle = cached
