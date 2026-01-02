@@ -12,6 +12,7 @@ public final class HabitCalendarEntity {
   public var unitRawValue: String?
   public var defaultRecordValue: Int?
   public var currencySymbol: String?
+  public var isArchived: Bool = false
   public var recurringReminderEnabled: Bool = false
   public var reminderHour: Int?
   public var reminderMinute: Int?
@@ -26,6 +27,7 @@ public final class HabitCalendarEntity {
     unitRawValue: String? = nil,
     defaultRecordValue: Int? = nil,
     currencySymbol: String? = nil,
+    isArchived: Bool = false,
     recurringReminderEnabled: Bool = false,
     reminderHour: Int? = nil,
     reminderMinute: Int? = nil,
@@ -39,6 +41,7 @@ public final class HabitCalendarEntity {
     self.unitRawValue = unitRawValue
     self.defaultRecordValue = defaultRecordValue
     self.currencySymbol = currencySymbol
+    self.isArchived = isArchived
     self.recurringReminderEnabled = recurringReminderEnabled
     self.reminderHour = reminderHour
     self.reminderMinute = reminderMinute
@@ -168,6 +171,7 @@ extension HabitCalendarEntity {
       trackingType: tracking,
       dailyTarget: dailyTarget,
       entries: entries,
+      isArchived: isArchived,
       recurringReminderEnabled: recurringReminderEnabled,
       reminderHour: reminderHour,
       reminderMinute: reminderMinute,
@@ -186,6 +190,7 @@ extension HabitCalendarEntity {
       trackingType: tracking,
       dailyTarget: dailyTarget,
       entries: entries,
+      isArchived: isArchived,
       recurringReminderEnabled: recurringReminderEnabled,
       reminderTime: nil,
       order: order,
@@ -203,6 +208,7 @@ extension HabitCalendarEntity {
     unitRawValue = model.unit?.rawValue
     defaultRecordValue = model.defaultRecordValue
     currencySymbol = model.currencySymbol
+    isArchived = model.isArchived
     recurringReminderEnabled = model.recurringReminderEnabled
     reminderHour = model.reminderHour
     reminderMinute = model.reminderMinute
@@ -219,6 +225,7 @@ extension HabitCalendarEntity {
       unitRawValue: model.unit?.rawValue,
       defaultRecordValue: model.defaultRecordValue,
       currencySymbol: model.currencySymbol,
+      isArchived: model.isArchived,
       recurringReminderEnabled: model.recurringReminderEnabled,
       reminderHour: model.reminderHour,
       reminderMinute: model.reminderMinute,

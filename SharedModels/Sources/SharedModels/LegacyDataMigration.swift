@@ -108,6 +108,7 @@ enum LegacyDataMigrator {
         trackingType: old.trackingType,
         dailyTarget: old.trackingType == .multipleDaily ? 2 : 1,
         entries: old.entries,
+        isArchived: false,
         recurringReminderEnabled: false,
         reminderTime: nil,
         order: index,

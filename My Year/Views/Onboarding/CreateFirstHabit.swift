@@ -27,6 +27,7 @@ struct CreateFirstHabit: View {
       color: "qs-orange",
       trackingType: .binary,
       dailyTarget: 1,
+      isArchived: false,
       recurringReminderEnabled: false,
       reminderTime: nil,
       unit: UnitOfMeasure.none,

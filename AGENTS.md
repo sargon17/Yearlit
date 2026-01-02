@@ -18,6 +18,7 @@
 - Prefer `UpperCamelCase` for types, `lowerCamelCase` for properties/functions, and suffix view structs with `View` (e.g., `ProgressRingView`).
 - Avoid force unwraps and use early exits sparingly; lint will flag `force_cast`, `force_try`, and long files.
 - Place shared utilities in packages rather than the app target to keep dependencies modular.
+- Favor componentization: keep views focused, extract reusable UI/logic into dedicated components/files, and add brief comments when they clarify intent.
 
 ## Testing Guidelines
 - Write `Testing` framework cases in suites like `struct MyFeatureTests` and mark entry points with `@Test` functions.

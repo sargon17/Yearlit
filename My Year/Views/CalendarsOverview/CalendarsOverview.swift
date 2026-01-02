@@ -9,6 +9,7 @@ struct CalendarsOverview: View {
   @Binding var scrollPosition: ScrollPosition
   @Environment(\.dismiss) private var dismiss
   @Environment(\.colorScheme) private var colorScheme
+  @State private var showingArchivedCalendars = false
 
   @Environment(\.router) private var router
 
@@ -20,18 +21,15 @@ struct CalendarsOverview: View {
           .padding(.horizontal, -16)
         LazyVStack(spacing: 12) {
           // Custom Calendar Cards
-          let sortedCalendars = store.calendars.sorted { $0.order < $1.order }
-          ForEach(
-            Array(sortedCalendars.enumerated()), id: \.element.id
-          ) { index, calendar in
-            CalendarsOverviewsItem(
-              calendar: sortedCalendars[index],
-              store: store
-            )
-            .onTapGesture {
-              dismiss()
-              scrollPosition.scrollTo(id: index.description)
-            }
+          let sortedCalendars = store.calendars
+            .filter { !$0.isArchived }
+            .sorted { $0.order < $1.order }
+          ForEach(sortedCalendars, id: \.id) { calendar in
+            CalendarsOverviewsItem(calendar: calendar, store: store)
+              .onTapGesture {
+                dismiss()
+                scrollPosition.scrollTo(id: calendar.id.uuidString)
+              }
 
             CustomSeparator()
               .padding(.horizontal, -16)
@@ -42,7 +40,7 @@ struct CalendarsOverview: View {
             router.showScreen(.sheet) { _ in
               CreateCalendarView { newCalendar in
                 store.addCalendar(newCalendar)
-                scrollPosition.scrollTo(id: store.calendars.count)
+                scrollPosition.scrollTo(id: newCalendar.id.uuidString)
 
                 router.dismissScreen()
 
@@ -75,5 +73,17 @@ struct CalendarsOverview: View {
     }
     .surfaceBackground(Color("surface-muted"), ignoresSafeArea: true)
     .navigationTitle("Calendars")
+    .toolbar {
+      ToolbarItem(placement: .navigationBarTrailing) {
+        Button(action: { showingArchivedCalendars = true }) {
+          Image(systemName: "archivebox")
+            .font(.system(size: 12))
+            .foregroundColor(Color("text-tertiary"))
+        }
+      }
+    }
+    .sheet(isPresented: $showingArchivedCalendars) {
+      ArchivedCalendarsSheet(store: store)
+    }
   }
 }

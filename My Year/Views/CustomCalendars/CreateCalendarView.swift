@@ -56,6 +56,7 @@ struct CreateCalendarView: View {
       color: selectedColor,
       trackingType: trackingType,
       dailyTarget: dailyTarget,
+      isArchived: false,
       recurringReminderEnabled: recurringReminderEnabled,
       reminderTime: recurringReminderEnabled ? reminderTime : nil,
       unit: (trackingType == .counter || trackingType == .multipleDaily) ? selectedUnit : nil,

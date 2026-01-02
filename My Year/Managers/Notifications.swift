@@ -2,7 +2,7 @@ import SharedModels
 import UserNotifications
 
 func scheduleNotifications(for calendar: CustomCalendar) {
-  guard calendar.recurringReminderEnabled, let hour = calendar.reminderHour,
+  guard !calendar.isArchived, calendar.recurringReminderEnabled, let hour = calendar.reminderHour,
     let minute = calendar.reminderMinute
   else {
     UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: [

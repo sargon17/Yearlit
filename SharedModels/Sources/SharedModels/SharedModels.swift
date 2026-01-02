@@ -116,6 +116,7 @@ public struct CustomCalendar: Codable, Identifiable {
   public var currencySymbol: String?
   public var defaultRecordValue: Int?
   public var order: Int = 0
+  public var isArchived: Bool
   public var recurringReminderEnabled: Bool
   public var reminderHour: Int?
   public var reminderMinute: Int?
@@ -124,6 +125,7 @@ public struct CustomCalendar: Codable, Identifiable {
   public init(
     id: UUID = UUID(), name: String, color: String, trackingType: TrackingType,
     dailyTarget: Int = 1, entries: [String: CalendarEntry] = [:],
+    isArchived: Bool = false,
     recurringReminderEnabled: Bool = false, reminderTime: Date? = nil, order: Int = 0,
     unit: UnitOfMeasure? = nil,
     defaultRecordValue: Int? = nil,
@@ -137,6 +139,7 @@ public struct CustomCalendar: Codable, Identifiable {
     self.unit = unit
     self.defaultRecordValue = defaultRecordValue
     self.currencySymbol = currencySymbol
+    self.isArchived = isArchived
     self.recurringReminderEnabled = recurringReminderEnabled
     self.order = order
     if let time = reminderTime {
@@ -154,6 +157,7 @@ public struct CustomCalendar: Codable, Identifiable {
   public init(
     id: UUID = UUID(), name: String, color: String, trackingType: TrackingType,
     dailyTarget: Int = 1, entries: [String: CalendarEntry] = [:],
+    isArchived: Bool = false,
     recurringReminderEnabled: Bool = false, reminderHour: Int? = nil, reminderMinute: Int? = nil,
     order: Int = 0,
     unit: UnitOfMeasure? = nil,
@@ -177,6 +181,7 @@ public struct CustomCalendar: Codable, Identifiable {
     self.unit = unit
     self.defaultRecordValue = defaultRecordValue
     self.currencySymbol = currencySymbol
+    self.isArchived = isArchived
     self.recurringReminderEnabled = recurringReminderEnabled
     self.order = order
     self.reminderHour = reminderHour

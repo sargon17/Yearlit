@@ -39,9 +39,11 @@ struct CalendarsSection: View {
               .slide()
 
             // Custom Calendars
-            ForEach(Array(store.calendars.enumerated()), id: \.element.id) { index, calendar in
+            let activeCalendars = store.calendars.filter { !$0.isArchived }
+            // Use stable IDs to keep paging aligned when filtering.
+            ForEach(activeCalendars, id: \.id) { calendar in
               CustomCalendarView(calendar: calendar)
-                .id(index.description)
+                .id(calendar.id.uuidString)
                 .frame(width: width)
                 .containerRelativeFrame(.horizontal, count: 1, spacing: 0)
                 .slide()
@@ -69,9 +71,7 @@ struct CalendarsSection: View {
               router.showScreen(.sheet) { _ in
                 CreateCalendarView { newCalendar in
                   store.addCalendar(newCalendar)
-                  if let index = store.calendars.firstIndex(where: { $0.id == newCalendar.id }) {
-                    position.scrollTo(id: index.description)
-                  }
+                  position.scrollTo(id: newCalendar.id.uuidString)
                   router.dismissScreen()
                   addPositiveEvent(.createdCalendar)
                 }

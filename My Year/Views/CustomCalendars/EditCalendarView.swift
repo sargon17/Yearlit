@@ -15,6 +15,7 @@ struct EditCalendarView: View {
   @State private var reminderTime: Date
   @State private var selectedUnit: UnitOfMeasure?
   @State private var defaultRecordValue: Int
+  @State private var isArchived: Bool
   @State private var calendarError: CalendarError?
   @State private var showingDeleteConfirmation = false
   @State private var currencySymbol: String
@@ -37,6 +38,7 @@ struct EditCalendarView: View {
     _selectedUnit = State(initialValue: calendar.unit)
     _defaultRecordValue = State(initialValue: calendar.defaultRecordValue ?? 1)
     _currencySymbol = State(initialValue: calendar.currencySymbol ?? "$")
+    _isArchived = State(initialValue: calendar.isArchived)
 
     // Default reminder time set to 9:00 AM as it's a common time for daily reminders
     let defaultTime =
@@ -252,6 +254,33 @@ struct EditCalendarView: View {
         CustomSection(label: "Danger Zone") {
           VStack(spacing: 2) {
             Button(action: {
+              var updatedCalendar = calendar
+              updatedCalendar.isArchived.toggle()
+              isArchived = updatedCalendar.isArchived
+              scheduleNotifications(for: updatedCalendar)
+              onSave(updatedCalendar)
+              dismiss()
+            }) {
+              Text(isArchived ? "Unarchive Calendar" : "Archive Calendar")
+                .frame(maxWidth: .infinity, alignment: .center)
+                .fontWeight(.bold)
+                .padding()
+            }
+            .sameLevelBorder(color: .textPrimary.opacity(0.3))
+            .foregroundStyle(.textPrimary)
+
+            Text(
+              isArchived
+                ? "Unarchiving restores this calendar to your boards and tracking lists."
+                : "Archiving hides this calendar from your boards without deleting past data."
+            )
+            .font(.footnote)
+            .foregroundStyle(.textTertiary)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(.horizontal, 8)
+            .padding(.bottom, 4)
+
+            Button(action: {
               showingDeleteConfirmation = true
             }) {
               Text("Delete Calendar")
@@ -302,22 +331,7 @@ struct EditCalendarView: View {
             calendarError = .invalidName
             return
           }
-          let updatedCalendar = CustomCalendar(
-            id: calendar.id,
-            name: trimmedName,
-            color: selectedColor,
-            trackingType: trackingType,
-            dailyTarget: dailyTarget,
-            entries: calendar.entries,
-            recurringReminderEnabled: recurringReminderEnabled,
-            reminderTime: recurringReminderEnabled ? validateReminderTime(reminderTime) : nil,
-            order: calendar.order,
-            unit: (trackingType == .counter || trackingType == .multipleDaily) ? selectedUnit : nil,
-            defaultRecordValue: (trackingType == .counter || trackingType == .multipleDaily)
-              ? defaultRecordValue : nil,
-            currencySymbol: ((trackingType == .counter || trackingType == .multipleDaily)
-              && selectedUnit == .currency) ? currencySymbol : nil
-          )
+          let updatedCalendar = makeUpdatedCalendar()
           scheduleNotifications(for: updatedCalendar)
           onSave(updatedCalendar)
           dismiss()
@@ -325,5 +339,26 @@ struct EditCalendarView: View {
         .disabled(name.isEmpty)
       }
     }
+  }
+
+  private func makeUpdatedCalendar(isArchived overrideArchived: Bool? = nil) -> CustomCalendar {
+    let trimmedName = name.trimmingCharacters(in: .whitespacesAndNewlines)
+    return CustomCalendar(
+      id: calendar.id,
+      name: trimmedName,
+      color: selectedColor,
+      trackingType: trackingType,
+      dailyTarget: dailyTarget,
+      entries: calendar.entries,
+      isArchived: overrideArchived ?? isArchived,
+      recurringReminderEnabled: recurringReminderEnabled,
+      reminderTime: recurringReminderEnabled ? validateReminderTime(reminderTime) : nil,
+      order: calendar.order,
+      unit: (trackingType == .counter || trackingType == .multipleDaily) ? selectedUnit : nil,
+      defaultRecordValue: (trackingType == .counter || trackingType == .multipleDaily)
+        ? defaultRecordValue : nil,
+      currencySymbol: ((trackingType == .counter || trackingType == .multipleDaily)
+        && selectedUnit == .currency) ? currencySymbol : nil
+    )
   }
 }
