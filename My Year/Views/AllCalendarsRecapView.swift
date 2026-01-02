@@ -18,6 +18,7 @@ struct AllCalendarsRecapView: View {
   @State private var didUseDiskStatsCache: Bool = false
   @State private var showingYearPicker: Bool = false
   @State private var tempSelectedYear: Int = Calendar.current.component(.year, from: Date())
+  @State private var statsRefreshToken = UUID()
 
   private static let daySeedFormatter = ISO8601DateFormatter()
   private let availableYears: [Int] = {
@@ -32,13 +33,11 @@ struct AllCalendarsRecapView: View {
   }
 
   private func computeOverallStats(
-    cacheKey: CacheKey,
     calendars: [CustomCalendar],
     year: Int,
-    todayLocal: Date
+    todayLocal: Date,
+    todayKeyDate: Date?
   ) -> StatsBundle {
-    if let cached: StatsBundle = CacheStore.shared.get(cacheKey) { return cached }
-
     let cal = Calendar.current
     let entriesByCalendar = Dictionary(uniqueKeysWithValues: calendars.map { ($0.id, $0.entries) })
     let (totalCount, perDayTotal) = aggregateCounts(cal: cal, calendars: calendars)
@@ -55,9 +54,14 @@ struct AllCalendarsRecapView: View {
     let activeDays = anySuccessByDay.values.filter { $0 }.count
     let (longestStreak, currentStreak) = computeStreaks(cal: cal, anySuccessByDay)
 
-    let todayKeyCount = computeTodayKeyCount(
-      cal: cal, todayLocal: todayLocal, calendars: calendars, entriesByCalendar: entriesByCalendar
-    )
+    let todayKeyCount: Int? = {
+      guard let keyDate = todayKeyDate else { return nil }
+      let key = dayKey(for: cal.startOfDay(for: keyDate))
+      return calendars.reduce(0) { partial, c in
+        let e = entry(for: c.id, dayKey: key, entriesByCalendar: entriesByCalendar)
+        return partial + (e?.count ?? 0)
+      }
+    }()
 
     let (cr30, avg7, avg30) = computeRollingStats(
       cal: cal,
@@ -97,7 +101,6 @@ struct AllCalendarsRecapView: View {
       todaysCount: todayKeyCount
     )
 
-    CacheStore.shared.set(cacheKey, value: bundle)
     return bundle
   }
 
@@ -108,6 +111,8 @@ struct AllCalendarsRecapView: View {
     let daySeed = Calendar.current.startOfDay(for: Date())
     let daySeedKey = Self.daySeedFormatter.string(from: daySeed)
     let statsSignature = makeCacheKey(year: selectedYear, daySeed: daySeed, dataVersion: dataVersion)
+    let statsTaskId = "\(statsSignature.identifier)|\(statsRefreshToken.uuidString)"
+    let todayKeyDate = getYearDatesArray(for: selectedYear).first { Calendar.current.isDate($0, inSameDayAs: Date()) }
 
     ScrollView {
       VStack(spacing: 10) {
@@ -165,9 +170,6 @@ struct AllCalendarsRecapView: View {
           )
           .id(colorScheme)
           .padding(.top, 20)
-        } else {
-          ProgressView()
-            .padding(.top, 20)
         }
 
       }
@@ -220,7 +222,17 @@ struct AllCalendarsRecapView: View {
     .onChange(of: statsSignature) { _, _ in
       didUseDiskStatsCache = false
     }
-    .task(id: statsSignature) {
+    .onChange(of: store.dataVersion) { _, _ in
+      didUseDiskStatsCache = false
+      statsRefreshToken = UUID()
+    }
+    .onReceive(store.$calendars) { _ in
+      CacheStore.shared.removeDisk(statsSignature)
+      didUseDiskStatsCache = false
+      statsRefreshToken = UUID()
+    }
+    .task(id: statsTaskId) {
+      let token = statsRefreshToken
       if didUseDiskStatsCache { return }
       if loadStatsBundleFromDisk(cacheKey: statsSignature) != nil {
         didUseDiskStatsCache = true
@@ -230,14 +242,16 @@ struct AllCalendarsRecapView: View {
       guard store.dataVersion == dataVersion else { return }
       let bundle = await Task.detached(priority: .userInitiated) {
         computeOverallStats(
-          cacheKey: statsSignature,
           calendars: calendars,
           year: selectedYear,
-          todayLocal: Date()
+          todayLocal: Date(),
+          todayKeyDate: todayKeyDate
         )
       }.value
-      statsBundle = bundle
-      saveStatsBundleToDisk(bundle, cacheKey: statsSignature)
+      if token == statsRefreshToken {
+        statsBundle = bundle
+        saveStatsBundleToDisk(bundle, cacheKey: statsSignature)
+      }
     }
     .task(id: statsSignature) {
       if cachedStatsBundle == nil {

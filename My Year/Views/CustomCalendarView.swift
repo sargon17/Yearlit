@@ -51,6 +51,14 @@ struct CustomCalendarView: View {
     getYearDatesArray(for: valuationStore.selectedYear)
   }
 
+  private var todayKeyDate: Date? {
+    calendarDates.first { Calendar.current.isDate($0, inSameDayAs: Date()) }
+  }
+
+  private var activeCalendar: CustomCalendar {
+    store.calendars.first(where: { $0.id == calendar.id }) ?? calendar
+  }
+
   @State private var showingEditSheet: Bool = false
   @State private var showingYearPicker: Bool = false
   @State private var tempSelectedYear: Int = Calendar.current.component(.year, from: Date())
@@ -58,6 +66,7 @@ struct CustomCalendarView: View {
   @State private var customerInfo: CustomerInfo?
   @State private var isPaywallPresented: Bool = false
   @State private var statsBundle: StatsBundle?
+  @State private var statsRefreshToken = UUID()
 
   @Environment(\.router) private var router
 
@@ -68,7 +77,7 @@ struct CustomCalendarView: View {
 
   private func fillRandomEntries() {
     // TODO: Implement clearEntries(calendarId:) in CustomCalendarStore to enable clearing before filling.
-    store.clearEntries(calendarId: self.calendar.id)
+    store.clearEntries(calendarId: activeCalendar.id)
 
     let calendar = Calendar.current
     let startOfYear = calendar.date(
@@ -78,20 +87,20 @@ struct CustomCalendarView: View {
       let date = calendar.date(byAdding: .day, value: day, to: startOfYear)!
 
       if date <= today, Double.random(in: 0.0...1.0) < wandFillForce {
-        switch self.calendar.trackingType {
+        switch activeCalendar.trackingType {
         case .binary:
           let entry = CalendarEntry(date: date, count: 1, completed: true)
-          store.addEntry(calendarId: self.calendar.id, entry: entry)
+          store.addEntry(calendarId: activeCalendar.id, entry: entry)
         case .counter:
           let count = Int.random(in: 1...5)
           let entry = CalendarEntry(date: date, count: count, completed: count > 0)
-          store.addEntry(calendarId: self.calendar.id, entry: entry)
+          store.addEntry(calendarId: activeCalendar.id, entry: entry)
         case .multipleDaily:
-          let count = Int.random(in: 1...self.calendar.dailyTarget)
+          let count = Int.random(in: 1...activeCalendar.dailyTarget)
           let entry = CalendarEntry(
-            date: date, count: count, completed: count >= self.calendar.dailyTarget
+            date: date, count: count, completed: count >= activeCalendar.dailyTarget
           )
-          store.addEntry(calendarId: self.calendar.id, entry: entry)
+          store.addEntry(calendarId: activeCalendar.id, entry: entry)
         }
       }
     }
@@ -100,26 +109,26 @@ struct CustomCalendarView: View {
   private func handleDayTap(_ date: Date) {
     guard !date.isInFuture else { return }
 
-    if calendar.trackingType != .binary {
+    if activeCalendar.trackingType != .binary {
       router.showScreen(
         .sheetConfig(config: shortSheetConfig)
       ) { _ in
         DayEntryEditSheet(
-          calendar: calendar,
+          calendar: activeCalendar,
           date: date,
           store: store
         )
       }
-    } else if calendar.trackingType == .binary {
-      _ = toggleBinaryEntry(calendarId: calendar.id, date: date, calendarStore: store)
+    } else if activeCalendar.trackingType == .binary {
+      _ = toggleBinaryEntry(calendarId: activeCalendar.id, date: date, calendarStore: store)
     }
-    checkIfReachedThreeDays(calendar)
+    checkIfReachedThreeDays(activeCalendar)
     Task {
       await hapticFeedback()
     }
   }
 
-  private func getStats() -> CalendarStats {
+  private func getStats(for calendar: CustomCalendar) -> CalendarStats {
     let activeDays = calendar.entries.values.filter { entry in
       switch calendar.trackingType {
       case .binary:
@@ -189,26 +198,17 @@ struct CustomCalendarView: View {
     )
   }
 
-  private func makeCacheKey(daySeed: Date, dataVersion: Int) -> CacheKey {
-    let year = valuationStore.selectedYear
-    let dayKeySeed = dayKey(for: daySeed)
-    let identifier = "\(calendar.id.uuidString)|\(year)|\(dayKeySeed)|v\(dataVersion)"
-    return CacheKey(scope: .calendarStatsBundle, identifier: identifier)
-  }
-
   private func computeStatsBundle(
-    cacheKey: CacheKey,
     calendar: CustomCalendar,
     year: Int,
-    todayLocal: Date
+    todayLocal: Date,
+    todayKeyDate: Date?
   ) -> StatsBundle {
-    if let cached: StatsBundle = CacheStore.shared.get(cacheKey) { return cached }
-
     let cal = Calendar.current
     let entries = calendar.entries
 
     // Riusa: getStats() già esistente per basic
-    let basic = getStats()
+    let basic = getStats(for: calendar)
 
     // Adattatori leggeri
     func entryOn(_ date: Date) -> CalendarEntry? {
@@ -243,7 +243,7 @@ struct CustomCalendarView: View {
     )
 
     // Today's count for this calendar (optional)
-    let todaysCount: Int? = entries[dayKey(for: todayLocal)]?.count
+    let todaysCount: Int? = todayKeyDate.map { entries[dayKey(for: $0)]?.count ?? 0 }
 
     let bundle = StatsBundle(
       basic: basic,
@@ -256,20 +256,19 @@ struct CustomCalendarView: View {
       volatilityStd: volatility,
       todaysCount: todaysCount
     )
-    CacheStore.shared.set(cacheKey, value: bundle)
     return bundle
   }
 
   private func handleQuickAdd() {
-    let entryDate = calendarDates.first { Calendar.current.isDate($0, inSameDayAs: Date()) } ?? Date()
+    let entryDate = todayKeyDate ?? Date()
     quickEntry(
-      calendar: calendar,
+      calendar: activeCalendar,
       date: entryDate,
       calendarStore: store
     )
 
     WidgetReload.scheduleAllTimelinesReload()
-    checkIfReachedThreeDays(calendar)
+    checkIfReachedThreeDays(activeCalendar)
 
     Task {
       await hapticFeedback()
@@ -277,9 +276,10 @@ struct CustomCalendarView: View {
   }
 
   var body: some View {
-    let daySeed = Calendar.current.startOfDay(for: Date())
     let dataVersion = store.dataVersion
-    let statsSignature = makeCacheKey(daySeed: daySeed, dataVersion: dataVersion)
+    let statsTaskId = "\(calendar.id.uuidString)|\(valuationStore.selectedYear)|\(dataVersion)|\(statsRefreshToken.uuidString)"
+    let resolvedCalendar = activeCalendar
+    let resolvedTodayKeyDate = todayKeyDate
 
     ScrollView {
       VStack(spacing: 10) {
@@ -288,7 +288,7 @@ struct CustomCalendarView: View {
           HStack(alignment: .center, spacing: 6) {
             VStack(alignment: .leading, spacing: 0) {
               HStack(alignment: .firstTextBaseline, spacing: 8) {
-                Text(calendar.name.capitalized)
+                Text(resolvedCalendar.name.capitalized)
                   .font(.system(size: 36, design: .monospaced))
                   .lineLimit(2)
                   .minimumScaleFactor(0.5)
@@ -297,12 +297,12 @@ struct CustomCalendarView: View {
                   .onTapGesture {
                     router.showScreen(.sheet) { _ in
                       EditCalendarView(
-                        calendar: calendar,
+                        calendar: resolvedCalendar,
                         onSave: { updatedCalendar in
                           store.updateCalendar(updatedCalendar)
                         },
                         onDelete: { _ in
-                          store.deleteCalendar(id: calendar.id)
+                          store.deleteCalendar(id: resolvedCalendar.id)
                         }
                       )
                     }
@@ -315,7 +315,7 @@ struct CustomCalendarView: View {
                 if My_YearApp.isDebugMode && runtimeDebugEnabled {
                   Button(action: fillRandomEntries) {
                     Image(systemName: "wand.and.stars")
-                      .foregroundColor(Color(calendar.color))
+                      .foregroundColor(Color(resolvedCalendar.color))
                   }
                   .padding(.horizontal, 4)
                 }
@@ -326,17 +326,17 @@ struct CustomCalendarView: View {
                   }) {
                     ZStack {
                       RoundedRectangle(cornerRadius: 3)
-                        .fill(Color(calendar.color).opacity(0.1))
+                        .fill(Color(resolvedCalendar.color).opacity(0.1))
                         .frame(width: 20, height: 20)
 
                       Image(
-                        systemName: calendar.trackingType == .binary
-                          && store.getEntry(calendarId: calendar.id, date: today) != nil
-                          && store.getEntry(calendarId: calendar.id, date: today)!.completed
+                        systemName: resolvedCalendar.trackingType == .binary
+                          && store.getEntry(calendarId: resolvedCalendar.id, date: today) != nil
+                          && store.getEntry(calendarId: resolvedCalendar.id, date: today)!.completed
                           ? "minus" : "plus"
                       )
                       .font(.system(size: 16))
-                      .foregroundColor(Color(calendar.color))
+                      .foregroundColor(Color(resolvedCalendar.color))
                     }
                   }.frame(width: 24, height: 24)
                 }
@@ -349,8 +349,8 @@ struct CustomCalendarView: View {
                     .foregroundColor(Color("text-tertiary"))
                 }
 
-                if calendar.recurringReminderEnabled, let hour = calendar.reminderHour,
-                  let minute = calendar.reminderMinute
+                if resolvedCalendar.recurringReminderEnabled, let hour = resolvedCalendar.reminderHour,
+                  let minute = resolvedCalendar.reminderMinute
                 {
                   Text("•")
                     .font(.system(size: 4, weight: .black, design: .monospaced))
@@ -370,12 +370,12 @@ struct CustomCalendarView: View {
                       .sheet
                     ) { _ in
                       EditCalendarView(
-                        calendar: calendar,
+                        calendar: resolvedCalendar,
                         onSave: { updatedCalendar in
                           store.updateCalendar(updatedCalendar)
                         },
                         onDelete: { _ in
-                          store.deleteCalendar(id: calendar.id)
+                          store.deleteCalendar(id: resolvedCalendar.id)
                         }
                       )
                     }
@@ -390,7 +390,7 @@ struct CustomCalendarView: View {
         }
 
         GridView(
-          calendar: calendar,
+          calendar: resolvedCalendar,
           store: store,
           handleDayTap: handleDayTap,
           dates: calendarDates,
@@ -399,16 +399,18 @@ struct CustomCalendarView: View {
         .frame(height: UIScreen.main.bounds.height * 0.55)
 
         // Calculate today's count
-        let todayKey = dayKey(for: today)
-        let todaysLogCount = calendar.entries[todayKey]?.count ?? 0
+        let todaysLogCount: Int = {
+          guard let keyDate = resolvedTodayKeyDate else { return 0 }
+          return resolvedCalendar.entries[dayKey(for: keyDate)]?.count ?? 0
+        }()
 
         if let bundle = statsBundle {
           CalendarStatisticsView(
             stats: bundle.basic,
-            accentColor: Color(calendar.color),
+            accentColor: Color(resolvedCalendar.color),
             todaysCount: todaysLogCount,
-            unit: calendar.unit,
-            currencySymbol: calendar.currencySymbol,
+            unit: resolvedCalendar.unit,
+            currencySymbol: resolvedCalendar.currencySymbol,
             completionRateLast30d: bundle.completionRate30d,
             bestWeekday: bundle.bestWeekday,
             weekdayRates: bundle.weekdayRates,
@@ -421,9 +423,6 @@ struct CustomCalendarView: View {
           )
           .id(colorScheme)
           .padding(.top, 20)
-        } else {
-          ProgressView()
-            .padding(.top, 20)
         }
 
       }
@@ -483,16 +482,25 @@ struct CustomCalendarView: View {
         self.customerInfo = info
       }
     }
-    .task(id: statsSignature) {
+    .onChange(of: store.dataVersion) { _, _ in
+      statsRefreshToken = UUID()
+    }
+    .onReceive(store.$calendars) { _ in
+      statsRefreshToken = UUID()
+    }
+    .task(id: statsTaskId) {
+      let token = statsRefreshToken
       let bundle = await Task.detached(priority: .userInitiated) {
         computeStatsBundle(
-          cacheKey: statsSignature,
-          calendar: calendar,
+          calendar: resolvedCalendar,
           year: valuationStore.selectedYear,
-          todayLocal: Date()
+          todayLocal: Date(),
+          todayKeyDate: resolvedTodayKeyDate
         )
       }.value
-      statsBundle = bundle
+      if token == statsRefreshToken {
+        statsBundle = bundle
+      }
     }
   }
 }
