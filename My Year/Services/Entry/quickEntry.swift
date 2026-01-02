@@ -4,10 +4,9 @@ import SwiftUI
 func quickEntry(
   calendar: CustomCalendar,
   date: Date,
-  calendarStore: CustomCalendarStore,
-  valuationStore: ValuationStore
+  calendarStore: CustomCalendarStore
 ) {
-  let today = valuationStore.dateForDay(valuationStore.currentDayNumber - 1)
+  let today = date
 
   switch calendar.trackingType {
   case .binary:

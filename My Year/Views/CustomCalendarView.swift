@@ -38,6 +38,7 @@ enum SelectedDate: Equatable, Identifiable {
 
 struct CustomCalendarView: View {
   @Environment(\.colorScheme) var colorScheme
+  @Environment(\.dates) var dates
   let calendar: CustomCalendar
   @StateObject private var store: CustomCalendarStore = .shared
   @ObservedObject private var valuationStore: ValuationStore = .shared
@@ -185,21 +186,20 @@ struct CustomCalendarView: View {
     )
   }
 
-  private static let statsCache = StatsCache()
-
-  private func makeCacheKey(daySeed: Date, dataVersion: Int) -> String {
+  private func makeCacheKey(daySeed: Date, dataVersion: Int) -> CacheKey {
     let year = valuationStore.selectedYear
     let dayKeySeed = dayKey(for: daySeed)
-    return "\(calendar.id.uuidString)|\(year)|\(dayKeySeed)|v\(dataVersion)"
+    let identifier = "\(calendar.id.uuidString)|\(year)|\(dayKeySeed)|v\(dataVersion)"
+    return CacheKey(scope: .calendarStatsBundle, identifier: identifier)
   }
 
   private func computeStatsBundle(
-    cacheKey: String,
+    cacheKey: CacheKey,
     calendar: CustomCalendar,
     year: Int,
     todayLocal: Date
   ) -> StatsBundle {
-    if let cached = Self.statsCache.get(cacheKey) { return cached }
+    if let cached: StatsBundle = CacheStore.shared.get(cacheKey) { return cached }
 
     let cal = Calendar.current
     let entries = calendar.entries
@@ -253,16 +253,16 @@ struct CustomCalendarView: View {
       volatilityStd: volatility,
       todaysCount: todaysCount
     )
-    Self.statsCache.set(cacheKey, value: bundle)
+    CacheStore.shared.set(cacheKey, value: bundle)
     return bundle
   }
 
   private func handleQuickAdd() {
+    let entryDate = dates.first { Calendar.current.isDate($0, inSameDayAs: Date()) } ?? Date()
     quickEntry(
       calendar: calendar,
-      date: today,
-      calendarStore: store,
-      valuationStore: valuationStore
+      date: entryDate,
+      calendarStore: store
     )
 
     WidgetReload.scheduleAllTimelinesReload()

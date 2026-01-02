@@ -1,6 +1,4 @@
-import Foundation
-
-private struct CalendarStatsSnapshot: Codable {
+struct CalendarStatsSnapshot: Codable {
   let activeDays: Int
   let totalCount: Int
   let maxCount: Int
@@ -26,7 +24,7 @@ private struct CalendarStatsSnapshot: Codable {
   }
 }
 
-private struct StatsBundleSnapshot: Codable {
+struct StatsBundleSnapshot: Codable {
   let basic: CalendarStatsSnapshot
   let completionRate30d: Double
   let bestWeekday: Int?
@@ -61,34 +59,5 @@ private struct StatsBundleSnapshot: Codable {
       volatilityStd: volatilityStd,
       todaysCount: todaysCount
     )
-  }
-}
-
-private struct OverviewStatsCachePayload: Codable {
-  let year: Int
-  let daySeedKey: String
-  let bundle: StatsBundleSnapshot
-}
-
-enum OverviewStatsCache {
-  private static let storageKey = "overview.stats.cache.v1"
-
-  static func load(year: Int, daySeedKey: String) -> StatsBundle? {
-    guard let data = UserDefaults.standard.data(forKey: storageKey) else { return nil }
-    guard let payload = try? JSONDecoder().decode(OverviewStatsCachePayload.self, from: data) else {
-      return nil
-    }
-    guard payload.year == year, payload.daySeedKey == daySeedKey else { return nil }
-    return payload.bundle.toBundle()
-  }
-
-  static func save(_ bundle: StatsBundle, year: Int, daySeedKey: String) {
-    let payload = OverviewStatsCachePayload(
-      year: year,
-      daySeedKey: daySeedKey,
-      bundle: StatsBundleSnapshot(bundle: bundle)
-    )
-    guard let data = try? JSONEncoder().encode(payload) else { return }
-    UserDefaults.standard.set(data, forKey: storageKey)
   }
 }

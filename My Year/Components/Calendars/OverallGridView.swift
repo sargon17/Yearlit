@@ -14,8 +14,6 @@ struct OverallGridView: View {
   @State private var counterPct75: [UUID: Double] = [:]
   @State private var didUseDiskGridCache: Bool = false
 
-  private static let mappedDaysCache = DaysCache<String, [(date: Date, color: Color)]>()
-
   var body: some View {
     GeometryReader { geometry in
       let dotSize: CGFloat = 10
@@ -41,6 +39,11 @@ struct OverallGridView: View {
       let sig = cacheSignature(dataVersion: dataVersion)
       let daySeedKey = dayKey(for: Calendar.current.startOfDay(for: today))
       let year = Calendar.current.component(.year, from: today)
+      let cacheKey = CacheKey(scope: .overviewGridMappedDays, identifier: sig)
+      let diskKey = CacheKey(
+        scope: .overviewGridZByDay,
+        identifier: "\(year)|\(daySeedKey)|v\(dataVersion)"
+      )
       VStack(spacing: verticalSpacing) {
         ForEach(0..<rows, id: \.self) { row in
           HStack(spacing: horizontalSpacing) {
@@ -60,16 +63,18 @@ struct OverallGridView: View {
       }
       .frame(maxWidth: .infinity, maxHeight: .infinity)
       .padding(.horizontal)
+      .onChange(of: sig) { _, _ in
+        didUseDiskGridCache = false
+      }
       .task(id: sig) {
         if didUseDiskGridCache { return }
-        if OverviewGridCache.load(year: year, daySeedKey: daySeedKey) != nil {
+        if CacheStore.shared.loadDisk(diskKey, as: [String: Double].self) != nil {
           didUseDiskGridCache = true
           return
         }
         if store.isLoading { return }
         guard store.dataVersion == dataVersion else { return }
-        let cacheKey = sig
-        if let cached = Self.mappedDaysCache.get(for: cacheKey) {
+        if let cached: [(date: Date, color: Color)] = CacheStore.shared.get(cacheKey) {
           await MainActor.run { mappedDays = cached }
         } else {
           // Snapshot minimal values we’ll need across threads
@@ -123,17 +128,17 @@ struct OverallGridView: View {
               let opacity = min(1, max(0.2, z))
               return (date: date, color: accent.opacity(opacity))
             }
-            Self.mappedDaysCache.set(mappedDays, for: cacheKey)
+            CacheStore.shared.set(cacheKey, value: mappedDays)
             let zByDay = Dictionary(uniqueKeysWithValues: result.1.map { (date, z) in
               (dayKey(for: date), z)
             })
-            OverviewGridCache.save(zByDay: zByDay, year: year, daySeedKey: daySeedKey)
+            CacheStore.shared.saveDisk(diskKey, value: zByDay)
           }
         }
       }
       .task(id: daySeedKey) {
         guard mappedDays.isEmpty else { return }
-        guard let zByDay = OverviewGridCache.load(year: year, daySeedKey: daySeedKey) else { return }
+        guard let zByDay: [String: Double] = CacheStore.shared.loadDisk(diskKey) else { return }
         didUseDiskGridCache = true
         let inactiveColor = GarnishColor.blend(.surfaceMuted, with: .textPrimary, ratio: 0.02)
         let activeColor = GarnishColor.blend(.surfaceMuted, with: .textPrimary, ratio: 0.08)
@@ -181,22 +186,5 @@ struct OverallGridView: View {
     if z <= 0 { return activeColor }
     let opacity = min(1, max(0.2, z))
     return accentColor.opacity(opacity)
-  }
-}
-
-private class DaysCache<Key: Hashable, Value> {
-  private var cache: [Key: Value] = [:]
-  private let queue = DispatchQueue(label: "OverallGridView.DaysCache", attributes: .concurrent)
-
-  func get(for key: Key) -> Value? {
-    queue.sync { cache[key] }
-  }
-
-  func set(_ value: Value, for key: Key) {
-    queue.sync(flags: .barrier) { cache[key] = value }
-  }
-
-  func clear() {
-    queue.sync(flags: .barrier) { cache.removeAll() }
   }
 }

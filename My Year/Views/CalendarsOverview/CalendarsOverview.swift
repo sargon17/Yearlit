@@ -8,6 +8,7 @@ struct CalendarsOverview: View {
   @ObservedObject var valuationStore: ValuationStore
   @Binding var scrollPosition: ScrollPosition
   @Environment(\.dismiss) private var dismiss
+  @Environment(\.colorScheme) private var colorScheme
 
   @Environment(\.router) private var router
 
@@ -16,35 +17,28 @@ struct CalendarsOverview: View {
     ScrollView {
       VStack(spacing: 0) {
         CustomSeparator()
+          .padding(.horizontal, -16)
         LazyVStack(spacing: 12) {
           // Custom Calendar Cards
+          let sortedCalendars = store.calendars.sorted { $0.order < $1.order }
           ForEach(
-            Array(store.calendars.sorted { $0.order < $1.order }.enumerated()), id: \.element.id
+            Array(sortedCalendars.enumerated()), id: \.element.id
           ) { index, calendar in
-          CalendarsOverviewsItem(
-            calendar: store.calendars[index],
-            store: store
-          )
+            CalendarsOverviewsItem(
+              calendar: sortedCalendars[index],
+              store: store
+            )
             .onTapGesture {
               dismiss()
               scrollPosition.scrollTo(id: index.description)
             }
+
+            CustomSeparator()
+              .padding(.horizontal, -16)
           }
 
           // Add Calendar Button
-          VStack {
-            Spacer()
-            VStack(spacing: 16) {
-              Image(systemName: "plus")
-                .font(.system(size: 42))
-                .foregroundStyle(Color("text-secondary"))
-              Text("Add Calendar")
-                .font(.headline)
-                .foregroundColor(Color("text-primary"))
-            }
-            Spacer()
-          }
-          .onTapGesture {
+          Button(action: {
             router.showScreen(.sheet) { _ in
               CreateCalendarView { newCalendar in
                 store.addCalendar(newCalendar)
@@ -55,7 +49,23 @@ struct CalendarsOverview: View {
                 addPositiveEvent(.createdCalendar)
               }
             }
+          }) {
+            HStack(spacing: 12) {
+              Image(systemName: "plus")
+                .font(.system(size: 20))
+                .foregroundStyle(Color("text-tertiary"))
+              Text("Add Calendar")
+                .font(.headline)
+            }
+            .frame(maxWidth: .infinity, alignment: .center)
+            .fontWeight(.bold)
+            .padding()
           }
+          .sameLevelBorder()
+          .foregroundStyle(.textTertiary)
+          .padding(.all, 2)
+          .background(getVoidColor(colorScheme: colorScheme))
+          .padding(.top, 4)
         }
         .padding()
         .animation(.spring(), value: store.calendars.map { $0.order })

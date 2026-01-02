@@ -18,18 +18,20 @@ struct CalendarsOverviewsItem: View {
   private let latestSlotsCount = 56
   private let rowsCount = 4
   private let today = Date()
-
-  private static let slotColorsCache = SlotsCache<String, [Color]>()
+  private var utcCalendar: Calendar {
+    var calendar = Calendar(identifier: .gregorian)
+    calendar.timeZone = TimeZone(secondsFromGMT: 0) ?? calendar.timeZone
+    return calendar
+  }
+  private var utcTodayStart: Date {
+    utcCalendar.startOfDay(for: today)
+  }
 
   var latestSlots: [Date] {
-    let today = DateInRegion()
-    let fromDate = today - (latestSlotsCount - 1).days
-
-    let increment = DateComponents.create { $0.day = 1 }
-
-    let dates = DateInRegion.enumerateDates(from: fromDate, to: today, increment: increment)
-
-    return dates.map { $0.date }
+    let start = utcCalendar.date(byAdding: .day, value: -(latestSlotsCount - 1), to: utcTodayStart) ?? utcTodayStart
+    return (0..<latestSlotsCount).compactMap { offset in
+      utcCalendar.date(byAdding: .day, value: offset, to: start)
+    }
   }
 
   var body: some View {
@@ -76,7 +78,8 @@ extension CalendarsOverviewsItem {
         .minimumScaleFactor(0.5)
     }
     .frame(maxWidth: .greatestFiniteMagnitude, alignment: .leading)
-    .padding(EdgeInsets(top: 12, leading: 16, bottom: 12, trailing: 16))
+    .padding(.vertical, 8)
+    .padding(.trailing, 16)
   }
 
   var latestSlotsView: some View {
@@ -111,9 +114,12 @@ extension CalendarsOverviewsItem {
   }
 
   private var latestSlotColors: [Color] {
-    let daySeedKey = dayKey(for: Calendar.current.startOfDay(for: today))
-    let cacheKey = "\(calendar.id.uuidString)|\(store.dataVersion)|\(daySeedKey)|\(latestSlotsCount)"
-    if let cached = Self.slotColorsCache.get(for: cacheKey) { return cached }
+    let daySeedKey = dayKey(for: utcTodayStart)
+    let cacheKey = CacheKey(
+      scope: .overviewSlots,
+      identifier: "\(calendar.id.uuidString)|\(store.dataVersion)|\(daySeedKey)|\(latestSlotsCount)"
+    )
+    if let cached: [Color] = CacheStore.shared.get(cacheKey) { return cached }
 
     let entries = calendar.entries
     let inactiveColor = GarnishColor.blend(.surfaceMuted, with: .textPrimary, ratio: 0.02)
@@ -121,7 +127,7 @@ extension CalendarsOverviewsItem {
     let maxCount = calendar.trackingType == .counter ? getMaxCount(calendar: calendar) : 1
 
     let colors = latestSlots.map { day -> Color in
-      if day > today { return inactiveColor }
+      if day > utcTodayStart { return inactiveColor }
       let key = dayKey(for: day)
       guard let entry = entries[key] else { return activeColor }
       switch calendar.trackingType {
@@ -144,7 +150,7 @@ extension CalendarsOverviewsItem {
       }
     }
 
-    Self.slotColorsCache.set(colors, for: cacheKey)
+    CacheStore.shared.set(cacheKey, value: colors)
     return colors
   }
 }
@@ -158,18 +164,5 @@ struct VisualEntry: View {
       .fill(color)
       .frame(width: width, height: width)
       .cornerRadius(2)
-  }
-}
-
-private final class SlotsCache<Key: Hashable, Value> {
-  private var cache: [Key: Value] = [:]
-  private let queue = DispatchQueue(label: "CalendarsOverviewsItem.SlotsCache", attributes: .concurrent)
-
-  func get(for key: Key) -> Value? {
-    queue.sync { cache[key] }
-  }
-
-  func set(_ value: Value, for key: Key) {
-    queue.sync(flags: .barrier) { cache[key] = value }
   }
 }

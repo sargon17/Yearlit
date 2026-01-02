@@ -17,21 +17,21 @@ struct AllCalendarsRecapView: View {
   @State private var cachedStatsBundle: StatsBundle? = nil
   @State private var didUseDiskStatsCache: Bool = false
 
-  private static let statsCache = StatsCache()
   private static let daySeedFormatter = ISO8601DateFormatter()
 
-  private func makeCacheKey(year: Int, daySeed: Date, dataVersion: Int) -> String {
+  private func makeCacheKey(year: Int, daySeed: Date, dataVersion: Int) -> CacheKey {
     let daySeedStr = Self.daySeedFormatter.string(from: daySeed)
-    return "overall|\(year)|\(daySeedStr)|v\(dataVersion)"
+    let identifier = "overall|\(year)|\(daySeedStr)|v\(dataVersion)"
+    return CacheKey(scope: .overviewStatsBundle, identifier: identifier)
   }
 
   private func computeOverallStats(
-    cacheKey: String,
+    cacheKey: CacheKey,
     calendars: [CustomCalendar],
     year: Int,
     todayLocal: Date
   ) -> StatsBundle {
-    if let cached = Self.statsCache.get(cacheKey) { return cached }
+    if let cached: StatsBundle = CacheStore.shared.get(cacheKey) { return cached }
 
     let cal = Calendar.current
     let entriesByCalendar = Dictionary(uniqueKeysWithValues: calendars.map { ($0.id, $0.entries) })
@@ -91,7 +91,7 @@ struct AllCalendarsRecapView: View {
       todaysCount: todayKeyCount
     )
 
-    Self.statsCache.set(cacheKey, value: bundle)
+    CacheStore.shared.set(cacheKey, value: bundle)
     return bundle
   }
 
@@ -175,9 +175,12 @@ struct AllCalendarsRecapView: View {
         self.customerInfo = info
       }
     }
+    .onChange(of: statsSignature) { _, _ in
+      didUseDiskStatsCache = false
+    }
     .task(id: statsSignature) {
       if didUseDiskStatsCache { return }
-      if OverviewStatsCache.load(year: selectedYear, daySeedKey: daySeedKey) != nil {
+      if loadStatsBundleFromDisk(cacheKey: statsSignature) != nil {
         didUseDiskStatsCache = true
         return
       }
@@ -192,16 +195,28 @@ struct AllCalendarsRecapView: View {
         )
       }.value
       statsBundle = bundle
-      OverviewStatsCache.save(bundle, year: selectedYear, daySeedKey: daySeedKey)
+      saveStatsBundleToDisk(bundle, cacheKey: statsSignature)
     }
     .task(id: daySeedKey) {
       if cachedStatsBundle == nil {
-        if let cached = OverviewStatsCache.load(year: selectedYear, daySeedKey: daySeedKey) {
+        if let cached = loadStatsBundleFromDisk(cacheKey: statsSignature) {
           cachedStatsBundle = cached
           didUseDiskStatsCache = true
         }
       }
     }
+  }
+}
+
+private extension AllCalendarsRecapView {
+  func loadStatsBundleFromDisk(cacheKey: CacheKey) -> StatsBundle? {
+    guard let snapshot: StatsBundleSnapshot = CacheStore.shared.loadDisk(cacheKey) else { return nil }
+    return snapshot.toBundle()
+  }
+
+  func saveStatsBundleToDisk(_ bundle: StatsBundle, cacheKey: CacheKey) {
+    let snapshot = StatsBundleSnapshot(bundle: bundle)
+    CacheStore.shared.saveDisk(cacheKey, value: snapshot)
   }
 }
 

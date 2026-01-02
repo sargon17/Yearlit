@@ -14,9 +14,6 @@ struct GridView: View {
   let today: Date = Date().date
   @State var mappedDays: [(date: Date, color: Color)] = []
 
-  // Cache instance for mappedDays
-  private static let mappedDaysCache = DaysCache<String, [(date: Date, color: Color)]>()
-
   var body: some View {
     // Calendar grid
     GeometryReader { geometry in
@@ -61,64 +58,35 @@ struct GridView: View {
         id: "\(calendar.entries.values.reduce(0) { $0 + $1.count })-\(colorScheme)"
       ) {
         let maxCount = getMaxCount(calendar: calendar)
-        let cacheKey = "\(calendar.name)-\(colorScheme)-\(calendar.entries.values.reduce(0) { $0 + $1.count })"
-        if let cachedMappedDays = Self.mappedDaysCache.get(for: cacheKey) {
+        let entriesSignature = calendar.entries.values.reduce(0) { $0 + $1.count }
+        let cacheKey = CacheKey(
+          scope: .calendarGridMappedDays,
+          identifier: "\(calendar.name)-\(colorScheme)-\(entriesSignature)"
+        )
+        if let cachedMappedDays: [(date: Date, color: Color)] = CacheStore.shared.get(cacheKey) {
           // print("🟢 Hitting Cache")
           mappedDays = cachedMappedDays
         } else {
           // print("🔴 Missing Cache")
-          // Self.mappedDaysCache.clear()  // is that cleaning the cache right?
-          Self.mappedDaysCache.clearByCalendarTitle(title: calendar.name)
+          CacheStore.shared.removeMatching(scope: .calendarGridMappedDays) { identifier in
+            identifier.contains(calendar.name)
+          }
           mappedDays = dates.map {
             (date: $0, color: colorForDay($0, calendar: calendar, today: today, maxCount: maxCount))
           }
-          Self.mappedDaysCache.set(mappedDays, for: cacheKey)
+          CacheStore.shared.set(cacheKey, value: mappedDays)
         }
       }
       .onChange(of: calendar.entries.values.reduce(0) { $0 + $1.count }) { oldVal, _ in
         // * removing old cache for entries count as the value could have changed with the same count, the cache retunred the old cached values
-        let cacheKey = "\(calendar.name)-\(colorScheme)-\(oldVal)"
-        Self.mappedDaysCache.delete(for: cacheKey)
+        let cacheKey = CacheKey(
+          scope: .calendarGridMappedDays,
+          identifier: "\(calendar.name)-\(colorScheme)-\(oldVal)"
+        )
+        CacheStore.shared.remove(cacheKey)
       }
     }
   }
 
   func updateData() {}
-}
-
-// Simple in-memory cache using a dictionary
-private class DaysCache<Key: Hashable, Value> {
-  private var cache: [Key: Value] = [:]
-
-  func get(for key: Key) -> Value? {
-    return cache[key]
-  }
-
-  func set(_ value: Value, for key: Key) {
-    cache[key] = value
-  }
-
-  func delete(for key: Key) {
-    let index = cache.firstIndex { $0.key == key }
-    guard index != nil else { return }
-
-    cache.remove(at: index!)
-  }
-
-  func clearByCalendarTitle(title: String) {
-    let keysToRemove = cache.keys.filter {
-      guard let strKey = $0 as? String else { return false }
-      return strKey.contains(title)
-    }
-
-    for key in keysToRemove {
-      cache.removeValue(forKey: key)
-    }
-  }
-
-  func clear() {
-    print(cache.count)
-
-    cache.removeAll()
-  }
 }
