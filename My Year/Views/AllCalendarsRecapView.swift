@@ -19,6 +19,7 @@ struct AllCalendarsRecapView: View {
   @State private var showingYearPicker: Bool = false
   @State private var tempSelectedYear: Int = Calendar.current.component(.year, from: Date())
   @State private var statsRefreshToken = UUID()
+  @State private var lastObservedDataVersion: Int = 0
 
   private static let daySeedFormatter = ISO8601DateFormatter()
   private let availableYears: [Int] = {
@@ -218,17 +219,31 @@ struct AllCalendarsRecapView: View {
       Purchases.shared.getCustomerInfo { info, _ in
         self.customerInfo = info
       }
+      if lastObservedDataVersion != store.dataVersion {
+        lastObservedDataVersion = store.dataVersion
+        statsRefreshToken = UUID()
+      }
     }
     .onChange(of: statsSignature) { _, _ in
       didUseDiskStatsCache = false
     }
     .onChange(of: store.dataVersion) { _, _ in
+      lastObservedDataVersion = store.dataVersion
       didUseDiskStatsCache = false
+      cachedStatsBundle = nil
       statsRefreshToken = UUID()
+    }
+    .onChange(of: store.isLoading) { _, isLoading in
+      if !isLoading {
+        didUseDiskStatsCache = false
+        cachedStatsBundle = nil
+        statsRefreshToken = UUID()
+      }
     }
     .onReceive(store.$calendars) { _ in
       CacheStore.shared.removeDisk(statsSignature)
       didUseDiskStatsCache = false
+      cachedStatsBundle = nil
       statsRefreshToken = UUID()
     }
     .task(id: statsTaskId) {
@@ -239,10 +254,12 @@ struct AllCalendarsRecapView: View {
         return
       }
       if store.isLoading { return }
-      guard store.dataVersion == dataVersion else { return }
+      let calendarsSnapshot = await MainActor.run { store.calendars }
+      let currentVersion = await MainActor.run { store.dataVersion }
+      guard currentVersion == dataVersion else { return }
       let bundle = await Task.detached(priority: .userInitiated) {
         computeOverallStats(
-          calendars: calendars,
+          calendars: calendarsSnapshot,
           year: selectedYear,
           todayLocal: Date(),
           todayKeyDate: todayKeyDate

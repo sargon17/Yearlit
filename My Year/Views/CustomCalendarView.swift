@@ -67,6 +67,7 @@ struct CustomCalendarView: View {
   @State private var isPaywallPresented: Bool = false
   @State private var statsBundle: StatsBundle?
   @State private var statsRefreshToken = UUID()
+  @State private var lastObservedDataVersion: Int = 0
 
   @Environment(\.router) private var router
 
@@ -481,8 +482,13 @@ struct CustomCalendarView: View {
       Purchases.shared.getCustomerInfo { info, _ in
         self.customerInfo = info
       }
+      if lastObservedDataVersion != store.dataVersion {
+        lastObservedDataVersion = store.dataVersion
+        statsRefreshToken = UUID()
+      }
     }
     .onChange(of: store.dataVersion) { _, _ in
+      lastObservedDataVersion = store.dataVersion
       statsRefreshToken = UUID()
     }
     .onReceive(store.$calendars) { _ in
