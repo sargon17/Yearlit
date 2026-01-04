@@ -1,5 +1,8 @@
+import Garnish
+import RevenueCatUI
 import SharedModels
 import SwiftUI
+import SwiftfulRouting
 
 struct CalendarStats {
   let activeDays: Int
@@ -25,9 +28,23 @@ struct CalendarStatisticsView: View {
   let volatilityStdDev: Double
   let isPremium: Bool
   let onUpgrade: () -> Void
+  var trackingType: TrackingType = .binary
+
+  @Environment(\.router) var router
+
+  var entriesLabel: String {
+    if let unit = unit {
+      if unit == .currency {
+        return currencySymbol ?? "€"
+      }
+      return unit.displayName
+    } else {
+      return "Entries"
+    }
+  }
 
   var body: some View {
-    VStack(spacing: 0) {
+    VStack(spacing: 20) {
       VStack(spacing: 16) {
         CustomSeparator()
         HStack {
@@ -39,108 +56,216 @@ struct CalendarStatisticsView: View {
 
           Spacer()
         }
-        CustomSeparator()
       }
-      // Basic stats
-      StatisticItem(
-        title: "Today's Log",
-        value: "\(todaysCount)",
-        unit: unit,
-        currencySymbol: currencySymbol,
-        accentColor: accentColor
-      )
-      StatisticItem(
-        title: "Total Times Logged", value: "\(stats.totalCount)", unit: unit,
-        currencySymbol: currencySymbol, accentColor: accentColor
-      )
-      StatisticItem(
-        title: "Max Times Logged in a Day", value: "\(stats.maxCount)", unit: unit,
-        currencySymbol: currencySymbol, accentColor: accentColor
-      )
-      StatisticItem(
-        title: "Active Days", value: "\(stats.activeDays)", unit: nil, currencySymbol: nil,
-        accentColor: accentColor
-      )
-      StatisticItem(
-        title: "Longest Days in a Row", value: "\(stats.longestStreak)", unit: nil,
-        currencySymbol: nil, accentColor: accentColor
-      )
-      StatisticItem(
-        title: "Current Days in a Row", value: "\(stats.currentStreak)", unit: nil,
-        currencySymbol: nil, accentColor: accentColor
-      )
+      // Section: Logging
 
-      // Completion rate (last 30 days) - Free
-      labeledValueRow(
-        title: "Completion Rate (30d)",
-        value: percent(completionRateLast30d),
-        accentColor: accentColor
-      )
-      .clipped()
+      VStack(spacing: 12) {
+        sectionHeader(entriesLabel)
+        HStack {
+          CompactStatTile(
+            title: "Today",
+            value: "\(todaysCount)",
+            accentColor: accentColor
+          )
+          .layoutPriority(1)
+          CompactStatTile(
+            title: "Total",
+            value: "\(stats.totalCount)",
+            accentColor: accentColor
+          )
+          .layoutPriority(1)
+          if trackingType != .binary {
+            CompactStatTile(
+              title: "Best Day",
+              value: "\(stats.maxCount)",
+              accentColor: accentColor
+            )
+            .layoutPriority(1)
+          }
+        }
+        .frame(maxWidth: .greatestFiniteMagnitude)
+      }
+      .frame(maxWidth: .greatestFiniteMagnitude)
       .padding(.horizontal)
-      .padding(.top)
+      .padding(.bottom, -12)
+      .clipped()
       .overlay(bottomDivider)
 
-      // Best weekday - Free
-      labeledValueRow(
-        title: "Best Weekday",
-        value: bestWeekday.map { weekdayName($0) } ?? "—",
-        accentColor: accentColor
-      )
-      .padding(.horizontal)
-      .padding(.top)
-
-      // Weekday ribbon
-      weekdayRibbon(rates: weekdayRates, accentColor: accentColor)
-        .frame(maxWidth: .greatestFiniteMagnitude)
-        .overlay(bottomDivider)
-
-      // Monthly breakdown (this year) - Free
-      monthlyBars(ratesByMonth: monthlyRates, accentColor: accentColor)
-        .padding(.vertical, 8)
-        .overlay(bottomDivider)
-
-      // Rolling consistency 7/30d - Premium
-      PremiumGate(
-        title: "Rolling Consistency (7/30d)",
-        isPremium: self.isPremium,
-        onUpgrade: self.onUpgrade
-      ) {
+      // Section: Streaks
+      VStack(spacing: 12) {
+        sectionHeader("Streaks")
+          .padding(.top)
         HStack {
-          VStack(alignment: .leading) {
-            Text("7d")
-              .font(.system(size: 12, design: .monospaced))
-              .foregroundColor(Color("text-tertiary"))
-            Text(percent(rolling7d))
-              .font(.system(size: 28, design: .monospaced))
-              .fontWeight(.black)
-              .foregroundColor(accentColor)
+          CompactStatTile(
+            title: "Current",
+            value: "\(stats.currentStreak)",
+            accentColor: accentColor
+          )
+          .layoutPriority(1)
+          CompactStatTile(
+            title: "Longest",
+            value: "\(stats.longestStreak)",
+            accentColor: accentColor
+          )
+          .layoutPriority(1)
+
+          CompactStatTile(
+            title: "Active Days",
+            value: "\(stats.activeDays)",
+            accentColor: accentColor
+          )
+          .layoutPriority(1)
+        }
+        .frame(maxWidth: .greatestFiniteMagnitude)
+      }
+      .frame(maxWidth: .greatestFiniteMagnitude)
+      .padding(.horizontal)
+      .padding(.bottom, -12)
+      .clipped()
+      .overlay(bottomDivider)
+
+      // Section: Performance
+      VStack {
+        sectionHeader("Performance", premium: !isPremium)
+          .padding(.horizontal)
+          .padding(.top)
+        VStack(spacing: 8) {
+          labeledValueRow(
+            title: "Completion Rate (30d)",
+            value: percent(completionRateLast30d),
+            accentColor: accentColor,
+            isLocked: !isPremium
+          )
+          .padding(.horizontal)
+          .onTapGesture {
+            guard !isPremium else { return }
+
+            router.showScreen(.sheet) { _ in
+              PaywallView()
+            }
+
+            Task {
+              await hapticFeedback()
+            }
           }
-          Spacer()
-          VStack(alignment: .leading) {
-            Text("30d")
-              .font(.system(size: 12, design: .monospaced))
-              .foregroundColor(Color("text-tertiary"))
-            Text(percent(rolling30d))
-              .font(.system(size: 28, design: .monospaced))
-              .fontWeight(.black)
-              .foregroundColor(accentColor)
+
+          monthlyBars(
+            ratesByMonth: monthlyRates,
+            accentColor: accentColor,
+            isLocked: !isPremium
+          )
+          .padding(.vertical, 8)
+          .overlay(bottomDivider)
+          .onTapGesture {
+            guard !isPremium else { return }
+
+            router.showScreen(.sheet) { _ in
+              PaywallView()
+            }
+
+            Task {
+              await hapticFeedback()
+            }
           }
+
         }
       }
 
-      // Volatility - Premium
-      PremiumGate(
-        title: "Volatility (weekly)",
-        isPremium: self.isPremium,
-        onUpgrade: self.onUpgrade
-      ) {
+      VStack {
+
+        // Section: Patterns
+        sectionHeader("Patterns", premium: !isPremium)
+          .padding(.horizontal)
+          .padding(.top)
+        VStack(spacing: 8) {
+          labeledValueRow(
+            title: "Best Weekday",
+            value: bestWeekday.map { weekdayName($0) } ?? "—",
+            accentColor: accentColor,
+            isLocked: !isPremium
+          )
+          .padding(.horizontal)
+          .onTapGesture {
+            guard !isPremium else { return }
+
+            router.showScreen(.sheet) { _ in
+              PaywallView()
+            }
+
+            Task {
+              await hapticFeedback()
+            }
+          }
+        }
+
+        weekdayRibbon(
+          rates: weekdayRates,
+          accentColor: accentColor,
+          isLocked: !isPremium
+        )
+        .frame(maxWidth: .greatestFiniteMagnitude)
+        .overlay(bottomDivider)
+        .onTapGesture {
+          guard !isPremium else { return }
+
+          router.showScreen(.sheet) { _ in
+            PaywallView()
+          }
+
+          Task {
+            await hapticFeedback()
+          }
+        }
+
+      }
+      .clipped()
+
+      // Section: Trends (Premium)
+      sectionHeader("Trends", premium: !isPremium)
+        .padding(.horizontal)
+        .padding(.top)
+
+      VStack(spacing: 16) {
+        HStack {
+          CompactStatTile(
+            title: "7d",
+            value: "\(percent(rolling7d))",
+            accentColor: accentColor,
+            size: .small,
+            isLocked: !isPremium
+          )
+          .layoutPriority(1)
+          CompactStatTile(
+            title: "30d",
+            value: "\(percent(rolling30d))",
+            accentColor: accentColor,
+            size: .small,
+            isLocked: !isPremium
+          )
+          .layoutPriority(1)
+        }
+        .frame(maxWidth: .greatestFiniteMagnitude)
+
+        // Volatility - Premium
         labeledValueRow(
           title: "Std Dev of Weekly CR",
           value: String(format: "%.2f", volatilityStdDev),
-          accentColor: accentColor
+          accentColor: accentColor,
+          isLocked: !isPremium
         )
-      }
+        .onTapGesture {
+          guard !isPremium else { return }
+
+          router.showScreen(.sheet) { _ in
+            PaywallView()
+          }
+
+          Task {
+            await hapticFeedback()
+          }
+        }
+
+      }.padding(.horizontal)
     }
   }
 }
@@ -209,38 +334,52 @@ private func percent(_ value: Double) -> String {
 }
 
 @ViewBuilder
-private func labeledValueRow(title: String, value: String, accentColor: Color) -> some View {
+private func labeledValueRow(
+  title: String,
+  value: String,
+  accentColor: Color,
+  isLocked: Bool = false
+) -> some View {
+
   HStack(alignment: .center) {
     Text(title)
       .font(.system(size: 12, design: .monospaced))
       .foregroundColor(Color.textSecondary)
     Spacer()
     Text(value)
-      .font(.system(size: 48, design: .monospaced))
+      .font(.system(size: 24, design: .monospaced))
       .foregroundColor(accentColor)
       .fontWeight(.black)
-      .padding(.bottom, -12)
       .minimumScaleFactor(0.5)
       .lineLimit(1)
+      .blur(radius: isLocked ? 10 : 0)
   }
-  // .background(.surfaceMuted)
+  .background(.surfaceMuted)
 }
 
 @ViewBuilder
-private func weekdayRibbon(rates: [Int: Double], accentColor: Color) -> some View {
+private func weekdayRibbon(
+  rates: [Int: Double],
+  accentColor: Color,
+  isLocked: Bool = false
+) -> some View {
   let order = [1, 2, 3, 4, 5, 6, 7]
+
   HStack(spacing: 6) {
     ForEach(order, id: \.self) { d in
       let v = rates[d] ?? 0
+      let bgColor: Color = GarnishColor.blend(.surfaceMuted, with: accentColor, ratio: isLocked ? 0.2 : v)
+      let labelColor = try! bgColor.contrastingShade()
       RoundedRectangle(cornerRadius: 2)
-        .fill(accentColor.opacity(max(0.1, v)))
+        .fill(bgColor)
         .frame(maxWidth: .greatestFiniteMagnitude, minHeight: 30)
         .overlay(
           Text(weekdayName(d).prefix(1))
             .font(.system(size: 8, design: .monospaced))
-            .foregroundColor(Color.textSecondary)
+            .foregroundColor(labelColor)
             .padding(.top, 12), alignment: .top
         )
+        .blur(radius: isLocked ? 10 : 0)
     }
   }
   .padding(.top)
@@ -249,20 +388,30 @@ private func weekdayRibbon(rates: [Int: Double], accentColor: Color) -> some Vie
 }
 
 @ViewBuilder
-private func monthlyBars(ratesByMonth: [Int: Double], accentColor: Color) -> some View {
+private func monthlyBars(
+  ratesByMonth: [Int: Double],
+  accentColor: Color,
+  isLocked: Bool = false
+) -> some View {
   VStack(spacing: 6) {
     HStack {
       Text("Monthly Breakdown")
         .font(.system(size: 12, design: .monospaced))
         .foregroundColor(Color.textSecondary)
       Spacer()
-    }
+    }.padding(.bottom, 8)
     HStack(spacing: 6) {
       ForEach(1...12, id: \.self) { m in
         let v = ratesByMonth[m] ?? 0
+        var bgColor: Color = GarnishColor.blend(
+          .surfaceMuted,
+          with: accentColor,
+          ratio: isLocked ? 0.2 : max(0.02, v)
+        )
         RoundedRectangle(cornerRadius: 2)
-          .fill(accentColor.opacity(max(0.2, v)))
+          .fill(bgColor)
           .frame(maxWidth: .greatestFiniteMagnitude, maxHeight: 48)
+          .blur(radius: isLocked ? 10 : 0)
       }
     }
   }.padding()
@@ -307,118 +456,43 @@ struct PremiumGate<Content: View>: View {
               .font(.system(size: 12, design: .monospaced))
               .padding(.horizontal, 10)
               .padding(.vertical, 6)
-              .surfaceBackground(Color("surface-secondary").opacity(0.5))
+              .background(Color("surface-secondary").opacity(0.5))
               .cornerRadius(6)
           }
         }
       }
     }
-    .padding()
-    .overlay(bottomDivider)
   }
 }
 
-// HStack {
-//           VStack {
-//             VStack(alignment: .center, spacing: 4) {
-//               Text("Days")
-//                 .font(.system(size: 10))
-//                 .foregroundColor(Color("text-tertiary"))
+// Section header helper
+@ViewBuilder
+private func sectionHeader(_ title: String, premium: Bool = false) -> some View {
+  let bgColor = try! GarnishColor.blend(.surfaceMuted, with: .moodExcellent, ratio: 0.2)
+  let fgColor = try! GarnishColor.blend(.textPrimary, with: .moodExcellent, ratio: 0.5)
 
-//               VStack(alignment: .center) {
-//                 Text("\(stats.activeDays)")
-//                   .font(.system(size: 18))
-//                   .foregroundColor(Color("text-secondary"))
-//                   .fontWeight(.black)
-
-//                 Text("Active")
-//                   .font(.system(size: 10))
-//                   .foregroundColor(Color("text-tertiary").opacity(0.5))
-
-//               }
-//             }.padding(10)
-//           }
-//           .frame(maxWidth: .infinity)
-//           .background(Color("surface-secondary").opacity(0.5))
-//           .cornerRadius(10)
-
-//           Spacer()
-
-//           if calendar.trackingType != .binary {
-
-//             VStack {
-//               VStack(alignment: .center, spacing: 4) {
-//                 Text("Count")
-//                   .font(.system(size: 10))
-//                   .foregroundColor(Color("text-tertiary"))
-
-//                 HStack {
-//                   VStack(alignment: .center) {
-//                     Text("\(stats.totalCount)")
-//                       .font(.system(size: 18))
-//                       .foregroundColor(Color("text-secondary"))
-//                       .fontWeight(.black)
-
-//                     Text("Total")
-//                       .font(.system(size: 10))
-//                       .foregroundColor(Color("text-tertiary").opacity(0.5))
-//                   }.frame(maxWidth: .infinity)
-
-//                   VStack(alignment: .center) {
-//                     Text("\(stats.maxCount)")
-//                       .font(.system(size: 18))
-//                       .foregroundColor(Color("text-secondary"))
-//                       .fontWeight(.black)
-
-//                     Text("Max")
-//                       .font(.system(size: 10))
-//                       .foregroundColor(Color("text-tertiary").opacity(0.5))
-//                   }.frame(maxWidth: .infinity)
-
-//                 }
-//               }
-//               .padding(10)
-//             }
-//             .frame(maxWidth: .infinity)
-//             .background(Color("surface-secondary").opacity(0.5))
-//             .cornerRadius(10)
-//           }
-
-//           VStack {
-//             VStack(alignment: .center, spacing: 4) {
-//               Text("Streaks")
-//                 .font(.system(size: 10))
-//                 .foregroundColor(Color("text-tertiary"))
-
-//               HStack {
-//                 VStack(alignment: .center) {
-//                   Text("\(stats.currentStreak)")
-//                     .font(.system(size: 18))
-//                     .foregroundColor(Color("text-primary"))
-//                     .fontWeight(.black)
-
-//                   Text("Current")
-//                     .font(.system(size: 10))
-//                     .foregroundColor(Color("text-tertiary").opacity(0.5))
-//                 }.frame(maxWidth: .infinity)
-
-//                 VStack(alignment: .center) {
-//                   Text("\(stats.longestStreak)")
-//                     .font(.system(size: 18))
-//                     .foregroundColor(Color("text-secondary"))
-//                     .fontWeight(.black)
-
-//                   Text("Longest")
-//                     .font(.system(size: 10))
-//                     .foregroundColor(Color("text-tertiary").opacity(0.5))
-//                 }.frame(maxWidth: .infinity)
-
-//               }
-//             }
-//             .padding(10)
-//           }
-//           .frame(maxWidth: .infinity)
-//           .background(Color("surface-secondary").opacity(0.5))
-//           .cornerRadius(10)
-//         }
-//         .padding(.horizontal)
+  HStack {
+    Text(title)
+      .font(.system(size: 14, design: .monospaced))
+      .foregroundColor(Color.textPrimary)
+    if premium {
+      Text("PRO")
+        .font(.system(size: 8, design: .monospaced))
+        .padding(.horizontal, 6)
+        .padding(.vertical, 2)
+        .background(
+          RoundedRectangle(cornerRadius: 4)
+            .stroke(
+              style: .init(
+                lineWidth: 1, lineCap: .round, lineJoin: .bevel, miterLimit: 1, dash: [2],
+                dashPhase: 3
+              )
+            )
+        )
+        .background(bgColor)
+        .foregroundColor(fgColor)
+    }
+    Spacer()
+  }
+  .padding(.top, 12)
+}

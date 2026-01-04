@@ -115,7 +115,7 @@ struct CalendarsSection: View {
   }
 
   var toolbar: some View {
-    HStack(spacing: 4) {
+    HStack(spacing: 8) {
       #if DEBUG
         Button(action: {
           onboarding.reset()
@@ -141,7 +141,7 @@ struct CalendarsSection: View {
           CalendarsOverview(store: store, valuationStore: valuationStore, scrollPosition: $position)
         }
       }) {
-        Image(systemName: "square.grid.2x2")
+        Image(systemName: "rectangle.split.1x2")
           .font(.system(size: 12))
           .foregroundColor(Color("text-tertiary"))
       }
