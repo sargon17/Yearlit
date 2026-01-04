@@ -1,4 +1,5 @@
 import SwiftUI
+import UIKit
 
 struct SameLevelBorder: ViewModifier {
   let radius: CGFloat
@@ -14,6 +15,12 @@ struct SameLevelBorder: ViewModifier {
   private let darkOffset: CGFloat = -2.6
 
   func body(content: Content) -> some View {
+    let lightModeScale = colorScheme == .dark ? 1.0 : shadowScale(for: color)
+    let lightOpacitySmall = clampedOpacity((colorScheme == .dark ? 0.05 : 0.3) * lightModeScale)
+    let lightOpacityLarge = clampedOpacity((colorScheme == .dark ? 0.05 : 0.6) * lightModeScale)
+    let darkOpacitySmall = clampedOpacity((colorScheme == .dark ? 0.5 : 0.4) * lightModeScale)
+    let darkOpacityLarge = clampedOpacity((colorScheme == .dark ? 0.4 : 0.1) * lightModeScale)
+
     ZStack {
       content
     }
@@ -23,16 +30,16 @@ struct SameLevelBorder: ViewModifier {
           color
             .shadow(
               .inner(
-                color: .white.opacity(colorScheme == .dark ? 0.05 : 0.3),
-                radius: 1,
+                color: .white.opacity(lightOpacitySmall),
+                radius: 0.5,
                 x: lightOffset,
                 y: lightOffset
               )
             )  // inner light shadow
             .shadow(
               .inner(
-                color: .white.opacity(colorScheme == .dark ? 0.05 : 0.6),
-                radius: 8,
+                color: .white.opacity(lightOpacityLarge),
+                radius: 4,
                 x: lightOffset * 2,
                 y: lightOffset * 2
               )
@@ -40,7 +47,7 @@ struct SameLevelBorder: ViewModifier {
 
             .shadow(
               .inner(
-                color: .black.opacity(colorScheme == .dark ? 0.5 : 0.4),
+                color: .black.opacity(darkOpacitySmall),
                 radius: 0.5,
                 x: darkOffset,
                 y: darkOffset
@@ -48,7 +55,7 @@ struct SameLevelBorder: ViewModifier {
             )  // inner dark shadow
             .shadow(
               .inner(
-                color: .black.opacity(colorScheme == .dark ? 0.4 : 0.1),
+                color: .black.opacity(darkOpacityLarge),
                 radius: 4,
                 x: darkOffset * 2,
                 y: darkOffset * 2
@@ -60,12 +67,33 @@ struct SameLevelBorder: ViewModifier {
           .mask(RoundedRectangle(cornerRadius: radius))
       )
       .shadow(
-        color: .black.opacity(colorScheme == .dark ? 0.4 : 0.4),
+        color: .black.opacity(clampedOpacity((colorScheme == .dark ? 0.4 : 0.4) * lightModeScale)),
         radius: 2,
         x: 4,
         y: 6,
       )
     )
+  }
+
+  private func shadowScale(for color: Color) -> Double {
+    let luminance = relativeLuminance(for: color)
+    return 0.6 + (0.8 * luminance)
+  }
+
+  private func relativeLuminance(for color: Color) -> Double {
+    let uiColor = UIColor(color)
+    var red: CGFloat = 0
+    var green: CGFloat = 0
+    var blue: CGFloat = 0
+    var alpha: CGFloat = 0
+    guard uiColor.getRed(&red, green: &green, blue: &blue, alpha: &alpha) else {
+      return 0.5
+    }
+    return Double(0.2126 * red + 0.7152 * green + 0.0722 * blue)
+  }
+
+  private func clampedOpacity(_ value: Double) -> Double {
+    min(1, max(0, value))
   }
 }
 
