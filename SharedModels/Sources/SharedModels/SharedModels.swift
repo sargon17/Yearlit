@@ -506,6 +506,45 @@ public final class CustomCalendarStore: ObservableObject {
     }
   }
 
+  public func moveActiveCalendars(fromOffsets indices: IndexSet, toOffset destination: Int) {
+    let orderedCalendars = calendars.sorted { $0.order < $1.order }
+    let activeCalendars = orderedCalendars.filter { !$0.isArchived }
+    guard !activeCalendars.isEmpty else { return }
+
+    var reorderedActive = activeCalendars
+    reorderedActive.move(fromOffsets: indices, toOffset: destination)
+
+    var activeIterator = reorderedActive.makeIterator()
+    var reorderedAll: [CustomCalendar] = []
+    reorderedAll.reserveCapacity(orderedCalendars.count)
+
+    for calendar in orderedCalendars {
+      if calendar.isArchived {
+        reorderedAll.append(calendar)
+      } else if let next = activeIterator.next() {
+        reorderedAll.append(next)
+      }
+    }
+
+    do {
+      let context = makeContext()
+      for (index, var calendar) in reorderedAll.enumerated() {
+        calendar.order = index
+        reorderedAll[index] = calendar
+        if let entity = fetchCalendarEntity(id: calendar.id, in: context) {
+          entity.order = index
+        }
+      }
+
+      calendars = reorderedAll
+      bumpDataVersion()
+      try persistChanges(in: context)
+      loadCalendars(showLoadingIndicator: false)
+    } catch {
+      NSLog("Failed to move active calendars: \(error)")
+    }
+  }
+
   // MARK: - Entry Management
 
   public func addEntry(calendarId: UUID, entry: CalendarEntry) {
