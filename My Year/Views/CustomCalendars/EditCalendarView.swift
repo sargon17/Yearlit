@@ -283,8 +283,8 @@ struct EditCalendarView: View {
                 .fontWeight(.bold)
                 .padding()
             }
-            .sameLevelBorder(color: .textPrimary.opacity(0.3))
-            .foregroundStyle(.surfaceMuted)
+            .sameLevelBorder()
+            .foregroundStyle(.textSecondary)
 
           }
           .padding(.all, 2)
