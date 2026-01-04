@@ -19,16 +19,11 @@ struct CalendarsOverview: View {
       .sorted { $0.order < $1.order }
 
     List {
-      Section {
-
-        CustomSeparator()
-          .padding(.horizontal, -16)
-          .listRowInsets(.init())
-          .listRowBackground(Color.clear)
-          .listRowSeparator(.hidden)
-      }
 
       Section {
+        // CustomSeparator()
+        //   .padding(.horizontal, -16)
+
         ForEach(activeCalendars, id: \.id) { calendar in
           VStack(spacing: 0) {
             CalendarsOverviewsItem(calendar: calendar, store: store)
@@ -36,7 +31,7 @@ struct CalendarsOverview: View {
                 dismiss()
                 scrollPosition.scrollTo(id: calendar.id.uuidString)
               }
-              .padding(.horizontal, 16)
+              .padding(.all, 16)
 
             CustomSeparator()
               .padding(.horizontal, -16)
@@ -83,6 +78,7 @@ struct CalendarsOverview: View {
     }
     .listStyle(.plain)
     .scrollContentBackground(.hidden)
+    .scrollIndicators(.hidden)
     .animation(.spring(), value: store.calendars.map { $0.order })
     .surfaceBackground(Color("surface-muted"), ignoresSafeArea: true)
     .navigationTitle("Calendars")
