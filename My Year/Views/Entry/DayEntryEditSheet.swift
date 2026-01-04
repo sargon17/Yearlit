@@ -37,9 +37,9 @@ struct DayEntryEditSheet: View {
       case .binary:
         Toggle("Completed", isOn: $entryCompleted)
       case .counter:
-        CounterEntryModule(calendar: calendar, entryCount: $entryCount)
+        HorizontalWheelEntryModule(calendar: calendar, entryCount: $entryCount)
       case .multipleDaily:
-        CounterEntryModule(calendar: calendar, entryCount: $entryCount)
+        HorizontalWheelEntryModule(calendar: calendar, entryCount: $entryCount)
 
       // MultipleDailyEntryModule(calendar: calendar, entryCount: $entryCount)
       }
