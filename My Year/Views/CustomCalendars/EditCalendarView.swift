@@ -251,6 +251,11 @@ struct EditCalendarView: View {
 
         }
 
+
+        CustomSeparator()
+          .padding(.horizontal, -16)
+          .padding(.vertical, 16)
+
         CustomSection(label: "Danger Zone") {
           VStack(spacing: 2) {
             Button(action: {
@@ -267,7 +272,11 @@ struct EditCalendarView: View {
                 .padding()
             }
             .sameLevelBorder(color: .textPrimary.opacity(0.3))
-            .foregroundStyle(.textPrimary)
+            .foregroundStyle(.surfaceMuted)
+
+          }
+          .padding(.all, 2)
+          .background(getVoidColor(colorScheme: colorScheme))
 
             Text(
               isArchived
@@ -278,8 +287,9 @@ struct EditCalendarView: View {
             .foregroundStyle(.textTertiary)
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(.horizontal, 8)
-            .padding(.bottom, 4)
+            .padding(.bottom, 12)
 
+            VStack(spacing: 2) {
             Button(action: {
               showingDeleteConfirmation = true
             }) {
