@@ -14,6 +14,7 @@ struct CalendarsOverviewsItem: View {
   let calendar: CustomCalendar
   @ObservedObject var store: CustomCalendarStore
   @State private var showDeleteConfirmation = false
+  @Environment(\.colorScheme) private var colorScheme
 
   private let latestSlotsCount = 56
   private let rowsCount = 4
@@ -117,7 +118,7 @@ extension CalendarsOverviewsItem {
     let daySeedKey = dayKey(for: utcTodayStart)
     let cacheKey = CacheKey(
       scope: .overviewSlots,
-      identifier: "\(calendar.id.uuidString)|\(store.dataVersion)|\(daySeedKey)|\(latestSlotsCount)"
+      identifier: "\(calendar.id.uuidString)|\(store.dataVersion)|\(daySeedKey)|\(latestSlotsCount)|\(colorScheme)"
     )
     if let cached: [Color] = CacheStore.shared.get(cacheKey) { return cached }
 

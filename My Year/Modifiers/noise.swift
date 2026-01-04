@@ -36,11 +36,19 @@ struct NoiseLayer: View {
     return colorScheme == .light ? .colorBurn : .overlay
   }
 
+  private var resolvedOpacity: CGFloat {
+    if opacity != 1 {
+      return opacity
+    }
+
+    return colorScheme == .light ? 0.5 : 1
+  }
+
   var body: some View {
     Image("noise")
       .resizable(resizingMode: .tile)
       .blendMode(resolvedBlendMode)
-      .opacity(opacity)
+      .opacity(resolvedOpacity)
       .allowsHitTesting(false)
   }
 }
