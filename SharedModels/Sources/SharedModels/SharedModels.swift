@@ -227,6 +227,17 @@ public enum TrackingType: String, Codable, CaseIterable {
     }
   }
 
+  public var detailDescription: String {
+    switch self {
+    case .binary:
+      return "Track a simple yes/no each day. Great for habits you either complete or skip."
+    case .counter:
+      return "Log a numeric value per day, like pages read or minutes practiced."
+    case .multipleDaily:
+      return "Check in multiple times per day toward a daily target."
+    }
+  }
+
   @available(iOS 17.0, macOS 13.0, *)
   public static var allCasesDisplayRepresentations: [TrackingType: DisplayRepresentation] {
     [

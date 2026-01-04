@@ -90,6 +90,18 @@ struct EditCalendarView: View {
 
         TrackingPicker(trackingType: $trackingType, color: Color(selectedColor))
 
+        ZStack(alignment: .leading) {
+          Text(trackingType.detailDescription)
+            .font(.footnote)
+            .foregroundStyle(.textTertiary)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(.horizontal, 8)
+            .padding(.bottom, 12)
+            .id(trackingType)
+            .transition(.blurReplace)
+        }
+        .animation(.snappy, value: trackingType)
+
         if trackingType == .multipleDaily || trackingType == .counter {
           CustomSection(label: "Settings for \(trackingType.label)") {
 
@@ -371,4 +383,5 @@ struct EditCalendarView: View {
         && selectedUnit == .currency) ? currencySymbol : nil
     )
   }
+
 }
