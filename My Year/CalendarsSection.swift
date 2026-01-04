@@ -18,6 +18,29 @@ struct CalendarsSection: View {
 
   var body: some View {
     RouterView { _ in
+      VStack( spacing: 0) {
+
+        // custom toolbar
+      HStack {
+        HStack(spacing: 6) {
+          Text("Yearlit")
+            .font(.system(size: 14, weight: .bold, design: .monospaced))
+          if isPremium(customerInfo: customerInfo) {
+            Image(systemName: "checkmark.seal")
+              .font(.system(size: 12, weight: .bold))
+              .foregroundStyle(.purple)
+          }
+        }
+
+        Spacer()
+
+        toolbar
+      }.padding(.all, 16)
+
+
+
+      CustomSeparator()
+
       GeometryReader { geometry in
         let width = geometry.size.width
         ScrollView(.horizontal) {
@@ -107,42 +130,25 @@ struct CalendarsSection: View {
         .scrollContentBackground(.hidden)
       }
       .navigationBarTitleDisplayMode(.inline)
-      .toolbar {
-        ToolbarItem(placement: .principal) {
-          HStack(spacing: 6) {
-            Text("Yearlit")
-              .font(.system(size: 14, weight: .bold, design: .monospaced))
-              .foregroundColor(Color("text-tertiary"))
-            if isPremium(customerInfo: customerInfo) {
-              Image(systemName: "checkmark.seal.fill")
-                .font(.system(size: 12, weight: .bold))
-                .foregroundStyle(.purple)
-            }
-          }
-        }
 
-        ToolbarItem(placement: .navigationBarTrailing) {
-          toolbar
-        }
-      }
-      .toolbarRole(.editor)
       .onAppear {
         Purchases.shared.getCustomerInfo { info, _ in
           customerInfo = info
         }
       }
+      }.surfaceBackground(Color("surface-muted"), ignoresSafeArea: true)
     }
   }
 
   var toolbar: some View {
-    HStack(spacing: 8) {
+    HStack(spacing: 12) {
       #if DEBUG
         Button(action: {
           onboarding.reset()
         }) {
           Image(systemName: "point.bottomleft.forward.to.point.topright.filled.scurvepath")
-            .foregroundColor(Color("text-tertiary"))
-            .font(.system(size: 12))
+            // .foregroundColor(Color("text-tertiary"))
+            .font(.system(size: 16))
         }
 
       #endif
@@ -153,8 +159,8 @@ struct CalendarsSection: View {
         }
       }) {
         Image(systemName: "gearshape")
-          .foregroundColor(Color("text-tertiary"))
-          .font(.system(size: 12))
+          // .foregroundColor(Color("text-tertiary"))
+          .font(.system(size: 16))
       }
       Button(action: {
         router.showScreen(.sheet) { _ in
@@ -162,8 +168,8 @@ struct CalendarsSection: View {
         }
       }) {
         Image(systemName: "rectangle.split.1x2")
-          .font(.system(size: 12))
-          .foregroundColor(Color("text-tertiary"))
+          .font(.system(size: 16))
+          // .foregroundColor(Color("text-tertiary"))
       }
     }
   }

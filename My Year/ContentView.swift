@@ -30,6 +30,7 @@ struct ContentView: View {
         lastCleanupVersion = store.dataVersion
         await checkForNotificationsOfNonExistingCalendars(store: store)
       }
+      .toolbarBackground(.hidden, for: .navigationBar)
       .font(.system(.body, design: .monospaced))
   }
 }

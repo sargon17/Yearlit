@@ -37,7 +37,8 @@ struct My_YearApp: App {
     )
 
     let appearance = UINavigationBarAppearance()
-    appearance.configureWithDefaultBackground()
+    appearance.configureWithTransparentBackground()
+
 
     // Large title → SF monospaced
     appearance.largeTitleTextAttributes = [
