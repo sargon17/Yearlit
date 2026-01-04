@@ -106,9 +106,29 @@ struct CalendarsSection: View {
         .scrollPosition($position)
         .scrollContentBackground(.hidden)
       }
+      .navigationBarTitleDisplayMode(.inline)
       .toolbar {
+        ToolbarItem(placement: .principal) {
+          HStack(spacing: 6) {
+            Text("Yearlit")
+              .font(.system(size: 14, weight: .bold, design: .monospaced))
+              .foregroundColor(Color("text-tertiary"))
+            if isPremium(customerInfo: customerInfo) {
+              Image(systemName: "checkmark.seal.fill")
+                .font(.system(size: 12, weight: .bold))
+                .foregroundStyle(.purple)
+            }
+          }
+        }
+
         ToolbarItem(placement: .navigationBarTrailing) {
           toolbar
+        }
+      }
+      .toolbarRole(.editor)
+      .onAppear {
+        Purchases.shared.getCustomerInfo { info, _ in
+          customerInfo = info
         }
       }
     }
