@@ -2,14 +2,6 @@ import Garnish
 import SharedModels
 import SwiftUI
 
-private func inactiveDayColor() -> Color {
-  GarnishColor.blend(.surfaceMuted, with: .textPrimary, ratio: 0.04)
-}
-
-private func activeDayColor() -> Color {
-  GarnishColor.blend(.surfaceMuted, with: .textPrimary, ratio: 0.12)
-}
-
 func colorForDay(
   _ day: Date,
   calendar: CustomCalendar,

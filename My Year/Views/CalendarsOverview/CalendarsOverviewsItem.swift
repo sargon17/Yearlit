@@ -19,19 +19,20 @@ struct CalendarsOverviewsItem: View {
   private let latestSlotsCount = 56
   private let rowsCount = 4
   private let today = Date()
-  private var utcCalendar: Calendar {
+  private var localCalendar: Calendar {
     var calendar = Calendar(identifier: .gregorian)
-    calendar.timeZone = TimeZone(secondsFromGMT: 0) ?? calendar.timeZone
+    calendar.locale = Locale(identifier: "en_US_POSIX")
+    calendar.timeZone = .autoupdatingCurrent
     return calendar
   }
-  private var utcTodayStart: Date {
-    utcCalendar.startOfDay(for: today)
+  private var todayStart: Date {
+    localCalendar.startOfDay(for: today)
   }
 
   var latestSlots: [Date] {
-    let start = utcCalendar.date(byAdding: .day, value: -(latestSlotsCount - 1), to: utcTodayStart) ?? utcTodayStart
+    let start = localCalendar.date(byAdding: .day, value: -(latestSlotsCount - 1), to: todayStart) ?? todayStart
     return (0..<latestSlotsCount).compactMap { offset in
-      utcCalendar.date(byAdding: .day, value: offset, to: start)
+      localCalendar.date(byAdding: .day, value: offset, to: start)
     }
   }
 
@@ -115,7 +116,7 @@ extension CalendarsOverviewsItem {
   }
 
   private var latestSlotColors: [Color] {
-    let daySeedKey = dayKey(for: utcTodayStart)
+    let daySeedKey = dayKey(for: todayStart)
     let cacheKey = CacheKey(
       scope: .overviewSlots,
       identifier: "\(calendar.id.uuidString)|\(store.dataVersion)|\(daySeedKey)|\(latestSlotsCount)|\(colorScheme)"
@@ -123,12 +124,12 @@ extension CalendarsOverviewsItem {
     if let cached: [Color] = CacheStore.shared.get(cacheKey) { return cached }
 
     let entries = calendar.entries
-    let inactiveColor = GarnishColor.blend(.surfaceMuted, with: .textPrimary, ratio: 0.02)
-    let activeColor = GarnishColor.blend(.surfaceMuted, with: .textPrimary, ratio: 0.08)
+    let inactiveColor = inactiveDayColor()
+    let activeColor = activeDayColor()
     let maxCount = calendar.trackingType == .counter ? getMaxCount(calendar: calendar) : 1
 
     let colors = latestSlots.map { day -> Color in
-      if day > utcTodayStart { return inactiveColor }
+      if day > todayStart { return inactiveColor }
       let key = dayKey(for: day)
       guard let entry = entries[key] else { return activeColor }
       switch calendar.trackingType {

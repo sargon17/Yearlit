@@ -10,7 +10,12 @@ struct ArchivedCalendarsSheet: View {
   private var archivedCalendars: [CustomCalendar] {
     store.calendars
       .filter { $0.isArchived }
-      .sorted { $0.order < $1.order }
+      .sorted { lhs, rhs in
+        if lhs.order == rhs.order {
+          return lhs.id.uuidString < rhs.id.uuidString
+        }
+        return lhs.order < rhs.order
+      }
   }
 
   var body: some View {

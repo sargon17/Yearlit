@@ -6,14 +6,18 @@ private enum EntryKeyFormatter {
     let formatter = DateFormatter()
     formatter.calendar = Calendar(identifier: .gregorian)
     formatter.locale = Locale(identifier: "en_US_POSIX")
-    formatter.timeZone = TimeZone(secondsFromGMT: 0)
+    formatter.timeZone = .autoupdatingCurrent
     formatter.dateFormat = "yyyy-MM-dd"
     return formatter
   }()
 }
 
 func dayKey(for date: Date) -> String {
-  EntryKeyFormatter.shared.string(from: date)
+  var calendar = Calendar(identifier: .gregorian)
+  calendar.locale = Locale(identifier: "en_US_POSIX")
+  calendar.timeZone = .autoupdatingCurrent
+  let canonicalDate = calendar.startOfDay(for: date)
+  return EntryKeyFormatter.shared.string(from: canonicalDate)
 }
 
 func entry(

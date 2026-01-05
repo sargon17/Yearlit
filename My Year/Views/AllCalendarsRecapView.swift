@@ -39,7 +39,9 @@ struct AllCalendarsRecapView: View {
     todayLocal: Date,
     todayKeyDate: Date?
   ) -> StatsBundle {
-    let cal = Calendar.current
+    var cal = Calendar(identifier: .gregorian)
+    cal.locale = Locale(identifier: "en_US_POSIX")
+    cal.timeZone = .autoupdatingCurrent
     let entriesByCalendar = Dictionary(uniqueKeysWithValues: calendars.map { ($0.id, $0.entries) })
     let (totalCount, perDayTotal) = aggregateCounts(cal: cal, calendars: calendars)
     let maxCount = perDayTotal.values.max() ?? 0
@@ -52,8 +54,13 @@ struct AllCalendarsRecapView: View {
       entriesByCalendar: entriesByCalendar
     )
 
-    let activeDays = anySuccessByDay.values.filter { $0 }.count
-    let (longestStreak, currentStreak) = computeStreaks(cal: cal, anySuccessByDay)
+    let allTimeSuccessByDay = buildAllTimeSuccessMap(
+      cal: cal,
+      todayLocal: todayLocal,
+      calendars: calendars
+    )
+    let activeDays = allTimeSuccessByDay.values.filter { $0 }.count
+    let (longestStreak, currentStreak) = computeStreaks(cal: cal, allTimeSuccessByDay)
 
     let todayKeyCount: Int? = {
       guard let keyDate = todayKeyDate else { return nil }

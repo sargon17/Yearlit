@@ -7,7 +7,9 @@ public func getYearDatesArray() -> [Date] {
 }
 
 public func getYearDatesArray(for year: Int) -> [Date] {
-  let calendar = Calendar.current
+  var calendar = Calendar(identifier: .gregorian)
+  calendar.locale = Locale(identifier: "en_US_POSIX")
+  calendar.timeZone = .autoupdatingCurrent
   guard let startDate = calendar.date(from: DateComponents(year: year, month: 1, day: 1)),
     let endDate = calendar.date(from: DateComponents(year: year, month: 12, day: 31))
   else {

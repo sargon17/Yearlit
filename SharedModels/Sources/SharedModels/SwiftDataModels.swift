@@ -242,10 +242,11 @@ extension CalendarEntryEntity {
 
   func apply(from entry: CalendarEntry, calendarId: UUID, overrideDayKey: String? = nil) {
     self.calendarId = calendarId
-    date = entry.date
+    let canonicalDate = LocalDayCalendar.startOfDay(for: entry.date)
+    date = canonicalDate
     count = entry.count
     completed = entry.completed
-    let resolvedDayKey = overrideDayKey ?? DayKeyFormatter.shared.string(from: entry.date)
+    let resolvedDayKey = overrideDayKey ?? DayKeyFormatter.shared.string(from: canonicalDate)
     dayKey = resolvedDayKey
     compositeKey = CalendarEntryEntity.makeCompositeKey(calendarId: calendarId, dayKey: resolvedDayKey)
   }

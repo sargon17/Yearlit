@@ -142,57 +142,16 @@ struct CustomCalendarView: View {
     let totalCount = calendar.entries.values.reduce(0) { $0 + $1.count }
     let maxCount = calendar.entries.values.map { $0.count }.max() ?? 0
 
-    var currentStreak = 0
-    var longestStreak = 0
+    var localCalendar = Calendar(identifier: .gregorian)
+    localCalendar.locale = Locale(identifier: "en_US_POSIX")
+    localCalendar.timeZone = .autoupdatingCurrent
+    let allTimeSuccessByDay = buildAllTimeSuccessMap(
+      cal: localCalendar,
+      todayLocal: today,
+      calendars: [calendar]
+    )
+    let (longestStreak, currentStreak) = computeStreaks(cal: localCalendar, allTimeSuccessByDay)
 
-    // Calculate Longest Streak
-    var tempLongestStreak = 0
-    for day in (0..<valuationStore.currentDayNumber).reversed() {
-      let dayDate = valuationStore.dateForDay(day)
-      let dateKey = customDateFormatter(date: dayDate)
-
-      if isDayActive(dateKey: dateKey) {
-        tempLongestStreak += 1
-      } else {
-        longestStreak = max(longestStreak, tempLongestStreak)
-        tempLongestStreak = 0  // Reset the streak
-      }
-    }
-    longestStreak = max(longestStreak, tempLongestStreak)  // Check if the streak continues to the beginning of the year
-
-    // Calculate Current Streak
-    for day in (0..<valuationStore.currentDayNumber).reversed() {
-      let dayDate = valuationStore.dateForDay(day)
-      let dateKey = customDateFormatter(date: dayDate)
-
-      // If the day is today, skip checking the entry to avoid resetting the streak
-      if isToday(date: dayDate) {
-        if isDayActive(dateKey: dateKey) {
-          currentStreak += 1
-        }
-        continue
-      }
-
-      if isDayActive(dateKey: dateKey) {
-        currentStreak += 1
-      } else {
-        break
-      }
-    }
-
-    func isDayActive(dateKey: String) -> Bool {
-      if let entry = calendar.entries[dateKey] {
-        switch calendar.trackingType {
-        case .binary:
-          return entry.completed
-        case .counter:
-          return entry.count > 0
-        case .multipleDaily:
-          return entry.count >= calendar.dailyTarget
-        }
-      }
-      return false
-    }
     return CalendarStats(
       activeDays: activeDays, totalCount: totalCount, maxCount: maxCount,
       longestStreak: longestStreak, currentStreak: currentStreak

@@ -118,11 +118,11 @@ struct OverallGridView: View {
           await MainActor.run {
             counterPct75 = result.0
             mappedDays = result.1.map { (date, z) in
-              let inactiveColor = GarnishColor.blend(.surfaceMuted, with: .textPrimary, ratio: 0.02)
-              let activeColor = GarnishColor.blend(.surfaceMuted, with: .textPrimary, ratio: 0.08)
-              if date > today {  // future days stay inactive
-                return (date: date, color: inactiveColor)
-              }
+            let inactiveColor = inactiveDayColor()
+            let activeColor = activeDayColor()
+            if date > today {  // future days stay inactive
+              return (date: date, color: inactiveColor)
+            }
               if z <= 0 {  // no data or zero progress → neutral active shade (not accent)
                 return (date: date, color: activeColor)
               }
@@ -146,8 +146,8 @@ struct OverallGridView: View {
   }
 
   private func mappedDays(from zByDay: [String: Double]) -> [(date: Date, color: Color)] {
-    let inactiveColor = GarnishColor.blend(.surfaceMuted, with: .textPrimary, ratio: 0.02)
-    let activeColor = GarnishColor.blend(.surfaceMuted, with: .textPrimary, ratio: 0.08)
+    let inactiveColor = inactiveDayColor()
+    let activeColor = activeDayColor()
     return dates.map { day -> (date: Date, color: Color) in
       if day > today { return (day, inactiveColor) }
       let z = zByDay[dayKey(for: day)] ?? 0
@@ -167,8 +167,8 @@ struct OverallGridView: View {
   }
 
   private func overallColorForDay(_ day: Date) -> Color {
-    let inactiveColor = GarnishColor.blend(.surfaceMuted, with: .textPrimary, ratio: 0.02)
-    let activeColor = GarnishColor.blend(.surfaceMuted, with: .textPrimary, ratio: 0.08)
+    let inactiveColor = inactiveDayColor()
+    let activeColor = activeDayColor()
 
     if day > today { return inactiveColor }
 

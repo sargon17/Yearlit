@@ -322,9 +322,10 @@ public struct DayValuation: Codable, Identifiable, Equatable {
   public let timestamp: Date
 
   public init(date: Date = Date(), mood: DayMood) {
-    self.id = DayKeyFormatter.shared.string(from: date)
+    let canonicalDate = LocalDayCalendar.startOfDay(for: date)
+    self.id = DayKeyFormatter.shared.string(from: canonicalDate)
     self.mood = mood
-    self.timestamp = date
+    self.timestamp = canonicalDate
   }
 
   public static func == (lhs: DayValuation, rhs: DayValuation) -> Bool {
@@ -495,7 +496,7 @@ public final class CustomCalendarStore: ObservableObject {
   }
 
   public func moveCalendar(fromOffsets indices: IndexSet, toOffset destination: Int) {
-    var reordered = calendars
+    var reordered = Self.sortCalendars(calendars)
     reordered.move(fromOffsets: indices, toOffset: destination)
 
     do {
@@ -518,7 +519,7 @@ public final class CustomCalendarStore: ObservableObject {
   }
 
   public func moveActiveCalendars(fromOffsets indices: IndexSet, toOffset destination: Int) {
-    let orderedCalendars = calendars.sorted { $0.order < $1.order }
+    let orderedCalendars = Self.sortCalendars(calendars)
     let activeCalendars = orderedCalendars.filter { !$0.isArchived }
     guard !activeCalendars.isEmpty else { return }
 
@@ -562,17 +563,23 @@ public final class CustomCalendarStore: ObservableObject {
     do {
       let context = makeContext()
       guard fetchCalendarEntity(id: calendarId, in: context) != nil else { return }
-      let dayKey = formatDate(date: entry.date)
+      let canonicalDate = LocalDayCalendar.startOfDay(for: entry.date)
+      let dayKey = formatDate(date: canonicalDate)
       let compositeKey = CalendarEntryEntity.makeCompositeKey(calendarId: calendarId, dayKey: dayKey)
 
       if let entryEntity = fetchEntry(compositeKey: compositeKey, in: context) {
-        entryEntity.apply(from: entry, calendarId: calendarId, overrideDayKey: dayKey)
+        let normalizedEntry = CalendarEntry(
+          date: canonicalDate,
+          count: entry.count,
+          completed: entry.completed
+        )
+        entryEntity.apply(from: normalizedEntry, calendarId: calendarId, overrideDayKey: dayKey)
       } else {
         let entryEntity = CalendarEntryEntity(
           compositeKey: compositeKey,
           calendarId: calendarId,
           dayKey: dayKey,
-          date: entry.date,
+          date: canonicalDate,
           count: entry.count,
           completed: entry.completed
         )
@@ -660,13 +667,22 @@ public final class CustomCalendarStore: ObservableObject {
   }
 
   private func formatDate(date: Date) -> String {
-    DayKeyFormatter.shared.string(from: date)
+    DayKeyFormatter.shared.string(from: LocalDayCalendar.startOfDay(for: date))
   }
 
   private static let dataVersionKey = "CustomCalendarStore.dataVersion"
 
   private static func loadDataVersion() -> Int {
     UserDefaults.standard.integer(forKey: dataVersionKey)
+  }
+
+  private static func sortCalendars(_ calendars: [CustomCalendar]) -> [CustomCalendar] {
+    calendars.sorted { lhs, rhs in
+      if lhs.order == rhs.order {
+        return lhs.id.uuidString < rhs.id.uuidString
+      }
+      return lhs.order < rhs.order
+    }
   }
 
   private func bumpDataVersion() {
@@ -707,7 +723,7 @@ public final class CustomCalendarStore: ObservableObject {
       }
     }
 
-    return deduplicatedCalendars.values.sorted { $0.order < $1.order }
+    return Self.sortCalendars(Array(deduplicatedCalendars.values))
   }
 }
 
@@ -715,15 +731,16 @@ public final class CustomCalendarStore: ObservableObject {
 public final class ValuationStore: ObservableObject {
   public static let shared = ValuationStore()
 
-  @Published public var selectedYear: Int = Calendar.current.component(.year, from: Date())
+  @Published public var selectedYear: Int = LocalDayCalendar.calendar.component(.year, from: Date())
   @Published public private(set) var valuations: [String: DayValuation] = [:]
 
   private let container: ModelContainer
+  private var localCalendar: Calendar { LocalDayCalendar.calendar }
 
   // MARK: - Date Calculations
   // TODO: Remove this function (LEGACY)
   public func dateForDay(_ day: Int) -> Date {
-    let calendar = Calendar.current
+    let calendar = localCalendar
     let startOfYear = calendar.date(from: DateComponents(year: selectedYear, month: 1, day: 1))!
     return calendar.date(byAdding: .day, value: day, to: startOfYear)!
   }
@@ -733,8 +750,8 @@ public final class ValuationStore: ObservableObject {
   }
 
   public var currentDayNumber: Int {
-    let calendar = Calendar.current
-    let today = Date()
+    let calendar = localCalendar
+    let today = calendar.startOfDay(for: Date())
     let currentYear = calendar.component(.year, from: today)
 
     if selectedYear > currentYear {
@@ -743,11 +760,16 @@ public final class ValuationStore: ObservableObject {
       return numberOfDaysInYear
     }
 
-    return calendar.ordinality(of: .day, in: .year, for: today) ?? 0
+    guard let startOfYear = calendar.date(from: DateComponents(year: selectedYear, month: 1, day: 1)) else {
+      return 0
+    }
+
+    let dayOffset = calendar.dateComponents([.day], from: startOfYear, to: today).day ?? 0
+    return dayOffset + 1
   }
 
   public var numberOfDaysInYear: Int {
-    let calendar = Calendar.current
+    let calendar = localCalendar
     let startOfYear = DateComponents(year: selectedYear, month: 1, day: 1)
     let endOfYear = DateComponents(year: selectedYear, month: 12, day: 31)
     guard let startDate = calendar.date(from: startOfYear),
@@ -803,7 +825,8 @@ public final class ValuationStore: ObservableObject {
   }
 
   public func getValuation(for date: Date) -> DayValuation? {
-    let key = DayKeyFormatter.shared.string(from: date)
+    let canonicalDate = LocalDayCalendar.startOfDay(for: date)
+    let key = DayKeyFormatter.shared.string(from: canonicalDate)
     return valuations[key]
   }
 
