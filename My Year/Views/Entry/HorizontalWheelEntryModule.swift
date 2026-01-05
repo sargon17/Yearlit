@@ -7,6 +7,15 @@ struct HorizontalWheelEntryModule: View {
 
   @State private var maxValue: Int
   @FocusState private var isCountFocused: Bool
+  private var countLabel: String {
+    if let unit = calendar.unit, unit != .none {
+      if unit == .currency {
+        return calendar.currencySymbol ?? "$"
+      }
+      return unit.displayName
+    }
+    return "Count"
+  }
 
   init(calendar: CustomCalendar, entryCount: Binding<Int>) {
     self.calendar = calendar
@@ -18,7 +27,7 @@ struct HorizontalWheelEntryModule: View {
 
   var body: some View {
     VStack(spacing: 24) {
-      CustomSection(label: "Count") {
+      CustomSection(label: countLabel) {
         VStack(spacing: 12) {
           TextField("", value: $entryCount, formatter: countFormatter)
             .multilineTextAlignment(.center)
@@ -33,8 +42,6 @@ struct HorizontalWheelEntryModule: View {
             accentColor: Color(calendar.color)
           )
         }
-        .padding(2)
-        .outerSameLevelShadow()
       }
     }
   }
@@ -77,6 +84,32 @@ private struct HorizontalTickWheel: View {
       }
       .scrollIndicators(.hidden)
       .scrollPosition(id: $selection, anchor: .center)
+      .overlay(alignment: .leading) {
+        LinearGradient(
+          colors: [
+            Color("surface-muted"),
+            Color("surface-muted").opacity(0.85),
+            Color("surface-muted").opacity(0)
+          ],
+          startPoint: .leading,
+          endPoint: .trailing
+        )
+        .frame(width: max(20, geometry.size.width * 0.16))
+        .allowsHitTesting(false)
+      }
+      .overlay(alignment: .trailing) {
+        LinearGradient(
+          colors: [
+            Color("surface-muted").opacity(0),
+            Color("surface-muted").opacity(0.85),
+            Color("surface-muted")
+          ],
+          startPoint: .leading,
+          endPoint: .trailing
+        )
+        .frame(width: max(20, geometry.size.width * 0.16))
+        .allowsHitTesting(false)
+      }
       .onChange(of: selection) { _, newValue in
         guard let newValue else { return }
         if value != newValue {
