@@ -178,9 +178,6 @@
     "Enable Mood Tracking" : {
 
     },
-    "Enable Runtime Debug" : {
-
-    },
     "Error" : {
 
     },
@@ -188,6 +185,9 @@
 
     },
     "Features" : {
+
+    },
+    "Filter your requests" : {
 
     },
     "Get PRO" : {
@@ -455,9 +455,6 @@
     "Value" : {
 
     },
-    "Wand Fill Force: %.2f" : {
-
-    },
     "Watch your chain grow." : {
 
     },
@@ -483,6 +480,9 @@
 
     },
     "Your days shape your life." : {
+
+    },
+    "Your Requests" : {
 
     },
     "Your suggestions and ideas are what shape it." : {
