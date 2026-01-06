@@ -4,6 +4,7 @@ import SwiftfulRouting
 
 struct About: View {
   @Environment(\.router) var router
+  @EnvironmentObject private var whatsNewManager: WhatsNewManager
 
   var body: some View {
     Section(header: Text("About")) {
@@ -11,6 +12,10 @@ struct About: View {
         router.showScreen(.fullScreenCover) { _ in
           AboutThisProject()
         }
+      }
+
+      Button("What's New") {
+        whatsNewManager.presentLatest()
       }
     }
   }

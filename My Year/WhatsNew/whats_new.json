@@ -1,0 +1,57 @@
+{
+  "releases": [
+    {
+      "version": "1.8",
+      "title": "What's New",
+      "slides": [
+        {
+          "id": "fresh-look",
+          "type": "hero",
+          "title": "A cleaner year view",
+          "subtitle": "More focus, less noise.",
+          "body": "We refined the grid visuals to make your progress stand out.",
+          "systemImage": "sparkles"
+        },
+        {
+          "id": "streaks",
+          "type": "list",
+          "title": "Smarter streaks",
+          "subtitle": "Small improvements you will notice daily.",
+          "items": [
+            "Better streak stability across time zones",
+            "Faster updates after quick entry",
+            "Clearer misses vs. skips"
+          ]
+        },
+        {
+          "id": "widgets",
+          "type": "image",
+          "title": "Widgets feel alive",
+          "body": "Livelier colors and better spacing on every size.",
+          "image": "onboarding_2"
+        }
+      ]
+    },
+    {
+      "version": "1.7",
+      "title": "What's New",
+      "slides": [
+        {
+          "id": "calendar-linking",
+          "type": "hero",
+          "title": "Link calendars faster",
+          "subtitle": "Build your habit stack with fewer taps.",
+          "body": "We redesigned the linking flow to reduce friction.",
+          "systemImage": "link"
+        },
+        {
+          "id": "insights",
+          "type": "text",
+          "title": "Clearer insights",
+          "body": "We reworked the summary stats to highlight your best streaks.",
+          "systemImage": "chart.bar.fill"
+        }
+      ]
+    }
+  ]
+}

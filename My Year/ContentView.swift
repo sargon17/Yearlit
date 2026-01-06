@@ -17,6 +17,7 @@ struct ContentView: View {
   @State private var customerInfo: CustomerInfo?
   @ObservedObject private var store = CustomCalendarStore.shared
   @State private var lastCleanupVersion: Int = -1
+  @EnvironmentObject private var whatsNewManager: WhatsNewManager
 
   var body: some View {
     AppRouter()
@@ -24,11 +25,38 @@ struct ContentView: View {
         Purchases.shared.getCustomerInfo { (customerInfo, _) in
           self.customerInfo = customerInfo
         }
+        whatsNewManager.evaluateIfNeeded(
+          hasCalendars: !store.calendars.isEmpty,
+          isLoading: store.isLoading
+        )
+      }
+      .onReceive(store.$calendars) { calendars in
+        whatsNewManager.evaluateIfNeeded(
+          hasCalendars: !calendars.isEmpty,
+          isLoading: store.isLoading
+        )
+      }
+      .onReceive(store.$isLoading) { isLoading in
+        whatsNewManager.evaluateIfNeeded(
+          hasCalendars: !store.calendars.isEmpty,
+          isLoading: isLoading
+        )
       }
       .task(id: store.dataVersion) {
         guard lastCleanupVersion != store.dataVersion else { return }
         lastCleanupVersion = store.dataVersion
         await checkForNotificationsOfNonExistingCalendars(store: store)
+      }
+      .sheet(isPresented: $whatsNewManager.isPresented, onDismiss: {
+        whatsNewManager.markSeen()
+      }) {
+        if let release = whatsNewManager.activeRelease {
+          WhatsNewSheetView(release: release) {
+            whatsNewManager.markSeen()
+          }
+          .presentationDetents([.large])
+          .presentationDragIndicator(.visible)
+        }
       }
       .toolbarBackground(.hidden, for: .navigationBar)
       .font(.system(.body, design: .monospaced))
@@ -49,4 +77,5 @@ extension Binding {
 
 #Preview {
   ContentView()
+    .environmentObject(WhatsNewManager())
 }

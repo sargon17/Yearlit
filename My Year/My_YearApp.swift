@@ -16,6 +16,7 @@ import SwiftfulRouting
 struct My_YearApp: App {
   // * Onboarding Manager
   @StateObject private var onboarding = OnboardingManager()
+  @StateObject private var whatsNewManager = WhatsNewManager()
   @StateObject private var featureRequest = FeatureRequestManager(
     appID: "jd76a32gr7hqyp30trwnds7c5x7rfdxq")
 
@@ -73,6 +74,7 @@ struct My_YearApp: App {
         }
       }
       .environmentObject(onboarding)
+      .environmentObject(whatsNewManager)
       .environmentObject(featureRequest)
       .fullScreenCover(isPresented: .constant(!onboarding.hasSeenOnboarding)) {
         OnboardingView {

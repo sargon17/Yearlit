@@ -178,6 +178,9 @@
     "Enable Mood Tracking" : {
 
     },
+    "Enable Runtime Debug" : {
+
+    },
     "Error" : {
 
     },
@@ -455,10 +458,16 @@
     "Value" : {
 
     },
+    "Wand Fill Force: %.2f" : {
+
+    },
     "Watch your chain grow." : {
 
     },
     "We’ll make this better together — one step, one habit, one consistent day at a time." : {
+
+    },
+    "What's New" : {
 
     },
     "Why Habits Matter" : {
