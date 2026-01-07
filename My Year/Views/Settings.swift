@@ -1,13 +1,17 @@
+import RevenueCat
 import SwiftUI
 
 struct SettingsView: View {
   @AppStorage("isMoodTrackingEnabled") var isMoodTrackingEnabled: Bool = false  // Default to enabled
   @AppStorage("runtimeDebugEnabled") var runtimeDebugEnabled: Bool = false  // Add new debug setting
   @AppStorage("wandFillForce") var wandFillForce: Double = 0.5  // Default wand fill force
+  @State private var customerInfo: CustomerInfo?
 
   var body: some View {
     VStack(spacing: 0) {
       Form {
+        SubscriptionStatusSection(customerInfo: customerInfo)
+        About()
         Section(header: Text("Features")) {
           Toggle("Enable Mood Tracking", isOn: $isMoodTrackingEnabled)
           #if DEBUG
@@ -20,20 +24,26 @@ struct SettingsView: View {
             }
           #endif
         }
-
-        About()
         Contacts()
-        DevSupport()
+        DevSupportSection(customerInfo: customerInfo)
+        DevCredits()
+          .padding(.top, 8)
+          .frame(maxWidth: .infinity, alignment: .center)
+          .listRowBackground(Color.clear)
+          .listRowInsets(EdgeInsets())
       }
       .scrollContentBackground(.hidden)
       .font(.system(size: 12, design: .monospaced))
       .foregroundColor(Color("text-secondary"))
-      DevCredits().padding(.top, 8)
     }
     .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
     .surfaceBackground(Color("surface-muted"), ignoresSafeArea: true)
     .navigationTitle("Settings")
-
+    .onAppear {
+      Purchases.shared.getCustomerInfo { info, _ in
+        customerInfo = info
+      }
+    }
   }
 }
 

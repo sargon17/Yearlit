@@ -2,8 +2,7 @@ import Foundation
 
 @MainActor
 final class WhatsNewManager: ObservableObject {
-  @Published private(set) var activeRelease: WhatsNewRelease?
-  @Published var isPresented: Bool = false
+  @Published private(set) var pendingRelease: WhatsNewRelease?
 
   private let storageKey = "whatsnew.lastSeenVersion"
   private let dataSource = WhatsNewNotesDataSource()
@@ -28,23 +27,23 @@ final class WhatsNewManager: ObservableObject {
     }
 
     guard let release = dataSource.latestRelease(after: lastSeen, upTo: current) else { return }
-    activeRelease = release
-    isPresented = true
+    pendingRelease = release
   }
 
-  func presentLatest() {
-    guard let currentVersion = Bundle.main.appShortVersion else { return }
-    guard let current = AppVersion(currentVersion) else { return }
-    guard let release = dataSource.latestRelease(after: nil, upTo: current) else { return }
-    activeRelease = release
-    isPresented = true
+  func takePendingRelease() -> WhatsNewRelease? {
+    let release = pendingRelease
+    pendingRelease = nil
+    return release
   }
 
-  func markSeen() {
-    guard let release = activeRelease else { return }
+  func latestRelease() -> WhatsNewRelease? {
+    guard let currentVersion = Bundle.main.appShortVersion else { return nil }
+    guard let current = AppVersion(currentVersion) else { return nil }
+    return dataSource.latestRelease(after: nil, upTo: current)
+  }
+
+  func markSeen(_ release: WhatsNewRelease) {
     setLastSeenVersion(release.version)
-    isPresented = false
-    activeRelease = nil
   }
 
   private var lastSeenVersion: String? {

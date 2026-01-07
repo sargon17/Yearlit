@@ -47,17 +47,6 @@ struct ContentView: View {
         lastCleanupVersion = store.dataVersion
         await checkForNotificationsOfNonExistingCalendars(store: store)
       }
-      .sheet(isPresented: $whatsNewManager.isPresented, onDismiss: {
-        whatsNewManager.markSeen()
-      }) {
-        if let release = whatsNewManager.activeRelease {
-          WhatsNewSheetView(release: release) {
-            whatsNewManager.markSeen()
-          }
-          .presentationDetents([.large])
-          .presentationDragIndicator(.visible)
-        }
-      }
       .toolbarBackground(.hidden, for: .navigationBar)
       .font(.system(.body, design: .monospaced))
   }

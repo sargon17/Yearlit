@@ -7,6 +7,7 @@ struct CalendarsSection: View {
   @State private var customerInfo: CustomerInfo?
   @ObservedObject private var store = CustomCalendarStore.shared
   @EnvironmentObject var onboarding: OnboardingManager
+  @EnvironmentObject private var whatsNewManager: WhatsNewManager
   @ObservedObject private var valuationStore = ValuationStore.shared
 
   @State private var selectedIndex: Int = 0
@@ -134,6 +135,17 @@ struct CalendarsSection: View {
       .onAppear {
         Purchases.shared.getCustomerInfo { info, _ in
           customerInfo = info
+        }
+      }
+      .onChange(of: whatsNewManager.pendingRelease?.version) { _ in
+        guard let release = whatsNewManager.takePendingRelease() else { return }
+        router.showScreen(.sheet) { _ in
+          WhatsNewSheetView(release: release) {
+            whatsNewManager.markSeen(release)
+            router.dismissScreen()
+          }
+          .presentationDetents([.fraction(0.92)])
+          .presentationDragIndicator(.visible)
         }
       }
       }.surfaceBackground(Color("surface-muted"), ignoresSafeArea: true)

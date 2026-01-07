@@ -127,6 +127,9 @@
     "Contacts" : {
 
     },
+    "Copy App User ID" : {
+
+    },
     "Create" : {
 
     },
@@ -176,6 +179,9 @@
 
     },
     "Enable Mood Tracking" : {
+
+    },
+    "Enable Runtime Debug" : {
 
     },
     "Error" : {
@@ -338,6 +344,12 @@
     "real feedback" : {
 
     },
+    "Renews: %@" : {
+
+    },
+    "Renews: lifetime" : {
+
+    },
     "Request a Feature" : {
 
     },
@@ -395,6 +407,9 @@
     "Step 3: Start today" : {
 
     },
+    "Subscription" : {
+
+    },
     "Support the Developer" : {
 
     },
@@ -411,6 +426,9 @@
 
     },
     "Thank you for your support!" : {
+
+    },
+    "Thanks for supporting Yearlit." : {
 
     },
     "The 4 Rules of Good Habits" : {
@@ -455,13 +473,13 @@
     "Value" : {
 
     },
+    "Wand Fill Force: %.2f" : {
+
+    },
     "Watch your chain grow." : {
 
     },
     "We’ll make this better together — one step, one habit, one consistent day at a time." : {
-
-    },
-    "What's New" : {
 
     },
     "Why Habits Matter" : {
@@ -477,6 +495,9 @@
 
     },
     "Yearlit is still growing — just like the people who use it." : {
+
+    },
+    "You are on PRO." : {
 
     },
     "your" : {

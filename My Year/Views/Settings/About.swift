@@ -14,8 +14,18 @@ struct About: View {
         }
       }
 
-      Button("What's New") {
-        whatsNewManager.presentLatest()
+      let latestVersion = whatsNewManager.latestRelease()?.version
+      let whatsNewLabel = latestVersion == nil ? "What's New" : "What's New (\(latestVersion!))"
+      Button(whatsNewLabel) {
+        guard let release = whatsNewManager.latestRelease() else { return }
+        router.showScreen(.sheet) { _ in
+          WhatsNewSheetView(release: release) {
+            whatsNewManager.markSeen(release)
+            router.dismissScreen()
+          }
+          .presentationDetents([.fraction(0.92)])
+          .presentationDragIndicator(.visible)
+        }
       }
     }
   }
