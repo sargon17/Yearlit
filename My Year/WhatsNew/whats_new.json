@@ -5,51 +5,56 @@
       "title": "What's New",
       "slides": [
         {
-          "id": "fresh-look",
+          "id": "whats-new-180",
           "type": "hero",
-          "title": "A cleaner year view",
-          "subtitle": "More focus, less noise.",
-          "body": "We refined the grid visuals to make your progress stand out.",
-          "systemImage": "sparkles"
+          "title": "Yearlit has changed",
+          "subtitle": "Faster. Sleeker. Rock-solid.",
+          "body": "The 1.8.0 update brings a lot - I've been working hard to deliver the best experience yet. Translation: PERFORMANCE.",
+          "image": "180_hero"
         },
         {
-          "id": "streaks",
+          "id": "stability",
           "type": "list",
-          "title": "Smarter streaks",
-          "subtitle": "Small improvements you will notice daily.",
+          "title": "Built to stay solid",
+          "subtitle": "Fewer glitches, more trust.",
           "items": [
-            "Better streak stability across time zones",
-            "Faster updates after quick entry",
-            "Clearer misses vs. skips"
-          ]
+            "Streaks stay accurate across time zones",
+            "No more random calendar switching after edits",
+            "Overview updates reliably again"
+          ],
+          "image": "180_bugs"
         },
         {
-          "id": "widgets",
-          "type": "image",
-          "title": "Widgets feel alive",
-          "body": "Livelier colors and better spacing on every size.",
-          "image": "onboarding_2"
-        }
-      ]
-    },
-    {
-      "version": "1.7",
-      "title": "What's New",
-      "slides": [
-        {
-          "id": "calendar-linking",
-          "type": "hero",
-          "title": "Link calendars faster",
-          "subtitle": "Build your habit stack with fewer taps.",
-          "body": "We redesigned the linking flow to reduce friction.",
-          "systemImage": "link"
+          "id": "boards",
+          "type": "list",
+          "title": "Boards, but fast",
+          "subtitle": "Everything snaps into place.",
+          "items": [
+            "Board view loads quicker with smarter caching",
+            "Smoother scrolling on heavy days",
+            "Overall performance boost you can feel"
+          ],
+          "image": "180_performance"
         },
         {
-          "id": "insights",
-          "type": "text",
-          "title": "Clearer insights",
-          "body": "We reworked the summary stats to highlight your best streaks.",
-          "systemImage": "chart.bar.fill"
+          "id": "calendars",
+          "type": "list",
+          "title": "Calendars, organized",
+          "subtitle": "Clean views when you need them.",
+          "items": [
+            "Archive old calendars instead of deleting",
+            "Reordering and navigation work the way they should",
+            "More accurate stats"
+          ],
+          "image": "180_order"
+        },
+        {
+          "id": "polish",
+          "type": "list",
+          "title": "A cleaner look",
+          "subtitle": "Polish you notice right away.",
+          "items": ["Liquid Glass styling across the app", "More stable UI in everyday use"],
+          "image": "180_ui"
         }
       ]
     }

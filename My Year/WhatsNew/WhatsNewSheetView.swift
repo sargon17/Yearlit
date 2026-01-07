@@ -6,6 +6,8 @@ struct WhatsNewSheetView: View {
 
   @State private var currentIndex: Int = 0
 
+  @Environment(\.colorScheme) var colorScheme
+
   var body: some View {
     VStack(spacing: 0) {
       TabView(selection: $currentIndex) {
@@ -33,6 +35,9 @@ struct WhatsNewSheetView: View {
         }
       }
 
+
+      VStack {
+      VStack {
       Button(action: handleNext) {
         Text(isLastSlide ? "Done" : "Next")
           .frame(maxWidth: .infinity)
@@ -42,8 +47,11 @@ struct WhatsNewSheetView: View {
           .clipShape(RoundedRectangle(cornerRadius: 6))
       }
       .sameLevelBorder(color: .brand)
+      }.padding(.all, 2)
+      .background(getVoidColor(colorScheme: colorScheme))
+      }
       .padding(.horizontal, 16)
-      .padding(.bottom, 16)
+      .padding(.vertical, 8)
     }
   }
 
@@ -62,6 +70,3 @@ struct WhatsNewSheetView: View {
   }
 }
 
-#Preview {
-  WhatsNewSheetView(release: .preview) {}
-}

@@ -4,12 +4,12 @@ struct WhatsNewSlideView: View {
   let slide: WhatsNewSlide
 
   var body: some View {
-    GeometryReader { geometry in
-      let height = geometry.size.height
-
+    GeometryReader { proxy in
       VStack(spacing: 0) {
         headerView
-          .frame(height: height * 0.6)
+          .frame(width: proxy.size.width)
+          .frame(maxHeight: .infinity)
+          .clipped()
 
         CustomSeparator()
 
@@ -25,14 +25,14 @@ struct WhatsNewSlideView: View {
           }
 
           contentView
-
-          Spacer()
         }
-        .frame(maxHeight: height * 0.4)
-        .padding(.horizontal)
-        .padding(.top, 12)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(.horizontal, 16)
+        .padding(.vertical, 12)
+        .frame(width: proxy.size.width, alignment: .leading)
         .background(.surfaceMuted)
       }
+      .frame(width: proxy.size.width, height: proxy.size.height, alignment: .top)
       .background(.surfaceMuted)
     }
   }
