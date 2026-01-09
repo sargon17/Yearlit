@@ -13,6 +13,9 @@
     " show up every day, even when motivation wasn’t there." : {
 
     },
+    " yearlit" : {
+
+    },
     "[tymofyeyev.com](https://tymofyeyev.com)" : {
 
     },
@@ -121,6 +124,9 @@
     "Cancel" : {
 
     },
+    "Close" : {
+
+    },
     "Completed" : {
 
     },
@@ -179,6 +185,9 @@
 
     },
     "Enable Mood Tracking" : {
+
+    },
+    "Enable Runtime Debug" : {
 
     },
     "Error" : {
@@ -335,6 +344,9 @@
     "Passed: " : {
 
     },
+    "Pick a template for %@" : {
+
+    },
     "PRO" : {
 
     },
@@ -353,6 +365,9 @@
     "Save" : {
 
     },
+    "Save Image" : {
+
+    },
     "See something off? Have an idea?" : {
 
     },
@@ -369,6 +384,9 @@
 
     },
     "Settings" : {
+
+    },
+    "Share" : {
 
     },
     "Skip" : {
@@ -449,6 +467,9 @@
     "To make habits stick, keep them:" : {
 
     },
+    "tracked using" : {
+
+    },
     "Unable to save" : {
 
     },
@@ -468,6 +489,9 @@
 
     },
     "Value" : {
+
+    },
+    "Wand Fill Force: %.2f" : {
 
     },
     "Watch your chain grow." : {

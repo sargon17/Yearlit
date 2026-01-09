@@ -20,6 +20,15 @@
 - Place shared utilities in packages rather than the app target to keep dependencies modular.
 - Favor componentization: keep views focused, extract reusable UI/logic into dedicated components/files, and add brief comments when they clarify intent.
 
+## Dependency Usage
+- Prefer existing dependencies over native alternatives when they cover the need.
+- Use `SwiftDate` for date calculations and formatting instead of custom `Calendar`/`DateFormatter` helpers.
+- Use `SwiftfulRouting` for navigation, sheets, and routing instead of manual `NavigationStack`/`sheet` wiring where it fits.
+- Use `SwiftfulHaptics` for haptic feedback instead of `UIImpactFeedbackGenerator` directly.
+- Use `Garnish` for color blending, contrast, and theme helpers instead of ad-hoc color math.
+- Use `RevenueCat` and `RevenueCatUI` for subscriptions and paywalls instead of custom purchase flows.
+- Use `SharedModels` for cross-target models/types instead of duplicating structs in app/widget targets.
+
 ## Testing Guidelines
 - Write `Testing` framework cases in suites like `struct MyFeatureTests` and mark entry points with `@Test` functions.
 - Use descriptive method names (`@Test func tappingCompleteButtonMarksDay()`) and the `#expect` API for assertions.

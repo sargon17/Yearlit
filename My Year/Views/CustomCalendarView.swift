@@ -280,6 +280,27 @@ struct CustomCalendarView: View {
                   .padding(.horizontal, 4)
                 }
 
+                Button(action: {
+                  router.showScreen(.sheet) { _ in
+                    CalendarShareSheet(
+                      calendar: resolvedCalendar,
+                      year: valuationStore.selectedYear,
+                      dates: calendarDates,
+                      statsBundle: statsBundle
+                    )
+                  }
+                }) {
+                  ZStack {
+                    RoundedRectangle(cornerRadius: 3)
+                      .fill(Color(resolvedCalendar.color).opacity(0.1))
+                      .frame(width: 20, height: 20)
+                    Image(systemName: "square.and.arrow.up")
+                      .font(.system(size: 12))
+                      .foregroundColor(Color(resolvedCalendar.color))
+                  }
+                }
+                .frame(width: 24, height: 24)
+
                 if valuationStore.selectedYear == Calendar.current.component(.year, from: Date()) {
                   Button(action: {
                     handleQuickAdd()
