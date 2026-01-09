@@ -115,6 +115,9 @@
     "Because every update, every improvement, comes from " : {
 
     },
+    "Best Weekday" : {
+
+    },
     "Brew coffee" : {
 
     },
@@ -182,9 +185,6 @@
 
     },
     "Enable Mood Tracking" : {
-
-    },
-    "Enable Runtime Debug" : {
 
     },
     "Error" : {
@@ -341,6 +341,12 @@
     "Passed: " : {
 
     },
+    "Performance" : {
+
+    },
+    "Premium" : {
+
+    },
     "PRO" : {
 
     },
@@ -419,6 +425,9 @@
     "Step 3: Start today" : {
 
     },
+    "Streak Focus" : {
+
+    },
     "Subscription" : {
 
     },
@@ -486,9 +495,6 @@
 
     },
     "Value" : {
-
-    },
-    "Wand Fill Force: %.2f" : {
 
     },
     "Watch your chain grow." : {

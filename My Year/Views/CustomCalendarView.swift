@@ -286,7 +286,8 @@ struct CustomCalendarView: View {
                       calendar: resolvedCalendar,
                       year: valuationStore.selectedYear,
                       dates: calendarDates,
-                      statsBundle: statsBundle
+                      statsBundle: statsBundle,
+                      isPremium: isPremium(customerInfo: customerInfo)
                     )
                   }
                 }) {
