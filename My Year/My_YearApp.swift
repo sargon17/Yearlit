@@ -68,9 +68,24 @@ struct My_YearApp: App {
       }
       .environment(\.dates, Self.cachedDates)
       .onOpenURL { url in
-        if url.scheme == "my-year" && url.host == "clear" {
+        guard url.scheme == "my-year" else { return }
+
+        switch url.host {
+        case "clear":
           let store = ValuationStore.shared
           store.clearAllValuations()
+        case "quick-add":
+          let idString = url.pathComponents.dropFirst().first
+          guard let idString, let calendarId = UUID(uuidString: idString) else { return }
+
+          let store = CustomCalendarStore.shared
+          let calendars = CustomCalendarStore.fetchCalendarsSnapshot()
+          guard let calendar = calendars.first(where: { $0.id == calendarId }) else { return }
+
+          quickEntry(calendar: calendar, date: Date(), calendarStore: store)
+          WidgetReload.scheduleAllTimelinesReload()
+        default:
+          break
         }
       }
       .environmentObject(onboarding)

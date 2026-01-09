@@ -33,11 +33,10 @@ public struct CalendarQuery: EntityQuery {
   public init() {}
 
   public func entities(for identifiers: [String]) async throws -> [CalendarOption] {
-    let store = CustomCalendarStore.shared
-    store.loadCalendars()  // Ensure calendars are loaded
+    let calendars = CustomCalendarStore.fetchCalendarsSnapshot()
 
     return identifiers.compactMap { id in
-      if let calendar = store.calendars.first(where: { $0.id.uuidString == id }) {
+      if let calendar = calendars.first(where: { $0.id.uuidString == id }) {
         return CalendarOption(id: calendar.id.uuidString, name: calendar.name)
       }
       return nil
@@ -45,10 +44,9 @@ public struct CalendarQuery: EntityQuery {
   }
 
   public func suggestedEntities() async throws -> [CalendarOption] {
-    let store = CustomCalendarStore.shared
-    store.loadCalendars()  // Ensure calendars are loaded
+    let calendars = CustomCalendarStore.fetchCalendarsSnapshot()
 
-    return store.calendars.map { calendar in
+    return calendars.map { calendar in
       CalendarOption(id: calendar.id.uuidString, name: calendar.name)
     }
   }
@@ -68,10 +66,8 @@ public struct ConfigurationAppIntent: WidgetConfigurationIntent {
   public var selectedCalendar: CalendarOption?
 
   public init() {
-    // Initialize with nil, will be populated by the system
-    let store = CustomCalendarStore.shared
-    store.loadCalendars()
-    if let calendar = store.calendars.first {
+    let calendars = CustomCalendarStore.fetchCalendarsSnapshot()
+    if let calendar = calendars.first {
       self.selectedCalendar = CalendarOption(
         id: calendar.id.uuidString,
         name: calendar.name
@@ -87,10 +83,9 @@ public struct ConfigurationAppIntent: WidgetConfigurationIntent {
 extension ConfigurationAppIntent {
   public static var defaultCalendar: ConfigurationAppIntent {
     let intent = ConfigurationAppIntent()
-    let store = CustomCalendarStore.shared
-    store.loadCalendars()
+    let calendars = CustomCalendarStore.fetchCalendarsSnapshot()
 
-    if let firstCalendar = store.calendars.first {
+    if let firstCalendar = calendars.first {
       intent.selectedCalendar = CalendarOption(
         id: firstCalendar.id.uuidString,
         name: firstCalendar.name

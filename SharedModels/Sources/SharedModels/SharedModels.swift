@@ -676,6 +676,12 @@ public final class CustomCalendarStore: ObservableObject {
     UserDefaults.standard.integer(forKey: dataVersionKey)
   }
 
+  public static func fetchCalendarsSnapshot(
+    container: ModelContainer = SwiftDataManager.container
+  ) -> [CustomCalendar] {
+    (try? fetchCalendars(container: container)) ?? []
+  }
+
   private static func sortCalendars(_ calendars: [CustomCalendar]) -> [CustomCalendar] {
     calendars.sorted { lhs, rhs in
       if lhs.order == rhs.order {

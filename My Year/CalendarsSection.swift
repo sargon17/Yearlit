@@ -16,6 +16,7 @@ struct CalendarsSection: View {
   @Environment(\.router) private var router
 
   @State private var position = ScrollPosition(edge: .leading)
+  @State private var pendingCalendarId: String?
 
   var body: some View {
     RouterView { _ in
@@ -131,6 +132,14 @@ struct CalendarsSection: View {
         .scrollContentBackground(.hidden)
       }
       .navigationBarTitleDisplayMode(.inline)
+      .onOpenURL { url in
+        handleCalendarDeepLink(url)
+      }
+      .onReceive(store.$calendars) { _ in
+        if let pendingCalendarId {
+          scrollToCalendarIfAvailable(pendingCalendarId)
+        }
+      }
 
       .onAppear {
         Purchases.shared.getCustomerInfo { info, _ in
@@ -184,5 +193,21 @@ struct CalendarsSection: View {
           // .foregroundColor(Color("text-tertiary"))
       }
     }
+  }
+
+  private func handleCalendarDeepLink(_ url: URL) {
+    guard url.scheme == "my-year", url.host == "calendar" else { return }
+    let idString = url.pathComponents.dropFirst().first
+    guard let idString else { return }
+
+    pendingCalendarId = idString
+    store.loadCalendars(showLoadingIndicator: false)
+    scrollToCalendarIfAvailable(idString)
+  }
+
+  private func scrollToCalendarIfAvailable(_ id: String) {
+    guard store.calendars.contains(where: { $0.id.uuidString == id && !$0.isArchived }) else { return }
+    pendingCalendarId = nil
+    position.scrollTo(id: id)
   }
 }
