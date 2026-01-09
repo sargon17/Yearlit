@@ -124,9 +124,6 @@
     "Cancel" : {
 
     },
-    "Close" : {
-
-    },
     "Completed" : {
 
     },
@@ -344,9 +341,6 @@
     "Passed: " : {
 
     },
-    "Pick a template for %@" : {
-
-    },
     "PRO" : {
 
     },
@@ -366,6 +360,9 @@
 
     },
     "Save Image" : {
+
+    },
+    "Save to Photos" : {
 
     },
     "See something off? Have an idea?" : {

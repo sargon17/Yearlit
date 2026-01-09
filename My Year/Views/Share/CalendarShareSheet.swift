@@ -5,6 +5,7 @@ import UIKit
 
 enum CalendarShareTemplate: String, CaseIterable, Identifiable {
   case yearCard
+  case yearCardAlt
 
   var id: String { rawValue }
 
@@ -12,6 +13,8 @@ enum CalendarShareTemplate: String, CaseIterable, Identifiable {
     switch self {
     case .yearCard:
       return "Year Card"
+    case .yearCardAlt:
+      return "Year Card 2"
     }
   }
 
@@ -19,6 +22,8 @@ enum CalendarShareTemplate: String, CaseIterable, Identifiable {
     switch self {
     case .yearCard:
       return "Full-year grid + stats"
+    case .yearCardAlt:
+      return "Alt layout preview"
     }
   }
 }
@@ -41,28 +46,27 @@ struct CalendarShareSheet: View {
   private let shareScale: CGFloat = 3
 
   var body: some View {
-    VStack(spacing: 16) {
-      header
+    NavigationStack {
+      VStack(spacing: 0) {
+        CustomSeparator()
+          .padding(.horizontal, -16)
 
-      templatePicker
 
-      YearCardShareView(
-        calendar: calendar,
-        year: year,
-        dates: dates,
-        stats: resolvedStats,
-        completionRate30d: resolvedCompletionRate,
-        todaysCount: resolvedTodaysCount,
-        trackingType: calendar.trackingType
-      )
-      .aspectRatio(4 / 5, contentMode: .fit)
-      .frame(maxWidth: .infinity)
-      .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
-      .padding(.horizontal)
+        Spacer(minLength: 12)
 
-      actionButtons
+        cardPager
+          .frame(maxWidth: .infinity)
+
+        Spacer(minLength: 12)
+
+        actionButtons
+          .padding(.bottom, 24)
+      }
+      .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+      .surfaceBackground(Color("surface-muted"), ignoresSafeArea: true)
+      .navigationTitle(selectedTemplate.title)
+      .navigationBarTitleDisplayMode(.large)
     }
-    .padding(.vertical, 12)
     .presentationDetents([.medium, .large])
     .sheet(isPresented: $isSharing) {
       if let image = shareImage {
@@ -79,97 +83,75 @@ struct CalendarShareSheet: View {
     }
   }
 
-  private var header: some View {
-    HStack {
-      VStack(alignment: .leading, spacing: 4) {
-        Text("Share")
-          .font(.system(size: 22, design: .monospaced))
-          .foregroundColor(Color("text-primary"))
-          .fontWeight(.bold)
-        Text("Pick a template for \(calendar.name.capitalized)")
-          .font(.system(size: 12, design: .monospaced))
-          .foregroundColor(Color("text-tertiary"))
-      }
-      Spacer()
-      Button("Close") {
-        dismiss()
-      }
-      .font(.system(size: 12, design: .monospaced))
-      .foregroundColor(Color("text-tertiary"))
-    }
-    .padding(.horizontal)
-  }
+  private var cardPager: some View {
+    TabView(selection: $selectedTemplate) {
+      YearCardShareView(
+        calendar: calendar,
+        year: year,
+        dates: dates,
+        stats: resolvedStats,
+        completionRate30d: resolvedCompletionRate,
+        todaysCount: resolvedTodaysCount,
+        trackingType: calendar.trackingType
+      )
+      .aspectRatio(4 / 5, contentMode: .fit)
+      .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
+      .shadow(color: .black.opacity(0.25), radius: 20, x: 0, y: 10)
+      .padding(.horizontal, 32)
+      .padding(.vertical, 16)
+      .tag(CalendarShareTemplate.yearCard)
 
-  private var templatePicker: some View {
-    ScrollView(.horizontal, showsIndicators: false) {
-      HStack(spacing: 12) {
-        ForEach(CalendarShareTemplate.allCases) { template in
-          Button(action: { selectedTemplate = template }) {
-            VStack(alignment: .leading, spacing: 6) {
-              Text(template.title)
-                .font(.system(size: 14, design: .monospaced))
-                .foregroundColor(Color("text-primary"))
-                .fontWeight(.bold)
-              Text(template.subtitle)
-                .font(.system(size: 10, design: .monospaced))
-                .foregroundColor(Color("text-tertiary"))
-            }
-            .padding(12)
-            .frame(minWidth: 160, alignment: .leading)
-            .background(
-              RoundedRectangle(cornerRadius: 12, style: .continuous)
-                .fill(selectedTemplate == template ? Color("surface-primary") : Color("surface-muted"))
-            )
-            .overlay(
-              RoundedRectangle(cornerRadius: 12, style: .continuous)
-                .stroke(
-                  selectedTemplate == template
-                    ? Color(calendar.color).opacity(0.6)
-                    : Color("devider-top").opacity(0.6),
-                  lineWidth: 1
-                )
-            )
-          }
-          .buttonStyle(.plain)
-        }
-      }
-      .padding(.horizontal)
+      YearCardShareView(
+        calendar: calendar,
+        year: year,
+        dates: dates,
+        stats: resolvedStats,
+        completionRate30d: resolvedCompletionRate,
+        todaysCount: resolvedTodaysCount,
+        trackingType: calendar.trackingType
+      )
+      .aspectRatio(4 / 5, contentMode: .fit)
+      .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
+      .shadow(color: .black.opacity(0.25), radius: 20, x: 0, y: 10)
+      .padding(.horizontal, 32)
+      .padding(.vertical, 16)
+      .tag(CalendarShareTemplate.yearCardAlt)
     }
+    .tabViewStyle(.page(indexDisplayMode: .never))
   }
 
   private var actionButtons: some View {
-    HStack(spacing: 12) {
+    HStack {
+      HStack(spacing: 2) {
+
       Button(action: shareSelectedTemplate) {
         HStack(spacing: 8) {
           Image(systemName: "square.and.arrow.up")
           Text("Share")
         }
         .font(.system(size: 14, design: .monospaced))
-        .foregroundColor(Color("text-primary"))
+        .foregroundColor(.textPrimary)
         .padding(.vertical, 10)
         .frame(maxWidth: .infinity)
       }
-      .buttonStyle(.plain)
-      .background(
-        RoundedRectangle(cornerRadius: 12, style: .continuous)
-          .fill(Color("surface-primary"))
-      )
+      .sameLevelBorder()
+      .foregroundStyle(.textSecondary)
 
       Button(action: saveToPhotos) {
         HStack(spacing: 8) {
           Image(systemName: "square.and.arrow.down")
-          Text("Save")
+          Text("Save to Photos")
         }
         .font(.system(size: 14, design: .monospaced))
-        .foregroundColor(Color("text-primary"))
+        .foregroundColor(.textPrimary)
         .padding(.vertical, 10)
         .frame(maxWidth: .infinity)
       }
-      .buttonStyle(.plain)
-      .background(
-        RoundedRectangle(cornerRadius: 12, style: .continuous)
-          .fill(Color("surface-primary"))
-      )
+      .sameLevelBorder()
+      .foregroundStyle(.textSecondary)
+      }
+      .padding(2)
+      .background(getVoidColor(colorScheme: colorScheme))
     }
     .padding(.horizontal)
   }
