@@ -153,7 +153,7 @@ struct HorizontalCalendarGrid: View {
         Spacer()
 
         if let calendar = calendar {
-          let currentStreak = currentStreak(for: calendar)
+          let currentStreak = WidgetStreak.currentStreak(calendar: calendar).streak
 
           HStack(spacing: 8) {
             let today = Date()
@@ -231,57 +231,6 @@ struct HorizontalCalendarGrid: View {
     }
     .padding()
     .background(backgroundColor)
-  }
-
-  private func currentStreak(for calendar: CustomCalendar) -> Int {
-    let today = localCalendar.startOfDay(for: Date())
-    var streak = 0
-    var cursor = today
-    let todayKey = customDateFormatter(date: today)
-    let todayEntry = calendar.entries[todayKey]
-    let shouldSkipToday = todayEntry == nil || (todayEntry != nil && isEntryEmpty(todayEntry!))
-
-    if shouldSkipToday {
-      guard let previous = localCalendar.date(byAdding: .day, value: -1, to: today) else {
-        return 0
-      }
-      cursor = previous
-    }
-
-    while true {
-      let key = customDateFormatter(date: cursor)
-      guard let entry = calendar.entries[key], isEntrySuccess(entry, calendar: calendar) else {
-        break
-      }
-      streak += 1
-
-      guard let previous = localCalendar.date(byAdding: .day, value: -1, to: cursor) else {
-        break
-      }
-      cursor = previous
-    }
-
-    return streak
-  }
-
-  private func hasEntry(on date: Date, calendar: CustomCalendar) -> Bool {
-    let key = customDateFormatter(date: date)
-    return calendar.entries[key] != nil
-  }
-
-  private func isEntryEmpty(_ entry: CalendarEntry) -> Bool {
-    return entry.count == 0 && entry.completed == false
-  }
-
-  private func isEntrySuccess(_ entry: CalendarEntry, calendar: CustomCalendar) -> Bool {
-    switch calendar.trackingType {
-    case .binary:
-      return entry.completed
-    case .counter:
-      return entry.count > 0
-    case .multipleDaily:
-      return entry.count >= calendar.dailyTarget
-    }
   }
 
   private func datesForFamily(today: Date) -> [Date] {
