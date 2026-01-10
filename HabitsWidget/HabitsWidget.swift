@@ -11,6 +11,7 @@ import SwiftUI
 import UIKit
 import WidgetKit
 
+
 struct Provider: AppIntentTimelineProvider {
   func placeholder(in context: Context) -> SimpleEntry {
     SimpleEntry(
@@ -73,6 +74,7 @@ struct HorizontalCalendarGrid: View {
   private let calendarStore = CustomCalendarStore.shared
   private let localCalendar = makeLocalCalendar()
 
+
   init(
     family: WidgetFamily,
     calendar: CustomCalendar?,
@@ -85,8 +87,16 @@ struct HorizontalCalendarGrid: View {
     self.backgroundColor = backgroundColor
     self.textPrimaryColor = textPrimaryColor
     self.inactiveRatio = inactiveRatio
-    self.dotSize = 8.5
+    switch family {
+    case .systemLarge:
+      self.dotSize = 10.0
+    case .systemMedium:
+      self.dotSize = 7
+    default:
+      self.dotSize = 10.0
+    }
   }
+
 
   private func colorForDay(_ date: Date, today: Date) -> Color {
     let normalized = localCalendar.startOfDay(for: date)
@@ -110,7 +120,7 @@ struct HorizontalCalendarGrid: View {
         let maxCount = max(1, calendar.entries.values.map { $0.count }.max() ?? 1)
         if entry.count > 0 {
           let ratio = max(0.1, Double(entry.count) / Double(maxCount))
-          return blendedColor(base: backgroundColor, overlay: Color(calendar.color), ratio: ratio)
+          return WidgetStyle.blendedColor(base: backgroundColor, overlay: Color(calendar.color), ratio: ratio)
         }
         return activeDayColor(base: backgroundColor, overlay: textPrimaryColor)
       case .multipleDaily:
@@ -129,28 +139,23 @@ struct HorizontalCalendarGrid: View {
     let today = Date()
     VStack {
       HStack(spacing: 6) {
-        if family == .systemLarge || family == .systemMedium {
-          if let calendar = calendar {
-            Text(calendar.name)
-              .font(.system(size: 12, design: .monospaced))
-              .foregroundColor(textPrimaryColor)
-              .fontWeight(.black)
-          }
+
+        if let calendar = calendar {
+          Text(calendar.name)
+            .font(.system(size: 12, design: .monospaced))
+            .foregroundColor(Color("text-primary"))
+            .fontWeight(.heavy)
+            .lineLimit(1)
+            .minimumScaleFactor(0.5)
         }
+
 
         Spacer()
 
         if let calendar = calendar {
-          let activeDays = calendar.entries.values.filter { entry in
-            switch calendar.trackingType {
-            case .binary:
-              return entry.completed
-            case .counter, .multipleDaily:
-              return entry.count >= calendar.dailyTarget
-            }
-          }.count
+          let currentStreak = currentStreak(for: calendar)
 
-          HStack(spacing: 4) {
+          HStack(spacing: 8) {
             let today = Date()
             let formattedToday = customDateFormatter(date: today)
 
@@ -162,7 +167,11 @@ struct HorizontalCalendarGrid: View {
               }
             }
 
-            NumberOfDaysView(numberOfDays: activeDays)
+            if family != .systemSmall {
+              if currentStreak > 0 {
+                NumberOfDaysView(numberOfDays: currentStreak)
+              }
+            }
 
             if #available(iOS 17.0, *) {
               Button(intent: HabitQuickAddIntent(calendarId: calendar.id.uuidString)) {
@@ -184,9 +193,8 @@ struct HorizontalCalendarGrid: View {
       }
 
       WidgetSeparator()
-        .padding(.top, 6)
-        .padding(.bottom, 10)
         .padding(.horizontal, -16)
+        .padding(.bottom, 4)
 
       GeometryReader { geometry in
         let padding: CGFloat = 0
@@ -195,7 +203,7 @@ struct HorizontalCalendarGrid: View {
         let aspectRatio = max(0.001, availableWidth / availableHeight)
         let dates = datesForFamily(today: today)
         let totalDays = dates.count
-        let columns = adjustedColumns(for: totalDays, aspectRatio: aspectRatio)
+        let columns = WidgetStyle.adjustedColumns(for: totalDays, aspectRatio: aspectRatio)
         let rows = max(1, Int(ceil(Double(totalDays) / Double(columns))))
         let horizontalSpacing =
           (availableWidth - (dotSize * CGFloat(columns))) / CGFloat(max(2, columns - 1))
@@ -223,15 +231,67 @@ struct HorizontalCalendarGrid: View {
       }
     }
     .padding()
-    .background(Color.clear)
+    .background(backgroundColor)
+  }
+
+  private func currentStreak(for calendar: CustomCalendar) -> Int {
+    let today = localCalendar.startOfDay(for: Date())
+    var streak = 0
+    var cursor = today
+    let todayKey = customDateFormatter(date: today)
+    let todayEntry = calendar.entries[todayKey]
+    let shouldSkipToday = todayEntry == nil || (todayEntry != nil && isEntryEmpty(todayEntry!))
+
+    if shouldSkipToday {
+      guard let previous = localCalendar.date(byAdding: .day, value: -1, to: today) else {
+        return 0
+      }
+      cursor = previous
+    }
+
+    while true {
+      let key = customDateFormatter(date: cursor)
+      guard let entry = calendar.entries[key], isEntrySuccess(entry, calendar: calendar) else {
+        break
+      }
+      streak += 1
+
+      guard let previous = localCalendar.date(byAdding: .day, value: -1, to: cursor) else {
+        break
+      }
+      cursor = previous
+    }
+
+    return streak
+  }
+
+  private func hasEntry(on date: Date, calendar: CustomCalendar) -> Bool {
+    let key = customDateFormatter(date: date)
+    return calendar.entries[key] != nil
+  }
+
+  private func isEntryEmpty(_ entry: CalendarEntry) -> Bool {
+    return entry.count == 0 && entry.completed == false
+  }
+
+  private func isEntrySuccess(_ entry: CalendarEntry, calendar: CustomCalendar) -> Bool {
+    switch calendar.trackingType {
+    case .binary:
+      return entry.completed
+    case .counter:
+      return entry.count > 0
+    case .multipleDaily:
+      return entry.count >= calendar.dailyTarget
+    }
   }
 
   private func datesForFamily(today: Date) -> [Date] {
     switch family {
     case .systemSmall:
-      return recentDates(from: today, days: 30)
+      return recentDates(from: today, days: 35)
     case .systemMedium:
-      return recentMonths(from: today, months: 3)
+      // return recentMonths(from: today, months: 6)
+      return (0..<store.numberOfDaysInYear).map { store.dateForDay($0) }
     default:
       return (0..<store.numberOfDaysInYear).map { store.dateForDay($0) }
     }
@@ -297,7 +357,7 @@ struct NumberOfDaysView: View {
 
   init(numberOfDays: Int) {
     self.numberOfDays = numberOfDays
-    self.label = numberOfDays == 1 ? "day" : "days"
+    self.label = numberOfDays == 1 ? "day" : "days streak"
   }
 
   var body: some View {
@@ -309,6 +369,7 @@ struct NumberOfDaysView: View {
     }
     .foregroundColor(Color("text-primary"))
     .font(.system(size: 9, design: .monospaced))
+    .contentTransition(.numericText())
   }
 }
 
@@ -318,7 +379,7 @@ struct TodaysCountView: View {
 
   init(count: Int) {
     self.count = count
-    self.label = count == 1 ? "time today" : "times today"
+    self.label = "today"
   }
 
   var body: some View {
@@ -331,42 +392,8 @@ struct TodaysCountView: View {
     .lineLimit(1)
     .foregroundColor(Color("text-primary"))
     .font(.system(size: 9, design: .monospaced))
+    .contentTransition(.numericText())
   }
-}
-
-struct WidgetGridDot: View {
-  let color: Color
-  let dotSize: CGFloat
-
-  var body: some View {
-    RoundedRectangle(cornerRadius: 3)
-      .fill(color)
-      .frame(width: dotSize, height: dotSize)
-  }
-}
-
-struct WidgetSeparator: View {
-  var body: some View {
-    VStack(spacing: 0) {
-      Rectangle()
-        .fill(Color("devider-top"))
-        .frame(height: 1)
-        .frame(maxWidth: .infinity)
-      Rectangle()
-        .fill(Color("devider-bottom"))
-        .frame(height: 1)
-        .frame(maxWidth: .infinity)
-    }
-  }
-}
-
-private func adjustedColumns(for count: Int, aspectRatio: CGFloat) -> Int {
-  let targetColumns = max(1, Int(sqrt(Double(count) * aspectRatio)))
-  var columns = max(1, min(targetColumns, count))
-  while columns > 1 && count % columns == 1 {
-    columns -= 1
-  }
-  return columns
 }
 
 private func makeLocalCalendar() -> Calendar {
@@ -377,56 +404,11 @@ private func makeLocalCalendar() -> Calendar {
 }
 
 private func inactiveDayColor(base: Color, overlay: Color, ratio: Double) -> Color {
-  blendedColor(base: base, overlay: overlay, ratio: ratio)
+  WidgetStyle.blendedColor(base: base, overlay: overlay, ratio: ratio)
 }
 
 private func activeDayColor(base: Color, overlay: Color) -> Color {
-  blendedColor(base: base, overlay: overlay, ratio: 0.12)
-}
-
-private func blendedColor(base: Color, overlay: Color, ratio: Double) -> Color {
-  let clampedRatio = max(0, min(1, ratio))
-  let baseColor = UIColor(base)
-  let overlayColor = UIColor(overlay)
-  var baseRed: CGFloat = 0
-  var baseGreen: CGFloat = 0
-  var baseBlue: CGFloat = 0
-  var baseAlpha: CGFloat = 0
-  var overlayRed: CGFloat = 0
-  var overlayGreen: CGFloat = 0
-  var overlayBlue: CGFloat = 0
-  var overlayAlpha: CGFloat = 0
-
-  guard baseColor.getRed(&baseRed, green: &baseGreen, blue: &baseBlue, alpha: &baseAlpha),
-    overlayColor.getRed(&overlayRed, green: &overlayGreen, blue: &overlayBlue, alpha: &overlayAlpha)
-  else {
-    return base
-  }
-
-  let red = baseRed + (overlayRed - baseRed) * clampedRatio
-  let green = baseGreen + (overlayGreen - baseGreen) * clampedRatio
-  let blue = baseBlue + (overlayBlue - baseBlue) * clampedRatio
-  let alpha = baseAlpha + (overlayAlpha - baseAlpha) * clampedRatio
-
-  return Color(red: Double(red), green: Double(green), blue: Double(blue), opacity: Double(alpha))
-}
-
-private func surfaceMutedColor(for colorScheme: ColorScheme) -> Color {
-  switch colorScheme {
-  case .dark:
-    return Color(red: 0x18 / 255.0, green: 0x18 / 255.0, blue: 0x1B / 255.0)
-  default:
-    return Color(red: 0xE4 / 255.0, green: 0xE4 / 255.0, blue: 0xE7 / 255.0)
-  }
-}
-
-private func textPrimaryColor(for colorScheme: ColorScheme) -> Color {
-  switch colorScheme {
-  case .dark:
-    return Color(red: 0xFA / 255.0, green: 0xFA / 255.0, blue: 0xFA / 255.0)
-  default:
-    return Color(red: 0x09 / 255.0, green: 0x09 / 255.0, blue: 0x0B / 255.0)
-  }
+  WidgetStyle.blendedColor(base: base, overlay: overlay, ratio: 0.12)
 }
 
 struct HabitsWidgetEntryView: View {
@@ -438,9 +420,9 @@ struct HabitsWidgetEntryView: View {
     let destinationURL = entry.calendar.map { calendar in
       URL(string: "my-year://calendar/\(calendar.id.uuidString)")
     } ?? nil
-    let backgroundColor = surfaceMutedColor(for: colorScheme)
-    let primaryTextColor = textPrimaryColor(for: colorScheme)
-    let inactiveRatio = colorScheme == .dark ? 0.08 : 0.06
+    let backgroundColor = WidgetStyle.surfaceMutedColor(for: colorScheme)
+    let primaryTextColor = WidgetStyle.textPrimaryColor(for: colorScheme)
+    let inactiveRatio = 0.04
 
     if #available(iOS 17.0, *) {
       HorizontalCalendarGrid(

@@ -99,6 +99,13 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		780D10782F12A8230067F54C /* Exceptions for "My Year" folder in "YearWidgetExtension" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Assets.xcassets,
+			);
+			target = 78B025AA2D354F0B00E70B4C /* YearWidgetExtension */;
+		};
 		7867F0082D6B6CBF00A459CE /* Exceptions for "HabitsWidget" folder in "HabitsWidgetExtension" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
@@ -150,6 +157,7 @@
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
 				78B0258D2D35424300E70B4C /* Exceptions for "My Year" folder in "My Year" target */,
+				780D10782F12A8230067F54C /* Exceptions for "My Year" folder in "YearWidgetExtension" target */,
 				78FAADA72D72288B0093A704 /* Exceptions for "My Year" folder in "HabitsWidgetExtension" target */,
 			);
 			path = "My Year";
