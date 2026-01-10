@@ -1,10 +1,10 @@
-import Garnish
 import SwiftUI
+import SharedModels
 
 func inactiveDayColor() -> Color {
-  GarnishColor.blend(.surfaceMuted, with: .textPrimary, ratio: 0.04)
+  WidgetStyle.inactiveDotColor()
 }
 
 func activeDayColor() -> Color {
-  GarnishColor.blend(.surfaceMuted, with: .textPrimary, ratio: 0.12)
+  WidgetStyle.activeDotColor()
 }

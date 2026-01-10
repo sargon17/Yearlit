@@ -198,23 +198,22 @@ struct HorizontalCalendarGrid: View {
 
       GeometryReader { geometry in
         let padding: CGFloat = 0
-        let availableWidth = max(1, geometry.size.width - (padding * 2))
-        let availableHeight = max(1, geometry.size.height - (padding * 2))
-        let aspectRatio = max(0.001, availableWidth / availableHeight)
         let dates = datesForFamily(today: today)
         let totalDays = dates.count
-        let columns = WidgetStyle.adjustedColumns(for: totalDays, aspectRatio: aspectRatio)
-        let rows = max(1, Int(ceil(Double(totalDays) / Double(columns))))
-        let horizontalSpacing =
-          (availableWidth - (dotSize * CGFloat(columns))) / CGFloat(max(2, columns - 1))
-        let verticalSpacing =
-          (availableHeight - (dotSize * CGFloat(rows))) / CGFloat(max(2, rows - 1))
+        let availableWidth = geometry.size.width - (padding * 2)
+        let availableHeight = geometry.size.height - (padding * 2)
+        let layout = WidgetStyle.gridLayout(
+          count: totalDays,
+          dotSize: dotSize,
+          availableWidth: availableWidth,
+          availableHeight: availableHeight
+        )
 
-        VStack(spacing: verticalSpacing) {
-          ForEach(0..<rows, id: \.self) { row in
-            HStack(spacing: horizontalSpacing) {
-              ForEach(0..<columns, id: \.self) { col in
-                let day = row * columns + col
+        VStack(spacing: layout.verticalSpacing) {
+          ForEach(0..<layout.rows, id: \.self) { row in
+            HStack(spacing: layout.horizontalSpacing) {
+              ForEach(0..<layout.columns, id: \.self) { col in
+                let day = row * layout.columns + col
                 if day < totalDays {
                   WidgetGridDot(
                     color: colorForDay(dates[day], today: today),
@@ -404,11 +403,11 @@ private func makeLocalCalendar() -> Calendar {
 }
 
 private func inactiveDayColor(base: Color, overlay: Color, ratio: Double) -> Color {
-  WidgetStyle.blendedColor(base: base, overlay: overlay, ratio: ratio)
+  WidgetStyle.inactiveDotColor(surface: base, text: overlay, ratio: ratio)
 }
 
 private func activeDayColor(base: Color, overlay: Color) -> Color {
-  WidgetStyle.blendedColor(base: base, overlay: overlay, ratio: 0.12)
+  WidgetStyle.activeDotColor(surface: base, text: overlay, ratio: 0.12)
 }
 
 struct HabitsWidgetEntryView: View {

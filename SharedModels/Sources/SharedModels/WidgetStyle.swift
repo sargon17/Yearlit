@@ -7,6 +7,20 @@ import SwiftUI
 #endif
 
 public enum WidgetStyle {
+  public struct GridLayout {
+    public let columns: Int
+    public let rows: Int
+    public let horizontalSpacing: CGFloat
+    public let verticalSpacing: CGFloat
+
+    public init(columns: Int, rows: Int, horizontalSpacing: CGFloat, verticalSpacing: CGFloat) {
+      self.columns = columns
+      self.rows = rows
+      self.horizontalSpacing = horizontalSpacing
+      self.verticalSpacing = verticalSpacing
+    }
+  }
+
   public static func adjustedColumns(for count: Int, aspectRatio: CGFloat) -> Int {
     let targetColumns = max(1, Int(sqrt(Double(count) * aspectRatio)))
     var columns = max(1, min(targetColumns, count))
@@ -14,6 +28,30 @@ public enum WidgetStyle {
       columns -= 1
     }
     return columns
+  }
+
+  public static func gridLayout(
+    count: Int,
+    dotSize: CGFloat,
+    availableWidth: CGFloat,
+    availableHeight: CGFloat
+  ) -> GridLayout {
+    let safeWidth = max(1, availableWidth)
+    let safeHeight = max(1, availableHeight)
+    let aspectRatio = max(0.001, safeWidth / safeHeight)
+    let columns = adjustedColumns(for: count, aspectRatio: aspectRatio)
+    let rows = max(1, Int(ceil(Double(count) / Double(columns))))
+    let horizontalSpacing =
+      (safeWidth - (dotSize * CGFloat(columns))) / CGFloat(max(2, columns - 1))
+    let verticalSpacing =
+      (safeHeight - (dotSize * CGFloat(rows))) / CGFloat(max(2, rows - 1))
+
+    return GridLayout(
+      columns: columns,
+      rows: rows,
+      horizontalSpacing: horizontalSpacing,
+      verticalSpacing: verticalSpacing
+    )
   }
 
   public static func blendedColor(base: Color, overlay: Color, ratio: Double) -> Color {
@@ -31,6 +69,22 @@ public enum WidgetStyle {
     let alpha = baseRGBA.alpha + (overlayRGBA.alpha - baseRGBA.alpha) * clampedRatio
 
     return Color(red: Double(red), green: Double(green), blue: Double(blue), opacity: Double(alpha))
+  }
+
+  public static func inactiveDotColor(
+    surface: Color = Color("surface-muted"),
+    text: Color = Color("text-primary"),
+    ratio: Double = 0.04
+  ) -> Color {
+    blendedColor(base: surface, overlay: text, ratio: ratio)
+  }
+
+  public static func activeDotColor(
+    surface: Color = Color("surface-muted"),
+    text: Color = Color("text-primary"),
+    ratio: Double = 0.12
+  ) -> Color {
+    blendedColor(base: surface, overlay: text, ratio: ratio)
   }
 
   public static func surfaceMutedColor(for colorScheme: ColorScheme) -> Color {

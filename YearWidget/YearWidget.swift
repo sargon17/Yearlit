@@ -78,9 +78,14 @@ struct HorizontalYearGrid: View {
         let formatter = DateFormatter()
         formatter.dateFormat = "yyyy-MM-dd"
         let key = formatter.string(from: dayDate)
+        let todayKey = formatter.string(from: Date())
 
         if day >= store.currentDayNumber {
             return inactiveDayColor(base: backgroundColor, overlay: textPrimaryColor, ratio: inactiveRatio)
+        }
+
+        if key == todayKey {
+            return Color("qs-orange")
         }
 
         return activeDayColor(base: backgroundColor, overlay: textPrimaryColor)
@@ -92,54 +97,53 @@ struct HorizontalYearGrid: View {
             HStack(spacing: 6) {
                 if family == .systemLarge || family == .systemMedium {
                     Text(Calendar.current.component(.year, from: Date()).description)
-                        .font(.system(size: 12, design: .monospaced))
-                        .foregroundColor(textPrimaryColor)
-                        .fontWeight(.black)
-                    WidgetGridDot(color: activeDayColor(base: backgroundColor, overlay: textPrimaryColor), dotSize: 4)
+                    .font(.system(size: 12, design: .monospaced))
+                    .foregroundColor(Color("text-primary"))
+                    .fontWeight(.heavy)
+
+                    Text("/")
+                    .font(.system(size: 12, design: .monospaced))
+                    .foregroundColor(Color("text-tertiary"))
                 }
 
                 let percent = Double(store.currentDayNumber) / Double(store.numberOfDaysInYear)
                 Text(String(format: "%.1f%%", percent * 100))
-                    .font(.system(size: 12, design: .monospaced))
-                    .foregroundColor(textPrimaryColor)
+                    .font(.system(size: 9, design: .monospaced))
+                    .foregroundColor(.textSecondary)
                     .fontWeight(.black)
+
                 Spacer()
 
-                HStack {
-                    Text("Left: ")
-                        .font(.system(size: 9, design: .monospaced))
-                        .foregroundColor(textPrimaryColor.opacity(0.5))
-                        .fontWeight(.regular)
-                    + Text("\(store.numberOfDaysInYear - store.currentDayNumber)")
-                        .font(.system(size: 12, design: .monospaced))
-                        .foregroundColor(textPrimaryColor)
-                        .fontWeight(.black)
-                }
+                Text("\(store.numberOfDaysInYear - store.currentDayNumber)")
+                    .font(.system(size: 9, design: .monospaced))
+                    .foregroundColor(.qsOrange)
+                    .fontWeight(.heavy)
+                + Text(" days left")
+                    .font(.system(size: 9, design: .monospaced))
+                    .foregroundColor(.textTertiary)
             }
 
             WidgetSeparator()
-                .padding(.top, 6)
-                .padding(.bottom, 10)
-                .padding(.horizontal, -16)
+            .padding(.horizontal, -16)
+            .padding(.bottom, 4)
 
             GeometryReader { geometry in
                 let padding: CGFloat = 0
-                let availableWidth = max(1, geometry.size.width - (padding * 2))
-                let availableHeight = max(1, geometry.size.height - (padding * 2))
-                let aspectRatio = max(0.001, availableWidth / availableHeight)
                 let totalDays = store.numberOfDaysInYear
-                let columns = WidgetStyle.adjustedColumns(for: totalDays, aspectRatio: aspectRatio)
-                let rows = max(1, Int(ceil(Double(totalDays) / Double(columns))))
-                let horizontalSpacing =
-                  (availableWidth - (dotSize * CGFloat(columns))) / CGFloat(max(2, columns - 1))
-                let verticalSpacing =
-                  (availableHeight - (dotSize * CGFloat(rows))) / CGFloat(max(2, rows - 1))
+                let availableWidth = geometry.size.width - (padding * 2)
+                let availableHeight = geometry.size.height - (padding * 2)
+                let layout = WidgetStyle.gridLayout(
+                    count: totalDays,
+                    dotSize: dotSize,
+                    availableWidth: availableWidth,
+                    availableHeight: availableHeight
+                )
 
-                VStack(spacing: verticalSpacing) {
-                    ForEach(0..<rows, id: \.self) { row in
-                        HStack(spacing: horizontalSpacing) {
-                            ForEach(0..<columns, id: \.self) { col in
-                                let day = row * columns + col
+                VStack(spacing: layout.verticalSpacing) {
+                    ForEach(0..<layout.rows, id: \.self) { row in
+                        HStack(spacing: layout.horizontalSpacing) {
+                            ForEach(0..<layout.columns, id: \.self) { col in
+                                let day = row * layout.columns + col
                                 if day < store.numberOfDaysInYear {
                                     let color = colorForDay(day)
                                     WidgetGridDot(color: color, dotSize: dotSize)
@@ -165,7 +169,7 @@ struct YearWidgetEntryView: View {
     var body: some View {
       let backgroundColor = WidgetStyle.surfaceMutedColor(for: colorScheme)
         let primaryTextColor = WidgetStyle.textPrimaryColor(for: colorScheme)
-        let inactiveRatio = 0.4
+        let inactiveRatio = 0.04
 
           HorizontalYearGrid(
               family: family,
@@ -204,27 +208,9 @@ struct YearWidget: Widget {
 }
 
 private func inactiveDayColor(base: Color, overlay: Color, ratio: Double) -> Color {
-    WidgetStyle.blendedColor(base: base, overlay: overlay, ratio: ratio)
+    WidgetStyle.inactiveDotColor(surface: base, text: overlay, ratio: ratio)
 }
 
 private func activeDayColor(base: Color, overlay: Color) -> Color {
     WidgetStyle.blendedColor(base: base, overlay: overlay, ratio: 0.9)
-}
-
-#Preview(as: .systemSmall) {
-    YearWidget()
-} timeline: {
-    SimpleEntry(date: Date(), valuations: [:])
-}
-
-#Preview(as: .systemMedium) {
-    YearWidget()
-} timeline: {
-    SimpleEntry(date: Date(), valuations: [:])
-}
-
-#Preview(as: .systemLarge) {
-    YearWidget()
-} timeline: {
-    SimpleEntry(date: Date(), valuations: [:])
 }
