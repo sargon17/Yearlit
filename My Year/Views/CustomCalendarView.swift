@@ -68,6 +68,7 @@ struct CustomCalendarView: View {
   @State private var statsBundle: StatsBundle?
   @State private var statsRefreshToken = UUID()
   @State private var lastObservedDataVersion: Int = 0
+  @State private var pendingStreakMilestoneCheck: Bool = false
 
   @Environment(\.router) private var router
 
@@ -117,11 +118,15 @@ struct CustomCalendarView: View {
         DayEntryEditSheet(
           calendar: activeCalendar,
           date: date,
-          store: store
+          store: store,
+          onSave: {
+            scheduleStreakMilestoneCheck()
+          }
         )
       }
     } else if activeCalendar.trackingType == .binary {
       _ = toggleBinaryEntry(calendarId: activeCalendar.id, date: date, calendarStore: store)
+      scheduleStreakMilestoneCheck()
     }
     checkIfReachedThreeDays(activeCalendar)
     Task {
@@ -229,10 +234,48 @@ struct CustomCalendarView: View {
 
     WidgetReload.scheduleAllTimelinesReload()
     checkIfReachedThreeDays(activeCalendar)
+    scheduleStreakMilestoneCheck()
 
     Task {
       await hapticFeedback()
     }
+  }
+
+  private func scheduleStreakMilestoneCheck() {
+    pendingStreakMilestoneCheck = true
+  }
+
+  private func evaluateStreakMilestoneIfNeeded(calendarId: UUID) {
+    guard pendingStreakMilestoneCheck else { return }
+    pendingStreakMilestoneCheck = false
+    let calendars = CustomCalendarStore.fetchCalendarsSnapshot()
+    guard let updatedCalendar = calendars.first(where: { $0.id == calendarId }) else { return }
+    let currentStreak = currentStreak(for: updatedCalendar)
+    guard let milestone = StreakMilestoneTracker.shared.milestoneToCelebrate(
+      calendarId: calendarId,
+      streak: currentStreak
+    ) else { return }
+    StreakMilestoneTracker.shared.markCelebrated(calendarId: calendarId, milestone: milestone)
+    router.showScreen(.sheet) { _ in
+      StreakMilestoneShareSheet(
+        calendar: updatedCalendar,
+        milestone: milestone,
+        currentStreak: currentStreak,
+        dates: calendarDates
+      )
+    }
+  }
+
+  private func currentStreak(for calendar: CustomCalendar) -> Int {
+    var localCalendar = Calendar(identifier: .gregorian)
+    localCalendar.locale = Locale(identifier: "en_US_POSIX")
+    localCalendar.timeZone = .autoupdatingCurrent
+    let allTimeSuccessByDay = buildAllTimeSuccessMap(
+      cal: localCalendar,
+      todayLocal: Date(),
+      calendars: [calendar]
+    )
+    return computeStreaks(cal: localCalendar, allTimeSuccessByDay).current
   }
 
   var body: some View {
@@ -275,6 +318,22 @@ struct CustomCalendarView: View {
                 if My_YearApp.isDebugMode && runtimeDebugEnabled {
                   Button(action: fillRandomEntries) {
                     Image(systemName: "wand.and.stars")
+                      .foregroundColor(Color(resolvedCalendar.color))
+                  }
+                  .padding(.horizontal, 4)
+                  Button(action: {
+                    let current = currentStreak(for: resolvedCalendar)
+                    let milestone = StreakMilestones.milestone(for: current) ?? max(1, current)
+                    router.showScreen(.sheet) { _ in
+                      StreakMilestoneShareSheet(
+                        calendar: resolvedCalendar,
+                        milestone: milestone,
+                        currentStreak: current,
+                        dates: calendarDates
+                      )
+                    }
+                  }) {
+                    Image(systemName: "sparkles")
                       .foregroundColor(Color(resolvedCalendar.color))
                   }
                   .padding(.horizontal, 4)
@@ -472,6 +531,7 @@ struct CustomCalendarView: View {
     .onChange(of: store.dataVersion) { _, _ in
       lastObservedDataVersion = store.dataVersion
       statsRefreshToken = UUID()
+      evaluateStreakMilestoneIfNeeded(calendarId: calendar.id)
     }
     .onReceive(store.$calendars) { _ in
       statsRefreshToken = UUID()

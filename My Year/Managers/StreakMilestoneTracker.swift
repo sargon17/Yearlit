@@ -1,0 +1,40 @@
+import Foundation
+
+final class StreakMilestoneTracker {
+  static let shared = StreakMilestoneTracker()
+
+  private let storageKey = "streakMilestoneTracker.v1"
+  private var lastCelebratedByCalendar: [String: Int]
+  private let defaults: UserDefaults
+
+  init(defaults: UserDefaults = .standard) {
+    self.defaults = defaults
+    self.lastCelebratedByCalendar = Self.load(from: defaults, key: storageKey)
+  }
+
+  func milestoneToCelebrate(calendarId: UUID, streak: Int) -> Int? {
+    guard let milestone = StreakMilestones.milestone(for: streak) else { return nil }
+    let lastMilestone = lastCelebratedByCalendar[calendarId.uuidString] ?? 0
+    guard milestone > lastMilestone else { return nil }
+    return milestone
+  }
+
+  func markCelebrated(calendarId: UUID, milestone: Int) {
+    lastCelebratedByCalendar[calendarId.uuidString] = milestone
+    save()
+  }
+
+  private func save() {
+    guard let data = try? JSONEncoder().encode(lastCelebratedByCalendar) else { return }
+    defaults.set(data, forKey: storageKey)
+  }
+
+  private static func load(from defaults: UserDefaults, key: String) -> [String: Int] {
+    guard let data = defaults.data(forKey: key),
+      let stored = try? JSONDecoder().decode([String: Int].self, from: data)
+    else {
+      return [:]
+    }
+    return stored
+  }
+}

@@ -9,14 +9,16 @@ struct DayEntryEditSheet: View {
   let calendar: CustomCalendar
   let date: Date
   let store: CustomCalendarStore  // Receive the store
+  let onSave: (() -> Void)?
 
   @State private var entryCount: Int
   @State private var entryCompleted: Bool
 
-  init(calendar: CustomCalendar, date: Date, store: CustomCalendarStore) {
+  init(calendar: CustomCalendar, date: Date, store: CustomCalendarStore, onSave: (() -> Void)? = nil) {
     self.calendar = calendar
     self.date = date
     self.store = store
+    self.onSave = onSave
     // Initialize state based on existing entry or defaults
     let existingEntry = store.getEntry(calendarId: calendar.id, date: date)
     _entryCount = State(initialValue: existingEntry?.count ?? 0)
@@ -27,6 +29,7 @@ struct DayEntryEditSheet: View {
     let newEntry = CalendarEntry(date: date, count: entryCount, completed: entryCompleted)
     store.addEntry(calendarId: calendar.id, entry: newEntry)
     WidgetReload.scheduleAllTimelinesReload()
+    onSave?()
     dismiss()
   }
 
