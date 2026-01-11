@@ -10,7 +10,8 @@ public enum WidgetStreak {
     let normalizedToday = calendarSystem.startOfDay(for: today)
     let todayKey = dayKey(for: normalizedToday)
     let todayEntry = calendar.entries[todayKey]
-    let shouldSkipToday = allowTodayMissing && (todayEntry == nil || isEntryEmpty(todayEntry!))
+    let shouldSkipToday = allowTodayMissing
+      && (todayEntry == nil || !isEntrySuccess(todayEntry!, calendar: calendar))
 
     var streak = 0
     var cursor = normalizedToday

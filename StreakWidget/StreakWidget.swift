@@ -37,7 +37,7 @@ struct Provider: AppIntentTimelineProvider {
             isAtRisk: streakData?.isAtRisk ?? false
         )
     }
-    
+
     func timeline(for configuration: ConfigurationAppIntent, in context: Context) async -> Timeline<SimpleEntry> {
         let currentDate = Date()
         let calendar = resolvedCalendar(for: configuration)
@@ -81,33 +81,56 @@ struct StreakWidgetEntryView : View {
     var body: some View {
         let backgroundColor = WidgetStyle.surfaceMutedColor(for: colorScheme)
         let primaryTextColor = WidgetStyle.textPrimaryColor(for: colorScheme)
-        let accentColor = Color(red: 0xF9 / 255.0, green: 0x73 / 255.0, blue: 0x16 / 255.0)
+        let accentColor = Color(entry.calendar?.color ?? "qs-orange")
         let calendarName = entry.calendar?.name ?? "Habit"
+        let streakData = entry.calendar.map { WidgetStreak.currentStreak(calendar: $0) }
+        let streakValue = streakData?.streak ?? entry.streak
+        let isAtRisk = streakData?.isAtRisk ?? entry.isAtRisk
         let destinationURL = entry.calendar.map { calendar in
             URL(string: "my-year://calendar/\(calendar.id.uuidString)")
         } ?? nil
 
         VStack(alignment: .leading, spacing: 6) {
-            Text(calendarName)
-                .font(.system(size: 10, design: .monospaced))
-                .foregroundColor(primaryTextColor.opacity(0.6))
-                .lineLimit(1)
+          VStack {
+
+            if streakValue > 0 && !isAtRisk {
+
+                Text("your current ")
+                + Text(calendarName.lowercased())
+                    .foregroundColor(.textPrimary)
+                + Text(" streak is: ")
+
+
+            } else if streakValue > 0 && isAtRisk {
+
+              Text("your current ")
+              + Text(calendarName.lowercased())
+                  .foregroundColor(.textPrimary)
+              + Text(" streak")
+              + Text(" is at risk")
+                  .foregroundColor(Color("qs-red"))
+
+            } else {
+              Text(calendarName.lowercased())
+                  .foregroundColor(.textPrimary)
+            }
+          }
+          .foregroundColor(.textSecondary)
+          .font(.system(size: 10, design: .monospaced))
+
+            WidgetSeparator()
+            .padding(.horizontal, -16)
+            .padding(.bottom, 4)
 
             Spacer()
 
-            if entry.streak > 0 {
-                Text("\(entry.streak)")
-                    .font(.system(size: 36, design: .monospaced))
+            if streakValue > 0 {
+                Text("\(streakValue)")
+                    .font(.system(size: 48, design: .monospaced))
                     .foregroundColor(accentColor)
-                    .fontWeight(.black)
-
-                if entry.isAtRisk {
-                    Text("streak at risk")
-                        .font(.system(size: 10, design: .monospaced))
-                        .foregroundColor(primaryTextColor)
-                }
+                    .fontWeight(.heavy)
             } else {
-                Text("Restart your habit")
+                Text("It's never late to start a new streak!")
                     .font(.system(size: 12, design: .monospaced))
                     .foregroundColor(primaryTextColor)
             }
@@ -115,6 +138,7 @@ struct StreakWidgetEntryView : View {
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
         .padding()
         .containerBackground(backgroundColor, for: .widget)
+        .background(.surfaceMuted)
         .widgetAccentable(false)
         .widgetURL(destinationURL)
     }
