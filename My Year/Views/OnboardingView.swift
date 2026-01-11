@@ -82,6 +82,7 @@ struct OnboardingView: View {
 extension OnboardingView {
   struct OnboardingSlide<Upper: View, Lower: View>: View {
     let onNext: () -> Void
+    var onSkip: (() -> Void)? = nil
     var disabled: Bool = false
     var withSkip: Bool = false
     @ViewBuilder let upper: () -> Upper
@@ -106,7 +107,7 @@ extension OnboardingView {
 
             HStack {
               if withSkip {
-                SkipButton(onTap: onNext)
+                SkipButton(onTap: onSkip ?? onNext)
               }
               ForwardButton(onTap: onNext, disabled: disabled)
             }

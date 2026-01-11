@@ -41,7 +41,12 @@ struct CreateFirstHabit: View {
   }
 
   var body: some View {
-    OnboardingView.OnboardingSlide(onNext: handleNext, disabled: disabled, withSkip: true) {
+    OnboardingView.OnboardingSlide(
+      onNext: handleNext,
+      onSkip: onNext,
+      disabled: disabled,
+      withSkip: true
+    ) {
       VStack(spacing: 12) {
         CustomSection(label: "Give it a name") {
           TextField(
