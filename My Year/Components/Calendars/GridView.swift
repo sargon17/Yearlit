@@ -30,6 +30,7 @@ struct GridView: View {
       let horizontalSpacing =
         (availableWidth - (dotSize * CGFloat(columns))) / CGFloat(columns - 1)
       let verticalSpacing = (availableHeight - (dotSize * CGFloat(rows))) / CGFloat(rows - 1)
+      let hitSize = dotSize + max(0, min(horizontalSpacing, verticalSpacing))
 
       VStack(spacing: verticalSpacing) {
         ForEach(0..<rows, id: \.self) { row in
@@ -37,11 +38,11 @@ struct GridView: View {
             ForEach(0..<columns, id: \.self) { col in
               let day = row * columns + col
               if day < mappedDays.count {
-                GridDot(
+                TappableGridDot(
                   color: mappedDays[day].color,
-                  dotSize: dotSize
-                )
-                .onTapGesture {
+                  dotSize: dotSize,
+                  hitSize: hitSize
+                ) {
                   handleDayTap(mappedDays[day].date)
                 }
               } else {
@@ -88,4 +89,22 @@ struct GridView: View {
   }
 
   func updateData() {}
+}
+
+private struct TappableGridDot: View {
+  let color: Color
+  let dotSize: CGFloat
+  let hitSize: CGFloat
+  let onTap: () -> Void
+
+  var body: some View {
+    GridDot(color: color, dotSize: dotSize)
+      .frame(width: dotSize, height: dotSize)
+      .background(
+        Color.clear
+          .frame(width: hitSize, height: hitSize)
+          .contentShape(Rectangle())
+          .onTapGesture(perform: onTap)
+      )
+  }
 }
