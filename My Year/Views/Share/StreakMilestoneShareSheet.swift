@@ -1,3 +1,4 @@
+import CoreMotion
 import Photos
 import SharedModels
 import SwiftUI
@@ -14,6 +15,8 @@ struct StreakMilestoneShareSheet: View {
   @State private var isSharing: Bool = false
   @State private var showingSaveAlert: Bool = false
   @State private var saveAlertMessage: String = ""
+  @State private var isCardVisible: Bool = false
+  @StateObject private var motion = MotionTiltManager()
 
   private let sharePointSize = CGSize(width: 360, height: 450)
   private let shareScale: CGFloat = 3
@@ -39,6 +42,19 @@ struct StreakMilestoneShareSheet: View {
       .navigationTitle("Streak Milestone")
       .navigationBarTitleDisplayMode(.large)
     }
+    .onAppear {
+      isCardVisible = false
+      motion.start()
+      DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) {
+        withAnimation(.spring(response: 0.6, dampingFraction: 0.72)) {
+          isCardVisible = true
+        }
+      }
+    }
+    .onDisappear {
+      isCardVisible = false
+      motion.stop()
+    }
     .presentationDetents([.medium, .large])
     .sheet(isPresented: $isSharing) {
       if let image = shareImage {
@@ -60,10 +76,20 @@ struct StreakMilestoneShareSheet: View {
       calendar: calendar,
       milestone: milestone,
       currentStreak: currentStreak,
-      dates: dates
+      dates: dates,
+      glareOffset: CGSize(
+        width: motion.roll * 3,
+        height: -motion.pitch * 3
+      )
     )
     .aspectRatio(4 / 5, contentMode: .fit)
     .shadow(color: .black.opacity(0.25), radius: 20, x: 0, y: 10)
+    .rotation3DEffect(.degrees(motion.pitch), axis: (x: 1, y: 0, z: 0), perspective: 0.8)
+    .rotation3DEffect(.degrees(motion.roll), axis: (x: 0, y: 1, z: 0), perspective: 0.8)
+    .scaleEffect(isCardVisible ? 1 : 0.88)
+    .opacity(isCardVisible ? 1 : 0)
+    .offset(y: isCardVisible ? 0 : 28)
+    .blur(radius: isCardVisible ? 0 : 10)
     .padding(.horizontal, 32)
     .padding(.vertical, 16)
   }
@@ -105,7 +131,7 @@ struct StreakMilestoneShareSheet: View {
 
   private var shareMessage: String {
     let calendarName = calendar.name.capitalized
-    return "I just hit a \(milestone)-day streak on \(calendarName)!\n\ntracked using yearlit by @tymofyeyev "
+    return "I just hit \(milestone) days in a row on \(calendarName)!\n\ntracked using yearlit by @tymofyeyev "
   }
 
   private func shareMilestone() {
@@ -160,5 +186,47 @@ struct StreakMilestoneShareSheet: View {
       colorScheme: colorScheme,
       scale: shareScale
     )
+  }
+}
+
+private final class MotionTiltManager: ObservableObject {
+  @Published var pitch: Double = 0
+  @Published var roll: Double = 0
+
+  private let manager = CMMotionManager()
+  private let maxAngle: Double = 6
+  private let smoothing: Double = 0.12
+  private var referenceGravity: CMAcceleration?
+
+  func start() {
+    guard manager.isDeviceMotionAvailable else { return }
+    manager.deviceMotionUpdateInterval = 1 / 60
+    manager.startDeviceMotionUpdates(to: .main) { [weak self] motion, _ in
+      guard let self, let motion else { return }
+      let gravity = motion.gravity
+      if referenceGravity == nil {
+        referenceGravity = gravity
+      }
+      let ref = referenceGravity ?? gravity
+      let dx = gravity.x - ref.x
+      let dy = gravity.y - ref.y
+      let targetRoll = clamp(dx * maxAngle * 1.4, maxAngle: maxAngle)
+      let targetPitch = clamp(-dy * maxAngle * 1.4, maxAngle: maxAngle)
+      pitch = lerp(from: pitch, to: targetPitch, t: smoothing)
+      roll = lerp(from: roll, to: targetRoll, t: smoothing)
+    }
+  }
+
+  func stop() {
+    manager.stopDeviceMotionUpdates()
+    referenceGravity = nil
+  }
+
+  private func clamp(_ value: Double, maxAngle: Double) -> Double {
+    min(maxAngle, max(-maxAngle, value))
+  }
+
+  private func lerp(from: Double, to: Double, t: Double) -> Double {
+    from + (to - from) * t
   }
 }

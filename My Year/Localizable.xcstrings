@@ -145,16 +145,10 @@
     "Currency Symbol" : {
 
     },
-    "Current streak: %lld days" : {
-
-    },
     "Daily Target" : {
 
     },
     "Daily Training" : {
-
-    },
-    "Day streak" : {
 
     },
     "Decide the kind of person you want to be" : {
@@ -271,9 +265,6 @@
     "Message on Telegram" : {
 
     },
-    "Milestone hit" : {
-
-    },
     "Monthly Breakdown" : {
 
     },
@@ -334,6 +325,9 @@
           }
         }
       }
+    },
+    "Now at %lld days" : {
+
     },
     "Obvious, Attractive, Easy & Satisfying" : {
 
