@@ -4,10 +4,12 @@ import UIKit
 struct SameLevelBorder: ViewModifier {
   let radius: CGFloat
   let color: Color
+  let isFlat: Bool
 
-  init(radius: CGFloat = 4, color: Color = .surfaceMuted) {
+  init(radius: CGFloat = 4, color: Color = .surfaceMuted, isFlat: Bool = false) {
     self.radius = radius
     self.color = color
+    self.isFlat = isFlat
   }
 
   @Environment(\.colorScheme) var colorScheme
@@ -16,10 +18,11 @@ struct SameLevelBorder: ViewModifier {
 
   func body(content: Content) -> some View {
     let lightModeScale = colorScheme == .dark ? 1.0 : shadowScale(for: color)
-    let lightOpacitySmall = clampedOpacity((colorScheme == .dark ? 0.05 : 0.3) * lightModeScale)
-    let lightOpacityLarge = clampedOpacity((colorScheme == .dark ? 0.05 : 0.6) * lightModeScale)
-    let darkOpacitySmall = clampedOpacity((colorScheme == .dark ? 0.5 : 0.4) * lightModeScale)
-    let darkOpacityLarge = clampedOpacity((colorScheme == .dark ? 0.4 : 0.1) * lightModeScale)
+    let flatScale: Double = isFlat ? 0.2 : 1
+    let lightOpacitySmall = clampedOpacity((colorScheme == .dark ? 0.05 : 0.3) * lightModeScale * flatScale)
+    let lightOpacityLarge = clampedOpacity((colorScheme == .dark ? 0.05 : 0.6) * lightModeScale * flatScale)
+    let darkOpacitySmall = clampedOpacity((colorScheme == .dark ? 0.5 : 0.4) * lightModeScale * flatScale)
+    let darkOpacityLarge = clampedOpacity((colorScheme == .dark ? 0.4 : 0.1) * lightModeScale * flatScale)
 
     ZStack {
       content
@@ -67,10 +70,12 @@ struct SameLevelBorder: ViewModifier {
           .mask(RoundedRectangle(cornerRadius: radius))
       )
       .shadow(
-        color: .black.opacity(clampedOpacity((colorScheme == .dark ? 0.4 : 0.4) * lightModeScale)),
-        radius: 2,
-        x: 4,
-        y: 6,
+        color: .black.opacity(
+          clampedOpacity((colorScheme == .dark ? 0.4 : 0.4) * lightModeScale * flatScale)
+        ),
+        radius: isFlat ? 1 : 2,
+        x: isFlat ? 1 : 4,
+        y: isFlat ? 1 : 6
       )
     )
   }
@@ -102,8 +107,10 @@ func getVoidColor(colorScheme: ColorScheme) -> Color {
 }
 
 extension View {
-  func sameLevelBorder(radius: CGFloat = 4, color: Color = .surfaceMuted) -> some View {
-    modifier(SameLevelBorder(radius: radius, color: color))
+  func sameLevelBorder(radius: CGFloat = 4, color: Color = .surfaceMuted, isFlat: Bool = false)
+    -> some View
+  {
+    modifier(SameLevelBorder(radius: radius, color: color, isFlat: isFlat))
   }
 }
 

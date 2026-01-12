@@ -82,6 +82,9 @@
     "Add Calendar" : {
 
     },
+    "Add existing streak" : {
+
+    },
     "Add Morning Routine Sample" : {
 
     },
@@ -91,10 +94,16 @@
     "After I wake up" : {
 
     },
+    "Already started elsewhere? Bring your streak here." : {
+
+    },
     "And along the way, I realized I wasn’t the only one who needed this." : {
 
     },
     "And every time, I’d wonder, “Why can’t I stick with this?”" : {
+
+    },
+    "Apply" : {
 
     },
     "Archive Calendar" : {
@@ -110,6 +119,9 @@
 
     },
     "Are you sure you want to delete this calendar? This action cannot be undone." : {
+
+    },
+    "Backfilling %lld days." : {
 
     },
     "Because every update, every improvement, comes from " : {
@@ -187,10 +199,13 @@
     "Enable Mood Tracking" : {
 
     },
-    "Enable Runtime Debug" : {
+    "End" : {
 
     },
     "Error" : {
+
+    },
+    "Existing Streak" : {
 
     },
     "Feature Requests" : {
@@ -344,6 +359,12 @@
     "Overview" : {
 
     },
+    "Overwrite" : {
+
+    },
+    "Overwrite Entries?" : {
+
+    },
     "Passed: " : {
 
     },
@@ -413,6 +434,9 @@
     "Stacks" : {
 
     },
+    "Start" : {
+
+    },
     "Starts with %@" : {
 
     },
@@ -473,6 +497,16 @@
     "The truth? I’ve never been naturally consistent." : {
 
     },
+    "This will overwrite %lld days within a %lld-day range." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "This will overwrite %1$lld days within a %2$lld-day range."
+          }
+        }
+      }
+    },
     "Tiny actions → Massive change." : {
 
     },
@@ -504,9 +538,6 @@
 
     },
     "Value" : {
-
-    },
-    "Wand Fill Force: %.2f" : {
 
     },
     "Watch your chain grow." : {

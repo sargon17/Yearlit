@@ -1,5 +1,6 @@
 import SharedModels
 import SwiftUI
+import SwiftfulRouting
 
 struct EditCalendarView: View {
   @Environment(\.dismiss) private var dismiss: DismissAction
@@ -19,9 +20,11 @@ struct EditCalendarView: View {
   @State private var calendarError: CalendarError?
   @State private var showingDeleteConfirmation = false
   @State private var currencySymbol: String
+  @State private var entries: [String: CalendarEntry]
 
   @FocusState private var isNameFocused: Bool
   @Environment(\.colorScheme) var colorScheme
+  @Environment(\.router) private var router
 
   init(
     calendar: CustomCalendar, onSave: @escaping (CustomCalendar) -> Void,
@@ -39,6 +42,7 @@ struct EditCalendarView: View {
     _defaultRecordValue = State(initialValue: calendar.defaultRecordValue ?? 1)
     _currencySymbol = State(initialValue: calendar.currencySymbol ?? "$")
     _isArchived = State(initialValue: calendar.isArchived)
+    _entries = State(initialValue: calendar.entries)
 
     // Default reminder time set to 9:00 AM as it's a common time for daily reminders
     let defaultTime =
@@ -75,7 +79,7 @@ struct EditCalendarView: View {
 
   var body: some View {
     ScrollView {
-      VStack(spacing: 24) {
+      VStack(spacing: 32) {
         CustomSeparator()
           .padding(.horizontal, -16)
         CustomSection(label: "Calendar Name") {
@@ -121,7 +125,7 @@ struct EditCalendarView: View {
                 }
                 .padding(.leading)
                 .padding(.all, 2)
-                .sameLevelBorder()
+                .sameLevelBorder(isFlat: true)
               }
 
               if trackingType == .counter || trackingType == .multipleDaily {
@@ -145,7 +149,7 @@ struct EditCalendarView: View {
                 }
                 .padding(.leading)
                 .padding(.vertical, 8)
-                .sameLevelBorder()
+                .sameLevelBorder(isFlat: true)
 
                 if selectedUnit == .currency {
                   HStack {
@@ -159,7 +163,7 @@ struct EditCalendarView: View {
                   }
                   .padding(.leading)
                   .padding(.all, 2)
-                  .sameLevelBorder()
+                  .sameLevelBorder(isFlat: true)
 
                 }
 
@@ -178,7 +182,7 @@ struct EditCalendarView: View {
                 }
                 .padding(.leading)
                 .padding(.all, 2)
-                .sameLevelBorder()
+                .sameLevelBorder(isFlat: true)
 
               }
             }
@@ -241,7 +245,7 @@ struct EditCalendarView: View {
             .tint(Color(selectedColor))
             .padding(.horizontal)
             .padding(.vertical, 6)
-            .sameLevelBorder()
+            .sameLevelBorder(isFlat: true)
 
             if recurringReminderEnabled {
               HStack {
@@ -256,12 +260,48 @@ struct EditCalendarView: View {
               }
               .frame(maxWidth: .infinity, alignment: .center)
               .padding(.all, 2)
-              .sameLevelBorder()
+              .sameLevelBorder(isFlat: true)
             }
           }.padding(.all, 2)
             .background(getVoidColor(colorScheme: colorScheme))
 
         }
+
+        CustomSection(label: "Already active streak?") {
+          VStack(spacing: 8) {
+            Button(action: {
+              router.showScreen(.sheet) { _ in
+                ExistingStreakSheet(
+                  trackingType: trackingType,
+                  dailyTarget: dailyTarget,
+                  defaultDailyValue: defaultRecordValue,
+                  existingEntries: entries,
+                  accentColor: Color(selectedColor)
+                ) { newEntries in
+                  for (key, entry) in newEntries {
+                    entries[key] = entry
+                  }
+                  let updatedCalendar = makeUpdatedCalendar()
+                  onSave(updatedCalendar)
+                }
+              }
+            }) {
+              Text("Add existing streak")
+                .frame(maxWidth: .infinity, alignment: .center)
+                .fontWeight(.bold)
+                .padding()
+            }
+            .sameLevelBorder()
+            .foregroundStyle(.textSecondary)
+          }
+          .padding(.all, 2)
+          .background(getVoidColor(colorScheme: colorScheme))
+        }
+        Text("Already started elsewhere? Bring your streak here.")
+          .font(.footnote)
+          .foregroundStyle(.textTertiary)
+          .frame(maxWidth: .infinity, alignment: .leading)
+          .padding(.horizontal, 8)
 
 
         CustomSeparator()
@@ -371,7 +411,7 @@ struct EditCalendarView: View {
       color: selectedColor,
       trackingType: trackingType,
       dailyTarget: dailyTarget,
-      entries: calendar.entries,
+      entries: entries,
       isArchived: overrideArchived ?? isArchived,
       recurringReminderEnabled: recurringReminderEnabled,
       reminderTime: recurringReminderEnabled ? validateReminderTime(reminderTime) : nil,

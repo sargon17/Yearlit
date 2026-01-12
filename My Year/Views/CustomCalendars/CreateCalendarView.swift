@@ -22,6 +22,7 @@ struct CreateCalendarView: View {
   @State private var errorMessage: String?
   @State private var isAlertPresented = false
   @State private var currencySymbol: String = "$"
+  @State private var existingStreakEntries: [String: CalendarEntry] = [:]
 
   @FocusState private var isNameFocused: Bool
   @Environment(\.colorScheme) var colorScheme
@@ -56,6 +57,7 @@ struct CreateCalendarView: View {
       color: selectedColor,
       trackingType: trackingType,
       dailyTarget: dailyTarget,
+      entries: existingStreakEntries,
       isArchived: false,
       recurringReminderEnabled: recurringReminderEnabled,
       reminderTime: recurringReminderEnabled ? reminderTime : nil,
@@ -81,7 +83,7 @@ struct CreateCalendarView: View {
 
   var body: some View {
     ScrollView {
-      VStack(spacing: 24) {
+      VStack(spacing: 32) {
         CustomSeparator()
           .padding(.horizontal, -16)
         CustomSection(label: "Calendar Name") {
@@ -127,7 +129,7 @@ struct CreateCalendarView: View {
                 }
                 .padding(.leading)
                 .padding(.all, 2)
-                .sameLevelBorder()
+                .sameLevelBorder(isFlat: true)
               }
 
               if trackingType == .counter || trackingType == .multipleDaily {
@@ -152,7 +154,7 @@ struct CreateCalendarView: View {
                 }
                 .padding(.leading)
                 .padding(.vertical, 8)
-                .sameLevelBorder()
+                .sameLevelBorder(isFlat: true)
 
                 if selectedUnit == .currency {
                   HStack {
@@ -167,7 +169,7 @@ struct CreateCalendarView: View {
                   }
                   .padding(.leading)
                   .padding(.all, 2)
-                  .sameLevelBorder()
+                  .sameLevelBorder(isFlat: true)
 
                 }
 
@@ -187,7 +189,7 @@ struct CreateCalendarView: View {
                 }
                 .padding(.leading)
                 .padding(.all, 2)
-                .sameLevelBorder()
+                .sameLevelBorder(isFlat: true)
 
               }
             }
@@ -196,6 +198,89 @@ struct CreateCalendarView: View {
 
           }
         }
+
+        CustomSection(label: "Recurring Reminder") {
+          VStack(spacing: 2) {
+
+            HStack {
+              Text("Set a reminder")
+                .labelStyle(type: .secondary)
+
+              Spacer()
+
+              Toggle(
+                "",
+                isOn: Binding(
+                  get: { recurringReminderEnabled },
+                  set: { newValue in
+                    withAnimation(.snappy) {
+                      recurringReminderEnabled = newValue
+                    }
+                  }
+                ))
+            }
+            .tint(Color(selectedColor))
+            .padding(.horizontal)
+            .padding(.vertical, 6)
+            .sameLevelBorder(isFlat: true)
+
+            if recurringReminderEnabled {
+              HStack {
+                DatePicker(
+                  "", selection: $reminderTime, displayedComponents: [.hourAndMinute]
+                )
+                .labelsHidden()
+                .tint(Color(selectedColor))
+                .datePickerStyle(.wheel)
+                .inputStyle(radius: 4, color: Color(selectedColor))
+              }
+              .frame(maxWidth: .infinity, alignment: .center)
+              .padding(.all, 2)
+              .sameLevelBorder(isFlat: true)
+              .colorScheme(.dark)
+            }
+          }.padding(.all, 2)
+            .background(getVoidColor(colorScheme: colorScheme))
+        }
+        CustomSection(label: "Already active streak?") {
+          VStack(spacing: 8) {
+            if !existingStreakEntries.isEmpty {
+              Text("Backfilling \(existingStreakEntries.count) days.")
+                .font(.footnote)
+                .foregroundStyle(.textTertiary)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(.horizontal, 8)
+            }
+
+            Button(action: {
+              router.showScreen(.sheet) { _ in
+                ExistingStreakSheet(
+                  trackingType: trackingType,
+                  dailyTarget: dailyTarget,
+                  defaultDailyValue: defaultRecordValue,
+                  existingEntries: [:],
+                  accentColor: Color(selectedColor)
+                ) { entries in
+                  existingStreakEntries = entries
+                }
+              }
+            }) {
+              Text("Add existing streak")
+                .frame(maxWidth: .infinity, alignment: .center)
+                .fontWeight(.bold)
+                .padding()
+            }
+            .sameLevelBorder()
+            .foregroundStyle(.textSecondary)
+          }
+          .padding(.all, 2)
+          .background(getVoidColor(colorScheme: colorScheme))
+        }
+        Text("Already started elsewhere? Bring your streak here.")
+          .font(.footnote)
+          .foregroundStyle(.textTertiary)
+          .frame(maxWidth: .infinity, alignment: .leading)
+          .padding(.horizontal, 8)
 
         CustomSection(label: "Color") {
           ScrollView(.horizontal, showsIndicators: false) {
@@ -228,49 +313,6 @@ struct CreateCalendarView: View {
 
         }
 
-        CustomSection(label: "Recurring Reminder") {
-          VStack(spacing: 2) {
-
-            HStack {
-              Text("Set a reminder")
-                .labelStyle(type: .secondary)
-
-              Spacer()
-
-              Toggle(
-                "",
-                isOn: Binding(
-                  get: { recurringReminderEnabled },
-                  set: { newValue in
-                    withAnimation(.snappy) {
-                      recurringReminderEnabled = newValue
-                    }
-                  }
-                ))
-            }
-            .tint(Color(selectedColor))
-            .padding(.horizontal)
-            .padding(.vertical, 6)
-            .sameLevelBorder()
-
-            if recurringReminderEnabled {
-              HStack {
-                DatePicker(
-                  "", selection: $reminderTime, displayedComponents: [.hourAndMinute]
-                )
-                .labelsHidden()
-                .tint(Color(selectedColor))
-                .datePickerStyle(.wheel)
-                .inputStyle(radius: 4, color: Color(selectedColor))
-              }
-              .frame(maxWidth: .infinity, alignment: .center)
-              .padding(.all, 2)
-              .sameLevelBorder()
-              .colorScheme(.dark)
-            }
-          }.padding(.all, 2)
-            .background(getVoidColor(colorScheme: colorScheme))
-        }
         CustomSeparator()
           .padding(.horizontal, -16)
       }
@@ -328,6 +370,14 @@ struct CreateCalendarView: View {
           return
         }
         self.customerInfo = info
+      }
+    }
+    .onChange(of: trackingType) { _, _ in
+      existingStreakEntries = [:]
+    }
+    .onChange(of: dailyTarget) { _, _ in
+      if trackingType == .multipleDaily {
+        existingStreakEntries = [:]
       }
     }
   }
