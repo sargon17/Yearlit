@@ -7,6 +7,7 @@ struct StreakMilestoneCardView: View {
   let milestone: Int
   let currentStreak: Int
   let dates: [Date]
+  let kind: MilestoneKind
   let glareOffset: CGSize
 
   init(
@@ -14,12 +15,14 @@ struct StreakMilestoneCardView: View {
     milestone: Int,
     currentStreak: Int,
     dates: [Date],
+    kind: MilestoneKind = .streak,
     glareOffset: CGSize = .zero
   ) {
     self.calendar = calendar
     self.milestone = milestone
     self.currentStreak = currentStreak
     self.dates = dates
+    self.kind = kind
     self.glareOffset = glareOffset
   }
 
@@ -83,7 +86,7 @@ struct StreakMilestoneCardView: View {
       Text(copy.label)
         .font(.system(size: 12, design: .monospaced))
         .foregroundColor(secondaryTextColor)
-      if currentStreak > milestone {
+      if kind == .streak, currentStreak > milestone {
         Text("Now at \(currentStreak) days")
           .font(.system(size: 12, design: .monospaced))
           .foregroundColor(secondaryTextColor)
@@ -189,25 +192,56 @@ struct StreakMilestoneCardView: View {
   }
 
   private var copy: MilestoneCopy {
-    switch milestone {
-    case 1:
-      return MilestoneCopy(header: "First day down", kicker: "Streak started", label: "Day in a row")
-    case 2...3:
-      return MilestoneCopy(header: "Keep it going", kicker: "Momentum building", label: "Days in a row")
-    case 4...5:
-      return MilestoneCopy(header: "You are on fire", kicker: "Five days strong", label: "Days in a row")
-    case 6...10:
-      return MilestoneCopy(header: "This is real", kicker: "Ten days deep", label: "Days straight")
-    case 11...20:
-      return MilestoneCopy(header: "Streak machine", kicker: "Twenty days strong", label: "Days straight")
-    case 21...30:
-      return MilestoneCopy(header: "No misses", kicker: "Thirty days deep", label: "Days straight")
-    case 31...50:
-      return MilestoneCopy(header: "Unreal run", kicker: "Fifty days strong", label: "Days blazing")
-    default:
-      return MilestoneCopy(header: "Legendary streak", kicker: "\(milestone) days strong", label: "Days blazing")
+    switch kind {
+    case .streak:
+      switch milestone {
+      case 1:
+        return MilestoneCopy(header: "First day down", kicker: "Streak started", label: "Day in a row")
+      case 2...3:
+        return MilestoneCopy(header: "Keep it going", kicker: "Momentum building", label: "Days in a row")
+      case 4...5:
+        return MilestoneCopy(header: "You are on fire", kicker: "Five days strong", label: "Days in a row")
+      case 6...10:
+        return MilestoneCopy(header: "This is real", kicker: "Ten days deep", label: "Days straight")
+      case 11...20:
+        return MilestoneCopy(header: "Streak machine", kicker: "Twenty days strong", label: "Days straight")
+      case 21...30:
+        return MilestoneCopy(header: "No misses", kicker: "Thirty days deep", label: "Days straight")
+      case 31...50:
+        return MilestoneCopy(header: "Unreal run", kicker: "Fifty days strong", label: "Days blazing")
+      default:
+        return MilestoneCopy(header: "Legendary streak", kicker: "\(milestone) days strong", label: "Days blazing")
+      }
+    case .showedUp:
+      switch milestone {
+      case 5:
+        return MilestoneCopy(header: "You showed up", kicker: "Five days in", label: "Days showed up")
+      case 10:
+        return MilestoneCopy(header: "Consistency unlocked", kicker: "Ten days in", label: "Days showed up")
+      case 20:
+        return MilestoneCopy(header: "You are in it", kicker: "Twenty days deep", label: "Days showed up")
+      case 30:
+        return MilestoneCopy(header: "A full month", kicker: "Thirty days strong", label: "Days showed up")
+      case 40:
+        return MilestoneCopy(header: "No excuses", kicker: "Forty days in", label: "Days showed up")
+      case 50:
+        return MilestoneCopy(header: "Beast mode", kicker: "Fifty days strong", label: "Days showed up")
+      case 75:
+        return MilestoneCopy(header: "You are relentless", kicker: "Seventy-five days", label: "Days showed up")
+      case 100:
+        return MilestoneCopy(header: "Century club", kicker: "100 days showed up", label: "Days showed up")
+      case 150:
+        return MilestoneCopy(header: "Absolutely unreal", kicker: "150 days in", label: "Days showed up")
+      default:
+        return MilestoneCopy(header: "Built different", kicker: "\(milestone) days showed up", label: "Days showed up")
+      }
     }
   }
+}
+
+enum MilestoneKind: String {
+  case streak
+  case showedUp
 }
 
 private struct MilestoneDivider: View {

@@ -1,3 +1,4 @@
+import SharedModels
 import SwiftUI
 
 func computeStreaks(cal: Calendar, _ anySuccessByDay: [Date: Bool]) -> (longest: Int, current: Int) {
@@ -30,14 +31,12 @@ func computeStreaks(cal: Calendar, _ anySuccessByDay: [Date: Bool]) -> (longest:
     prev = day
   }
 
-  // Current: walk backward day-by-day from the last day in range.
-  var current = 0
-  var cursor = days.last!
-  while let v = norm[cursor], v == true {
-    current += 1
-    guard let prevDay = cal.date(byAdding: .day, value: -1, to: cursor) else { break }
-    cursor = cal.startOfDay(for: prevDay)
-  }
+  let current = WidgetStreak.currentStreak(
+    successByDay: norm,
+    today: Date(),
+    calendarSystem: cal,
+    allowTodayMissing: true
+  ).streak
 
   return (longest, current)
 }

@@ -6,6 +6,7 @@ struct WhatsNewSheetView: View {
 
   @State private var currentIndex: Int = 0
 
+  @Environment(\.dismiss) private var dismiss
   @Environment(\.colorScheme) var colorScheme
 
   var body: some View {
@@ -62,6 +63,7 @@ struct WhatsNewSheetView: View {
   private func handleNext() {
     if isLastSlide {
       onDone()
+      dismiss()
     } else {
       withAnimation {
         currentIndex += 1
@@ -69,4 +71,3 @@ struct WhatsNewSheetView: View {
     }
   }
 }
-

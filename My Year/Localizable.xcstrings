@@ -199,6 +199,9 @@
     "Enable Mood Tracking" : {
 
     },
+    "Enable Runtime Debug" : {
+
+    },
     "End" : {
 
     },
@@ -278,6 +281,9 @@
 
     },
     "Message on Telegram" : {
+
+    },
+    "Milestone" : {
 
     },
     "Monthly Breakdown" : {
@@ -389,6 +395,9 @@
     "Request a Feature" : {
 
     },
+    "Reset What's New" : {
+
+    },
     "Save" : {
 
     },
@@ -456,9 +465,6 @@
 
     },
     "Streak Focus" : {
-
-    },
-    "Streak Milestone" : {
 
     },
     "Subscription" : {
@@ -538,6 +544,9 @@
 
     },
     "Value" : {
+
+    },
+    "Wand Fill Force: %.2f" : {
 
     },
     "Watch your chain grow." : {

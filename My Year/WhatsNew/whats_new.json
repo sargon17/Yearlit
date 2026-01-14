@@ -1,60 +1,50 @@
 {
   "releases": [
     {
-      "version": "1.8",
+      "version": "1.9",
       "title": "What's New",
       "slides": [
         {
-          "id": "whats-new-180",
+          "id": "whats-new-190",
           "type": "hero",
-          "title": "Yearlit has changed",
-          "subtitle": "Faster. Sleeker. Rock-solid.",
-          "body": "The 1.8.0 update brings a lot - I've been working hard to deliver the best experience yet. Translation: PERFORMANCE.",
-          "image": "180_hero"
+          "title": "What's new in 1.9.0",
+          "subtitle": "Inspire others with your habits",
+          "body": "Yearlit turns social: share your habits, progress, and results with ease and style.",
+          "image": "190_01"
         },
         {
-          "id": "stability",
+          "id": "social",
           "type": "list",
-          "title": "Built to stay solid",
-          "subtitle": "Fewer glitches, more trust.",
+          "title": "You are built different",
+          "subtitle": "Share your results and inspire others",
+          "items": ["Share your progress with your friends", "No more ugly screenshots"],
+          "image": "190_02"
+        },
+        {
+          "id": "widgets",
+          "type": "list",
+          "title": "Your Home Screen has style too",
+          "subtitle": "No more forgotten streaks",
           "items": [
-            "Streaks stay accurate across time zones",
-            "No more random calendar switching after edits",
-            "Overview updates reliably again"
+            "Beautifully crafted widgets for your Home Screen",
+            "Keep yourself in the loop and accountable constantly"
           ],
-          "image": "180_bugs"
+          "image": "190_03"
         },
         {
-          "id": "boards",
+          "id": "milestones",
           "type": "list",
-          "title": "Boards, but fast",
-          "subtitle": "Everything snaps into place.",
-          "items": [
-            "Board view loads quicker with smarter caching",
-            "Smoother scrolling on heavy days",
-            "Overall performance boost you can feel"
-          ],
-          "image": "180_performance"
+          "title": "You got it all",
+          "subtitle": "And now it's time to celebrate",
+          "items": ["Celebrate your achievements with milestones", "Share your milestones with your friends"],
+          "image": "190_04"
         },
         {
-          "id": "calendars",
+          "id": "more",
           "type": "list",
-          "title": "Calendars, organized",
-          "subtitle": "Clean views when you need them.",
-          "items": [
-            "Archive old calendars instead of deleting",
-            "Reordering and navigation work the way they should",
-            "More accurate stats"
-          ],
-          "image": "180_order"
-        },
-        {
-          "id": "polish",
-          "type": "list",
-          "title": "A cleaner look",
-          "subtitle": "Polish you notice right away.",
-          "items": ["Liquid Glass styling across the app", "More stable UI in everyday use"],
-          "image": "180_ui"
+          "title": "And much more",
+          "subtitle": "As always",
+          "items": ["Bug fixes and performance improvements", "Import your previous streaks", "More accurate stats"]
         }
       ]
     }

@@ -6,6 +6,7 @@ struct SettingsView: View {
   @AppStorage("runtimeDebugEnabled") var runtimeDebugEnabled: Bool = false  // Add new debug setting
   @AppStorage("wandFillForce") var wandFillForce: Double = 0.5  // Default wand fill force
   @State private var customerInfo: CustomerInfo?
+  @EnvironmentObject private var whatsNewManager: WhatsNewManager
 
   var body: some View {
     VStack(spacing: 0) {
@@ -20,6 +21,9 @@ struct SettingsView: View {
               VStack(alignment: .leading) {
                 Text("Wand Fill Force: \(wandFillForce, specifier: "%.2f")")
                 Slider(value: $wandFillForce, in: 0.0...1.0, step: 0.05)
+              }
+              Button("Reset What's New") {
+                whatsNewManager.resetLastSeenVersion()
               }
             }
           #endif

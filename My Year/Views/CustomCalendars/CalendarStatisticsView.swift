@@ -29,6 +29,9 @@ struct CalendarStatisticsView: View {
   let isPremium: Bool
   let onUpgrade: () -> Void
   var trackingType: TrackingType = .binary
+  var onTapCurrentStreak: (() -> Void)? = nil
+  var onTapActiveDays: (() -> Void)? = nil
+  var onTapShare: (() -> Void)? = nil
 
   @Environment(\.router) var router
 
@@ -55,6 +58,16 @@ struct CalendarStatisticsView: View {
             .padding(.horizontal)
 
           Spacer()
+
+          if let onTapShare {
+            Button(action: onTapShare) {
+              Image(systemName: "square.and.arrow.up")
+                .font(.system(size: 14, weight: .regular))
+                .foregroundColor(.textTertiary)
+                .frame(width: 28, height: 28)
+            }
+            .padding(.trailing, 12)
+          }
         }
       }
       // Section: Logging
@@ -99,7 +112,8 @@ struct CalendarStatisticsView: View {
           CompactStatTile(
             title: "Current",
             value: "\(stats.currentStreak)",
-            accentColor: accentColor
+            accentColor: accentColor,
+            onTap: onTapCurrentStreak
           )
           .layoutPriority(1)
           CompactStatTile(
@@ -112,7 +126,8 @@ struct CalendarStatisticsView: View {
           CompactStatTile(
             title: "Active Days",
             value: "\(stats.activeDays)",
-            accentColor: accentColor
+            accentColor: accentColor,
+            onTap: onTapActiveDays
           )
           .layoutPriority(1)
         }

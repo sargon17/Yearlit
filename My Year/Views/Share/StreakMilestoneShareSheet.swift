@@ -8,6 +8,7 @@ struct StreakMilestoneShareSheet: View {
   let calendar: CustomCalendar
   let milestone: Int
   let currentStreak: Int
+  let kind: MilestoneKind
   let dates: [Date]
 
   @Environment(\.colorScheme) private var colorScheme
@@ -39,7 +40,7 @@ struct StreakMilestoneShareSheet: View {
       }
       .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
       .surfaceBackground(Color("surface-muted"), ignoresSafeArea: true)
-      .navigationTitle("Streak Milestone")
+      .navigationTitle("Milestone")
       .navigationBarTitleDisplayMode(.large)
     }
     .onAppear {
@@ -77,6 +78,7 @@ struct StreakMilestoneShareSheet: View {
       milestone: milestone,
       currentStreak: currentStreak,
       dates: dates,
+      kind: kind,
       glareOffset: CGSize(
         width: motion.roll * 3,
         height: -motion.pitch * 3
@@ -131,7 +133,12 @@ struct StreakMilestoneShareSheet: View {
 
   private var shareMessage: String {
     let calendarName = calendar.name.capitalized
-    return "I just hit \(milestone) days in a row on \(calendarName)!\n\ntracked using yearlit by @tymofyeyev "
+    switch kind {
+    case .streak:
+      return "I just hit \(milestone) days in a row on \(calendarName)!\n\ntracked using yearlit by @tymofyeyev "
+    case .showedUp:
+      return "I just showed up \(milestone) days on \(calendarName)!\n\ntracked using yearlit by @tymofyeyev "
+    }
   }
 
   private func shareMilestone() {
@@ -176,7 +183,8 @@ struct StreakMilestoneShareSheet: View {
       calendar: calendar,
       milestone: milestone,
       currentStreak: currentStreak,
-      dates: dates
+      dates: dates,
+      kind: kind
     )
     .aspectRatio(4 / 5, contentMode: .fill)
     .clipped()
@@ -187,6 +195,7 @@ struct StreakMilestoneShareSheet: View {
       scale: shareScale
     )
   }
+
 }
 
 private final class MotionTiltManager: ObservableObject {

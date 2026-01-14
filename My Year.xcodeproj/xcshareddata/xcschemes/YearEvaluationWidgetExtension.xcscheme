@@ -17,7 +17,7 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "78BCBD7C2D366AB20075CEC0"
-               BuildableName = "YearEvaluationWidgetExtension.appex"
+               BuildableName = "YearEvaluationWidgetExtension"
                BlueprintName = "YearEvaluationWidgetExtension"
                ReferencedContainer = "container:My Year.xcodeproj">
             </BuildableReference>
@@ -63,7 +63,7 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "78BCBD7C2D366AB20075CEC0"
-            BuildableName = "YearEvaluationWidgetExtension.appex"
+            BuildableName = "YearEvaluationWidgetExtension"
             BlueprintName = "YearEvaluationWidgetExtension"
             ReferencedContainer = "container:My Year.xcodeproj">
          </BuildableReference>

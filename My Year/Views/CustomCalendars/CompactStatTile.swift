@@ -24,6 +24,7 @@ struct CompactStatTile: View {
   let accentColor: Color
   var size: CompactStatTileSize = .large
   var isLocked: Bool = false
+  var onTap: (() -> Void)? = nil
 
   @Environment(\.router) var router
 
@@ -44,21 +45,24 @@ struct CompactStatTile: View {
             .minimumScaleFactor(0.5)
             .lineLimit(1)
             .blur(radius: isLocked ? 10 : 0)
-            .onTapGesture {
-              if isLocked {
-                router.showScreen(.sheet) { _ in
-                  PaywallView()
-                }
-
-                Task {
-                  await hapticFeedback()
-                }
-              }
-            }
         }
       }
       Spacer()
     }
     .frame(maxWidth: .greatestFiniteMagnitude)
+    .contentShape(Rectangle())
+    .onTapGesture {
+      if isLocked {
+        router.showScreen(.sheet) { _ in
+          PaywallView()
+        }
+
+        Task {
+          await hapticFeedback()
+        }
+      } else {
+        onTap?()
+      }
+    }
   }
 }

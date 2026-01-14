@@ -46,6 +46,12 @@ final class WhatsNewManager: ObservableObject {
     setLastSeenVersion(release.version)
   }
 
+  func resetLastSeenVersion() {
+    UserDefaults.standard.removeObject(forKey: storageKey)
+    pendingRelease = nil
+    lastEvaluatedVersion = nil
+  }
+
   private var lastSeenVersion: String? {
     UserDefaults.standard.string(forKey: storageKey)
   }

@@ -7,11 +7,38 @@ public enum WidgetStreak {
     calendarSystem: Calendar = WidgetStreak.makeLocalCalendar(),
     allowTodayMissing: Bool = true
   ) -> (streak: Int, isAtRisk: Bool) {
+    var successByDay: [Date: Bool] = [:]
+    for entry in calendar.entries.values {
+      let day = calendarSystem.startOfDay(for: entry.date)
+      if isEntrySuccess(entry, calendar: calendar) {
+        successByDay[day] = true
+      }
+    }
+
+    return currentStreak(
+      successByDay: successByDay,
+      today: today,
+      calendarSystem: calendarSystem,
+      allowTodayMissing: allowTodayMissing
+    )
+  }
+
+  public static func currentStreak(
+    successByDay: [Date: Bool],
+    today: Date = Date(),
+    calendarSystem: Calendar = WidgetStreak.makeLocalCalendar(),
+    allowTodayMissing: Bool = true
+  ) -> (streak: Int, isAtRisk: Bool) {
+    guard !successByDay.isEmpty else { return (0, false) }
+
     let normalizedToday = calendarSystem.startOfDay(for: today)
-    let todayKey = dayKey(for: normalizedToday)
-    let todayEntry = calendar.entries[todayKey]
-    let shouldSkipToday = allowTodayMissing
-      && (todayEntry == nil || !isEntrySuccess(todayEntry!, calendar: calendar))
+    var normalized: [Date: Bool] = [:]
+    for (date, success) in successByDay {
+      normalized[calendarSystem.startOfDay(for: date)] = success
+    }
+
+    let todaySuccess = normalized[normalizedToday]
+    let shouldSkipToday = allowTodayMissing && (todaySuccess == nil || todaySuccess == false)
 
     var streak = 0
     var cursor = normalizedToday
@@ -25,11 +52,7 @@ public enum WidgetStreak {
       isAtRisk = true
     }
 
-    while true {
-      let key = dayKey(for: cursor)
-      guard let entry = calendar.entries[key], isEntrySuccess(entry, calendar: calendar) else {
-        break
-      }
+    while normalized[cursor] == true {
       streak += 1
       guard let previous = calendarSystem.date(byAdding: .day, value: -1, to: cursor) else {
         break
@@ -53,14 +76,6 @@ public enum WidgetStreak {
     case .multipleDaily:
       return entry.count >= calendar.dailyTarget
     }
-  }
-
-  private static func isEntryEmpty(_ entry: CalendarEntry) -> Bool {
-    entry.count == 0 && entry.completed == false
-  }
-
-  private static func dayKey(for date: Date) -> String {
-    DayKeyFormatter.shared.string(from: date)
   }
 
   public static func makeLocalCalendar() -> Calendar {

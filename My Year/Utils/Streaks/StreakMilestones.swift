@@ -13,4 +13,12 @@ enum StreakMilestones {
     }
     return nil
   }
+
+  static func latestMilestone(for streak: Int) -> Int? {
+    guard streak > 0 else { return nil }
+    if streak >= 40 {
+      return streak - (streak % 10)
+    }
+    return baseMilestones.filter { $0 <= streak }.max()
+  }
 }

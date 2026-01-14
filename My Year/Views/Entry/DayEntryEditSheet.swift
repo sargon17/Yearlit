@@ -10,15 +10,23 @@ struct DayEntryEditSheet: View {
   let date: Date
   let store: CustomCalendarStore  // Receive the store
   let onSave: (() -> Void)?
+  let onDismiss: (() -> Void)?
 
   @State private var entryCount: Int
   @State private var entryCompleted: Bool
 
-  init(calendar: CustomCalendar, date: Date, store: CustomCalendarStore, onSave: (() -> Void)? = nil) {
+  init(
+    calendar: CustomCalendar,
+    date: Date,
+    store: CustomCalendarStore,
+    onSave: (() -> Void)? = nil,
+    onDismiss: (() -> Void)? = nil
+  ) {
     self.calendar = calendar
     self.date = date
     self.store = store
     self.onSave = onSave
+    self.onDismiss = onDismiss
     // Initialize state based on existing entry or defaults
     let existingEntry = store.getEntry(calendarId: calendar.id, date: date)
     _entryCount = State(initialValue: existingEntry?.count ?? 0)
@@ -52,6 +60,9 @@ struct DayEntryEditSheet: View {
     .surfaceBackground(Color("surface-muted"), ignoresSafeArea: true)
     .navigationTitle(dateFormatterLong.string(from: date))
     .navigationBarTitleDisplayMode(.large)
+    .onDisappear {
+      onDismiss?()
+    }
     .toolbar {
       ToolbarItem(placement: .cancellationAction) {
         Button("Cancel") { dismiss() }
