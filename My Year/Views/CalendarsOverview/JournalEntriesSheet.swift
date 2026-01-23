@@ -1,10 +1,12 @@
 import SharedModels
 import SwiftUI
+import SwiftfulRouting
 
 struct JournalEntriesSheet: View {
   @ObservedObject var valuationStore: ValuationStore
   @Environment(\.dismiss) private var dismiss
   @State private var selectedEntry: DayValuation?
+  @State private var showingNewEntry = false
 
   private static let dateFormatter: DateFormatter = {
     let formatter = DateFormatter()
@@ -92,9 +94,22 @@ struct JournalEntriesSheet: View {
       .surfaceBackground(Color("surface-muted"), ignoresSafeArea: true)
       .navigationTitle("Journal")
       .navigationBarTitleDisplayMode(.large)
+      .toolbar {
+
+        ToolbarItem(placement: .navigationBarTrailing) {
+          Button(action: { showingNewEntry = true }) {
+            Image(systemName: "plus")
+              .font(.system(size: 14))
+              .foregroundColor(.textSecondary)
+          }
+        }
+      }
     }
     .sheet(item: $selectedEntry) { entry in
       JournalEntryDetailSheet(entry: entry, valuationStore: valuationStore)
+    }
+    .sheet(isPresented: $showingNewEntry) {
+      DayValuationPopup(date: Date(), presentationDetents: [.large])
     }
   }
 }

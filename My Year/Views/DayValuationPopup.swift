@@ -6,14 +6,16 @@ struct DayValuationPopup: View {
   @Environment(\.colorScheme) private var colorScheme
   let store = ValuationStore.shared
   let date: Date
+  private let presentationDetents: Set<PresentationDetent>
 
   @State private var selectedMood: DayMood?
   @State private var noteText: String = ""
   @State private var showNoteEditor = false
+  @State private var showNoteEditorContent = false
   @FocusState private var isNoteFocused: Bool
 
   private var bounceAnimation: Animation {
-    .spring(response: 0.5, dampingFraction: 0.6, blendDuration: 0.2)
+    .spring(response: 0.38, dampingFraction: 0.78, blendDuration: 0.12)
   }
 
   private static let dateFormatter: DateFormatter = {
@@ -26,6 +28,11 @@ struct DayValuationPopup: View {
     Self.dateFormatter.string(from: date)
   }
 
+  init(date: Date, presentationDetents: Set<PresentationDetent> = [.height(420)]) {
+    self.date = date
+    self.presentationDetents = presentationDetents
+  }
+
   private var existingValuation: DayValuation? {
     store.getValuation(for: date)
   }
@@ -35,7 +42,7 @@ struct DayValuationPopup: View {
 
       Spacer(minLength: 12)
 
-      VStack(spacing: 30) {
+      VStack(spacing: 8) {
         HStack {
           VStack(alignment: .leading, spacing: 4) {
             Text("How was your day?")
@@ -57,16 +64,27 @@ struct DayValuationPopup: View {
           HStack(spacing: 12) {
             ForEach([DayMood.terrible, .bad, .neutral, .good, .excellent], id: \.self) { mood in
               let isSelected = selectedMood == mood
-            Button(action: {
-              noteText = store.getValuation(for: date)?.note ?? ""
-              withAnimation(bounceAnimation) {
-                selectedMood = mood
-                showNoteEditor = true
-              }
-              Task {
-                await hapticFeedback(.rigid)
-              }
-            }) {
+              Button(action: {
+                let shouldRevealEditor = !showNoteEditor
+                noteText = store.getValuation(for: date)?.note ?? ""
+                withAnimation(bounceAnimation) {
+                  selectedMood = mood
+                  showNoteEditor = true
+                }
+                if shouldRevealEditor {
+                  showNoteEditorContent = false
+                  DispatchQueue.main.asyncAfter(deadline: .now() + 0.18) {
+                    withAnimation(bounceAnimation) {
+                      showNoteEditorContent = true
+                    }
+                  }
+                } else {
+                  showNoteEditorContent = true
+                }
+                Task {
+                  await hapticFeedback(.rigid)
+                }
+              }) {
                 Text(mood.rawValue)
                   .font(.system(size: 40))
                   .frame(width: 60, height: 60)
@@ -82,6 +100,7 @@ struct DayValuationPopup: View {
             }
           }
           .offset(y: showNoteEditor ? -24 : 0)
+          .scaleEffect(showNoteEditor ? 0.60 : 1)
 
           if showNoteEditor {
             VStack(spacing: 12) {
@@ -102,7 +121,11 @@ struct DayValuationPopup: View {
                 .inputStyle(radius: 6, color: .textPrimary)
             }
             .frame(maxHeight: .infinity)
-            .transition(.move(edge: .bottom).combined(with: .opacity))
+            .frame(maxHeight: showNoteEditorContent ? .infinity : 0)
+            .opacity(showNoteEditorContent ? 1 : 0)
+            .scaleEffect(x: 1, y: showNoteEditorContent ? 1 : 0.94, anchor: .top)
+            .blur(radius: showNoteEditorContent ? 0 : 6)
+            .clipped()
           }
 
           Spacer(minLength: 0)
@@ -146,14 +169,10 @@ struct DayValuationPopup: View {
     .padding()
     .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
     .surfaceBackground(Color("surface-muted"))
-    .presentationDetents([.height(420)])
+    .presentationDetents(presentationDetents)
     .presentationBackground(Color("surface-muted"))
     .animation(bounceAnimation, value: showNoteEditor)
-    .onChange(of: showNoteEditor) { _, isVisible in
-      if isVisible {
-        isNoteFocused = true
-      }
-    }
+    .animation(bounceAnimation, value: showNoteEditorContent)
     .onAppear {
       guard let valuation = existingValuation else { return }
       selectedMood = valuation.mood
@@ -162,6 +181,7 @@ struct DayValuationPopup: View {
       transaction.disablesAnimations = true
       withTransaction(transaction) {
         showNoteEditor = true
+        showNoteEditorContent = true
       }
     }
   }

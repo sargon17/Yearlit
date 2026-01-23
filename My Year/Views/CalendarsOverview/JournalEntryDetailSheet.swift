@@ -34,17 +34,18 @@ struct JournalEntryDetailSheet: View {
               .font(.system(size: 28, weight: .bold, design: .monospaced))
               .foregroundStyle(.textPrimary)
 
-            Text("Mood journal")
-              .font(.system(size: 12, design: .monospaced))
-              .foregroundStyle(.textTertiary)
+            HStack(spacing: 8) {
+              Text("Mood journal /")
+                .font(.system(size: 12, design: .monospaced))
+                .foregroundStyle(.textTertiary)
+
+              RoundedRectangle(cornerRadius: 2)
+                .fill(Color(entry.mood.color))
+                .frame(width: 10, height: 10)
+            }
           }
 
           Spacer(minLength: 0)
-
-          RoundedRectangle(cornerRadius: 2)
-            .fill(Color(entry.mood.color))
-            .frame(width: 10, height: 10)
-            .padding(.top, 8)
         }
 
         CustomSeparator()

@@ -202,9 +202,6 @@
     "Enable Mood Tracking" : {
 
     },
-    "Enable Runtime Debug" : {
-
-    },
     "End" : {
 
     },
@@ -295,7 +292,7 @@
     "Monthly Breakdown" : {
 
     },
-    "Mood journal" : {
+    "Mood journal /" : {
 
     },
     "Morning Routine" : {
@@ -405,9 +402,6 @@
 
     },
     "Request a Feature" : {
-
-    },
-    "Reset What's New" : {
 
     },
     "Save" : {
@@ -556,9 +550,6 @@
 
     },
     "Value" : {
-
-    },
-    "Wand Fill Force: %.2f" : {
 
     },
     "Watch your chain grow." : {
