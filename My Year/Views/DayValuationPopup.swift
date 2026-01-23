@@ -48,18 +48,21 @@ struct DayValuationPopup: View {
         CustomSeparator()
           .padding(.horizontal, -24)
 
-        VStack(spacing: 20) {
+        VStack(spacing: 8) {
           Spacer(minLength: 0)
           HStack(spacing: 12) {
             ForEach([DayMood.terrible, .bad, .neutral, .good, .excellent], id: \.self) { mood in
               let isSelected = selectedMood == mood
-              Button(action: {
+            Button(action: {
+              noteText = store.getValuation(for: date)?.note ?? ""
+              withAnimation(bounceAnimation) {
                 selectedMood = mood
-                noteText = store.getValuation(for: date)?.note ?? ""
-                withAnimation(bounceAnimation) {
-                  showNoteEditor = true
-                }
-              }) {
+                showNoteEditor = true
+              }
+              Task {
+                await hapticFeedback(.rigid)
+              }
+            }) {
                 Text(mood.rawValue)
                   .font(.system(size: 40))
                   .frame(width: 60, height: 60)
@@ -70,28 +73,29 @@ struct DayValuationPopup: View {
                   )
               }
               .opacity(showNoteEditor && !isSelected ? 0.35 : 1)
-              .blur(radius: showNoteEditor && !isSelected ? 8 : 0)
+              .blur(radius: showNoteEditor && !isSelected ? 4 : 0)
+              .scaleEffect(showNoteEditor && !isSelected ? 0.92 : 1)
             }
           }
           .offset(y: showNoteEditor ? -24 : 0)
 
           if showNoteEditor {
-            VStack(spacing: 16) {
-              HStack(spacing: 8) {
-                Text("Add a note")
-                  .font(.system(size: 14, design: .monospaced))
-                  .foregroundStyle(Color("text-secondary"))
+            VStack(spacing: 12) {
+              HStack {
+                Text("Journal")
+                  .font(.system(size: 12, design: .monospaced))
+                  .foregroundStyle(.textTertiary)
                 Spacer()
               }
 
-            TextEditor(text: $noteText)
-              .focused($isNoteFocused)
-              .layoutPriority(1)
-              .frame(maxHeight: .infinity)
-              .scrollContentBackground(.hidden)
-              .background(Color.clear)
-              .foregroundColor(.white)
-              .inputStyle(radius: 6, color: .textPrimary)
+              TextEditor(text: $noteText)
+                .focused($isNoteFocused)
+                .layoutPriority(1)
+                .frame(maxHeight: .infinity)
+                .scrollContentBackground(.hidden)
+                .background(Color.clear)
+                .foregroundColor(.white)
+                .inputStyle(radius: 6, color: .textPrimary)
             }
             .frame(maxHeight: .infinity)
             .transition(.move(edge: .bottom).combined(with: .opacity))
@@ -106,6 +110,9 @@ struct DayValuationPopup: View {
                 dismiss()
               } else {
                 dismiss()
+              }
+              Task {
+                await hapticFeedback(.rigid)
               }
             }) {
               HStack(spacing: 8) {
@@ -130,9 +137,9 @@ struct DayValuationPopup: View {
         .frame(maxHeight: .infinity)
       }
 
-      Spacer(minLength: 12)
+      Spacer(minLength: 8)
     }
-    .padding(24)
+    .padding()
     .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
     .surfaceBackground(Color("surface-muted"))
     .presentationDetents([.height(420)])
