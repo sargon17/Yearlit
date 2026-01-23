@@ -82,11 +82,13 @@ public final class DayValuationEntity {
   public var dayKey: String = ""
   public var timestamp: Date = Date()
   public var moodRawValue: String = DayMood.neutral.rawValue
+  public var note: String?
 
-  public init(dayKey: String, timestamp: Date, moodRawValue: String) {
+  public init(dayKey: String, timestamp: Date, moodRawValue: String, note: String? = nil) {
     self.dayKey = dayKey
     self.timestamp = timestamp
     self.moodRawValue = moodRawValue
+    self.note = note
   }
 }
 
@@ -259,13 +261,14 @@ extension CalendarEntryEntity {
 @available(iOS 17.0, macOS 14.0, *)
 extension DayValuationEntity {
   func toDayValuation() -> DayValuation {
-    DayValuation(date: timestamp, mood: DayMood(rawValue: moodRawValue) ?? .neutral)
+    DayValuation(date: timestamp, mood: DayMood(rawValue: moodRawValue) ?? .neutral, note: note)
   }
 
   func apply(from valuation: DayValuation) {
     timestamp = valuation.timestamp
     moodRawValue = valuation.mood.rawValue
     dayKey = valuation.id
+    note = valuation.note
   }
 }
 

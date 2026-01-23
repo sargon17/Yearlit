@@ -9,6 +9,7 @@ import Foundation
 import SharedModels
 import SwiftDate
 import SwiftUI
+import SwiftfulRouting
 import os
 
 private let logger = Logger(subsystem: "com.sargon17.My-Year", category: "Views")
@@ -17,8 +18,10 @@ struct MoodTrackingCalendar: View {
   let store = ValuationStore.shared
   @AppStorage("isMoodTrackingEnabled") var isMoodTrackingEnabled: Bool = false
   @AppStorage("lastMoodPromptDayKey") private var lastMoodPromptDayKey: String = ""
+  @Environment(\.router) private var router
 
-  @State private var valuationPopup: (isPresented: Bool, date: Date)?
+  @State private var valuationPopupDate: Date?
+  @State private var isShowingValuationSheet = false
   @State private var dayTypesQuantity: [DayMoodType: Int] = [:]
   @State private var showRemainingDays: Bool = true
   @State private var isLabelVisible: Bool = true
@@ -41,7 +44,7 @@ struct MoodTrackingCalendar: View {
     guard isMoodTrackingEnabled else { return }
     let date = store.dateForDay(day)
     if day < store.currentDayNumber {
-      valuationPopup = (true, date)
+      valuationPopupDate = date
     }
   }
 
@@ -52,7 +55,7 @@ struct MoodTrackingCalendar: View {
     guard lastMoodPromptDayKey != todayKey else { return }
     if store.getValuation(for: today) == nil {
       lastMoodPromptDayKey = todayKey
-      valuationPopup = (true, today)
+      valuationPopupDate = today
     }
   }
 
@@ -203,14 +206,15 @@ struct MoodTrackingCalendar: View {
       .onChange(of: store.valuations) { _, _ in
         dayTypesQuantity = updateDayTypesQuantity(store: store)
       }
-      .sheet(
-        isPresented: Binding(
-          get: { valuationPopup?.isPresented ?? false },
-          set: { if !$0 { valuationPopup = nil } }
-        )
-      ) {
-        if let date = valuationPopup?.date, isMoodTrackingEnabled {
-          DayValuationPopup(date: date)
+      .onChange(of: valuationPopupDate) { _, newDate in
+        guard let newDate, isMoodTrackingEnabled, !isShowingValuationSheet else { return }
+        isShowingValuationSheet = true
+        router.showScreen(.sheet) { _ in
+          DayValuationPopup(date: newDate)
+            .onDisappear {
+              isShowingValuationSheet = false
+              valuationPopupDate = nil
+            }
         }
       }
   }

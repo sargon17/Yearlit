@@ -320,16 +320,18 @@ public struct DayValuation: Codable, Identifiable, Equatable {
   public let id: String  // Format: "YYYY-MM-DD"
   public let mood: DayMood
   public let timestamp: Date
+  public let note: String?
 
-  public init(date: Date = Date(), mood: DayMood) {
+  public init(date: Date = Date(), mood: DayMood, note: String? = nil) {
     let canonicalDate = LocalDayCalendar.startOfDay(for: date)
     self.id = DayKeyFormatter.shared.string(from: canonicalDate)
     self.mood = mood
     self.timestamp = canonicalDate
+    self.note = note
   }
 
   public static func == (lhs: DayValuation, rhs: DayValuation) -> Bool {
-    return lhs.id == rhs.id && lhs.mood == rhs.mood
+    return lhs.id == rhs.id && lhs.mood == rhs.mood && lhs.note == rhs.note
   }
 }
 
@@ -837,7 +839,14 @@ public final class ValuationStore: ObservableObject {
   }
 
   public func setValuation(_ mood: DayMood, for date: Date = Date()) {
-    let valuation = DayValuation(date: date, mood: mood)
+    setValuation(mood, for: date, note: nil)
+  }
+
+  public func setValuation(_ mood: DayMood, for date: Date = Date(), note: String?) {
+    let existingNote = getValuation(for: date)?.note
+    let cleanedNote = note.map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
+    let resolvedNote = note == nil ? existingNote : (cleanedNote?.isEmpty == true ? nil : cleanedNote)
+    let valuation = DayValuation(date: date, mood: mood, note: resolvedNote)
     do {
       let context = makeContext()
       if let entity = fetchEntity(dayKey: valuation.id, in: context) {
@@ -846,7 +855,8 @@ public final class ValuationStore: ObservableObject {
         let entity = DayValuationEntity(
           dayKey: valuation.id,
           timestamp: valuation.timestamp,
-          moodRawValue: valuation.mood.rawValue
+          moodRawValue: valuation.mood.rawValue,
+          note: valuation.note
         )
         context.insert(entity)
       }
