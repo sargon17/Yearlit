@@ -40,7 +40,7 @@ struct MoodTrackingCalendar: View {
   private func handleDayTap(_ day: Int) {
     guard isMoodTrackingEnabled else { return }
     let date = store.dateForDay(day)
-    if day < store.currentDayNumber && store.getValuation(for: date) == nil {
+    if day < store.currentDayNumber {
       valuationPopup = (true, date)
     }
   }
