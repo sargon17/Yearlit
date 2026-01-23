@@ -26,6 +26,10 @@ struct DayValuationPopup: View {
     Self.dateFormatter.string(from: date)
   }
 
+  private var existingValuation: DayValuation? {
+    store.getValuation(for: date)
+  }
+
   var body: some View {
     VStack(spacing: 0) {
 
@@ -148,6 +152,16 @@ struct DayValuationPopup: View {
     .onChange(of: showNoteEditor) { _, isVisible in
       if isVisible {
         isNoteFocused = true
+      }
+    }
+    .onAppear {
+      guard let valuation = existingValuation else { return }
+      selectedMood = valuation.mood
+      noteText = valuation.note ?? ""
+      var transaction = Transaction()
+      transaction.disablesAnimations = true
+      withTransaction(transaction) {
+        showNoteEditor = true
       }
     }
   }
