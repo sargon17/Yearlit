@@ -10,6 +10,7 @@ struct CalendarsOverview: View {
   @Environment(\.dismiss) private var dismiss
   @Environment(\.colorScheme) private var colorScheme
   @State private var showingArchivedCalendars = false
+  @State private var showingJournalEntries = false
 
   @Environment(\.router) private var router
 
@@ -94,7 +95,13 @@ struct CalendarsOverview: View {
         }
       }
 
-      ToolbarItem(placement: .navigationBarTrailing) {
+      ToolbarItemGroup(placement: .navigationBarTrailing) {
+        Button(action: { showingJournalEntries = true }) {
+          Image(systemName: "book.closed")
+            .font(.system(size: 12))
+            .foregroundColor(Color("text-tertiary"))
+        }
+
         Button(action: { showingArchivedCalendars = true }) {
           Image(systemName: "archivebox")
             .font(.system(size: 12))
@@ -104,6 +111,9 @@ struct CalendarsOverview: View {
     }
     .sheet(isPresented: $showingArchivedCalendars) {
       ArchivedCalendarsSheet(store: store)
+    }
+    .sheet(isPresented: $showingJournalEntries) {
+      JournalEntriesSheet(valuationStore: valuationStore)
     }
   }
 
