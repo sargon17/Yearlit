@@ -950,11 +950,11 @@ public enum VisualizationType: String, Codable, AppEnum {
 public struct MosaicChart: View {
   public let dayTypesQuantity: [DayMoodType: Int]
 
-  @State var visualizationType: VisualizationType = .full
+  @State var visualizationType: VisualizationType = .pastOnly
 
   public init(dayTypesQuantity: [DayMoodType: Int], visualizationType: VisualizationType? = nil) {
     self.dayTypesQuantity = dayTypesQuantity
-    self.visualizationType = visualizationType ?? .full
+    self.visualizationType = visualizationType ?? .pastOnly
   }
 
   public var sortedEntries: [(type: DayMoodType, count: Int)] {
@@ -1048,11 +1048,16 @@ public struct MosaicChart: View {
 
 @available(iOS 17.0, macOS 14.0, *)
 public func updateDayTypesQuantity(store: ValuationStore) -> [DayMoodType: Int] {
-  let evaluatedDays = store.valuations.values.reduce(into: [:]) { counts, valuation in
+  let calendar = LocalDayCalendar.calendar
+  let selectedYear = store.selectedYear
+  let evaluatedDays = store.valuations.values
+    .filter { calendar.component(.year, from: $0.timestamp) == selectedYear }
+    .reduce(into: [:]) { counts, valuation in
     counts[DayMoodType.from(valuation.mood), default: 0] += 1
   }
 
-  let notEvaluatedDays = store.currentDayNumber - store.valuations.count
+  let evaluatedDaysCount = evaluatedDays.values.reduce(0) { $0 + $1 }
+  let notEvaluatedDays = max(0, store.currentDayNumber - evaluatedDaysCount)
   let futureDays = store.numberOfDaysInYear - store.currentDayNumber
 
   var quantities = evaluatedDays

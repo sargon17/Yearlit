@@ -140,6 +140,7 @@ struct MoodTrackingCalendar: View {
         .padding(.horizontal)
 
       }
+      .padding(.vertical, 12)
 
       CustomSeparator()
 
