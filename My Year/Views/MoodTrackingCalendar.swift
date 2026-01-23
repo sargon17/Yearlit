@@ -7,6 +7,7 @@
 
 import Foundation
 import SharedModels
+import SwiftDate
 import SwiftUI
 import os
 
@@ -15,6 +16,7 @@ private let logger = Logger(subsystem: "com.sargon17.My-Year", category: "Views"
 struct MoodTrackingCalendar: View {
   let store = ValuationStore.shared
   @AppStorage("isMoodTrackingEnabled") var isMoodTrackingEnabled: Bool = false
+  @AppStorage("lastMoodPromptDayKey") private var lastMoodPromptDayKey: String = ""
 
   @State private var valuationPopup: (isPresented: Bool, date: Date)?
   @State private var dayTypesQuantity: [DayMoodType: Int] = [:]
@@ -25,14 +27,14 @@ struct MoodTrackingCalendar: View {
     let dayDate = store.dateForDay(day)
 
     if day >= store.currentDayNumber {
-      return Color("dot-inactive")
+      return inactiveDayColor()
     }
 
     if let valuation = store.getValuation(for: dayDate) {
       return Color(valuation.mood.color)
     }
 
-    return Color("dot-active")
+    return activeDayColor()
   }
 
   private func handleDayTap(_ day: Int) {
@@ -46,7 +48,10 @@ struct MoodTrackingCalendar: View {
   private func checkTodayValuation() {
     guard isMoodTrackingEnabled else { return }
     let today = Date()
+    let todayKey = DateInRegion(today, region: .current).toFormat("yyyy-MM-dd")
+    guard lastMoodPromptDayKey != todayKey else { return }
     if store.getValuation(for: today) == nil {
+      lastMoodPromptDayKey = todayKey
       valuationPopup = (true, today)
     }
   }
