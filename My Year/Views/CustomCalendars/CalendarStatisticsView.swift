@@ -73,7 +73,7 @@ struct CalendarStatisticsView: View {
       // Section: Logging
 
       VStack(spacing: 12) {
-        sectionHeader(entriesLabel)
+        sectionHeader(LocalizedStringKey(entriesLabel))
         HStack {
           CompactStatTile(
             title: "Today",
@@ -286,7 +286,7 @@ struct CalendarStatisticsView: View {
 }
 
 struct StatisticItem: View {
-  let title: String
+  let title: LocalizedStringKey
   let value: String
   let unit: UnitOfMeasure?
   let currencySymbol: String?
@@ -300,7 +300,7 @@ struct StatisticItem: View {
           .foregroundColor(Color.textSecondary)
 
         Spacer()
-        Text(value)
+        Text(verbatim: value)
           .font(.system(size: 64, design: .monospaced))
           .foregroundColor(Color(accentColor))
           .fontWeight(.black)
@@ -309,7 +309,7 @@ struct StatisticItem: View {
           .lineLimit(1)
 
         if let unit = unit {
-          Text(unit == .currency ? (currencySymbol ?? "$") : unit.rawValue)
+          Text(verbatim: unit == .currency ? (currencySymbol ?? "$") : unit.rawValue)
             .font(.system(size: 12, design: .monospaced))
             .foregroundColor(Color("text-tertiary"))
             .padding(.top, -10)
@@ -350,7 +350,7 @@ private func percent(_ value: Double) -> String {
 
 @ViewBuilder
 private func labeledValueRow(
-  title: String,
+  title: LocalizedStringKey,
   value: String,
   accentColor: Color,
   isLocked: Bool = false
@@ -361,7 +361,7 @@ private func labeledValueRow(
       .font(.system(size: 12, design: .monospaced))
       .foregroundColor(Color.textSecondary)
     Spacer()
-    Text(value)
+    Text(verbatim: value)
       .font(.system(size: 24, design: .monospaced))
       .foregroundColor(accentColor)
       .fontWeight(.black)
@@ -433,13 +433,13 @@ private func monthlyBars(
 }
 
 struct PremiumGate<Content: View>: View {
-  let title: String
+  let title: LocalizedStringKey
   let isPremium: Bool
   let onUpgrade: () -> Void
   let content: () -> Content
 
   init(
-    title: String,
+    title: LocalizedStringKey,
     isPremium: Bool,
     onUpgrade: @escaping () -> Void,
     @ViewBuilder content: @escaping () -> Content
@@ -482,7 +482,7 @@ struct PremiumGate<Content: View>: View {
 
 // Section header helper
 @ViewBuilder
-private func sectionHeader(_ title: String, premium: Bool = false) -> some View {
+private func sectionHeader(_ title: LocalizedStringKey, premium: Bool = false) -> some View {
   let bgColor = try! GarnishColor.blend(.surfaceMuted, with: .moodExcellent, ratio: 0.2)
   let fgColor = try! GarnishColor.blend(.textPrimary, with: .moodExcellent, ratio: 0.5)
 

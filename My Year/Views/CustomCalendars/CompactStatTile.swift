@@ -19,7 +19,7 @@ enum CompactStatTileSize {
 }
 
 struct CompactStatTile: View {
-  let title: String
+  let title: LocalizedStringKey
   let value: String
   let accentColor: Color
   var size: CompactStatTileSize = .large
@@ -38,7 +38,7 @@ struct CompactStatTile: View {
           .fixedSize(horizontal: false, vertical: true)
 
         HStack(alignment: .firstTextBaseline, spacing: 6) {
-          Text(value)
+          Text(verbatim: value)
             .font(.system(size: size.fontSize, design: .monospaced))
             .fontWeight(.black)
             .foregroundColor(accentColor)

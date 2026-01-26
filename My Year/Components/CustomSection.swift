@@ -1,10 +1,11 @@
 import SwiftUI
+import SwiftUI
 
 struct CustomSection<Content: View>: View {
   let content: () -> Content
-  let label: String
+  let label: LocalizedStringKey
 
-  init(label: String = "", @ViewBuilder content: @escaping () -> Content) {
+  init(label: LocalizedStringKey = "", @ViewBuilder content: @escaping () -> Content) {
     self.label = label
     self.content = content
   }

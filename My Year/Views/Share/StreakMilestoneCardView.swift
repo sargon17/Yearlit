@@ -262,9 +262,9 @@ private struct MilestoneDivider: View {
 }
 
 private struct MilestoneCopy {
-  let header: String
-  let kicker: String
-  let label: String
+  let header: LocalizedStringKey
+  let kicker: LocalizedStringKey
+  let label: LocalizedStringKey
 }
 
 private struct MilestoneGridView: View {

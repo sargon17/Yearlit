@@ -77,6 +77,28 @@ struct EditCalendarView: View {
     "qs-rose"
   ]
 
+  private var trackingTypeLabel: String {
+    switch trackingType {
+    case .binary:
+      return String(localized: "Binary")
+    case .counter:
+      return String(localized: "Counter")
+    case .multipleDaily:
+      return String(localized: "Target")
+    }
+  }
+
+  private var trackingTypeDescription: LocalizedStringKey {
+    switch trackingType {
+    case .binary:
+      return "Track a simple yes/no each day. Great for habits you either complete or skip."
+    case .counter:
+      return "Log a numeric value per day, like pages read or minutes practiced."
+    case .multipleDaily:
+      return "Check in multiple times per day toward a daily target."
+    }
+  }
+
   var body: some View {
     ScrollView {
       VStack(spacing: 32) {
@@ -95,7 +117,7 @@ struct EditCalendarView: View {
         TrackingPicker(trackingType: $trackingType, color: Color(selectedColor))
 
         ZStack(alignment: .leading) {
-          Text(trackingType.detailDescription)
+          Text(trackingTypeDescription)
             .font(.footnote)
             .foregroundStyle(.textTertiary)
             .frame(maxWidth: .infinity, alignment: .leading)
@@ -107,7 +129,7 @@ struct EditCalendarView: View {
         .animation(.snappy, value: trackingType)
 
         if trackingType == .multipleDaily || trackingType == .counter {
-          CustomSection(label: "Settings for \(trackingType.label)") {
+          CustomSection(label: "Settings for \(trackingTypeLabel)") {
 
             VStack(spacing: 2) {
 

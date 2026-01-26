@@ -75,10 +75,10 @@ private struct DynamicBento: View {
 
 // MARK: - Models
 
-private struct BentoItem: Identifiable, Hashable {
+private struct BentoItem: Identifiable {
   let id = UUID()
-  let title: String
-  let text: String
+  let title: LocalizedStringKey
+  let text: LocalizedStringKey
   let color: Color
   let image: String
   var aspectRatio: Double = 1

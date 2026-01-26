@@ -7,6 +7,17 @@ struct TrackingPicker: View {
 
   @Environment(\.colorScheme) var colorScheme
 
+  private func trackingTypeLabel(for type: TrackingType) -> LocalizedStringKey {
+    switch type {
+    case .binary:
+      return "Binary"
+    case .counter:
+      return "Counter"
+    case .multipleDaily:
+      return "Target"
+    }
+  }
+
   var body: some View {
     CustomSection(label: "Tracking Type") {
 
@@ -28,7 +39,7 @@ struct TrackingPicker: View {
                     ? color
                     : .textSecondary
                 )
-              Text(type.label)
+              Text(trackingTypeLabel(for: type))
                 .font(.system(size: 10, design: .monospaced))
                 .foregroundStyle(
                   trackingType == type ? color : .textSecondary

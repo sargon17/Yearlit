@@ -27,7 +27,7 @@ struct HorizontalWheelEntryModule: View {
 
   var body: some View {
     VStack(spacing: 24) {
-      CustomSection(label: countLabel) {
+      CustomSection(label: LocalizedStringKey(countLabel)) {
         VStack(spacing: 12) {
           TextField("", value: $entryCount, formatter: countFormatter)
             .multilineTextAlignment(.center)

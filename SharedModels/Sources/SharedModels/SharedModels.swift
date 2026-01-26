@@ -203,11 +203,11 @@ public enum TrackingType: String, Codable, CaseIterable {
   public var description: String {
     switch self {
     case .binary:
-      return "Once a day"
+      return String(localized: "Once a day")
     case .counter:
-      return "Multiple times (unlimited)"
+      return String(localized: "Multiple times (unlimited)")
     case .multipleDaily:
-      return "Multiple times (with target)"
+      return String(localized: "Multiple times (with target)")
     }
   }
 
@@ -230,20 +230,20 @@ public enum TrackingType: String, Codable, CaseIterable {
   public var detailDescription: String {
     switch self {
     case .binary:
-      return "Track a simple yes/no each day. Great for habits you either complete or skip."
+      return String(localized: "Track a simple yes/no each day. Great for habits you either complete or skip.")
     case .counter:
-      return "Log a numeric value per day, like pages read or minutes practiced."
+      return String(localized: "Log a numeric value per day, like pages read or minutes practiced.")
     case .multipleDaily:
-      return "Check in multiple times per day toward a daily target."
+      return String(localized: "Check in multiple times per day toward a daily target.")
     }
   }
 
   @available(iOS 17.0, macOS 13.0, *)
   public static var allCasesDisplayRepresentations: [TrackingType: DisplayRepresentation] {
     [
-      .binary: "Once a day (binary)",
-      .counter: "Multiple times (unlimited) (counter)",
-      .multipleDaily: "Multiple times (with target) (multipleDaily)"
+      .binary: DisplayRepresentation(title: LocalizedStringResource("Once a day (binary)")),
+      .counter: DisplayRepresentation(title: LocalizedStringResource("Multiple times (unlimited) (counter)")),
+      .multipleDaily: DisplayRepresentation(title: LocalizedStringResource("Multiple times (with target) (multipleDaily)"))
     ]
   }
 }

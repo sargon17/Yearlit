@@ -44,7 +44,7 @@ struct ShareCardFooter: View {
 }
 
 struct ShareCompactStatTile: View {
-  let title: String
+  let title: LocalizedStringKey
   let value: String
   let accentColor: Color
 
@@ -55,7 +55,7 @@ struct ShareCompactStatTile: View {
         .foregroundColor(.textSecondary)
         .lineLimit(1)
         .minimumScaleFactor(0.7)
-      Text(value)
+      Text(verbatim: value)
         .font(.system(size: 24, design: .monospaced))
         .foregroundColor(accentColor)
         .fontWeight(.black)
