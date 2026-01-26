@@ -202,6 +202,9 @@
     "Enable Mood Tracking" : {
 
     },
+    "Enable Runtime Debug" : {
+
+    },
     "End" : {
 
     },
@@ -404,6 +407,9 @@
     "Request a Feature" : {
 
     },
+    "Reset What's New" : {
+
+    },
     "Save" : {
 
     },
@@ -550,6 +556,9 @@
 
     },
     "Value" : {
+
+    },
+    "Wand Fill Force: %.2f" : {
 
     },
     "Watch your chain grow." : {

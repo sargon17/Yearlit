@@ -19,8 +19,7 @@ struct CalendarsSection: View {
   @State private var pendingCalendarId: String?
 
   var body: some View {
-    RouterView { _ in
-      VStack( spacing: 0) {
+    VStack(spacing: 0) {
 
         // custom toolbar
       HStack {
@@ -157,8 +156,8 @@ struct CalendarsSection: View {
           .presentationDragIndicator(.visible)
         }
       }
-      }.surfaceBackground(Color("surface-muted"), ignoresSafeArea: true)
     }
+    .surfaceBackground(Color("surface-muted"), ignoresSafeArea: true)
   }
 
   var toolbar: some View {

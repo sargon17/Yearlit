@@ -6,9 +6,7 @@ struct StackSection: View {
   @StateObject private var store = HabitStackStore.shared
 
   var body: some View {
-    RouterView { _ in
-      HabitStacksHome(store: store)
-        .page()
-    }
+    HabitStacksHome(store: store)
+      .page()
   }
 }
