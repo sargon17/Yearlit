@@ -84,23 +84,48 @@ public enum UnitOfMeasure: String, Codable, CaseIterable, Identifiable {
   // Display name might be different from raw value for units like 'km'
   public var displayName: String {
     switch self {
-    case .none: return "Times"
-    case .kilometers: return "Kilometers (km)"
-    case .meters: return "Meters (m)"
-    case .milliliters: return "Milliliters (ml)"
-    case .liters: return "Liters (l)"
-    case .ounces: return "Ounces (oz)"
-    case .grams: return "Grams (g)"
-    case .kilograms: return "Kilograms (kg)"
-    case .calories: return "Calories (kcal)"
-    case .kilojoules: return "Kilojoules (kJ)"
-    case .currency: return "Currency"
-    default: return rawValue
+    case .none: return String(localized: "Times")
+    case .pages: return String(localized: "Pages")
+    case .items: return String(localized: "Items")
+    case .rounds: return String(localized: "Rounds")
+    case .servings: return String(localized: "Servings")
+    case .doses: return String(localized: "Doses")
+    case .kilometers: return String(localized: "Kilometers (km)")
+    case .meters: return String(localized: "Meters (m)")
+    case .miles: return String(localized: "Miles")
+    case .steps: return String(localized: "Steps")
+    case .floors: return String(localized: "Floors")
+    case .milliliters: return String(localized: "Milliliters (ml)")
+    case .liters: return String(localized: "Liters (l)")
+    case .ounces: return String(localized: "Ounces (oz)")
+    case .cups: return String(localized: "Cups")
+    case .minutes: return String(localized: "Minutes")
+    case .hours: return String(localized: "Hours")
+    case .grams: return String(localized: "Grams (g)")
+    case .kilograms: return String(localized: "Kilograms (kg)")
+    case .pounds: return String(localized: "Pounds")
+    case .calories: return String(localized: "Calories (kcal)")
+    case .kilojoules: return String(localized: "Kilojoules (kJ)")
+    case .currency: return String(localized: "Currency")
     }
   }
 
   public static var allCasesGrouped: [Category: [UnitOfMeasure]] {
     Dictionary(grouping: allCases, by: { $0.category })
+  }
+}
+
+public extension UnitOfMeasure.Category {
+  var displayName: String {
+    switch self {
+    case .quantity: return String(localized: "Quantity/Count")
+    case .distance: return String(localized: "Distance")
+    case .volume: return String(localized: "Volume")
+    case .time: return String(localized: "Time")
+    case .weight: return String(localized: "Weight")
+    case .energy: return String(localized: "Energy/Calories")
+    case .currency: return String(localized: "Currency")
+    }
   }
 }
 

@@ -624,6 +624,17 @@
         }
       }
     },
+    "Calories (kcal)" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Калорії (ккал)"
+          }
+        }
+      }
+    },
     "Cancel" : {
       "localizations" : {
         "uk" : {
@@ -750,6 +761,28 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Створи перший стек, щоб з'єднати звички."
+          }
+        }
+      }
+    },
+    "Cups" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Склянки"
+          }
+        }
+      }
+    },
+    "Currency" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Валюта"
           }
         }
       }
@@ -934,6 +967,17 @@
         }
       }
     },
+    "Distance" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Відстань"
+          }
+        }
+      }
+    },
     "Don’t just set goals" : {
       "localizations" : {
         "uk" : {
@@ -960,6 +1004,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Готово"
+          }
+        }
+      }
+    },
+    "Doses" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Доз"
           }
         }
       }
@@ -1020,6 +1075,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Кінець"
+          }
+        }
+      }
+    },
+    "Energy/Calories" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Енергія/Калорії"
           }
         }
       }
@@ -1125,6 +1191,17 @@
         }
       }
     },
+    "Floors" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Поверхи"
+          }
+        }
+      }
+    },
     "Forty days in" : {
       "localizations" : {
         "uk" : {
@@ -1155,6 +1232,17 @@
         }
       }
     },
+    "Grams (g)" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Грами (г)"
+          }
+        }
+      }
+    },
     "Habits shape your days." : {
       "localizations" : {
         "uk" : {
@@ -1181,6 +1269,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Привіт, я Михайло."
+          }
+        }
+      }
+    },
+    "Hours" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Години"
           }
         }
       }
@@ -1295,6 +1394,17 @@
         }
       }
     },
+    "Items" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Елементів"
+          }
+        }
+      }
+    },
     "Journal" : {
       "localizations" : {
         "uk" : {
@@ -1321,6 +1431,39 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Тримай підказку на видноті, щоб звичку було важко пропустити."
+          }
+        }
+      }
+    },
+    "Kilograms (kg)" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Кілограми (кг)"
+          }
+        }
+      }
+    },
+    "Kilojoules (kJ)" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Кілоджоулі (кДж)"
+          }
+        }
+      }
+    },
+    "Kilometers (km)" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Кілометри (км)"
           }
         }
       }
@@ -1371,6 +1514,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Пов'язаний календар"
+          }
+        }
+      }
+    },
+    "Liters (l)" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Літри (л)"
           }
         }
       }
@@ -1435,12 +1589,56 @@
         }
       }
     },
+    "Meters (m)" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Метри (м)"
+          }
+        }
+      }
+    },
+    "Miles" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Милі"
+          }
+        }
+      }
+    },
     "Milestone" : {
       "localizations" : {
         "uk" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Віха"
+          }
+        }
+      }
+    },
+    "Milliliters (ml)" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Мілілітри (мл)"
+          }
+        }
+      }
+    },
+    "Minutes" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Хвилини"
           }
         }
       }
@@ -1773,6 +1971,17 @@
         }
       }
     },
+    "Ounces (oz)" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Унції (oz)"
+          }
+        }
+      }
+    },
     "Overview" : {
       "localizations" : {
         "uk" : {
@@ -1799,6 +2008,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Перезаписати записи?"
+          }
+        }
+      }
+    },
+    "Pages" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Сторінок"
           }
         }
       }
@@ -1843,6 +2063,17 @@
         }
       }
     },
+    "Pounds" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Фунти"
+          }
+        }
+      }
+    },
     "Premium" : {
       "localizations" : {
         "uk" : {
@@ -1869,6 +2100,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Підказка (необов'язково)"
+          }
+        }
+      }
+    },
+    "Quantity/Count" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Кількість"
           }
         }
       }
@@ -1929,6 +2171,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Скинути «Що нового»"
+          }
+        }
+      }
+    },
+    "Rounds" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Раундів"
           }
         }
       }
@@ -2009,6 +2262,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Надіслати запит"
+          }
+        }
+      }
+    },
+    "Servings" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Порцій"
           }
         }
       }
@@ -2469,6 +2733,28 @@
         }
       }
     },
+    "Time" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Час"
+          }
+        }
+      }
+    },
+    "Times" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Разів"
+          }
+        }
+      }
+    },
     "Tiny actions → Massive change." : {
       "localizations" : {
         "uk" : {
@@ -2659,6 +2945,17 @@
         }
       }
     },
+    "Volume" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Об'єм"
+          }
+        }
+      }
+    },
     "Wand Fill Force: %.2f" : {
       "localizations" : {
         "uk" : {
@@ -2685,6 +2982,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Я зроблю це кращим разом із вами — крок за кроком, звичка за звичкою, день за днем."
+          }
+        }
+      }
+    },
+    "Weight" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Вага"
           }
         }
       }
