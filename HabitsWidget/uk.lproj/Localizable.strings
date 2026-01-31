@@ -1,0 +1,11 @@
+/* Widget configuration */
+"Habit Progress" = "Прогрес звички";
+"Track your habit's progress with a beautiful visualization." = "Відстежуйте прогрес звички за допомогою красивої візуалізації.";
+
+"Habit Quick Add" = "Швидке додавання звички";
+"Quickly add entries to your habit tracker." = "Швидко додавайте записи у трекер звичок.";
+
+/* Small labels */
+"day" = "день";
+"days streak" = "днів поспіль";
+"today" = "сьогодні";

@@ -305,7 +305,7 @@ struct NumberOfDaysView: View {
 
   init(numberOfDays: Int) {
     self.numberOfDays = numberOfDays
-    self.label = numberOfDays == 1 ? "day" : "days streak"
+    self.label = numberOfDays == 1 ? String(localized: "day") : String(localized: "days streak")
   }
 
   var body: some View {
@@ -327,7 +327,7 @@ struct TodaysCountView: View {
 
   init(count: Int) {
     self.count = count
-    self.label = "today"
+    self.label = String(localized: "today")
   }
 
   var body: some View {
@@ -346,7 +346,7 @@ struct TodaysCountView: View {
 
 private func makeLocalCalendar() -> Calendar {
   var calendar = Calendar(identifier: .gregorian)
-  calendar.locale = Locale(identifier: "en_US_POSIX")
+  calendar.locale = .autoupdatingCurrent
   calendar.timeZone = .autoupdatingCurrent
   return calendar
 }
