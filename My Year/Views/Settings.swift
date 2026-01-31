@@ -13,6 +13,14 @@ struct SettingsView: View {
       Form {
         SubscriptionStatusSection(customerInfo: customerInfo)
         About()
+        Section(header: Text("Policies")) {
+          if let url = privacyPolicyURL {
+            Link("Privacy Policy", destination: url)
+          }
+          if let url = termsURL {
+            Link("Terms", destination: url)
+          }
+        }
         Section(header: Text("Features")) {
           Toggle("Enable Mood Tracking", isOn: $isMoodTrackingEnabled)
           #if DEBUG
@@ -48,6 +56,20 @@ struct SettingsView: View {
         customerInfo = info
       }
     }
+  }
+
+  private var privacyPolicyURL: URL? {
+    guard let url = URL(string: "https://tymofyeyev.com/yearlit/privacy-policy") else {
+      return nil
+    }
+    return url
+  }
+
+  private var termsURL: URL? {
+    guard let url = URL(string: "https://tymofyeyev.com/yearlit/terms") else {
+      return nil
+    }
+    return url
   }
 }
 
