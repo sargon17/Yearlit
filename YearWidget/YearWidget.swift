@@ -118,7 +118,10 @@ struct HorizontalYearGrid: View {
                     .font(.system(size: 9, design: .monospaced))
                     .foregroundColor(.qsOrange)
                     .fontWeight(.heavy)
-                + Text(" days left")
+                + Text(" ")
+                    .font(.system(size: 9, design: .monospaced))
+                    .foregroundColor(.textTertiary)
+                + Text("days left")
                     .font(.system(size: 9, design: .monospaced))
                     .foregroundColor(.textTertiary)
             }
