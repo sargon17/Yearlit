@@ -181,14 +181,33 @@ private func _scheduleNotificationInternal(
   // Apply privacy mode settings
   switch calendar.notificationPrivacyMode {
   case .full:
-    // Show full habit details
-    content.title = "Time to log \(calendar.name)"
-    content.body = "Don't forget to track \(calendar.name) today! (Target: \(calendar.dailyTarget))"
+    // Show full habit details with localization
+    let titleFormat = NSLocalizedString(
+      "notification.reminder.title.full",
+      value: "Time to log %@",
+      comment: "Notification title with habit name"
+    )
+    content.title = String(format: titleFormat, calendar.name)
+    
+    let bodyFormat = NSLocalizedString(
+      "notification.reminder.body.full",
+      value: "Don't forget to track %@ today! (Target: %d)",
+      comment: "Notification body with habit name and target"
+    )
+    content.body = String(format: bodyFormat, calendar.name, calendar.dailyTarget)
     
   case .generic:
     // Show generic message for privacy
-    content.title = "Habit Reminder"
-    content.body = "Time to log your daily habit"
+    content.title = NSLocalizedString(
+      "notification.reminder.title.generic",
+      value: "Habit Reminder",
+      comment: "Generic notification title"
+    )
+    content.body = NSLocalizedString(
+      "notification.reminder.body.generic",
+      value: "Time to log your daily habit",
+      comment: "Generic notification body"
+    )
     
   case .hidden:
     // No text, just badge and sound
@@ -371,17 +390,34 @@ private func handleSnooze(for calendar: CustomCalendar) {
   let notificationId = "\(calendar.id.uuidString)-snooze"
   let content = UNMutableNotificationContent()
   
-  // Apply privacy mode
+  // Apply privacy mode with localization
   switch calendar.notificationPrivacyMode {
   case .full:
     // Show full habit details in snoozed notification
-    content.title = "Reminder: \(calendar.name)"
-    content.body = "Don't forget to log your habit!"
+    let titleFormat = NSLocalizedString(
+      "notification.snooze.title.full",
+      value: "Reminder: %@",
+      comment: "Snoozed notification title with habit name"
+    )
+    content.title = String(format: titleFormat, calendar.name)
+    content.body = NSLocalizedString(
+      "notification.snooze.body.full",
+      value: "Don't forget to log your habit!",
+      comment: "Snoozed notification body"
+    )
     
   case .generic:
     // Show generic message for privacy
-    content.title = "Habit Reminder"
-    content.body = "Time to log your daily habit"
+    content.title = NSLocalizedString(
+      "notification.reminder.title.generic",
+      value: "Habit Reminder",
+      comment: "Generic notification title"
+    )
+    content.body = NSLocalizedString(
+      "notification.reminder.body.generic",
+      value: "Time to log your daily habit",
+      comment: "Generic notification body"
+    )
     
   case .hidden:
     content.badge = NSNumber(value: 1)

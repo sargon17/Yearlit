@@ -288,26 +288,25 @@ struct EditCalendarView: View {
               .padding(.all, 2)
               .sameLevelBorder(isFlat: true)
               
-              VStack(alignment: .leading, spacing: 8) {
-                Text("Privacy Level")
-                  .labelStyle(type: .secondary)
-                  .padding(.horizontal)
-                  .padding(.top, 8)
-                
+              HStack {
+                VStack(alignment: .leading, spacing: 4) {
+                  Text("Privacy Level")
+                    .labelStyle(type: .secondary)
+                  Text(notificationPrivacyMode.detail)
+                    .font(.caption)
+                    .foregroundStyle(.textTertiary)
+                }
+                Spacer()
                 Picker("Privacy Level", selection: $notificationPrivacyMode) {
                   ForEach(NotificationPrivacyMode.allCases, id: \.self) { mode in
                     Text(mode.description).tag(mode)
                   }
                 }
-                .pickerStyle(.segmented)
-                .padding(.horizontal)
-                
-                Text(notificationPrivacyMode.detail)
-                  .font(.caption)
-                  .foregroundStyle(.textTertiary)
-                  .padding(.horizontal)
-                  .padding(.bottom, 8)
+                .pickerStyle(.menu)
+                .tint(Color(selectedColor))
               }
+              .padding(.horizontal)
+              .padding(.vertical, 8)
               .sameLevelBorder(isFlat: true)
               
               HStack {
