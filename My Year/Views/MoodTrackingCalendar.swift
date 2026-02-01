@@ -51,7 +51,9 @@ struct MoodTrackingCalendar: View {
   private func checkTodayValuation() {
     guard isMoodTrackingEnabled else { return }
     let today = Date()
-    let todayKey = DateInRegion(today, region: .current).toFormat("yyyy-MM-dd")
+    let localToday = DateInRegion(today, region: .current)
+    guard localToday.hour >= 18 else { return }
+    let todayKey = localToday.toFormat("yyyy-MM-dd")
     guard lastMoodPromptDayKey != todayKey else { return }
     if store.getValuation(for: today) == nil {
       lastMoodPromptDayKey = todayKey
