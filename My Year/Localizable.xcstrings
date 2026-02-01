@@ -1060,6 +1060,7 @@
       }
     },
     "Enable Runtime Debug" : {
+      "extractionState" : "stale",
       "localizations" : {
         "uk" : {
           "stringUnit" : {
@@ -2063,6 +2064,9 @@
         }
       }
     },
+    "Policies" : {
+
+    },
     "Pounds" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -2083,6 +2087,9 @@
           }
         }
       }
+    },
+    "Privacy Policy" : {
+
     },
     "PRO" : {
       "localizations" : {
@@ -2166,6 +2173,7 @@
       }
     },
     "Reset What's New" : {
+      "extractionState" : "stale",
       "localizations" : {
         "uk" : {
           "stringUnit" : {
@@ -2627,6 +2635,9 @@
         }
       }
     },
+    "Terms" : {
+
+    },
     "Thank you for your support!" : {
       "localizations" : {
         "uk" : {
@@ -2957,6 +2968,7 @@
       }
     },
     "Wand Fill Force: %.2f" : {
+      "extractionState" : "stale",
       "localizations" : {
         "uk" : {
           "stringUnit" : {
