@@ -1060,7 +1060,6 @@
       }
     },
     "Enable Runtime Debug" : {
-      "extractionState" : "stale",
       "localizations" : {
         "uk" : {
           "stringUnit" : {
@@ -1868,24 +1867,182 @@
         }
       }
     },
+    "notification.action.log" : {
+      "comment" : "Quick action to log habit from notification",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Log Now"
+          }
+        }
+      }
+    },
+    "notification.action.snooze" : {
+      "comment" : "Quick action to snooze notification",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Remind me in 1 hour"
+          }
+        }
+      }
+    },
+    "notification.error.invalid_data" : {
+      "comment" : "Error when calendar data is invalid",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Invalid calendar data for notification scheduling."
+          }
+        }
+      }
+    },
+    "notification.error.permission_denied" : {
+      "comment" : "Error when notification permissions are denied",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Notification permissions are required. Please enable them in Settings."
+          }
+        }
+      }
+    },
+    "notification.error.permission_not_determined" : {
+      "comment" : "Error when notification permissions haven't been requested yet",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Notification permissions need to be granted."
+          }
+        }
+      }
+    },
+    "notification.error.scheduling_failed" : {
+      "comment" : "Error when scheduling fails",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Failed to schedule notification: %@"
+          }
+        }
+      }
+    },
+    "notification.error.unknown_status" : {
+      "comment" : "Error when notification status cannot be determined",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Unable to determine notification status."
+          }
+        }
+      }
+    },
+    "notification.error.unsupported_mode" : {
+      "comment" : "Error when notification mode is unsupported",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Notifications are not supported in this mode."
+          }
+        }
+      }
+    },
     "notification.reminder.body" : {
       "comment" : "Notification body for calendar reminder",
+      "extractionState" : "extracted_with_value",
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Don't forget to track %1$@ today! (Target: %2$d)"
+          }
+        },
         "uk" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "Час відмітити звичку в календарі."
+          }
+        }
+      }
+    },
+    "notification.reminder.generic.body" : {
+      "comment" : "Generic notification body",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Time to log your daily habit"
+          }
+        }
+      }
+    },
+    "notification.reminder.generic.title" : {
+      "comment" : "Generic notification title",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Habit Reminder"
           }
         }
       }
     },
     "notification.reminder.title" : {
       "comment" : "Notification title for calendar reminder",
+      "extractionState" : "extracted_with_value",
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Time to log %@"
+          }
+        },
         "uk" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "Нагадування про календар"
+          }
+        }
+      }
+    },
+    "notification.snooze.body" : {
+      "comment" : "Snoozed notification body",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Don't forget to log your habit!"
+          }
+        }
+      }
+    },
+    "notification.snooze.title" : {
+      "comment" : "Snoozed notification title",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Reminder: %@"
           }
         }
       }
@@ -2173,7 +2330,6 @@
       }
     },
     "Reset What's New" : {
-      "extractionState" : "stale",
       "localizations" : {
         "uk" : {
           "stringUnit" : {
@@ -2968,7 +3124,6 @@
       }
     },
     "Wand Fill Force: %.2f" : {
-      "extractionState" : "stale",
       "localizations" : {
         "uk" : {
           "stringUnit" : {
