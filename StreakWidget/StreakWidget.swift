@@ -82,7 +82,7 @@ struct StreakWidgetEntryView : View {
         let backgroundColor = WidgetStyle.surfaceMutedColor(for: colorScheme)
         let primaryTextColor = WidgetStyle.textPrimaryColor(for: colorScheme)
         let accentColor = Color(entry.calendar?.color ?? "qs-orange")
-        let calendarName = entry.calendar?.name ?? "Habit"
+        let calendarName = entry.calendar?.name ?? String(localized: "Habit")
         let streakData = entry.calendar.map { WidgetStreak.currentStreak(calendar: $0) }
         let streakValue = streakData?.streak ?? entry.streak
         let isAtRisk = streakData?.isAtRisk ?? entry.isAtRisk
@@ -94,25 +94,23 @@ struct StreakWidgetEntryView : View {
           VStack {
 
             if streakValue > 0 && !isAtRisk {
-
-                Text("your current ")
-                + Text(calendarName.lowercased())
-                    .foregroundColor(.textPrimary)
-                + Text(" streak is: ")
-
-
+              Text(
+                String(
+                  format: String(localized: "your current %@ streak is:"),
+                  calendarName.lowercased()
+                )
+              )
             } else if streakValue > 0 && isAtRisk {
-
-              Text("your current ")
-              + Text(calendarName.lowercased())
-                  .foregroundColor(.textPrimary)
-              + Text(" streak")
-              + Text(" is at risk")
-                  .foregroundColor(Color("qs-red"))
-
+              Text(
+                String(
+                  format: String(localized: "your current %@ streak is at risk"),
+                  calendarName.lowercased()
+                )
+              )
+              .foregroundColor(Color("qs-red"))
             } else {
               Text(calendarName.lowercased())
-                  .foregroundColor(.textPrimary)
+                .foregroundColor(.textPrimary)
             }
           }
           .foregroundColor(.textSecondary)
