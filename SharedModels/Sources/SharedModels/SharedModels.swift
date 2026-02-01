@@ -131,6 +131,34 @@ public extension UnitOfMeasure.Category {
 
 // MARK: - Custom Calendar Models
 
+public enum NotificationPrivacyMode: String, Codable, CaseIterable {
+  case full       // Show calendar name and target
+  case generic    // "Reminder: Log your habit"
+  case hidden     // Just badge/sound, no text
+  
+  public var description: String {
+    switch self {
+    case .full:
+      return String(localized: "Full Details")
+    case .generic:
+      return String(localized: "Generic Message")
+    case .hidden:
+      return String(localized: "No Text (Badge Only)")
+    }
+  }
+  
+  public var detail: String {
+    switch self {
+    case .full:
+      return String(localized: "Show habit name and target in notifications")
+    case .generic:
+      return String(localized: "Show generic reminder message")
+    case .hidden:
+      return String(localized: "Only badge and sound, no text visible on lock screen")
+    }
+  }
+}
+
 public struct CustomCalendar: Codable, Identifiable {
   public let id: UUID
   public var name: String
@@ -145,6 +173,8 @@ public struct CustomCalendar: Codable, Identifiable {
   public var recurringReminderEnabled: Bool
   public var reminderHour: Int?
   public var reminderMinute: Int?
+  public var reminderTimeZone: String?  // Store TimeZone.identifier for proper timezone handling
+  public var notificationPrivacyMode: NotificationPrivacyMode = .full  // Privacy mode for notifications
   public var entries: [String: CalendarEntry]  // Date string -> Entry
 
   public init(
@@ -154,7 +184,9 @@ public struct CustomCalendar: Codable, Identifiable {
     recurringReminderEnabled: Bool = false, reminderTime: Date? = nil, order: Int = 0,
     unit: UnitOfMeasure? = nil,
     defaultRecordValue: Int? = nil,
-    currencySymbol: String? = nil
+    currencySymbol: String? = nil,
+    reminderTimeZone: String? = nil,
+    notificationPrivacyMode: NotificationPrivacyMode = .full
   ) {
     self.id = id
     self.name = name
@@ -167,6 +199,8 @@ public struct CustomCalendar: Codable, Identifiable {
     self.isArchived = isArchived
     self.recurringReminderEnabled = recurringReminderEnabled
     self.order = order
+    self.reminderTimeZone = reminderTimeZone ?? TimeZone.current.identifier
+    self.notificationPrivacyMode = notificationPrivacyMode
     if let time = reminderTime {
       let calendar = Calendar.current
       self.reminderHour = calendar.component(.hour, from: time)
@@ -187,7 +221,9 @@ public struct CustomCalendar: Codable, Identifiable {
     order: Int = 0,
     unit: UnitOfMeasure? = nil,
     defaultRecordValue: Int? = nil,
-    currencySymbol: String? = nil
+    currencySymbol: String? = nil,
+    reminderTimeZone: String? = nil,
+    notificationPrivacyMode: NotificationPrivacyMode = .full
   ) throws {
     // Validate hour and minute ranges
     if let hour = reminderHour, let minute = reminderMinute {
@@ -211,6 +247,8 @@ public struct CustomCalendar: Codable, Identifiable {
     self.order = order
     self.reminderHour = reminderHour
     self.reminderMinute = reminderMinute
+    self.reminderTimeZone = reminderTimeZone ?? TimeZone.current.identifier
+    self.notificationPrivacyMode = notificationPrivacyMode
     self.entries = entries
   }
 }
