@@ -16,6 +16,8 @@ public final class HabitCalendarEntity {
   public var recurringReminderEnabled: Bool = false
   public var reminderHour: Int?
   public var reminderMinute: Int?
+  public var reminderTimeZone: String?
+  public var notificationPrivacyModeRawValue: String = NotificationPrivacyMode.full.rawValue
   public var order: Int = 0
 
   public init(
@@ -31,6 +33,8 @@ public final class HabitCalendarEntity {
     recurringReminderEnabled: Bool = false,
     reminderHour: Int? = nil,
     reminderMinute: Int? = nil,
+    reminderTimeZone: String? = nil,
+    notificationPrivacyModeRawValue: String = NotificationPrivacyMode.full.rawValue,
     order: Int = 0
   ) {
     self.id = id
@@ -45,6 +49,8 @@ public final class HabitCalendarEntity {
     self.recurringReminderEnabled = recurringReminderEnabled
     self.reminderHour = reminderHour
     self.reminderMinute = reminderMinute
+    self.reminderTimeZone = reminderTimeZone
+    self.notificationPrivacyModeRawValue = notificationPrivacyModeRawValue
     self.order = order
   }
 }
@@ -165,6 +171,7 @@ extension HabitCalendarEntity {
   func toCustomCalendar(entries: [String: CalendarEntry]) -> CustomCalendar {
     let tracking = TrackingType(rawValue: trackingTypeRawValue) ?? .binary
     let unit = unitRawValue.flatMap(UnitOfMeasure.init(rawValue:))
+    let privacyMode = NotificationPrivacyMode(rawValue: notificationPrivacyModeRawValue) ?? .full
 
     if let calendar = try? CustomCalendar(
       id: id,
@@ -180,7 +187,9 @@ extension HabitCalendarEntity {
       order: order,
       unit: unit,
       defaultRecordValue: defaultRecordValue,
-      currencySymbol: currencySymbol
+      currencySymbol: currencySymbol,
+      reminderTimeZone: reminderTimeZone,
+      notificationPrivacyMode: privacyMode
     ) {
       return calendar
     }
@@ -198,7 +207,9 @@ extension HabitCalendarEntity {
       order: order,
       unit: unit,
       defaultRecordValue: defaultRecordValue,
-      currencySymbol: currencySymbol
+      currencySymbol: currencySymbol,
+      reminderTimeZone: reminderTimeZone,
+      notificationPrivacyMode: privacyMode
     )
   }
 
@@ -214,6 +225,8 @@ extension HabitCalendarEntity {
     recurringReminderEnabled = model.recurringReminderEnabled
     reminderHour = model.reminderHour
     reminderMinute = model.reminderMinute
+    reminderTimeZone = model.reminderTimeZone
+    notificationPrivacyModeRawValue = model.notificationPrivacyMode.rawValue
     order = model.order
   }
 
@@ -231,6 +244,8 @@ extension HabitCalendarEntity {
       recurringReminderEnabled: model.recurringReminderEnabled,
       reminderHour: model.reminderHour,
       reminderMinute: model.reminderMinute,
+      reminderTimeZone: model.reminderTimeZone,
+      notificationPrivacyModeRawValue: model.notificationPrivacyMode.rawValue,
       order: model.order
     )
   }
