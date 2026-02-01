@@ -353,7 +353,8 @@ public func handleNotificationAction(
     handleSnooze(for: calendar)
     
   case UNNotificationDefaultActionIdentifier:
-    // User tapped the notification - app will open to the calendar
+    // Note: Default tap action (opening calendar) is handled in AppDelegate
+    // via deep link: my-year://calendar/<id>
     print("📱 User tapped notification for \(calendar.name)")
     
   default:

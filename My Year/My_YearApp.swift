@@ -28,14 +28,29 @@ class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCenterDele
     return true
   }
   
-  // Handle notification actions (Log Now, Snooze)
+  // Handle notification actions (Log Now, Snooze, and default tap)
   func userNotificationCenter(
     _ center: UNUserNotificationCenter,
     didReceive response: UNNotificationResponse,
     withCompletionHandler completionHandler: @escaping () -> Void
   ) {
     let store = CustomCalendarStore.shared
-    handleNotificationAction(response, store: store)
+    
+    // Handle default tap action (user tapped notification) - open calendar
+    if response.actionIdentifier == UNNotificationDefaultActionIdentifier {
+      let userInfo = response.notification.request.content.userInfo
+      if let calendarIdString = userInfo["calendarId"] as? String,
+         let calendarId = UUID(uuidString: calendarIdString) {
+        // Open deep link to calendar
+        let deepLinkURL = URL(string: "my-year://calendar/\(calendarId.uuidString)")!
+        UIApplication.shared.open(deepLinkURL)
+        print("📱 Opening calendar from notification: \(calendarIdString)")
+      }
+    } else {
+      // Handle action buttons (Log Now, Snooze)
+      handleNotificationAction(response, store: store)
+    }
+    
     completionHandler()
   }
   
