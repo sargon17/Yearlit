@@ -175,6 +175,7 @@ public struct CustomCalendar: Codable, Identifiable {
   public var reminderMinute: Int?
   public var reminderTimeZone: String?  // Store TimeZone.identifier for proper timezone handling
   public var notificationPrivacyMode: NotificationPrivacyMode = .full  // Privacy mode for notifications
+  public var suppressWhenCompleted: Bool = true  // Don't send notification if entry already completed
   public var entries: [String: CalendarEntry]  // Date string -> Entry
 
   public init(
@@ -186,7 +187,8 @@ public struct CustomCalendar: Codable, Identifiable {
     defaultRecordValue: Int? = nil,
     currencySymbol: String? = nil,
     reminderTimeZone: String? = nil,
-    notificationPrivacyMode: NotificationPrivacyMode = .full
+    notificationPrivacyMode: NotificationPrivacyMode = .full,
+    suppressWhenCompleted: Bool = true
   ) {
     self.id = id
     self.name = name
@@ -201,6 +203,7 @@ public struct CustomCalendar: Codable, Identifiable {
     self.order = order
     self.reminderTimeZone = reminderTimeZone ?? TimeZone.current.identifier
     self.notificationPrivacyMode = notificationPrivacyMode
+    self.suppressWhenCompleted = suppressWhenCompleted
     if let time = reminderTime {
       let calendar = Calendar.current
       self.reminderHour = calendar.component(.hour, from: time)
@@ -223,7 +226,8 @@ public struct CustomCalendar: Codable, Identifiable {
     defaultRecordValue: Int? = nil,
     currencySymbol: String? = nil,
     reminderTimeZone: String? = nil,
-    notificationPrivacyMode: NotificationPrivacyMode = .full
+    notificationPrivacyMode: NotificationPrivacyMode = .full,
+    suppressWhenCompleted: Bool = true
   ) throws {
     // Validate hour and minute ranges
     if let hour = reminderHour, let minute = reminderMinute {
@@ -249,6 +253,7 @@ public struct CustomCalendar: Codable, Identifiable {
     self.reminderMinute = reminderMinute
     self.reminderTimeZone = reminderTimeZone ?? TimeZone.current.identifier
     self.notificationPrivacyMode = notificationPrivacyMode
+    self.suppressWhenCompleted = suppressWhenCompleted
     self.entries = entries
   }
 }

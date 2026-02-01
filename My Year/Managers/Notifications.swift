@@ -1,6 +1,50 @@
 import SharedModels
 import UserNotifications
 
+// MARK: - Notification Action Identifiers
+
+public enum NotificationAction {
+  public static let quickLog = "QUICK_LOG_ACTION"
+  public static let snooze = "SNOOZE_ACTION"
+  public static let categoryIdentifier = "HABIT_REMINDER"
+}
+
+// MARK: - Notification Categories Setup
+
+/// Sets up notification categories with quick actions
+/// Should be called once during app initialization
+public func setupNotificationCategories() {
+  let quickLogAction = UNNotificationAction(
+    identifier: NotificationAction.quickLog,
+    title: NSLocalizedString(
+      "notification.action.log",
+      value: "Log Now",
+      comment: "Quick action to log habit from notification"
+    ),
+    options: [.foreground]
+  )
+  
+  let snoozeAction = UNNotificationAction(
+    identifier: NotificationAction.snooze,
+    title: NSLocalizedString(
+      "notification.action.snooze",
+      value: "Remind me in 1 hour",
+      comment: "Quick action to snooze notification"
+    ),
+    options: []
+  )
+  
+  let category = UNNotificationCategory(
+    identifier: NotificationAction.categoryIdentifier,
+    actions: [quickLogAction, snoozeAction],
+    intentIdentifiers: [],
+    options: []
+  )
+  
+  UNUserNotificationCenter.current().setNotificationCategories([category])
+  print("✅ Notification categories configured")
+}
+
 // MARK: - Notification Errors
 
 public enum NotificationError: LocalizedError {
@@ -176,6 +220,15 @@ private func _scheduleNotificationInternal(
   
   content.sound = .default
   
+  // Set category for quick actions
+  content.categoryIdentifier = NotificationAction.categoryIdentifier
+  
+  // Store calendar ID for action handling
+  content.userInfo = [
+    "calendarId": calendar.id.uuidString,
+    "calendarName": calendar.name
+  ]
+  
   // Set up timezone-aware trigger
   var components = DateComponents()
   components.hour = hour
@@ -271,6 +324,161 @@ public func validateReminderTime(_ time: Date) -> Date {
   }
   
   return time
+}
+
+// MARK: - Notification Actions Handler
+
+/// Handles notification action responses
+/// - Parameters:
+///   - response: The notification response
+///   - store: The calendar store to perform actions on
+public func handleNotificationAction(
+  _ response: UNNotificationResponse,
+  store: CustomCalendarStore
+) {
+  let userInfo = response.notification.request.content.userInfo
+  
+  guard let calendarIdString = userInfo["calendarId"] as? String,
+        let calendarId = UUID(uuidString: calendarIdString),
+        let calendar = store.calendars.first(where: { $0.id == calendarId }) else {
+    print("❌ Invalid calendar ID in notification action")
+    return
+  }
+  
+  switch response.actionIdentifier {
+  case NotificationAction.quickLog:
+    handleQuickLog(for: calendar, store: store)
+    
+  case NotificationAction.snooze:
+    handleSnooze(for: calendar)
+    
+  case UNNotificationDefaultActionIdentifier:
+    // User tapped the notification - app will open to the calendar
+    print("📱 User tapped notification for \(calendar.name)")
+    
+  default:
+    break
+  }
+}
+
+/// Quick log handler - logs an entry for today
+private func handleQuickLog(for calendar: CustomCalendar, store: CustomCalendarStore) {
+  let today = Date()
+  
+  // Create entry based on tracking type
+  let entry: CalendarEntry
+  switch calendar.trackingType {
+  case .binary:
+    entry = CalendarEntry(date: today, count: 1, completed: true)
+    
+  case .counter:
+    let defaultValue = calendar.defaultRecordValue ?? 1
+    entry = CalendarEntry(date: today, count: defaultValue, completed: false)
+    
+  case .multipleDaily:
+    let currentCount = store.getEntry(calendarId: calendar.id, date: today)?.count ?? 0
+    let newCount = currentCount + 1
+    let completed = newCount >= calendar.dailyTarget
+    entry = CalendarEntry(date: today, count: newCount, completed: completed)
+  }
+  
+  store.addEntry(calendarId: calendar.id, entry: entry)
+  print("✅ Quick logged entry for \(calendar.name)")
+}
+
+/// Snooze handler - reschedules notification for 1 hour later
+private func handleSnooze(for calendar: CustomCalendar) {
+  let notificationId = "\(calendar.id.uuidString)-snooze"
+  let content = UNMutableNotificationContent()
+  
+  // Apply privacy mode
+  switch calendar.notificationPrivacyMode {
+  case .full:
+    content.title = String(
+      format: NSLocalizedString(
+        "notification.snooze.title",
+        value: "Reminder: %@",
+        comment: "Snoozed notification title"
+      ),
+      calendar.name
+    )
+    content.body = NSLocalizedString(
+      "notification.snooze.body",
+      value: "Don't forget to log your habit!",
+      comment: "Snoozed notification body"
+    )
+    
+  case .generic:
+    content.title = NSLocalizedString(
+      "notification.reminder.generic.title",
+      value: "Habit Reminder",
+      comment: "Generic notification title"
+    )
+    content.body = NSLocalizedString(
+      "notification.reminder.generic.body",
+      value: "Time to log your daily habit",
+      comment: "Generic notification body"
+    )
+    
+  case .hidden:
+    content.badge = NSNumber(value: 1)
+    content.title = ""
+    content.body = ""
+  }
+  
+  content.sound = .default
+  content.categoryIdentifier = NotificationAction.categoryIdentifier
+  content.userInfo = [
+    "calendarId": calendar.id.uuidString,
+    "calendarName": calendar.name
+  ]
+  
+  // Schedule for 1 hour from now
+  let trigger = UNTimeIntervalNotificationTrigger(timeInterval: 3600, repeats: false)
+  let request = UNNotificationRequest(
+    identifier: notificationId,
+    content: content,
+    trigger: trigger
+  )
+  
+  UNUserNotificationCenter.current().add(request) { error in
+    if let error = error {
+      print("❌ Failed to schedule snooze notification: \(error)")
+    } else {
+      print("⏰ Snoozed notification for \(calendar.name) for 1 hour")
+    }
+  }
+}
+
+// MARK: - Smart Suppression
+
+/// Checks if a notification should be suppressed (entry already completed)
+/// - Parameters:
+///   - calendar: The calendar to check
+///   - store: The calendar store
+/// - Returns: True if notification should be suppressed
+public func shouldSuppressNotification(for calendar: CustomCalendar, store: CustomCalendarStore) -> Bool {
+  let today = Date()
+  
+  guard let entry = store.getEntry(calendarId: calendar.id, date: today) else {
+    // No entry for today, show notification
+    return false
+  }
+  
+  // Check based on tracking type
+  switch calendar.trackingType {
+  case .binary:
+    // Binary: suppress if completed
+    return entry.completed
+    
+  case .counter:
+    // Counter: suppress if any value has been logged
+    return entry.count > 0
+    
+  case .multipleDaily:
+    // Multiple daily: suppress if target reached
+    return entry.count >= calendar.dailyTarget
+  }
 }
 
 // MARK: - Permission Helpers

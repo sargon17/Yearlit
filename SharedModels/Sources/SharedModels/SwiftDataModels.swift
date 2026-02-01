@@ -18,6 +18,7 @@ public final class HabitCalendarEntity {
   public var reminderMinute: Int?
   public var reminderTimeZone: String?
   public var notificationPrivacyModeRawValue: String = NotificationPrivacyMode.full.rawValue
+  public var suppressWhenCompleted: Bool = true
   public var order: Int = 0
 
   public init(
@@ -35,6 +36,7 @@ public final class HabitCalendarEntity {
     reminderMinute: Int? = nil,
     reminderTimeZone: String? = nil,
     notificationPrivacyModeRawValue: String = NotificationPrivacyMode.full.rawValue,
+    suppressWhenCompleted: Bool = true,
     order: Int = 0
   ) {
     self.id = id
@@ -51,6 +53,7 @@ public final class HabitCalendarEntity {
     self.reminderMinute = reminderMinute
     self.reminderTimeZone = reminderTimeZone
     self.notificationPrivacyModeRawValue = notificationPrivacyModeRawValue
+    self.suppressWhenCompleted = suppressWhenCompleted
     self.order = order
   }
 }
@@ -189,7 +192,8 @@ extension HabitCalendarEntity {
       defaultRecordValue: defaultRecordValue,
       currencySymbol: currencySymbol,
       reminderTimeZone: reminderTimeZone,
-      notificationPrivacyMode: privacyMode
+      notificationPrivacyMode: privacyMode,
+      suppressWhenCompleted: suppressWhenCompleted
     ) {
       return calendar
     }
@@ -209,7 +213,8 @@ extension HabitCalendarEntity {
       defaultRecordValue: defaultRecordValue,
       currencySymbol: currencySymbol,
       reminderTimeZone: reminderTimeZone,
-      notificationPrivacyMode: privacyMode
+      notificationPrivacyMode: privacyMode,
+      suppressWhenCompleted: suppressWhenCompleted
     )
   }
 
@@ -227,6 +232,7 @@ extension HabitCalendarEntity {
     reminderMinute = model.reminderMinute
     reminderTimeZone = model.reminderTimeZone
     notificationPrivacyModeRawValue = model.notificationPrivacyMode.rawValue
+    suppressWhenCompleted = model.suppressWhenCompleted
     order = model.order
   }
 
@@ -246,6 +252,7 @@ extension HabitCalendarEntity {
       reminderMinute: model.reminderMinute,
       reminderTimeZone: model.reminderTimeZone,
       notificationPrivacyModeRawValue: model.notificationPrivacyMode.rawValue,
+      suppressWhenCompleted: model.suppressWhenCompleted,
       order: model.order
     )
   }
