@@ -246,6 +246,94 @@ private struct StreakStats {
   let weeklyCompletionRate: Double
 }
 
+// MARK: - Streak Protection
+
+/// Schedules a streak protection reminder for late in the day
+/// - Parameters:
+///   - calendar: The calendar to protect
+///   - store: Calendar store for streak calculation
+public func scheduleStreakProtectionReminder(
+  for calendar: CustomCalendar,
+  store: CustomCalendarStore
+) {
+  // Only schedule if enabled and reminders are on
+  guard calendar.streakProtectionEnabled,
+        calendar.recurringReminderEnabled else {
+    return
+  }
+  
+  // Calculate current streak
+  let stats = calculateStreakStats(for: calendar, store: store)
+  
+  // Only protect significant streaks
+  guard stats.currentStreak >= calendar.streakProtectionThreshold else {
+    return
+  }
+  
+  // Schedule notification for 9 PM today
+  let now = Date()
+  let calendar_swift = Calendar.current
+  guard let ninePM = calendar_swift.date(bySettingHour: 21, minute: 0, second: 0, of: now) else {
+    return
+  }
+  
+  // Only schedule if 9 PM is in the future
+  guard ninePM > now else {
+    return
+  }
+  
+  let notificationId = "\(calendar.id.uuidString)-streak-protection"
+  let content = UNMutableNotificationContent()
+  
+  // Urgent, streak-focused copy
+  switch calendar.notificationPrivacyMode {
+  case .full:
+    content.title = String(localized: "🔥 Don't break your \(stats.currentStreak)-day streak!")
+    content.body = String(localized: "Quick! Log \(calendar.name) before midnight")
+    
+  case .generic:
+    content.title = String(localized: "🔥 Streak at risk!")
+    content.body = String(localized: "Don't forget to log your habit today")
+    
+  case .hidden:
+    content.badge = NSNumber(value: 1)
+    content.title = ""
+    content.body = ""
+  }
+  
+  content.sound = .default
+  content.categoryIdentifier = NotificationAction.categoryIdentifier
+  content.userInfo = [
+    "calendarId": calendar.id.uuidString,
+    "calendarName": calendar.name,
+    "isStreakProtection": true
+  ]
+  
+  // Schedule for 9 PM today (one-time, not recurring)
+  let triggerDate = calendar_swift.dateComponents(
+    [.year, .month, .day, .hour, .minute],
+    from: ninePM
+  )
+  let trigger = UNCalendarNotificationTrigger(
+    dateMatching: triggerDate,
+    repeats: false
+  )
+  
+  let request = UNNotificationRequest(
+    identifier: notificationId,
+    content: content,
+    trigger: trigger
+  )
+  
+  UNUserNotificationCenter.current().add(request) { error in
+    if let error = error {
+      print("❌ Failed to schedule streak protection: \(error)")
+    } else {
+      print("🛡️ Scheduled streak protection for \(calendar.name) at 9 PM (\(stats.currentStreak)-day streak)")
+    }
+  }
+}
+
 // MARK: - Notification Scheduling
 
 /// Schedules notifications for a calendar with proper error handling and permission checks
@@ -260,11 +348,18 @@ public func scheduleNotifications(
 ) {
   let notificationId = calendar.id.uuidString
   
-  // Remove all existing notifications for this calendar (primary + additional)
+  // Schedule streak protection if store available
+  if let store = store {
+    scheduleStreakProtectionReminder(for: calendar, store: store)
+  }
+  
+  // Remove all existing notifications for this calendar (primary + additional + streak protection)
   var allNotificationIds = [notificationId]
   for (index, _) in calendar.additionalReminderTimes.enumerated() {
     allNotificationIds.append("\(notificationId)-\(index)")
   }
+  allNotificationIds.append("\(notificationId)-streak-protection")
+  
   UNUserNotificationCenter.current().removePendingNotificationRequests(
     withIdentifiers: allNotificationIds
   )

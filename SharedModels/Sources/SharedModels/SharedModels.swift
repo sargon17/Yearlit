@@ -202,6 +202,8 @@ public struct CustomCalendar: Codable, Identifiable {
   public var notificationPrivacyMode: NotificationPrivacyMode = .full  // Privacy mode for notifications
   public var suppressWhenCompleted: Bool = true  // Don't send notification if entry already completed
   public var additionalReminderTimes: [ReminderTime] = []  // Additional reminder times (beyond primary reminderHour/reminderMinute)
+  public var streakProtectionEnabled: Bool = true  // Send late-day reminder if streak at risk
+  public var streakProtectionThreshold: Int = 5  // Minimum streak length to trigger protection (default: 5 days)
   public var entries: [String: CalendarEntry]  // Date string -> Entry
 
   public init(
@@ -215,7 +217,9 @@ public struct CustomCalendar: Codable, Identifiable {
     reminderTimeZone: String? = nil,
     notificationPrivacyMode: NotificationPrivacyMode = .full,
     suppressWhenCompleted: Bool = true,
-    additionalReminderTimes: [ReminderTime] = []
+    additionalReminderTimes: [ReminderTime] = [],
+    streakProtectionEnabled: Bool = true,
+    streakProtectionThreshold: Int = 5
   ) {
     self.id = id
     self.name = name
@@ -232,6 +236,8 @@ public struct CustomCalendar: Codable, Identifiable {
     self.notificationPrivacyMode = notificationPrivacyMode
     self.suppressWhenCompleted = suppressWhenCompleted
     self.additionalReminderTimes = additionalReminderTimes
+    self.streakProtectionEnabled = streakProtectionEnabled
+    self.streakProtectionThreshold = streakProtectionThreshold
     if let time = reminderTime {
       let calendar = Calendar.current
       self.reminderHour = calendar.component(.hour, from: time)
@@ -256,7 +262,9 @@ public struct CustomCalendar: Codable, Identifiable {
     reminderTimeZone: String? = nil,
     notificationPrivacyMode: NotificationPrivacyMode = .full,
     suppressWhenCompleted: Bool = true,
-    additionalReminderTimes: [ReminderTime] = []
+    additionalReminderTimes: [ReminderTime] = [],
+    streakProtectionEnabled: Bool = true,
+    streakProtectionThreshold: Int = 5
   ) throws {
     // Validate hour and minute ranges
     if let hour = reminderHour, let minute = reminderMinute {
@@ -284,6 +292,8 @@ public struct CustomCalendar: Codable, Identifiable {
     self.notificationPrivacyMode = notificationPrivacyMode
     self.suppressWhenCompleted = suppressWhenCompleted
     self.additionalReminderTimes = additionalReminderTimes
+    self.streakProtectionEnabled = streakProtectionEnabled
+    self.streakProtectionThreshold = streakProtectionThreshold
     self.entries = entries
   }
 }
