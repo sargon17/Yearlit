@@ -100,14 +100,162 @@ public enum NotificationError: LocalizedError {
   }
 }
 
+// MARK: - Dynamic Notification Content
+
+/// Generates dynamic, motivational notification content based on calendar progress
+/// - Parameters:
+///   - calendar: The calendar to generate content for
+///   - store: The calendar store for accessing stats
+/// - Returns: Tuple of (title, body) with motivational content
+private func generateDynamicContent(
+  for calendar: CustomCalendar,
+  store: CustomCalendarStore
+) -> (title: String, body: String) {
+  let stats = calculateStreakStats(for: calendar, store: store)
+  
+  // Base title
+  let titleFormat = NSLocalizedString(
+    "notification.reminder.title.full",
+    value: "Time to log %@",
+    comment: "Notification title with habit name"
+  )
+  let title = String(format: titleFormat, calendar.name)
+  
+  // Dynamic body based on streak and progress
+  var body: String
+  
+  if stats.currentStreak >= 7 {
+    // Long streak - emphasize maintenance
+    let messages = [
+      String(localized: "🔥 You're on a \(stats.currentStreak)-day streak! Keep it alive!"),
+      String(localized: "💪 \(stats.currentStreak) days strong! Don't break it now!"),
+      String(localized: "✨ Amazing! \(stats.currentStreak) days in a row. One more today!")
+    ]
+    body = messages.randomElement() ?? messages[0]
+    
+  } else if stats.currentStreak >= 3 {
+    // Building momentum
+    let messages = [
+      String(localized: "\(stats.currentStreak) days down! You're building momentum 🚀"),
+      String(localized: "Day \(stats.currentStreak) of your streak! Keep going 💪"),
+      String(localized: "Nice! \(stats.currentStreak) in a row. Let's make it \(stats.currentStreak + 1)!")
+    ]
+    body = messages.randomElement() ?? messages[0]
+    
+  } else if stats.completedYesterday {
+    // Did it yesterday, encourage continuation
+    let messages = [
+      String(localized: "Great job yesterday! Let's keep it going today 🎯"),
+      String(localized: "You did it yesterday, you can do it today! 💚"),
+      String(localized: "Yesterday ✅ Today? Let's go! 🔥")
+    ]
+    body = messages.randomElement() ?? messages[0]
+    
+  } else if stats.weeklyCompletionRate > 0.7 {
+    // Good weekly progress
+    let weekPercent = Int(stats.weeklyCompletionRate * 100)
+    body = String(localized: "You're at \(weekPercent)% this week! Keep pushing 💪")
+    
+  } else {
+    // Default motivational message
+    let messages = [
+      String(localized: "Time to build your habit! (Target: \(calendar.dailyTarget))"),
+      String(localized: "Every day counts! Log your progress today 📊"),
+      String(localized: "Small steps, big results. Let's track \(calendar.name)! 🎯")
+    ]
+    body = messages.randomElement() ?? messages[0]
+  }
+  
+  return (title, body)
+}
+
+/// Calculate streak statistics for a calendar
+private func calculateStreakStats(
+  for calendar: CustomCalendar,
+  store: CustomCalendarStore
+) -> StreakStats {
+  let sortedEntries = calendar.entries.sorted { $0.key > $1.key }
+  var currentStreak = 0
+  var completedYesterday = false
+  var weeklyCompleted = 0
+  
+  // Calculate current streak (consecutive days from today backwards)
+  let today = LocalDayCalendar.startOfDay(for: Date())
+  let dateFormatter = DayKeyFormatter.shared
+  var checkDate = today
+  
+  for dayOffset in 0..<365 {
+    let dayKey = dateFormatter.string(from: checkDate)
+    
+    if let entry = calendar.entries[dayKey] {
+      let isSuccess = isEntrySuccess(entry: entry, calendar: calendar)
+      
+      if dayOffset == 1 {
+        completedYesterday = isSuccess
+      }
+      
+      if dayOffset < 7 && isSuccess {
+        weeklyCompleted += 1
+      }
+      
+      if isSuccess {
+        if dayOffset <= currentStreak {
+          currentStreak += 1
+        }
+      } else {
+        // Streak broken, stop counting
+        if dayOffset > 0 {
+          break
+        }
+      }
+    } else {
+      // No entry, streak broken
+      if dayOffset > 0 {
+        break
+      }
+    }
+    
+    checkDate = Calendar.current.date(byAdding: .day, value: -1, to: checkDate) ?? checkDate
+  }
+  
+  let weeklyCompletionRate = Double(weeklyCompleted) / 7.0
+  
+  return StreakStats(
+    currentStreak: currentStreak,
+    completedYesterday: completedYesterday,
+    weeklyCompletionRate: weeklyCompletionRate
+  )
+}
+
+/// Helper to determine if an entry counts as "success"
+private func isEntrySuccess(entry: CalendarEntry, calendar: CustomCalendar) -> Bool {
+  switch calendar.trackingType {
+  case .binary:
+    return entry.completed
+  case .counter:
+    return entry.count > 0
+  case .multipleDaily:
+    return entry.count >= calendar.dailyTarget
+  }
+}
+
+/// Streak statistics for notification content
+private struct StreakStats {
+  let currentStreak: Int
+  let completedYesterday: Bool
+  let weeklyCompletionRate: Double
+}
+
 // MARK: - Notification Scheduling
 
 /// Schedules notifications for a calendar with proper error handling and permission checks
 /// - Parameters:
 ///   - calendar: The calendar to schedule notifications for
+///   - store: Optional calendar store for dynamic content
 ///   - completion: Completion handler called with result (success or error)
 public func scheduleNotifications(
   for calendar: CustomCalendar,
+  store: CustomCalendarStore? = nil,
   completion: @escaping (Result<Void, NotificationError>) -> Void = { _ in }
 ) {
   let notificationId = calendar.id.uuidString
@@ -141,6 +289,7 @@ public func scheduleNotifications(
             for: calendar,
             hour: hour,
             minute: minute,
+            store: store,
             completion: completion
           )
         } else {
@@ -153,6 +302,7 @@ public func scheduleNotifications(
         for: calendar,
         hour: hour,
         minute: minute,
+        store: store,
         completion: completion
       )
       
@@ -173,28 +323,36 @@ private func _scheduleNotificationInternal(
   for calendar: CustomCalendar,
   hour: Int,
   minute: Int,
+  store: CustomCalendarStore?,
   completion: @escaping (Result<Void, NotificationError>) -> Void
 ) {
   let notificationId = calendar.id.uuidString
   let content = UNMutableNotificationContent()
   
-  // Apply privacy mode settings
+  // Apply privacy mode settings with dynamic content
   switch calendar.notificationPrivacyMode {
   case .full:
-    // Show full habit details with localization
-    let titleFormat = NSLocalizedString(
-      "notification.reminder.title.full",
-      value: "Time to log %@",
-      comment: "Notification title with habit name"
-    )
-    content.title = String(format: titleFormat, calendar.name)
-    
-    let bodyFormat = NSLocalizedString(
-      "notification.reminder.body.full",
-      value: "Don't forget to track %@ today! (Target: %d)",
-      comment: "Notification body with habit name and target"
-    )
-    content.body = String(format: bodyFormat, calendar.name, calendar.dailyTarget)
+    // Use dynamic, motivational content if store is available
+    if let store = store {
+      let dynamicContent = generateDynamicContent(for: calendar, store: store)
+      content.title = dynamicContent.title
+      content.body = dynamicContent.body
+    } else {
+      // Fallback to static content
+      let titleFormat = NSLocalizedString(
+        "notification.reminder.title.full",
+        value: "Time to log %@",
+        comment: "Notification title with habit name"
+      )
+      content.title = String(format: titleFormat, calendar.name)
+      
+      let bodyFormat = NSLocalizedString(
+        "notification.reminder.body.full",
+        value: "Don't forget to track %@ today! (Target: %d)",
+        comment: "Notification body with habit name and target"
+      )
+      content.body = String(format: bodyFormat, calendar.name, calendar.dailyTarget)
+    }
     
   case .generic:
     // Show generic message for privacy

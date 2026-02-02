@@ -94,7 +94,7 @@ struct CreateCalendarView: View {
       notificationPrivacyMode: notificationPrivacyMode,
       suppressWhenCompleted: suppressWhenCompleted
     )
-    scheduleNotifications(for: calendar)
+    scheduleNotifications(for: calendar, store: CustomCalendarStore.shared)
     onCreate(calendar)
   }
 

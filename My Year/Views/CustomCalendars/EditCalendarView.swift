@@ -377,7 +377,7 @@ struct EditCalendarView: View {
               var updatedCalendar = calendar
               updatedCalendar.isArchived.toggle()
               isArchived = updatedCalendar.isArchived
-              scheduleNotifications(for: updatedCalendar)
+              scheduleNotifications(for: updatedCalendar, store: CustomCalendarStore.shared)
               onSave(updatedCalendar)
               dismiss()
             }) {
@@ -457,7 +457,7 @@ struct EditCalendarView: View {
             return
           }
           let updatedCalendar = makeUpdatedCalendar()
-          scheduleNotifications(for: updatedCalendar)
+          scheduleNotifications(for: updatedCalendar, store: CustomCalendarStore.shared)
           onSave(updatedCalendar)
           dismiss()
         }
