@@ -19,6 +19,7 @@ public final class HabitCalendarEntity {
   public var reminderTimeZone: String?
   public var notificationPrivacyModeRawValue: String = NotificationPrivacyMode.full.rawValue
   public var suppressWhenCompleted: Bool = true
+  public var additionalReminderTimesJSON: String? // JSON-encoded [ReminderTime]
   public var order: Int = 0
 
   public init(
@@ -37,6 +38,7 @@ public final class HabitCalendarEntity {
     reminderTimeZone: String? = nil,
     notificationPrivacyModeRawValue: String = NotificationPrivacyMode.full.rawValue,
     suppressWhenCompleted: Bool = true,
+    additionalReminderTimesJSON: String? = nil,
     order: Int = 0
   ) {
     self.id = id
@@ -54,6 +56,7 @@ public final class HabitCalendarEntity {
     self.reminderTimeZone = reminderTimeZone
     self.notificationPrivacyModeRawValue = notificationPrivacyModeRawValue
     self.suppressWhenCompleted = suppressWhenCompleted
+    self.additionalReminderTimesJSON = additionalReminderTimesJSON
     self.order = order
   }
 }
@@ -171,10 +174,30 @@ public final class HabitStackStepEntity {
 
 @available(iOS 17.0, macOS 14.0, *)
 extension HabitCalendarEntity {
+  // Helper to decode additional reminder times from JSON
+  private var decodedAdditionalReminderTimes: [ReminderTime] {
+    guard let json = additionalReminderTimesJSON,
+          let data = json.data(using: .utf8) else {
+      return []
+    }
+    return (try? JSONDecoder().decode([ReminderTime].self, from: data)) ?? []
+  }
+  
+  // Helper to encode additional reminder times to JSON
+  private static func encodeAdditionalReminderTimes(_ times: [ReminderTime]) -> String? {
+    guard !times.isEmpty,
+          let data = try? JSONEncoder().encode(times),
+          let json = String(data: data, encoding: .utf8) else {
+      return nil
+    }
+    return json
+  }
+  
   func toCustomCalendar(entries: [String: CalendarEntry]) -> CustomCalendar {
     let tracking = TrackingType(rawValue: trackingTypeRawValue) ?? .binary
     let unit = unitRawValue.flatMap(UnitOfMeasure.init(rawValue:))
     let privacyMode = NotificationPrivacyMode(rawValue: notificationPrivacyModeRawValue) ?? .full
+    let additionalTimes = decodedAdditionalReminderTimes
 
     if let calendar = try? CustomCalendar(
       id: id,
@@ -193,7 +216,8 @@ extension HabitCalendarEntity {
       currencySymbol: currencySymbol,
       reminderTimeZone: reminderTimeZone,
       notificationPrivacyMode: privacyMode,
-      suppressWhenCompleted: suppressWhenCompleted
+      suppressWhenCompleted: suppressWhenCompleted,
+      additionalReminderTimes: additionalTimes
     ) {
       return calendar
     }
@@ -214,7 +238,8 @@ extension HabitCalendarEntity {
       currencySymbol: currencySymbol,
       reminderTimeZone: reminderTimeZone,
       notificationPrivacyMode: privacyMode,
-      suppressWhenCompleted: suppressWhenCompleted
+      suppressWhenCompleted: suppressWhenCompleted,
+      additionalReminderTimes: additionalTimes
     )
   }
 
@@ -233,6 +258,7 @@ extension HabitCalendarEntity {
     reminderTimeZone = model.reminderTimeZone
     notificationPrivacyModeRawValue = model.notificationPrivacyMode.rawValue
     suppressWhenCompleted = model.suppressWhenCompleted
+    additionalReminderTimesJSON = Self.encodeAdditionalReminderTimes(model.additionalReminderTimes)
     order = model.order
   }
 
@@ -253,6 +279,7 @@ extension HabitCalendarEntity {
       reminderTimeZone: model.reminderTimeZone,
       notificationPrivacyModeRawValue: model.notificationPrivacyMode.rawValue,
       suppressWhenCompleted: model.suppressWhenCompleted,
+      additionalReminderTimesJSON: encodeAdditionalReminderTimes(model.additionalReminderTimes),
       order: model.order
     )
   }

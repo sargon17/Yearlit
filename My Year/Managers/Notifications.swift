@@ -260,16 +260,33 @@ public func scheduleNotifications(
 ) {
   let notificationId = calendar.id.uuidString
   
-  // First, always remove existing notifications to prevent duplicates
+  // Remove all existing notifications for this calendar (primary + additional)
+  var allNotificationIds = [notificationId]
+  for (index, _) in calendar.additionalReminderTimes.enumerated() {
+    allNotificationIds.append("\(notificationId)-\(index)")
+  }
   UNUserNotificationCenter.current().removePendingNotificationRequests(
-    withIdentifiers: [notificationId]
+    withIdentifiers: allNotificationIds
   )
   
   // If calendar is archived or reminder disabled, we're done (already removed)
   guard !calendar.isArchived,
-        calendar.recurringReminderEnabled,
-        let hour = calendar.reminderHour,
-        let minute = calendar.reminderMinute else {
+        calendar.recurringReminderEnabled else {
+    completion(.success(()))
+    return
+  }
+  
+  // Collect all reminder times (primary + additional)
+  var allReminderTimes: [(hour: Int, minute: Int, isPrimary: Bool)] = []
+  if let hour = calendar.reminderHour, let minute = calendar.reminderMinute {
+    allReminderTimes.append((hour, minute, true))
+  }
+  for reminderTime in calendar.additionalReminderTimes {
+    allReminderTimes.append((reminderTime.hour, reminderTime.minute, false))
+  }
+  
+  // If no reminder times configured, nothing to schedule
+  guard !allReminderTimes.isEmpty else {
     completion(.success(()))
     return
   }
@@ -285,10 +302,9 @@ public func scheduleNotifications(
         if let error = error {
           completion(.failure(.schedulingFailed(error)))
         } else if granted {
-          _scheduleNotificationInternal(
+          _scheduleAllReminders(
             for: calendar,
-            hour: hour,
-            minute: minute,
+            reminderTimes: allReminderTimes,
             store: store,
             completion: completion
           )
@@ -298,10 +314,9 @@ public func scheduleNotifications(
       }
       
     case .authorized, .provisional:
-      _scheduleNotificationInternal(
+      _scheduleAllReminders(
         for: calendar,
-        hour: hour,
-        minute: minute,
+        reminderTimes: allReminderTimes,
         store: store,
         completion: completion
       )
@@ -318,15 +333,55 @@ public func scheduleNotifications(
   }
 }
 
+/// Schedule all reminder times for a calendar
+private func _scheduleAllReminders(
+  for calendar: CustomCalendar,
+  reminderTimes: [(hour: Int, minute: Int, isPrimary: Bool)],
+  store: CustomCalendarStore?,
+  completion: @escaping (Result<Void, NotificationError>) -> Void
+) {
+  let group = DispatchGroup()
+  var errors: [Error] = []
+  
+  for (index, reminderTime) in reminderTimes.enumerated() {
+    group.enter()
+    
+    let notificationId = reminderTime.isPrimary
+      ? calendar.id.uuidString
+      : "\(calendar.id.uuidString)-\(index)"
+    
+    _scheduleNotificationInternal(
+      for: calendar,
+      notificationId: notificationId,
+      hour: reminderTime.hour,
+      minute: reminderTime.minute,
+      store: store
+    ) { result in
+      if case .failure(let error) = result {
+        errors.append(error)
+      }
+      group.leave()
+    }
+  }
+  
+  group.notify(queue: .main) {
+    if let firstError = errors.first as? NotificationError {
+      completion(.failure(firstError))
+    } else {
+      completion(.success(()))
+    }
+  }
+}
+
 /// Internal function to actually schedule the notification after permission checks
 private func _scheduleNotificationInternal(
   for calendar: CustomCalendar,
+  notificationId: String,
   hour: Int,
   minute: Int,
   store: CustomCalendarStore?,
   completion: @escaping (Result<Void, NotificationError>) -> Void
 ) {
-  let notificationId = calendar.id.uuidString
   let content = UNMutableNotificationContent()
   
   // Apply privacy mode settings with dynamic content

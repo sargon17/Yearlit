@@ -131,6 +131,31 @@ public extension UnitOfMeasure.Category {
 
 // MARK: - Custom Calendar Models
 
+/// Represents a reminder time (hour and minute)
+public struct ReminderTime: Codable, Hashable, Identifiable {
+  public var id: String { "\(hour):\(minute)" }
+  public var hour: Int
+  public var minute: Int
+  
+  public init(hour: Int, minute: Int) {
+    self.hour = hour
+    self.minute = minute
+  }
+  
+  /// Create from Date
+  public init(from date: Date) {
+    let calendar = Calendar.current
+    self.hour = calendar.component(.hour, from: date)
+    self.minute = calendar.component(.minute, from: date)
+  }
+  
+  /// Convert to Date (today at this time)
+  public func toDate() -> Date {
+    let calendar = Calendar.current
+    return calendar.date(bySettingHour: hour, minute: minute, second: 0, of: Date()) ?? Date()
+  }
+}
+
 public enum NotificationPrivacyMode: String, Codable, CaseIterable {
   case full       // Show calendar name and target
   case generic    // "Reminder: Log your habit"
@@ -176,6 +201,7 @@ public struct CustomCalendar: Codable, Identifiable {
   public var reminderTimeZone: String?  // Store TimeZone.identifier for proper timezone handling
   public var notificationPrivacyMode: NotificationPrivacyMode = .full  // Privacy mode for notifications
   public var suppressWhenCompleted: Bool = true  // Don't send notification if entry already completed
+  public var additionalReminderTimes: [ReminderTime] = []  // Additional reminder times (beyond primary reminderHour/reminderMinute)
   public var entries: [String: CalendarEntry]  // Date string -> Entry
 
   public init(
@@ -188,7 +214,8 @@ public struct CustomCalendar: Codable, Identifiable {
     currencySymbol: String? = nil,
     reminderTimeZone: String? = nil,
     notificationPrivacyMode: NotificationPrivacyMode = .full,
-    suppressWhenCompleted: Bool = true
+    suppressWhenCompleted: Bool = true,
+    additionalReminderTimes: [ReminderTime] = []
   ) {
     self.id = id
     self.name = name
@@ -204,6 +231,7 @@ public struct CustomCalendar: Codable, Identifiable {
     self.reminderTimeZone = reminderTimeZone ?? TimeZone.current.identifier
     self.notificationPrivacyMode = notificationPrivacyMode
     self.suppressWhenCompleted = suppressWhenCompleted
+    self.additionalReminderTimes = additionalReminderTimes
     if let time = reminderTime {
       let calendar = Calendar.current
       self.reminderHour = calendar.component(.hour, from: time)
@@ -227,7 +255,8 @@ public struct CustomCalendar: Codable, Identifiable {
     currencySymbol: String? = nil,
     reminderTimeZone: String? = nil,
     notificationPrivacyMode: NotificationPrivacyMode = .full,
-    suppressWhenCompleted: Bool = true
+    suppressWhenCompleted: Bool = true,
+    additionalReminderTimes: [ReminderTime] = []
   ) throws {
     // Validate hour and minute ranges
     if let hour = reminderHour, let minute = reminderMinute {
@@ -254,6 +283,7 @@ public struct CustomCalendar: Codable, Identifiable {
     self.reminderTimeZone = reminderTimeZone ?? TimeZone.current.identifier
     self.notificationPrivacyMode = notificationPrivacyMode
     self.suppressWhenCompleted = suppressWhenCompleted
+    self.additionalReminderTimes = additionalReminderTimes
     self.entries = entries
   }
 }
