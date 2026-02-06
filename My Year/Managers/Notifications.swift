@@ -343,12 +343,17 @@ private func _scheduleAllReminders(
   let group = DispatchGroup()
   var errors: [Error] = []
   
-  for (index, reminderTime) in reminderTimes.enumerated() {
+  var additionalIndex = 0
+  for reminderTime in reminderTimes {
     group.enter()
     
-    let notificationId = reminderTime.isPrimary
-      ? calendar.id.uuidString
-      : "\(calendar.id.uuidString)-\(index)"
+    let notificationId: String
+    if reminderTime.isPrimary {
+      notificationId = calendar.id.uuidString
+    } else {
+      notificationId = "\(calendar.id.uuidString)-\(additionalIndex)"
+      additionalIndex += 1
+    }
     
     _scheduleNotificationInternal(
       for: calendar,
