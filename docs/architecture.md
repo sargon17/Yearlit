@@ -34,39 +34,24 @@ Each widget target has its own entry provider and view composition, but shares t
 
 ## Mermaid — component view
 ```mermaid
-flowchart TB
-  subgraph App[Yearlit App (SwiftUI)]
-    Views[Views/]
-    Components[Components/]
-    Managers[Managers/]
-    Services[Services/]
-    Models[Models/]
-    Utils[Utils/]
-    Config[Config/ & WhatsNew/]
-  end
+sequenceDiagram
+  participant User
+  participant View
+  participant Manager
+  participant Service
+  participant Model
+  participant Defaults
+  participant Widget
 
-  subgraph Shared[SharedModels]
-    SharedModels[SharedModels/]
-  end
+  User->>View: interact
+  View->>Manager: request update
+  Manager->>Service: run action
+  Service->>Model: update data
+  Manager->>Defaults: persist flags
+  Model-->>Manager: return data
+  Manager-->>View: publish state
+  Model-->>Widget: share data
 
-  subgraph Widgets[WidgetKit Extensions]
-    Habits[HabitsWidget]
-    Streak[StreakWidget]
-    Year[YearWidget]
-  end
-
-  Views --> Managers
-  Views --> Services
-  Components --> Managers
-  Managers --> Models
-  Services --> Models
-  Managers --> Utils
-  Services --> Utils
-  Models --> SharedModels
-  Habits --> SharedModels
-  Streak --> SharedModels
-  Year --> SharedModels
-  Managers --> Config
 ```
 
 ## Mermaid — interaction flow
