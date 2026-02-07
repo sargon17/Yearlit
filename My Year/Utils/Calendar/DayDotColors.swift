@@ -1,5 +1,5 @@
-import SwiftUI
 import SharedModels
+import SwiftUI
 
 func inactiveDayColor() -> Color {
   WidgetStyle.inactiveDotColor()

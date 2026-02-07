@@ -36,20 +36,19 @@ struct WhatsNewSheetView: View {
         }
       }
 
-
       VStack {
-      VStack {
-      Button(action: handleNext) {
-        Text(isLastSlide ? "Done" : "Next")
-          .frame(maxWidth: .infinity)
-          .padding()
-          .foregroundColor(.brandInverted)
-          .font(.system(size: 16, weight: .bold, design: .monospaced))
-          .clipShape(RoundedRectangle(cornerRadius: 6))
-      }
-      .sameLevelBorder(color: .brand)
-      }.padding(.all, 2)
-      .background(getVoidColor(colorScheme: colorScheme))
+        VStack {
+          Button(action: handleNext) {
+            Text(isLastSlide ? "Done" : "Next")
+              .frame(maxWidth: .infinity)
+              .padding()
+              .foregroundColor(.brandInverted)
+              .font(.system(size: 16, weight: .bold, design: .monospaced))
+              .clipShape(RoundedRectangle(cornerRadius: 6))
+          }
+          .sameLevelBorder(color: .brand)
+        }.padding(.all, 2)
+          .background(getVoidColor(colorScheme: colorScheme))
       }
       .padding(.horizontal, 16)
       .padding(.vertical, 8)

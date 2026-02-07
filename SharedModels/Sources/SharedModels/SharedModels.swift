@@ -115,8 +115,8 @@ public enum UnitOfMeasure: String, Codable, CaseIterable, Identifiable {
   }
 }
 
-public extension UnitOfMeasure.Category {
-  var displayName: String {
+extension UnitOfMeasure.Category {
+  public var displayName: String {
     switch self {
     case .quantity: return String(localized: "Quantity/Count")
     case .distance: return String(localized: "Distance")
@@ -136,19 +136,19 @@ public struct ReminderTime: Codable, Hashable, Identifiable {
   public var id: String { "\(hour):\(minute)" }
   public var hour: Int
   public var minute: Int
-  
+
   public init(hour: Int, minute: Int) {
     self.hour = hour
     self.minute = minute
   }
-  
+
   /// Create from Date
   public init(from date: Date) {
     let calendar = Calendar.current
     self.hour = calendar.component(.hour, from: date)
     self.minute = calendar.component(.minute, from: date)
   }
-  
+
   /// Convert to Date (today at this time)
   public func toDate() -> Date {
     let calendar = Calendar.current
@@ -157,10 +157,10 @@ public struct ReminderTime: Codable, Hashable, Identifiable {
 }
 
 public enum NotificationPrivacyMode: String, Codable, CaseIterable {
-  case full       // Show calendar name and target
-  case generic    // "Reminder: Log your habit"
-  case hidden     // Just badge/sound, no text
-  
+  case full  // Show calendar name and target
+  case generic  // "Reminder: Log your habit"
+  case hidden  // Just badge/sound, no text
+
   public var description: String {
     switch self {
     case .full:
@@ -171,7 +171,7 @@ public enum NotificationPrivacyMode: String, Codable, CaseIterable {
       return String(localized: "No Text (Badge Only)")
     }
   }
-  
+
   public var detail: String {
     switch self {
     case .full:
@@ -351,7 +351,8 @@ public enum TrackingType: String, Codable, CaseIterable {
     [
       .binary: DisplayRepresentation(title: LocalizedStringResource("Once a day (binary)")),
       .counter: DisplayRepresentation(title: LocalizedStringResource("Multiple times (unlimited) (counter)")),
-      .multipleDaily: DisplayRepresentation(title: LocalizedStringResource("Multiple times (with target) (multipleDaily)"))
+      .multipleDaily: DisplayRepresentation(
+        title: LocalizedStringResource("Multiple times (with target) (multipleDaily)"))
     ]
   }
 }
@@ -1171,8 +1172,8 @@ public func updateDayTypesQuantity(store: ValuationStore) -> [DayMoodType: Int] 
   let evaluatedDays = store.valuations.values
     .filter { calendar.component(.year, from: $0.timestamp) == selectedYear }
     .reduce(into: [:]) { counts, valuation in
-    counts[DayMoodType.from(valuation.mood), default: 0] += 1
-  }
+      counts[DayMoodType.from(valuation.mood), default: 0] += 1
+    }
 
   let evaluatedDaysCount = evaluatedDays.values.reduce(0) { $0 + $1 }
   let notEvaluatedDays = max(0, store.currentDayNumber - evaluatedDaysCount)

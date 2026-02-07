@@ -1,7 +1,7 @@
 import Foundation
 
-enum DayKeyFormatter {
-  static let shared: DateFormatter = {
+public enum DayKeyFormatter {
+  public static let shared: DateFormatter = {
     let formatter = DateFormatter()
     formatter.calendar = Calendar(identifier: .gregorian)
     formatter.locale = Locale(identifier: "en_US_POSIX")

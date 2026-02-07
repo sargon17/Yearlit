@@ -99,7 +99,7 @@ extension HabitStackEditorView {
     minute: Int?
   ) throws -> HabitStack {
     let existing: HabitStack? = {
-      if case let .edit(stack) = mode { return stack }
+      if case .edit(let stack) = mode { return stack }
       return nil
     }()
 

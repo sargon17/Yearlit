@@ -10,12 +10,18 @@ struct CreateFirstHabit: View {
 
   @State var name = ""
   @State var recurringReminderEnabled = true
+  @State private var showingNotificationSettings: Bool = false
   @State private var reminderTime: Date = {
     var components = DateComponents()
     components.hour = 8
     components.minute = 30
     return Calendar.current.date(from: components) ?? Date()
   }()
+  @State private var notificationPrivacyMode: NotificationPrivacyMode = .full
+  @State private var suppressWhenCompleted: Bool = true
+  @State private var additionalReminderTimes: [ReminderTime] = []
+  @State private var streakProtectionEnabled: Bool = true
+  @State private var streakProtectionThreshold: Int = 5
 
   var disabled: Bool {
     return name.count > 2 ? false : true
@@ -28,14 +34,21 @@ struct CreateFirstHabit: View {
       trackingType: .binary,
       dailyTarget: 1,
       isArchived: false,
-      recurringReminderEnabled: false,
-      reminderTime: nil,
+      recurringReminderEnabled: recurringReminderEnabled,
+      reminderTime: recurringReminderEnabled ? reminderTime : nil,
       unit: UnitOfMeasure.none,
       defaultRecordValue: 1,
-      currencySymbol: nil
+      currencySymbol: nil,
+      reminderTimeZone: TimeZone.current.identifier,
+      notificationPrivacyMode: notificationPrivacyMode,
+      suppressWhenCompleted: suppressWhenCompleted,
+      additionalReminderTimes: [],
+      streakProtectionEnabled: streakProtectionEnabled,
+      streakProtectionThreshold: streakProtectionThreshold
     )
 
     store.addCalendar(calendar)
+    scheduleNotifications(for: calendar, store: store)
 
     onNext()
   }
@@ -60,46 +73,32 @@ struct CreateFirstHabit: View {
 
         CustomSection(label: "Recurring Reminder") {
           VStack(spacing: 2) {
-
-            HStack {
-              Text("Set a reminder")
-                .labelStyle(type: .secondary)
-
-              Spacer()
-
-              Toggle(
-                "",
-                isOn: Binding(
-                  get: { recurringReminderEnabled },
-                  set: { newValue in
-                    withAnimation(.snappy) {
-                      recurringReminderEnabled = newValue
-                    }
-                  }
-                ))
-            }
-            .tint(Color.brand)
-            .padding(.horizontal)
-            .padding(.vertical, 6)
-            .sameLevelBorder()
-
-            if recurringReminderEnabled {
+            Button(action: { showingNotificationSettings = true }) {
               HStack {
-                DatePicker(
-                  "", selection: $reminderTime, displayedComponents: [.hourAndMinute]
-                )
-                .labelsHidden()
-                .tint(Color.brand)
-                .datePickerStyle(.wheel)
-                .inputStyle(radius: 4, color: Color.brand)
+                VStack(alignment: .leading, spacing: 4) {
+                  Text("Notification settings")
+                    .labelStyle(type: .secondary)
+                  Text(
+                    recurringReminderEnabled
+                      ? "On • set your time, privacy, and suppression."
+                      : "Off • add a daily reminder when you're ready."
+                  )
+                  .font(.caption)
+                  .foregroundStyle(.textTertiary)
+                }
+                Spacer()
+                Image(systemName: "chevron.right")
+                  .font(.system(size: 12, design: .monospaced))
+                  .foregroundStyle(.textTertiary)
               }
-              .frame(maxWidth: .infinity, alignment: .center)
-              .padding(.all, 2)
-              .sameLevelBorder()
-              .colorScheme(.dark)
+              .padding(.horizontal)
+              .padding(.vertical, 10)
             }
-          }.padding(.all, 2)
-            .background(getVoidColor(colorScheme: colorScheme))
+            .buttonStyle(.plain)
+            .sameLevelBorder()
+          }
+          .padding(.all, 2)
+          .background(getVoidColor(colorScheme: colorScheme))
         }
 
       }.padding()
@@ -122,6 +121,21 @@ struct CreateFirstHabit: View {
         .font(.system(size: 14, design: .monospaced))
         .foregroundStyle(.secondary)
       }
+    }
+    .sheet(isPresented: $showingNotificationSettings) {
+      NotificationSettingsDraftSheet(
+        calendarName: name,
+        trackingType: .binary,
+        accentColor: .brand,
+        customerInfo: nil,
+        recurringReminderEnabled: $recurringReminderEnabled,
+        reminderTime: $reminderTime,
+        notificationPrivacyMode: $notificationPrivacyMode,
+        suppressWhenCompleted: $suppressWhenCompleted,
+        additionalReminderTimes: $additionalReminderTimes,
+        streakProtectionEnabled: $streakProtectionEnabled,
+        streakProtectionThreshold: $streakProtectionThreshold
+      )
     }
   }
 }

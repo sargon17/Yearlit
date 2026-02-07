@@ -288,13 +288,13 @@ struct AllCalendarsRecapView: View {
   }
 }
 
-private extension AllCalendarsRecapView {
-  func loadStatsBundleFromDisk(cacheKey: CacheKey) -> StatsBundle? {
+extension AllCalendarsRecapView {
+  fileprivate func loadStatsBundleFromDisk(cacheKey: CacheKey) -> StatsBundle? {
     guard let snapshot: StatsBundleSnapshot = CacheStore.shared.loadDisk(cacheKey) else { return nil }
     return snapshot.toBundle()
   }
 
-  func saveStatsBundleToDisk(_ bundle: StatsBundle, cacheKey: CacheKey) {
+  fileprivate func saveStatsBundleToDisk(_ bundle: StatsBundle, cacheKey: CacheKey) {
     let snapshot = StatsBundleSnapshot(bundle: bundle)
     CacheStore.shared.saveDisk(cacheKey, value: snapshot)
   }

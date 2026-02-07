@@ -21,13 +21,13 @@ class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCenterDele
   ) -> Bool {
     // Set notification delegate
     UNUserNotificationCenter.current().delegate = self
-    
+
     // Setup notification categories
     setupNotificationCategories()
-    
+
     return true
   }
-  
+
   // Handle notification actions (Log Now, Snooze, and default tap)
   func userNotificationCenter(
     _ center: UNUserNotificationCenter,
@@ -35,12 +35,13 @@ class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCenterDele
     withCompletionHandler completionHandler: @escaping () -> Void
   ) {
     let store = CustomCalendarStore.shared
-    
+
     // Handle default tap action (user tapped notification) - open calendar
     if response.actionIdentifier == UNNotificationDefaultActionIdentifier {
       let userInfo = response.notification.request.content.userInfo
       if let calendarIdString = userInfo["calendarId"] as? String,
-         let calendarId = UUID(uuidString: calendarIdString) {
+        let calendarId = UUID(uuidString: calendarIdString)
+      {
         // Open deep link to calendar
         let deepLinkURL = URL(string: "my-year://calendar/\(calendarId.uuidString)")!
         UIApplication.shared.open(deepLinkURL)
@@ -50,10 +51,10 @@ class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCenterDele
       // Handle action buttons (Log Now, Snooze)
       handleNotificationAction(response, store: store)
     }
-    
+
     completionHandler()
   }
-  
+
   // Handle notification when app is in foreground
   func userNotificationCenter(
     _ center: UNUserNotificationCenter,
@@ -63,16 +64,17 @@ class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCenterDele
     // Check if notification should be suppressed
     let userInfo = notification.request.content.userInfo
     if let calendarIdString = userInfo["calendarId"] as? String,
-       let calendarId = UUID(uuidString: calendarIdString),
-       let calendar = CustomCalendarStore.shared.calendars.first(where: { $0.id == calendarId }),
-       calendar.suppressWhenCompleted,
-       shouldSuppressNotification(for: calendar, store: CustomCalendarStore.shared) {
+      let calendarId = UUID(uuidString: calendarIdString),
+      let calendar = CustomCalendarStore.shared.calendars.first(where: { $0.id == calendarId }),
+      calendar.suppressWhenCompleted,
+      shouldSuppressNotification(for: calendar, store: CustomCalendarStore.shared)
+    {
       // Suppress notification - entry already completed
       print("🔕 Suppressed notification for \(calendar.name) - already completed today")
       completionHandler([])
       return
     }
-    
+
     // Show notification
     completionHandler([.banner, .sound, .badge])
   }
@@ -82,7 +84,7 @@ class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCenterDele
 // swiftlint:disable:next type_name
 struct My_YearApp: App {
   @UIApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
-  
+
   // * Onboarding Manager
   @StateObject private var onboarding = OnboardingManager()
   @StateObject private var whatsNewManager = WhatsNewManager()
@@ -108,7 +110,6 @@ struct My_YearApp: App {
 
     let appearance = UINavigationBarAppearance()
     appearance.configureWithTransparentBackground()
-
 
     // Large title → SF monospaced
     appearance.largeTitleTextAttributes = [

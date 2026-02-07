@@ -79,7 +79,8 @@ final class WhatsNewNotesDataSource {
       if let lastSeen, version <= lastSeen { return nil }
       return (version, release)
     }
-    return eligible
+    return
+      eligible
       .sorted { $0.0 > $1.0 }
       .first?
       .1

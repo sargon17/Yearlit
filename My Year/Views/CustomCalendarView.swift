@@ -14,7 +14,7 @@ enum SelectedDate: Equatable, Identifiable {
     switch self {
     case .none:
       return nil
-    case let .selected(date):
+    case .selected(let date):
       return date
     }
   }
@@ -23,7 +23,7 @@ enum SelectedDate: Equatable, Identifiable {
     switch self {
     case .none:
       return nil
-    case let .selected(date):
+    case .selected(let date):
       return date
     }
   }
@@ -275,10 +275,12 @@ struct CustomCalendarView: View {
     }
 
     let showedUpCount = showedUpCount(for: updatedCalendar)
-    guard let showedUpMilestone = ShowedUpMilestoneTracker.shared.milestoneToCelebrate(
-      calendarId: calendarId,
-      showedUpCount: showedUpCount
-    ) else { return }
+    guard
+      let showedUpMilestone = ShowedUpMilestoneTracker.shared.milestoneToCelebrate(
+        calendarId: calendarId,
+        showedUpCount: showedUpCount
+      )
+    else { return }
     ShowedUpMilestoneTracker.shared.markCelebrated(
       calendarId: calendarId,
       milestone: showedUpMilestone
@@ -310,7 +312,8 @@ struct CustomCalendarView: View {
 
   var body: some View {
     let dataVersion = store.dataVersion
-    let statsTaskId = "\(calendar.id.uuidString)|\(valuationStore.selectedYear)|\(dataVersion)|\(statsRefreshToken.uuidString)"
+    let statsTaskId =
+      "\(calendar.id.uuidString)|\(valuationStore.selectedYear)|\(dataVersion)|\(statsRefreshToken.uuidString)"
     let resolvedCalendar = activeCalendar
     let resolvedTodayKeyDate = todayKeyDate
 
@@ -382,15 +385,16 @@ struct CustomCalendarView: View {
                     .foregroundColor(Color("text-tertiary"))
                 }
 
-                if resolvedCalendar.recurringReminderEnabled, let hour = resolvedCalendar.reminderHour,
-                  let minute = resolvedCalendar.reminderMinute
-                {
-                  Text("•")
-                    .font(.system(size: 4, weight: .black, design: .monospaced))
-                    .foregroundColor(Color("text-tertiary"))
-                    .padding(.horizontal, 2)
+                Text("•")
+                  .font(.system(size: 4, weight: .black, design: .monospaced))
+                  .foregroundColor(Color("text-tertiary"))
+                  .padding(.horizontal, 2)
 
-                  HStack(alignment: .center, spacing: 4) {
+                HStack(alignment: .center, spacing: 4) {
+                  if resolvedCalendar.recurringReminderEnabled,
+                    let hour = resolvedCalendar.reminderHour,
+                    let minute = resolvedCalendar.reminderMinute
+                  {
                     let reminderTime = String(format: "%02d:%02d", hour, minute)
                     Image(systemName: "bell")
                       .font(.system(size: 12, design: .monospaced))
@@ -398,20 +402,24 @@ struct CustomCalendarView: View {
                     Text(reminderTime)
                       .font(.system(size: 12, design: .monospaced))
                       .foregroundColor(Color("text-tertiary"))
-                  }.onTapGesture {
-                    router.showScreen(
-                      .sheet
-                    ) { _ in
-                      EditCalendarView(
-                        calendar: resolvedCalendar,
-                        onSave: { updatedCalendar in
-                          store.updateCalendar(updatedCalendar)
-                        },
-                        onDelete: { _ in
-                          store.deleteCalendar(id: resolvedCalendar.id)
-                        }
-                      )
-                    }
+                  } else {
+                    Image(systemName: "bell.slash")
+                      .font(.system(size: 12, design: .monospaced))
+                      .foregroundColor(Color("text-tertiary"))
+                    Text("Off")
+                      .font(.system(size: 12, design: .monospaced))
+                      .foregroundColor(Color("text-tertiary"))
+                  }
+                }
+                .onTapGesture {
+                  router.showScreen(.sheet) { _ in
+                    NotificationSettingsSheet(
+                      calendar: resolvedCalendar,
+                      customerInfo: customerInfo,
+                      onSave: { updatedCalendar in
+                        store.updateCalendar(updatedCalendar)
+                      }
+                    )
                   }
                 }
               }
@@ -455,9 +463,11 @@ struct CustomCalendarView: View {
             onUpgrade: { isPaywallPresented = true },
             trackingType: resolvedCalendar.trackingType,
             onTapCurrentStreak: {
-              guard let milestone = StreakMilestones.latestMilestone(
-                for: currentStreak(for: resolvedCalendar)
-              ) else { return }
+              guard
+                let milestone = StreakMilestones.latestMilestone(
+                  for: currentStreak(for: resolvedCalendar)
+                )
+              else { return }
               router.showScreen(.sheet) { _ in
                 StreakMilestoneShareSheet(
                   calendar: resolvedCalendar,
@@ -470,9 +480,11 @@ struct CustomCalendarView: View {
             },
             onTapActiveDays: {
               let showedUpCount = showedUpCount(for: resolvedCalendar)
-              guard let milestone = ShowedUpMilestones.latestMilestone(
-                for: showedUpCount
-              ) else { return }
+              guard
+                let milestone = ShowedUpMilestones.latestMilestone(
+                  for: showedUpCount
+                )
+              else { return }
               router.showScreen(.sheet) { _ in
                 StreakMilestoneShareSheet(
                   calendar: resolvedCalendar,
@@ -620,9 +632,9 @@ enum CalendarError: LocalizedError, Identifiable {
       return "Please enter a valid name (1-50 characters)"
     case .notificationPermissionDenied:
       return "Please enable notifications in Settings to receive reminders."
-    case let .notificationSchedulingFailed(error):
+    case .notificationSchedulingFailed(let error):
       return "Failed to schedule notification: \(error.localizedDescription)"
-    case let .errorAddingEntry(error):
+    case .errorAddingEntry(let error):
       return "Failed to add entry: \(error.localizedDescription)"
     }
   }

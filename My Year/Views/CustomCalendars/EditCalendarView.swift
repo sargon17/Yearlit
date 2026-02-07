@@ -1,3 +1,4 @@
+import RevenueCat
 import SharedModels
 import SwiftUI
 import SwiftfulRouting
@@ -8,6 +9,7 @@ struct EditCalendarView: View {
   let onSave: (CustomCalendar) -> Void
   let onDelete: (CustomCalendar) -> Void
 
+  @State private var customerInfo: CustomerInfo?
   @State private var name: String
   @State private var selectedColor: String
   @State private var trackingType: TrackingType
@@ -23,6 +25,10 @@ struct EditCalendarView: View {
   @State private var entries: [String: CalendarEntry]
   @State private var notificationPrivacyMode: NotificationPrivacyMode
   @State private var suppressWhenCompleted: Bool
+  @State private var additionalReminderTimes: [ReminderTime]
+  @State private var streakProtectionEnabled: Bool
+  @State private var streakProtectionThreshold: Int
+  @State private var showingNotificationSettings: Bool = false
 
   @FocusState private var isNameFocused: Bool
   @Environment(\.colorScheme) var colorScheme
@@ -47,6 +53,9 @@ struct EditCalendarView: View {
     _entries = State(initialValue: calendar.entries)
     _notificationPrivacyMode = State(initialValue: calendar.notificationPrivacyMode)
     _suppressWhenCompleted = State(initialValue: calendar.suppressWhenCompleted)
+    _additionalReminderTimes = State(initialValue: calendar.additionalReminderTimes)
+    _streakProtectionEnabled = State(initialValue: calendar.streakProtectionEnabled)
+    _streakProtectionThreshold = State(initialValue: calendar.streakProtectionThreshold)
 
     // Default reminder time set to 9:00 AM as it's a common time for daily reminders
     let defaultTime =
@@ -249,85 +258,34 @@ struct EditCalendarView: View {
 
         }
 
-        CustomSection(label: "Recurring Reminder") {
+        CustomSection(label: "Notifications") {
           VStack(spacing: 2) {
-
-            HStack {
-              Text("Set a reminder")
-                .labelStyle(type: .secondary)
-              Spacer()
-
-              Toggle(
-                "",
-                isOn: Binding(
-                  get: { recurringReminderEnabled },
-                  set: { newValue in
-                    withAnimation(.snappy) {
-                      recurringReminderEnabled = newValue
-                    }
-                  }
-                ))
+            Button(action: { showingNotificationSettings = true }) {
+              HStack {
+                VStack(alignment: .leading, spacing: 4) {
+                  Text("Notification settings")
+                    .labelStyle(type: .secondary)
+                  Text(
+                    recurringReminderEnabled
+                      ? "On • tap to customize privacy, suppression, and more."
+                      : "Off • set a daily reminder and privacy level."
+                  )
+                  .font(.caption)
+                  .foregroundStyle(.textTertiary)
+                }
+                Spacer()
+                Image(systemName: "chevron.right")
+                  .font(.system(size: 12, design: .monospaced))
+                  .foregroundStyle(.textTertiary)
+              }
+              .padding(.horizontal)
+              .padding(.vertical, 10)
             }
-            .tint(Color(selectedColor))
-            .padding(.horizontal)
-            .padding(.vertical, 6)
+            .buttonStyle(.plain)
             .sameLevelBorder(isFlat: true)
-
-            if recurringReminderEnabled {
-              HStack {
-                DatePicker(
-                  "", selection: $reminderTime, displayedComponents: [.hourAndMinute]
-                )
-                .labelsHidden()
-                .tint(Color(selectedColor))
-                .datePickerStyle(.wheel)
-                .inputStyle(radius: 4, color: Color(selectedColor))
-                .colorScheme(.dark)
-              }
-              .frame(maxWidth: .infinity, alignment: .center)
-              .padding(.all, 2)
-              .sameLevelBorder(isFlat: true)
-              
-              HStack {
-                VStack(alignment: .leading, spacing: 4) {
-                  Text("Privacy Level")
-                    .labelStyle(type: .secondary)
-                  Text(notificationPrivacyMode.detail)
-                    .font(.caption)
-                    .foregroundStyle(.textTertiary)
-                }
-                Spacer()
-                Picker("Privacy Level", selection: $notificationPrivacyMode) {
-                  ForEach(NotificationPrivacyMode.allCases, id: \.self) { mode in
-                    Text(mode.description).tag(mode)
-                  }
-                }
-                .pickerStyle(.menu)
-                .tint(Color(selectedColor))
-              }
-              .padding(.horizontal)
-              .padding(.vertical, 8)
-              .sameLevelBorder(isFlat: true)
-              
-              HStack {
-                VStack(alignment: .leading, spacing: 4) {
-                  Text("Smart Suppression")
-                    .labelStyle(type: .secondary)
-                  Text("Don't notify if already completed")
-                    .font(.caption)
-                    .foregroundStyle(.textTertiary)
-                }
-                Spacer()
-                Toggle("", isOn: $suppressWhenCompleted)
-              }
-              .tint(Color(selectedColor))
-              .padding(.horizontal)
-              .padding(.vertical, 8)
-              .sameLevelBorder(isFlat: true)
-            }
-          }.padding(.all, 2)
-            .background(getVoidColor(colorScheme: colorScheme))
-
+          }
+          .padding(.all, 2)
+          .background(getVoidColor(colorScheme: colorScheme))
         }
 
         CustomSection(label: "Already active streak?") {
@@ -366,7 +324,6 @@ struct EditCalendarView: View {
           .frame(maxWidth: .infinity, alignment: .leading)
           .padding(.horizontal, 8)
 
-
         CustomSeparator()
           .padding(.horizontal, -16)
           .padding(.vertical, 16)
@@ -393,18 +350,18 @@ struct EditCalendarView: View {
           .padding(.all, 2)
           .background(getVoidColor(colorScheme: colorScheme))
 
-            Text(
-              isArchived
-                ? "Unarchiving restores this calendar to your boards and tracking lists."
-                : "Archiving hides this calendar from your boards without deleting past data."
-            )
-            .font(.footnote)
-            .foregroundStyle(.textTertiary)
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .padding(.horizontal, 8)
-            .padding(.bottom, 12)
+          Text(
+            isArchived
+              ? "Unarchiving restores this calendar to your boards and tracking lists."
+              : "Archiving hides this calendar from your boards without deleting past data."
+          )
+          .font(.footnote)
+          .foregroundStyle(.textTertiary)
+          .frame(maxWidth: .infinity, alignment: .leading)
+          .padding(.horizontal, 8)
+          .padding(.bottom, 12)
 
-            VStack(spacing: 2) {
+          VStack(spacing: 2) {
             Button(action: {
               showingDeleteConfirmation = true
             }) {
@@ -441,6 +398,11 @@ struct EditCalendarView: View {
     .scrollContentBackground(.hidden)
     .scrollIndicators(.hidden)
     .surfaceBackground(Color("surface-muted"), ignoresSafeArea: true)
+    .onAppear {
+      Purchases.shared.getCustomerInfo { info, _ in
+        customerInfo = info
+      }
+    }
     .navigationTitle("Edit Calendar")
     .navigationBarTitleDisplayMode(.large)
     .toolbar {
@@ -462,6 +424,26 @@ struct EditCalendarView: View {
           dismiss()
         }
         .disabled(name.isEmpty)
+      }
+    }
+    .sheet(isPresented: $showingNotificationSettings) {
+      NotificationSettingsDraftSheet(
+        calendarName: name,
+        trackingType: trackingType,
+        accentColor: Color(selectedColor),
+        customerInfo: customerInfo,
+        recurringReminderEnabled: $recurringReminderEnabled,
+        reminderTime: $reminderTime,
+        notificationPrivacyMode: $notificationPrivacyMode,
+        suppressWhenCompleted: $suppressWhenCompleted,
+        additionalReminderTimes: $additionalReminderTimes,
+        streakProtectionEnabled: $streakProtectionEnabled,
+        streakProtectionThreshold: $streakProtectionThreshold
+      )
+    }
+    .onChange(of: trackingType) { _, newValue in
+      if newValue != .multipleDaily {
+        additionalReminderTimes = []
       }
     }
   }
@@ -486,7 +468,10 @@ struct EditCalendarView: View {
         && selectedUnit == .currency) ? currencySymbol : nil,
       reminderTimeZone: calendar.reminderTimeZone,
       notificationPrivacyMode: notificationPrivacyMode,
-      suppressWhenCompleted: suppressWhenCompleted
+      suppressWhenCompleted: suppressWhenCompleted,
+      additionalReminderTimes: additionalReminderTimes,
+      streakProtectionEnabled: streakProtectionEnabled,
+      streakProtectionThreshold: streakProtectionThreshold
     )
   }
 

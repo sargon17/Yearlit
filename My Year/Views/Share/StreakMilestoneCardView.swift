@@ -37,7 +37,7 @@ struct StreakMilestoneCardView: View {
           lightColor: dividerLight,
           darkColor: dividerDark
         )
-          .padding(.horizontal, -28)
+        .padding(.horizontal, -28)
 
         streakBlock
 
@@ -52,7 +52,7 @@ struct StreakMilestoneCardView: View {
           lightColor: dividerLight,
           darkColor: dividerDark
         )
-          .padding(.horizontal, -28)
+        .padding(.horizontal, -28)
         footer
       }
       .padding()
@@ -101,8 +101,8 @@ struct StreakMilestoneCardView: View {
         .font(.system(size: 12, design: .monospaced))
         .foregroundColor(secondaryTextColor)
         + Text(" yearlit")
-          .font(.system(size: 12, design: .monospaced))
-          .foregroundColor(foregroundColor)
+        .font(.system(size: 12, design: .monospaced))
+        .foregroundColor(foregroundColor)
 
       Image("icon")
         .resizable()

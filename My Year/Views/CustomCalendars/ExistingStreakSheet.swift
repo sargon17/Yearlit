@@ -57,11 +57,11 @@ struct ExistingStreakSheet: View {
               in: ...Self.makeLocalCalendar().startOfDay(for: Date()),
               displayedComponents: [.date]
             )
-              .tint(accentColor)
-              .datePickerStyle(.compact)
-              .padding(.horizontal)
-              .padding(.vertical, 6)
-              .sameLevelBorder(isFlat: true)
+            .tint(accentColor)
+            .datePickerStyle(.compact)
+            .padding(.horizontal)
+            .padding(.vertical, 6)
+            .sameLevelBorder(isFlat: true)
 
             DatePicker(
               "End",
@@ -69,11 +69,11 @@ struct ExistingStreakSheet: View {
               in: startDate...Self.makeLocalCalendar().startOfDay(for: Date()),
               displayedComponents: [.date]
             )
-              .tint(accentColor)
-              .datePickerStyle(.compact)
-              .padding(.horizontal)
-              .padding(.vertical, 6)
-              .sameLevelBorder(isFlat: true)
+            .tint(accentColor)
+            .datePickerStyle(.compact)
+            .padding(.horizontal)
+            .padding(.vertical, 6)
+            .sameLevelBorder(isFlat: true)
           }
           .padding(.all, 2)
           .background(getVoidColor(colorScheme: colorScheme))

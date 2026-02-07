@@ -19,7 +19,7 @@ public final class HabitCalendarEntity {
   public var reminderTimeZone: String?
   public var notificationPrivacyModeRawValue: String = NotificationPrivacyMode.full.rawValue
   public var suppressWhenCompleted: Bool = true
-  public var additionalReminderTimesJSON: String? // JSON-encoded [ReminderTime]
+  public var additionalReminderTimesJSON: String?  // JSON-encoded [ReminderTime]
   public var streakProtectionEnabled: Bool = true
   public var streakProtectionThreshold: Int = 5
   public var order: Int = 0
@@ -183,22 +183,24 @@ extension HabitCalendarEntity {
   // Helper to decode additional reminder times from JSON
   private var decodedAdditionalReminderTimes: [ReminderTime] {
     guard let json = additionalReminderTimesJSON,
-          let data = json.data(using: .utf8) else {
+      let data = json.data(using: .utf8)
+    else {
       return []
     }
     return (try? JSONDecoder().decode([ReminderTime].self, from: data)) ?? []
   }
-  
+
   // Helper to encode additional reminder times to JSON
   private static func encodeAdditionalReminderTimes(_ times: [ReminderTime]) -> String? {
     guard !times.isEmpty,
-          let data = try? JSONEncoder().encode(times),
-          let json = String(data: data, encoding: .utf8) else {
+      let data = try? JSONEncoder().encode(times),
+      let json = String(data: data, encoding: .utf8)
+    else {
       return nil
     }
     return json
   }
-  
+
   func toCustomCalendar(entries: [String: CalendarEntry]) -> CustomCalendar {
     let tracking = TrackingType(rawValue: trackingTypeRawValue) ?? .binary
     let unit = unitRawValue.flatMap(UnitOfMeasure.init(rawValue:))
@@ -435,8 +437,9 @@ public enum SwiftDataManager {
   public static let container: ModelContainer = {
     do {
       let appGroupId = "group.sargon17.My-Year"
-      guard let groupURL = FileManager.default
-        .containerURL(forSecurityApplicationGroupIdentifier: appGroupId)
+      guard
+        let groupURL = FileManager.default
+          .containerURL(forSecurityApplicationGroupIdentifier: appGroupId)
       else {
         fatalError("Unable to resolve app group container for \(appGroupId)")
       }

@@ -36,7 +36,8 @@ struct AppVersion: Comparable, Hashable {
   let components: [Int]
 
   init?(_ rawValue: String) {
-    let parts = rawValue
+    let parts =
+      rawValue
       .split(separator: ".")
       .map { Int($0) ?? 0 }
     guard !parts.isEmpty else { return nil }
@@ -62,38 +63,38 @@ extension Bundle {
 }
 
 #if DEBUG
-extension WhatsNewRelease {
-  static var preview: WhatsNewRelease {
-    WhatsNewRelease(
-      version: "1.9",
-      title: "What's New",
-      slides: [
-        WhatsNewSlide(
-          id: "preview-hero",
-          type: .hero,
-          title: "Preview slide",
-          subtitle: "A short subtitle goes here.",
-          body: "Describe the change and why it matters.",
-          items: nil,
-          image: nil,
-          systemImage: "sparkles"
-        ),
-        WhatsNewSlide(
-          id: "preview-list",
-          type: .list,
-          title: "Preview list",
-          subtitle: "Quick highlights in one place.",
-          body: nil,
-          items: [
-            "One fast improvement",
-            "Another cleaner flow",
-            "A tiny but helpful detail"
-          ],
-          image: nil,
-          systemImage: "checkmark.seal.fill"
-        )
-      ]
-    )
+  extension WhatsNewRelease {
+    static var preview: WhatsNewRelease {
+      WhatsNewRelease(
+        version: "1.9",
+        title: "What's New",
+        slides: [
+          WhatsNewSlide(
+            id: "preview-hero",
+            type: .hero,
+            title: "Preview slide",
+            subtitle: "A short subtitle goes here.",
+            body: "Describe the change and why it matters.",
+            items: nil,
+            image: nil,
+            systemImage: "sparkles"
+          ),
+          WhatsNewSlide(
+            id: "preview-list",
+            type: .list,
+            title: "Preview list",
+            subtitle: "Quick highlights in one place.",
+            body: nil,
+            items: [
+              "One fast improvement",
+              "Another cleaner flow",
+              "A tiny but helpful detail"
+            ],
+            image: nil,
+            systemImage: "checkmark.seal.fill"
+          )
+        ]
+      )
+    }
   }
-}
 #endif

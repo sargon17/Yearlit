@@ -118,11 +118,11 @@ struct OverallGridView: View {
           await MainActor.run {
             counterPct75 = result.0
             mappedDays = result.1.map { (date, z) in
-            let inactiveColor = inactiveDayColor()
-            let activeColor = activeDayColor()
-            if date > today {  // future days stay inactive
-              return (date: date, color: inactiveColor)
-            }
+              let inactiveColor = inactiveDayColor()
+              let activeColor = activeDayColor()
+              if date > today {  // future days stay inactive
+                return (date: date, color: inactiveColor)
+              }
               if z <= 0 {  // no data or zero progress → neutral active shade (not accent)
                 return (date: date, color: activeColor)
               }
@@ -130,9 +130,10 @@ struct OverallGridView: View {
               return (date: date, color: accent.opacity(opacity))
             }
             CacheStore.shared.set(cacheKey, value: mappedDays)
-            let zByDay = Dictionary(uniqueKeysWithValues: result.1.map { (date, z) in
-              (dayKey(for: date), z)
-            })
+            let zByDay = Dictionary(
+              uniqueKeysWithValues: result.1.map { (date, z) in
+                (dayKey(for: date), z)
+              })
             CacheStore.shared.saveDisk(diskKey, value: zByDay)
           }
         }

@@ -11,15 +11,15 @@ struct NoiseOverlayModifier: ViewModifier {
 
   func body(content: Content) -> some View {
     content
-    .background(
-      Image("noise")
-        .resizable(resizingMode: .tile)
-        .blendMode(blendMode)
-        .opacity(opacity)
-        .allowsHitTesting(false)
+      .background(
+        Image("noise")
+          .resizable(resizingMode: .tile)
+          .blendMode(blendMode)
+          .opacity(opacity)
+          .allowsHitTesting(false)
 
-    )
-    .ignoresSafeArea(edges: .all)
+      )
+      .ignoresSafeArea(edges: .all)
   }
 }
 

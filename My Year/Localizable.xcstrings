@@ -74,6 +74,19 @@
         }
       }
     },
+    "%lld days" : {
+
+    },
+    "%lld days down! You're building momentum 🚀" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%lld days down! You're building momentum 🚀"
+          }
+        }
+      }
+    },
     "%lld days showed up" : {
       "localizations" : {
         "uk" : {
@@ -114,6 +127,16 @@
         }
       }
     },
+    "✨ Amazing! %lld days in a row. One more today!" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "✨ Amazing! %lld days in a row. One more today!"
+          }
+        }
+      }
+    },
     "👉 ‘I’m a learner’" : {
       "localizations" : {
         "uk" : {
@@ -144,6 +167,16 @@
         }
       }
     },
+    "💪 %lld days strong! Don't break it now!" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "💪 %lld days strong! Don't break it now!"
+          }
+        }
+      }
+    },
     "📅 One dot = one day" : {
       "localizations" : {
         "uk" : {
@@ -164,12 +197,42 @@
         }
       }
     },
+    "🔥 Don't break your %lld-day streak!" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "🔥 Don't break your %lld-day streak!"
+          }
+        }
+      }
+    },
     "🔥 See your streaks grow" : {
       "localizations" : {
         "uk" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "🔥 Бач, як ростуть твої серії"
+          }
+        }
+      }
+    },
+    "🔥 Streak at risk!" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "🔥 Streak at risk!"
+          }
+        }
+      }
+    },
+    "🔥 You're on a %lld-day streak! Keep it alive!" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "🔥 You're on a %lld-day streak! Keep it alive!"
           }
         }
       }
@@ -294,6 +357,9 @@
         }
       }
     },
+    "A recurring notification at your chosen time." : {
+
+    },
     "A simple habit calendar." : {
       "localizations" : {
         "uk" : {
@@ -344,6 +410,9 @@
         }
       }
     },
+    "Add" : {
+
+    },
     "Add at least one habit to the stack." : {
       "localizations" : {
         "uk" : {
@@ -393,6 +462,9 @@
           }
         }
       }
+    },
+    "Additional reminders (Premium)" : {
+
     },
     "After I wake up" : {
       "localizations" : {
@@ -513,6 +585,9 @@
           }
         }
       }
+    },
+    "At 9 PM, if your streak is at risk, we send one extra reminder." : {
+
     },
     "Attractive" : {
       "localizations" : {
@@ -817,6 +892,9 @@
         }
       }
     },
+    "Daily Reminder" : {
+
+    },
     "Daily Target" : {
       "localizations" : {
         "uk" : {
@@ -853,6 +931,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Небезпечна зона"
+          }
+        }
+      }
+    },
+    "Day %lld of your streak! Keep going 💪" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Day %lld of your streak! Keep going 💪"
           }
         }
       }
@@ -978,6 +1066,16 @@
         }
       }
     },
+    "Don't forget to log your habit today" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Don't forget to log your habit today"
+          }
+        }
+      }
+    },
     "Don’t just set goals" : {
       "localizations" : {
         "uk" : {
@@ -997,9 +1095,6 @@
           }
         }
       }
-    },
-    "Don't notify if already completed" : {
-
     },
     "Done" : {
       "localizations" : {
@@ -1114,6 +1209,16 @@
         }
       }
     },
+    "Every day counts! Log your progress today 📊" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Every day counts! Log your progress today 📊"
+          }
+        }
+      }
+    },
     "Existing Streak" : {
       "localizations" : {
         "uk" : {
@@ -1123,6 +1228,9 @@
           }
         }
       }
+    },
+    "Extra reminders are available when your habit has a daily target." : {
+
     },
     "Feature Requests" : {
       "localizations" : {
@@ -1242,6 +1350,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Грами (г)"
+          }
+        }
+      }
+    },
+    "Great job yesterday! Let's keep it going today 🎯" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Great job yesterday! Let's keep it going today 🎯"
           }
         }
       }
@@ -1471,6 +1589,9 @@
         }
       }
     },
+    "Late-day rescue reminder" : {
+
+    },
     "Leave a Review" : {
       "localizations" : {
         "uk" : {
@@ -1531,6 +1652,9 @@
           }
         }
       }
+    },
+    "Lock screen text" : {
+
     },
     "Log a numeric value per day, like pages read or minutes practiced." : {
       "localizations" : {
@@ -1686,6 +1810,9 @@
         }
       }
     },
+    "Multiple Times" : {
+
+    },
     "Multiple times (unlimited)" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -1810,6 +1937,19 @@
         }
       }
     },
+    "Nice! %lld in a row. Let's make it %lld!" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Nice! %1$lld in a row. Let's make it %2$lld!"
+          }
+        }
+      }
+    },
+    "No additional times." : {
+
+    },
     "No archived calendars yet." : {
       "localizations" : {
         "uk" : {
@@ -1869,6 +2009,9 @@
           }
         }
       }
+    },
+    "Notification settings" : {
+
     },
     "notification.action.log" : {
       "comment" : "Quick action to log habit from notification",
@@ -2110,6 +2253,9 @@
         }
       }
     },
+    "Notifications" : {
+
+    },
     "Now at %lld days" : {
       "localizations" : {
         "uk" : {
@@ -2140,6 +2286,15 @@
         }
       }
     },
+    "Off" : {
+
+    },
+    "Off • add a daily reminder when you're ready." : {
+
+    },
+    "Off • set a daily reminder and privacy level." : {
+
+    },
     "OK" : {
       "localizations" : {
         "uk" : {
@@ -2149,6 +2304,12 @@
           }
         }
       }
+    },
+    "On • set your time, privacy, and suppression." : {
+
+    },
+    "On • tap to customize privacy, suppression, and more." : {
+
     },
     "Once a day" : {
       "extractionState" : "stale",
@@ -2171,6 +2332,12 @@
           }
         }
       }
+    },
+    "Only for Target tracking" : {
+
+    },
+    "Only triggers when your streak is at least this long." : {
+
     },
     "Oops" : {
       "localizations" : {
@@ -2308,6 +2475,9 @@
         }
       }
     },
+    "Privacy" : {
+
+    },
     "Privacy Level" : {
 
     },
@@ -2345,6 +2515,16 @@
         }
       }
     },
+    "Quick! Log %@ before midnight" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Quick! Log %@ before midnight"
+          }
+        }
+      }
+    },
     "real feedback" : {
       "localizations" : {
         "uk" : {
@@ -2364,6 +2544,9 @@
           }
         }
       }
+    },
+    "Remove" : {
+
     },
     "Renews: %@" : {
       "localizations" : {
@@ -2486,6 +2669,9 @@
         }
       }
     },
+    "Send a daily reminder" : {
+
+    },
     "Send request" : {
       "localizations" : {
         "uk" : {
@@ -2587,6 +2773,9 @@
         }
       }
     },
+    "Skips the reminder if you already logged today." : {
+
+    },
     "Small changes → Big results." : {
       "localizations" : {
         "uk" : {
@@ -2597,7 +2786,17 @@
         }
       }
     },
-    "Smart Suppression" : {
+    "Small steps, big results. Let's track %@! 🎯" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Small steps, big results. Let's track %@! 🎯"
+          }
+        }
+      }
+    },
+    "Smart suppression" : {
 
     },
     "So if something’s missing, or something could work better, let me know." : {
@@ -2749,6 +2948,9 @@
           }
         }
       }
+    },
+    "Streak Protection" : {
+
     },
     "Streak Range" : {
       "localizations" : {
@@ -2969,13 +3171,25 @@
         }
       }
     },
+    "Threshold" : {
+
+    },
     "Time" : {
-      "extractionState" : "stale",
       "localizations" : {
         "uk" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Час"
+          }
+        }
+      }
+    },
+    "Time to build your habit! (Target: %lld)" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Time to build your habit! (Target: %lld)"
           }
         }
       }
@@ -3161,6 +3375,9 @@
         }
       }
     },
+    "Up to %lld total times per day." : {
+
+    },
     "Upgrade" : {
       "localizations" : {
         "uk" : {
@@ -3170,6 +3387,9 @@
           }
         }
       }
+    },
+    "Upgrade to Premium to add more times." : {
+
     },
     "Value" : {
       "localizations" : {
@@ -3283,6 +3503,16 @@
         }
       }
     },
+    "Yesterday ✅ Today? Let's go! 🔥" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Yesterday ✅ Today? Let's go! 🔥"
+          }
+        }
+      }
+    },
     "You are in it" : {
       "localizations" : {
         "uk" : {
@@ -3323,12 +3553,32 @@
         }
       }
     },
+    "You did it yesterday, you can do it today! 💚" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "You did it yesterday, you can do it today! 💚"
+          }
+        }
+      }
+    },
     "You showed up" : {
       "localizations" : {
         "uk" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Ти прийшов"
+          }
+        }
+      }
+    },
+    "You're at %lld%% this week! Keep pushing 💪" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "You're at %lld%% this week! Keep pushing 💪"
           }
         }
       }

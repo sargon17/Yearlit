@@ -73,7 +73,6 @@ struct CalendarShareSheet: View {
         CustomSeparator()
           .padding(.horizontal, -16)
 
-
         Spacer(minLength: 12)
 
         cardPager
@@ -133,31 +132,31 @@ struct CalendarShareSheet: View {
     HStack {
       HStack(spacing: 2) {
 
-      Button(action: shareSelectedTemplate) {
-        HStack(spacing: 8) {
-          Image(systemName: "square.and.arrow.up")
-          Text("Share")
+        Button(action: shareSelectedTemplate) {
+          HStack(spacing: 8) {
+            Image(systemName: "square.and.arrow.up")
+            Text("Share")
+          }
+          .font(.system(size: 14, design: .monospaced))
+          .foregroundColor(.textPrimary)
+          .padding(.vertical, 10)
+          .frame(maxWidth: .infinity)
         }
-        .font(.system(size: 14, design: .monospaced))
-        .foregroundColor(.textPrimary)
-        .padding(.vertical, 10)
-        .frame(maxWidth: .infinity)
-      }
-      .sameLevelBorder()
-      .foregroundStyle(.textSecondary)
+        .sameLevelBorder()
+        .foregroundStyle(.textSecondary)
 
-      Button(action: saveToPhotos) {
-        HStack(spacing: 8) {
-          Image(systemName: "square.and.arrow.down")
-          Text("Save to Photos")
+        Button(action: saveToPhotos) {
+          HStack(spacing: 8) {
+            Image(systemName: "square.and.arrow.down")
+            Text("Save to Photos")
+          }
+          .font(.system(size: 14, design: .monospaced))
+          .foregroundColor(.textPrimary)
+          .padding(.vertical, 10)
+          .frame(maxWidth: .infinity)
         }
-        .font(.system(size: 14, design: .monospaced))
-        .foregroundColor(.textPrimary)
-        .padding(.vertical, 10)
-        .frame(maxWidth: .infinity)
-      }
-      .sameLevelBorder()
-      .foregroundStyle(.textSecondary)
+        .sameLevelBorder()
+        .foregroundStyle(.textSecondary)
       }
       .padding(2)
       .background(getVoidColor(colorScheme: colorScheme))

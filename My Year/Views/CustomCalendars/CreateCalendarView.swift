@@ -25,10 +25,16 @@ struct CreateCalendarView: View {
   @State private var existingStreakEntries: [String: CalendarEntry] = [:]
   @State private var notificationPrivacyMode: NotificationPrivacyMode = .full
   @State private var suppressWhenCompleted: Bool = true
+  @State private var additionalReminderTimes: [ReminderTime] = []
+  @State private var streakProtectionEnabled: Bool = true
+  @State private var streakProtectionThreshold: Int = 5
+  @State private var showingNotificationSettings: Bool = false
 
   @FocusState private var isNameFocused: Bool
   @Environment(\.colorScheme) var colorScheme
   @Environment(\.router) private var router
+
+  private var isPremiumUser: Bool { isPremium(customerInfo: customerInfo) }
 
   private let colors = [
     "mood-terrible",
@@ -76,6 +82,8 @@ struct CreateCalendarView: View {
   }
 
   func createCalendar() {
+    let resolvedAdditionalTimes =
+      (trackingType == .multipleDaily && isPremiumUser) ? additionalReminderTimes : []
     let calendar = CustomCalendar(
       name: name,
       color: selectedColor,
@@ -92,7 +100,10 @@ struct CreateCalendarView: View {
         && selectedUnit == .currency) ? currencySymbol : nil,
       reminderTimeZone: TimeZone.current.identifier,
       notificationPrivacyMode: notificationPrivacyMode,
-      suppressWhenCompleted: suppressWhenCompleted
+      suppressWhenCompleted: suppressWhenCompleted,
+      additionalReminderTimes: resolvedAdditionalTimes,
+      streakProtectionEnabled: streakProtectionEnabled,
+      streakProtectionThreshold: streakProtectionThreshold
     )
     scheduleNotifications(for: calendar, store: CustomCalendarStore.shared)
     onCreate(calendar)
@@ -226,85 +237,34 @@ struct CreateCalendarView: View {
           }
         }
 
-        CustomSection(label: "Recurring Reminder") {
+        CustomSection(label: "Notifications") {
           VStack(spacing: 2) {
-
-            HStack {
-              Text("Set a reminder")
-                .labelStyle(type: .secondary)
-
-              Spacer()
-
-              Toggle(
-                "",
-                isOn: Binding(
-                  get: { recurringReminderEnabled },
-                  set: { newValue in
-                    withAnimation(.snappy) {
-                      recurringReminderEnabled = newValue
-                    }
-                  }
-                ))
+            Button(action: { showingNotificationSettings = true }) {
+              HStack {
+                VStack(alignment: .leading, spacing: 4) {
+                  Text("Notification settings")
+                    .labelStyle(type: .secondary)
+                  Text(
+                    recurringReminderEnabled
+                      ? "On • tap to customize privacy, suppression, and more."
+                      : "Off • set a daily reminder and privacy level."
+                  )
+                  .font(.caption)
+                  .foregroundStyle(.textTertiary)
+                }
+                Spacer()
+                Image(systemName: "chevron.right")
+                  .font(.system(size: 12, design: .monospaced))
+                  .foregroundStyle(.textTertiary)
+              }
+              .padding(.horizontal)
+              .padding(.vertical, 10)
             }
-            .tint(Color(selectedColor))
-            .padding(.horizontal)
-            .padding(.vertical, 6)
+            .buttonStyle(.plain)
             .sameLevelBorder(isFlat: true)
-
-            if recurringReminderEnabled {
-              HStack {
-                DatePicker(
-                  "", selection: $reminderTime, displayedComponents: [.hourAndMinute]
-                )
-                .labelsHidden()
-                .tint(Color(selectedColor))
-                .datePickerStyle(.wheel)
-                .inputStyle(radius: 4, color: Color(selectedColor))
-              }
-              .frame(maxWidth: .infinity, alignment: .center)
-              .padding(.all, 2)
-              .sameLevelBorder(isFlat: true)
-              .colorScheme(.dark)
-              
-              HStack {
-                VStack(alignment: .leading, spacing: 4) {
-                  Text("Privacy Level")
-                    .labelStyle(type: .secondary)
-                  Text(notificationPrivacyMode.detail)
-                    .font(.caption)
-                    .foregroundStyle(.textTertiary)
-                }
-                Spacer()
-                Picker("Privacy Level", selection: $notificationPrivacyMode) {
-                  ForEach(NotificationPrivacyMode.allCases, id: \.self) { mode in
-                    Text(mode.description).tag(mode)
-                  }
-                }
-                .pickerStyle(.menu)
-                .tint(Color(selectedColor))
-              }
-              .padding(.horizontal)
-              .padding(.vertical, 8)
-              .sameLevelBorder(isFlat: true)
-              
-              HStack {
-                VStack(alignment: .leading, spacing: 4) {
-                  Text("Smart Suppression")
-                    .labelStyle(type: .secondary)
-                  Text("Don't notify if already completed")
-                    .font(.caption)
-                    .foregroundStyle(.textTertiary)
-                }
-                Spacer()
-                Toggle("", isOn: $suppressWhenCompleted)
-              }
-              .tint(Color(selectedColor))
-              .padding(.horizontal)
-              .padding(.vertical, 8)
-              .sameLevelBorder(isFlat: true)
-            }
-          }.padding(.all, 2)
-            .background(getVoidColor(colorScheme: colorScheme))
+          }
+          .padding(.all, 2)
+          .background(getVoidColor(colorScheme: colorScheme))
         }
         CustomSection(label: "Already active streak?") {
           VStack(spacing: 8) {
@@ -436,8 +396,26 @@ struct CreateCalendarView: View {
         self.customerInfo = info
       }
     }
+    .sheet(isPresented: $showingNotificationSettings) {
+      NotificationSettingsDraftSheet(
+        calendarName: name,
+        trackingType: trackingType,
+        accentColor: Color(selectedColor),
+        customerInfo: customerInfo,
+        recurringReminderEnabled: $recurringReminderEnabled,
+        reminderTime: $reminderTime,
+        notificationPrivacyMode: $notificationPrivacyMode,
+        suppressWhenCompleted: $suppressWhenCompleted,
+        additionalReminderTimes: $additionalReminderTimes,
+        streakProtectionEnabled: $streakProtectionEnabled,
+        streakProtectionThreshold: $streakProtectionThreshold
+      )
+    }
     .onChange(of: trackingType) { _, _ in
       existingStreakEntries = [:]
+      if trackingType != .multipleDaily {
+        additionalReminderTimes = []
+      }
     }
     .onChange(of: dailyTarget) { _, _ in
       if trackingType == .multipleDaily {

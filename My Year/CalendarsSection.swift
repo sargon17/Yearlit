@@ -21,7 +21,7 @@ struct CalendarsSection: View {
   var body: some View {
     VStack(spacing: 0) {
 
-        // custom toolbar
+      // custom toolbar
       HStack {
         HStack(spacing: 6) {
           Text("Yearlit")
@@ -37,8 +37,6 @@ struct CalendarsSection: View {
 
         toolbar
       }.padding(.all, 16)
-
-
 
       CustomSeparator()
 
@@ -189,7 +187,7 @@ struct CalendarsSection: View {
       }) {
         Image(systemName: "rectangle.split.1x2")
           .font(.system(size: 16))
-          // .foregroundColor(Color("text-tertiary"))
+        // .foregroundColor(Color("text-tertiary"))
       }
     }
   }

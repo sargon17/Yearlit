@@ -65,18 +65,18 @@ struct SameLevelBorder: ViewModifier {
               )
             )  // inner dark shadow
         )
-      .overlay(
-        NoiseLayer(opacity: 0.35, blendMode: nil)
-          .mask(RoundedRectangle(cornerRadius: radius))
-      )
-      .shadow(
-        color: .black.opacity(
-          clampedOpacity((colorScheme == .dark ? 0.4 : 0.4) * lightModeScale * flatScale)
-        ),
-        radius: isFlat ? 1 : 2,
-        x: isFlat ? 1 : 4,
-        y: isFlat ? 1 : 6
-      )
+        .overlay(
+          NoiseLayer(opacity: 0.35, blendMode: nil)
+            .mask(RoundedRectangle(cornerRadius: radius))
+        )
+        .shadow(
+          color: .black.opacity(
+            clampedOpacity((colorScheme == .dark ? 0.4 : 0.4) * lightModeScale * flatScale)
+          ),
+          radius: isFlat ? 1 : 2,
+          x: isFlat ? 1 : 4,
+          y: isFlat ? 1 : 6
+        )
     )
   }
 

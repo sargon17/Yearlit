@@ -37,7 +37,7 @@ struct HabitStackEditorView: View {
       _scheduleTime = State(initialValue: Date())
       _steps = State(initialValue: [])
 
-    case let .edit(stack):
+    case .edit(let stack):
       _stackId = State(initialValue: stack.id)
       _name = State(initialValue: stack.name)
       _prompt = State(initialValue: stack.prompt ?? "")

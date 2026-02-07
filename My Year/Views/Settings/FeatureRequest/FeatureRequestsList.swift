@@ -97,7 +97,8 @@ extension FeatureRequestsList {
         !showsOnlyMine || featureRequestManager.isCurrentUser(id: request.clientId)
       }
     let grouped = Dictionary(grouping: requests, by: { $0.computedStatus._id })
-    return grouped
+    return
+      grouped
       .compactMap { _, requests in
         guard let status = requests.first?.computedStatus else { return nil }
         let sortedRequests = requests.sorted { $0._creationTime > $1._creationTime }

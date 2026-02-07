@@ -1,5 +1,4 @@
 import SwiftUI
-import SwiftUI
 
 struct CustomSection<Content: View>: View {
   let content: () -> Content

@@ -33,8 +33,8 @@ struct ShareCardFooter: View {
         .font(.system(size: 12, design: .monospaced))
         .foregroundColor(Color("text-tertiary"))
         + Text(" yearlit")
-          .font(.system(size: 12, design: .monospaced))
-          .foregroundColor(Color("text-primary"))
+        .font(.system(size: 12, design: .monospaced))
+        .foregroundColor(Color("text-primary"))
 
       Image("icon")
         .resizable()

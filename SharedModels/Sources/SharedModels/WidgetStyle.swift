@@ -105,8 +105,7 @@ public enum WidgetStyle {
     }
   }
 
-  private static func rgba(from color: Color) -> (red: CGFloat, green: CGFloat, blue: CGFloat, alpha: CGFloat)?
-  {
+  private static func rgba(from color: Color) -> (red: CGFloat, green: CGFloat, blue: CGFloat, alpha: CGFloat)? {
     #if canImport(UIKit)
       let uiColor = UIColor(color)
       var red: CGFloat = 0

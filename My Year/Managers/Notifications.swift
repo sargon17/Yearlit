@@ -23,7 +23,7 @@ public func setupNotificationCategories() {
     ),
     options: [.foreground]
   )
-  
+
   let snoozeAction = UNNotificationAction(
     identifier: NotificationAction.snooze,
     title: NSLocalizedString(
@@ -33,14 +33,14 @@ public func setupNotificationCategories() {
     ),
     options: []
   )
-  
+
   let category = UNNotificationCategory(
     identifier: NotificationAction.categoryIdentifier,
     actions: [quickLogAction, snoozeAction],
     intentIdentifiers: [],
     options: []
   )
-  
+
   UNUserNotificationCenter.current().setNotificationCategories([category])
   print("✅ Notification categories configured")
 }
@@ -54,7 +54,7 @@ public enum NotificationError: LocalizedError {
   case unknownStatus
   case schedulingFailed(Error)
   case invalidCalendarData
-  
+
   public var errorDescription: String? {
     switch self {
     case .permissionDenied:
@@ -112,7 +112,7 @@ private func generateDynamicContent(
   store: CustomCalendarStore
 ) -> (title: String, body: String) {
   let stats = calculateStreakStats(for: calendar, store: store)
-  
+
   // Base title
   let titleFormat = NSLocalizedString(
     "notification.reminder.title.full",
@@ -120,28 +120,47 @@ private func generateDynamicContent(
     comment: "Notification title with habit name"
   )
   let title = String(format: titleFormat, calendar.name)
-  
+
   // Dynamic body based on streak and progress
   var body: String
-  
+
   if stats.currentStreak >= 7 {
     // Long streak - emphasize maintenance
     let messages = [
-      String(localized: "🔥 You're on a \(stats.currentStreak)-day streak! Keep it alive!"),
-      String(localized: "💪 \(stats.currentStreak) days strong! Don't break it now!"),
-      String(localized: "✨ Amazing! \(stats.currentStreak) days in a row. One more today!")
+      String(
+        format: String(localized: "🔥 You're on a %lld-day streak! Keep it alive!"),
+        stats.currentStreak
+      ),
+      String(
+        format: String(localized: "💪 %lld days strong! Don't break it now!"),
+        stats.currentStreak
+      ),
+      String(
+        format: String(localized: "✨ Amazing! %lld days in a row. One more today!"),
+        stats.currentStreak
+      )
     ]
     body = messages.randomElement() ?? messages[0]
-    
+
   } else if stats.currentStreak >= 3 {
     // Building momentum
     let messages = [
-      String(localized: "\(stats.currentStreak) days down! You're building momentum 🚀"),
-      String(localized: "Day \(stats.currentStreak) of your streak! Keep going 💪"),
-      String(localized: "Nice! \(stats.currentStreak) in a row. Let's make it \(stats.currentStreak + 1)!")
+      String(
+        format: String(localized: "%lld days down! You're building momentum 🚀"),
+        stats.currentStreak
+      ),
+      String(
+        format: String(localized: "Day %lld of your streak! Keep going 💪"),
+        stats.currentStreak
+      ),
+      String(
+        format: String(localized: "Nice! %lld in a row. Let's make it %lld!"),
+        stats.currentStreak,
+        stats.currentStreak + 1
+      )
     ]
     body = messages.randomElement() ?? messages[0]
-    
+
   } else if stats.completedYesterday {
     // Did it yesterday, encourage continuation
     let messages = [
@@ -150,22 +169,31 @@ private func generateDynamicContent(
       String(localized: "Yesterday ✅ Today? Let's go! 🔥")
     ]
     body = messages.randomElement() ?? messages[0]
-    
+
   } else if stats.weeklyCompletionRate > 0.7 {
     // Good weekly progress
     let weekPercent = Int(stats.weeklyCompletionRate * 100)
-    body = String(localized: "You're at \(weekPercent)% this week! Keep pushing 💪")
-    
+    body = String(
+      format: String(localized: "You're at %lld%% this week! Keep pushing 💪"),
+      weekPercent
+    )
+
   } else {
     // Default motivational message
     let messages = [
-      String(localized: "Time to build your habit! (Target: \(calendar.dailyTarget))"),
+      String(
+        format: String(localized: "Time to build your habit! (Target: %lld)"),
+        calendar.dailyTarget
+      ),
       String(localized: "Every day counts! Log your progress today 📊"),
-      String(localized: "Small steps, big results. Let's track \(calendar.name)! 🎯")
+      String(
+        format: String(localized: "Small steps, big results. Let's track %@! 🎯"),
+        calendar.name
+      )
     ]
     body = messages.randomElement() ?? messages[0]
   }
-  
+
   return (title, body)
 }
 
@@ -174,30 +202,29 @@ private func calculateStreakStats(
   for calendar: CustomCalendar,
   store: CustomCalendarStore
 ) -> StreakStats {
-  let sortedEntries = calendar.entries.sorted { $0.key > $1.key }
   var currentStreak = 0
   var completedYesterday = false
   var weeklyCompleted = 0
-  
+
   // Calculate current streak (consecutive days from today backwards)
   let today = LocalDayCalendar.startOfDay(for: Date())
   let dateFormatter = DayKeyFormatter.shared
   var checkDate = today
-  
+
   for dayOffset in 0..<365 {
     let dayKey = dateFormatter.string(from: checkDate)
-    
+
     if let entry = calendar.entries[dayKey] {
       let isSuccess = isEntrySuccess(entry: entry, calendar: calendar)
-      
+
       if dayOffset == 1 {
         completedYesterday = isSuccess
       }
-      
+
       if dayOffset < 7 && isSuccess {
         weeklyCompleted += 1
       }
-      
+
       if isSuccess {
         if dayOffset <= currentStreak {
           currentStreak += 1
@@ -214,12 +241,12 @@ private func calculateStreakStats(
         break
       }
     }
-    
+
     checkDate = Calendar.current.date(byAdding: .day, value: -1, to: checkDate) ?? checkDate
   }
-  
+
   let weeklyCompletionRate = Double(weeklyCompleted) / 7.0
-  
+
   return StreakStats(
     currentStreak: currentStreak,
     completedYesterday: completedYesterday,
@@ -233,7 +260,8 @@ private func isEntrySuccess(entry: CalendarEntry, calendar: CustomCalendar) -> B
   case .binary:
     return entry.completed
   case .counter:
-    return entry.count > 0
+    let loggedValue = entry.count
+    return loggedValue != 0
   case .multipleDaily:
     return entry.count >= calendar.dailyTarget
   }
@@ -244,6 +272,53 @@ private struct StreakStats {
   let currentStreak: Int
   let completedYesterday: Bool
   let weeklyCompletionRate: Double
+}
+
+// MARK: - Request ID Utilities
+
+/// Best-effort derivation of the calendar id a notification request belongs to.
+/// We prefer `userInfo["calendarId"]` since request identifiers may include suffixes
+/// (e.g. `-0`, `-streak-protection`, `-snooze`).
+internal func deriveCalendarId(notificationIdentifier: String, userInfoCalendarId: String?) -> UUID? {
+  if let userInfoCalendarId,
+    let calendarId = UUID(uuidString: userInfoCalendarId)
+  {
+    return calendarId
+  }
+
+  if let calendarId = UUID(uuidString: notificationIdentifier) {
+    return calendarId
+  }
+
+  // All of our derived identifiers are prefixed with the 36-char UUID string.
+  guard notificationIdentifier.count >= 36 else {
+    return nil
+  }
+  return UUID(uuidString: String(notificationIdentifier.prefix(36)))
+}
+
+private func deriveCalendarId(from request: UNNotificationRequest) -> UUID? {
+  deriveCalendarId(
+    notificationIdentifier: request.identifier,
+    userInfoCalendarId: request.content.userInfo["calendarId"] as? String
+  )
+}
+
+private func removePendingNotifications(for calendarId: UUID, completion: @escaping () -> Void) {
+  UNUserNotificationCenter.current().getPendingNotificationRequests { requests in
+    let identifiersToRemove = requests.compactMap { request -> String? in
+      guard deriveCalendarId(from: request) == calendarId else {
+        return nil
+      }
+      return request.identifier
+    }
+
+    if !identifiersToRemove.isEmpty {
+      UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: identifiersToRemove)
+    }
+
+    completion()
+  }
 }
 
 // MARK: - Streak Protection
@@ -258,49 +333,56 @@ public func scheduleStreakProtectionReminder(
 ) {
   // Only schedule if enabled and reminders are on
   guard calendar.streakProtectionEnabled,
-        calendar.recurringReminderEnabled else {
+    calendar.recurringReminderEnabled
+  else {
     return
   }
-  
+
   // Calculate current streak
   let stats = calculateStreakStats(for: calendar, store: store)
-  
+
   // Only protect significant streaks
   guard stats.currentStreak >= calendar.streakProtectionThreshold else {
     return
   }
-  
+
   // Schedule notification for 9 PM today
   let now = Date()
   let calendar_swift = Calendar.current
   guard let ninePM = calendar_swift.date(bySettingHour: 21, minute: 0, second: 0, of: now) else {
     return
   }
-  
+
   // Only schedule if 9 PM is in the future
   guard ninePM > now else {
     return
   }
-  
+
   let notificationId = "\(calendar.id.uuidString)-streak-protection"
   let content = UNMutableNotificationContent()
-  
+
   // Urgent, streak-focused copy
   switch calendar.notificationPrivacyMode {
   case .full:
-    content.title = String(localized: "🔥 Don't break your \(stats.currentStreak)-day streak!")
-    content.body = String(localized: "Quick! Log \(calendar.name) before midnight")
-    
+    content.title = String(
+      format: String(localized: "🔥 Don't break your %lld-day streak!"),
+      stats.currentStreak
+    )
+    content.body = String(
+      format: String(localized: "Quick! Log %@ before midnight"),
+      calendar.name
+    )
+
   case .generic:
     content.title = String(localized: "🔥 Streak at risk!")
     content.body = String(localized: "Don't forget to log your habit today")
-    
+
   case .hidden:
     content.badge = NSNumber(value: 1)
     content.title = ""
     content.body = ""
   }
-  
+
   content.sound = .default
   content.categoryIdentifier = NotificationAction.categoryIdentifier
   content.userInfo = [
@@ -308,7 +390,7 @@ public func scheduleStreakProtectionReminder(
     "calendarName": calendar.name,
     "isStreakProtection": true
   ]
-  
+
   // Schedule for 9 PM today (one-time, not recurring)
   let triggerDate = calendar_swift.dateComponents(
     [.year, .month, .day, .hour, .minute],
@@ -318,13 +400,13 @@ public func scheduleStreakProtectionReminder(
     dateMatching: triggerDate,
     repeats: false
   )
-  
+
   let request = UNNotificationRequest(
     identifier: notificationId,
     content: content,
     trigger: trigger
   )
-  
+
   UNUserNotificationCenter.current().add(request) { error in
     if let error = error {
       print("❌ Failed to schedule streak protection: \(error)")
@@ -346,84 +428,79 @@ public func scheduleNotifications(
   store: CustomCalendarStore? = nil,
   completion: @escaping (Result<Void, NotificationError>) -> Void = { _ in }
 ) {
-  let notificationId = calendar.id.uuidString
-  
-  // Remove all existing notifications for this calendar (primary + additional + streak protection)
-  var allNotificationIds = [notificationId]
-  for (index, _) in calendar.additionalReminderTimes.enumerated() {
-    allNotificationIds.append("\(notificationId)-\(index)")
-  }
-  allNotificationIds.append("\(notificationId)-streak-protection")
-  
-  UNUserNotificationCenter.current().removePendingNotificationRequests(
-    withIdentifiers: allNotificationIds
-  )
-  
-  // If calendar is archived or reminder disabled, we're done (already removed)
-  guard !calendar.isArchived,
-        calendar.recurringReminderEnabled else {
-    completion(.success(()))
-    return
-  }
-  
-  // Schedule streak protection if store available
-  if let store = store {
-    scheduleStreakProtectionReminder(for: calendar, store: store)
-  }
-  
-  // Collect all reminder times (primary + additional)
-  var allReminderTimes: [(hour: Int, minute: Int, isPrimary: Bool)] = []
-  if let hour = calendar.reminderHour, let minute = calendar.reminderMinute {
-    allReminderTimes.append((hour, minute, true))
-  }
-  for reminderTime in calendar.additionalReminderTimes {
-    allReminderTimes.append((reminderTime.hour, reminderTime.minute, false))
-  }
-  
-  // If no reminder times configured, nothing to schedule
-  guard !allReminderTimes.isEmpty else {
-    completion(.success(()))
-    return
-  }
-  
-  // Check notification permissions before scheduling
-  UNUserNotificationCenter.current().getNotificationSettings { settings in
-    switch settings.authorizationStatus {
-    case .notDetermined:
-      // Request permission first
-      UNUserNotificationCenter.current().requestAuthorization(
-        options: [.alert, .sound, .badge]
-      ) { granted, error in
-        if let error = error {
-          completion(.failure(.schedulingFailed(error)))
-        } else if granted {
-          _scheduleAllReminders(
-            for: calendar,
-            reminderTimes: allReminderTimes,
-            store: store,
-            completion: completion
-          )
-        } else {
-          completion(.failure(.permissionDenied))
+  removePendingNotifications(for: calendar.id) {
+    // If calendar is archived or reminder disabled, we're done (already removed)
+    guard !calendar.isArchived,
+      calendar.recurringReminderEnabled
+    else {
+      completion(.success(()))
+      return
+    }
+
+    // Collect all reminder times (primary + additional)
+    var allReminderTimes: [(hour: Int, minute: Int, isPrimary: Bool)] = []
+    if let hour = calendar.reminderHour, let minute = calendar.reminderMinute {
+      allReminderTimes.append((hour, minute, true))
+    }
+    for reminderTime in calendar.additionalReminderTimes {
+      allReminderTimes.append((reminderTime.hour, reminderTime.minute, false))
+    }
+
+    // If no reminder times configured, nothing to schedule
+    guard !allReminderTimes.isEmpty else {
+      completion(.success(()))
+      return
+    }
+
+    // Check notification permissions before scheduling
+    UNUserNotificationCenter.current().getNotificationSettings { settings in
+      switch settings.authorizationStatus {
+      case .notDetermined:
+        // Request permission first
+        UNUserNotificationCenter.current().requestAuthorization(
+          options: [.alert, .sound, .badge]
+        ) { granted, error in
+          if let error = error {
+            completion(.failure(.schedulingFailed(error)))
+          } else if granted {
+            // Schedule streak protection if store available
+            if let store = store {
+              scheduleStreakProtectionReminder(for: calendar, store: store)
+            }
+
+            _scheduleAllReminders(
+              for: calendar,
+              reminderTimes: allReminderTimes,
+              store: store,
+              completion: completion
+            )
+          } else {
+            completion(.failure(.permissionDenied))
+          }
         }
+
+      case .authorized, .provisional:
+        // Schedule streak protection if store available
+        if let store = store {
+          scheduleStreakProtectionReminder(for: calendar, store: store)
+        }
+
+        _scheduleAllReminders(
+          for: calendar,
+          reminderTimes: allReminderTimes,
+          store: store,
+          completion: completion
+        )
+
+      case .denied:
+        completion(.failure(.permissionDenied))
+
+      case .ephemeral:
+        completion(.failure(.unsupportedMode))
+
+      @unknown default:
+        completion(.failure(.unknownStatus))
       }
-      
-    case .authorized, .provisional:
-      _scheduleAllReminders(
-        for: calendar,
-        reminderTimes: allReminderTimes,
-        store: store,
-        completion: completion
-      )
-      
-    case .denied:
-      completion(.failure(.permissionDenied))
-      
-    case .ephemeral:
-      completion(.failure(.unsupportedMode))
-      
-    @unknown default:
-      completion(.failure(.unknownStatus))
     }
   }
 }
@@ -437,11 +514,11 @@ private func _scheduleAllReminders(
 ) {
   let group = DispatchGroup()
   var errors: [Error] = []
-  
+
   var additionalIndex = 0
   for reminderTime in reminderTimes {
     group.enter()
-    
+
     let notificationId: String
     if reminderTime.isPrimary {
       notificationId = calendar.id.uuidString
@@ -449,7 +526,7 @@ private func _scheduleAllReminders(
       notificationId = "\(calendar.id.uuidString)-\(additionalIndex)"
       additionalIndex += 1
     }
-    
+
     _scheduleNotificationInternal(
       for: calendar,
       notificationId: notificationId,
@@ -463,7 +540,7 @@ private func _scheduleAllReminders(
       group.leave()
     }
   }
-  
+
   group.notify(queue: .main) {
     if let firstError = errors.first as? NotificationError {
       completion(.failure(firstError))
@@ -483,7 +560,7 @@ private func _scheduleNotificationInternal(
   completion: @escaping (Result<Void, NotificationError>) -> Void
 ) {
   let content = UNMutableNotificationContent()
-  
+
   // Apply privacy mode settings with dynamic content
   switch calendar.notificationPrivacyMode {
   case .full:
@@ -500,7 +577,7 @@ private func _scheduleNotificationInternal(
         comment: "Notification title with habit name"
       )
       content.title = String(format: titleFormat, calendar.name)
-      
+
       let bodyFormat = NSLocalizedString(
         "notification.reminder.body.full",
         value: "Don't forget to track %@ today! (Target: %d)",
@@ -508,7 +585,7 @@ private func _scheduleNotificationInternal(
       )
       content.body = String(format: bodyFormat, calendar.name, calendar.dailyTarget)
     }
-    
+
   case .generic:
     // Show generic message for privacy
     content.title = NSLocalizedString(
@@ -521,49 +598,50 @@ private func _scheduleNotificationInternal(
       value: "Time to log your daily habit",
       comment: "Generic notification body"
     )
-    
+
   case .hidden:
     // No text, just badge and sound
     content.badge = NSNumber(value: 1)
     content.title = ""
     content.body = ""
   }
-  
+
   content.sound = .default
-  
+
   // Set category for quick actions
   content.categoryIdentifier = NotificationAction.categoryIdentifier
-  
+
   // Store calendar ID for action handling
   content.userInfo = [
     "calendarId": calendar.id.uuidString,
     "calendarName": calendar.name
   ]
-  
+
   // Set up timezone-aware trigger
   var components = DateComponents()
   components.hour = hour
   components.minute = minute
-  
+
   // Use stored timezone if available, otherwise current
   if let timeZoneIdentifier = calendar.reminderTimeZone,
-     let timeZone = TimeZone(identifier: timeZoneIdentifier) {
+    let timeZone = TimeZone(identifier: timeZoneIdentifier)
+  {
     components.timeZone = timeZone
   } else {
     components.timeZone = TimeZone.current
   }
-  
+
   let trigger = UNCalendarNotificationTrigger(
     dateMatching: components,
     repeats: true
   )
-  
+
   let request = UNNotificationRequest(
     identifier: notificationId,
     content: content,
     trigger: trigger
   )
-  
+
   UNUserNotificationCenter.current().add(request) { error in
     if let error = error {
       print("❌ Failed to schedule notification for \(calendar.name): \(error)")
@@ -580,10 +658,9 @@ private func _scheduleNotificationInternal(
 /// Cancels all pending notifications for a calendar
 /// - Parameter calendar: The calendar whose notifications should be cancelled
 public func cancelNotifications(for calendar: CustomCalendar) {
-  UNUserNotificationCenter.current().removePendingNotificationRequests(
-    withIdentifiers: [calendar.id.uuidString]
-  )
-  print("🗑️ Cancelled notifications for \(calendar.name)")
+  removePendingNotifications(for: calendar.id) {
+    print("🗑️ Cancelled notifications for \(calendar.name)")
+  }
 }
 
 // MARK: - Notification Cleanup
@@ -593,10 +670,15 @@ public func cancelNotifications(for calendar: CustomCalendar) {
 public func checkForNotificationsOfNonExistingCalendars(store: CustomCalendarStore) async {
   let requests = await UNUserNotificationCenter.current().pendingNotificationRequests()
   let calendarIds = Set(store.calendars.map { $0.id.uuidString })
-  
+
   var removedCount = 0
   for request in requests {
-    if !calendarIds.contains(request.identifier) {
+    guard let requestCalendarId = deriveCalendarId(from: request) else {
+      // Not ours or malformed; ignore.
+      continue
+    }
+
+    if !calendarIds.contains(requestCalendarId.uuidString) {
       print("🧹 Found notification for non-existing calendar: \(request.identifier)")
       UNUserNotificationCenter.current().removePendingNotificationRequests(
         withIdentifiers: [request.identifier]
@@ -604,7 +686,7 @@ public func checkForNotificationsOfNonExistingCalendars(store: CustomCalendarSto
       removedCount += 1
     }
   }
-  
+
   if removedCount > 0 {
     print("✨ Cleaned up \(removedCount) orphaned notification(s)")
   }
@@ -619,11 +701,11 @@ public func checkForNotificationsOfNonExistingCalendars(store: CustomCalendarSto
 public func validateReminderTime(_ time: Date) -> Date {
   let calendar = Calendar.current
   let now = Date()
-  
+
   // If the absolute date is in the past, shift forward
   if time < now {
     let targetComponents = calendar.dateComponents([.hour, .minute], from: time)
-    
+
     // Find the next occurrence of this time
     if let nextOccurrence = calendar.nextDate(
       after: now,
@@ -633,7 +715,7 @@ public func validateReminderTime(_ time: Date) -> Date {
       return nextOccurrence
     }
   }
-  
+
   return time
 }
 
@@ -648,26 +730,27 @@ public func handleNotificationAction(
   store: CustomCalendarStore
 ) {
   let userInfo = response.notification.request.content.userInfo
-  
+
   guard let calendarIdString = userInfo["calendarId"] as? String,
-        let calendarId = UUID(uuidString: calendarIdString),
-        let calendar = store.calendars.first(where: { $0.id == calendarId }) else {
+    let calendarId = UUID(uuidString: calendarIdString),
+    let calendar = store.calendars.first(where: { $0.id == calendarId })
+  else {
     print("❌ Invalid calendar ID in notification action")
     return
   }
-  
+
   switch response.actionIdentifier {
   case NotificationAction.quickLog:
     handleQuickLog(for: calendar, store: store)
-    
+
   case NotificationAction.snooze:
     handleSnooze(for: calendar)
-    
+
   case UNNotificationDefaultActionIdentifier:
     // Note: Default tap action (opening calendar) is handled in AppDelegate
     // via deep link: my-year://calendar/<id>
     print("📱 User tapped notification for \(calendar.name)")
-    
+
   default:
     break
   }
@@ -676,24 +759,24 @@ public func handleNotificationAction(
 /// Quick log handler - logs an entry for today
 private func handleQuickLog(for calendar: CustomCalendar, store: CustomCalendarStore) {
   let today = Date()
-  
+
   // Create entry based on tracking type
   let entry: CalendarEntry
   switch calendar.trackingType {
   case .binary:
     entry = CalendarEntry(date: today, count: 1, completed: true)
-    
+
   case .counter:
     let defaultValue = calendar.defaultRecordValue ?? 1
     entry = CalendarEntry(date: today, count: defaultValue, completed: false)
-    
+
   case .multipleDaily:
     let currentCount = store.getEntry(calendarId: calendar.id, date: today)?.count ?? 0
     let newCount = currentCount + 1
     let completed = newCount >= calendar.dailyTarget
     entry = CalendarEntry(date: today, count: newCount, completed: completed)
   }
-  
+
   store.addEntry(calendarId: calendar.id, entry: entry)
   print("✅ Quick logged entry for \(calendar.name)")
 }
@@ -702,7 +785,7 @@ private func handleQuickLog(for calendar: CustomCalendar, store: CustomCalendarS
 private func handleSnooze(for calendar: CustomCalendar) {
   let notificationId = "\(calendar.id.uuidString)-snooze"
   let content = UNMutableNotificationContent()
-  
+
   // Apply privacy mode with localization
   switch calendar.notificationPrivacyMode {
   case .full:
@@ -718,7 +801,7 @@ private func handleSnooze(for calendar: CustomCalendar) {
       value: "Don't forget to log your habit!",
       comment: "Snoozed notification body"
     )
-    
+
   case .generic:
     // Show generic message for privacy
     content.title = NSLocalizedString(
@@ -731,20 +814,20 @@ private func handleSnooze(for calendar: CustomCalendar) {
       value: "Time to log your daily habit",
       comment: "Generic notification body"
     )
-    
+
   case .hidden:
     content.badge = NSNumber(value: 1)
     content.title = ""
     content.body = ""
   }
-  
+
   content.sound = .default
   content.categoryIdentifier = NotificationAction.categoryIdentifier
   content.userInfo = [
     "calendarId": calendar.id.uuidString,
     "calendarName": calendar.name
   ]
-  
+
   // Schedule for 1 hour from now
   let trigger = UNTimeIntervalNotificationTrigger(timeInterval: 3600, repeats: false)
   let request = UNNotificationRequest(
@@ -752,7 +835,7 @@ private func handleSnooze(for calendar: CustomCalendar) {
     content: content,
     trigger: trigger
   )
-  
+
   UNUserNotificationCenter.current().add(request) { error in
     if let error = error {
       print("❌ Failed to schedule snooze notification: \(error)")
@@ -771,22 +854,23 @@ private func handleSnooze(for calendar: CustomCalendar) {
 /// - Returns: True if notification should be suppressed
 public func shouldSuppressNotification(for calendar: CustomCalendar, store: CustomCalendarStore) -> Bool {
   let today = Date()
-  
+
   guard let entry = store.getEntry(calendarId: calendar.id, date: today) else {
     // No entry for today, show notification
     return false
   }
-  
+
   // Check based on tracking type
   switch calendar.trackingType {
   case .binary:
     // Binary: suppress if completed
     return entry.completed
-    
+
   case .counter:
     // Counter: suppress if any value has been logged
-    return entry.count > 0
-    
+    let loggedValue = entry.count
+    return loggedValue != 0
+
   case .multipleDaily:
     // Multiple daily: suppress if target reached
     return entry.count >= calendar.dailyTarget
@@ -801,8 +885,7 @@ public func checkNotificationPermissions(
   completion: @escaping (Bool) -> Void
 ) {
   UNUserNotificationCenter.current().getNotificationSettings { settings in
-    let isAuthorized = settings.authorizationStatus == .authorized ||
-                      settings.authorizationStatus == .provisional
+    let isAuthorized = settings.authorizationStatus == .authorized || settings.authorizationStatus == .provisional
     completion(isAuthorized)
   }
 }
@@ -824,10 +907,10 @@ public func requestNotificationPermissions(
           completion(.success(granted))
         }
       }
-      
+
     case .authorized, .provisional:
       completion(.success(true))
-      
+
     default:
       completion(.success(false))
     }

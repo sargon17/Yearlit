@@ -49,11 +49,12 @@ struct ContentView: View {
         cleanupTask = Task {
           // Wait 2 seconds to batch multiple rapid changes
           try? await Task.sleep(for: .seconds(2))
-          
+
           // Check if still needed and not cancelled
           guard !Task.isCancelled,
-                lastCleanupVersion != newVersion else { return }
-          
+            lastCleanupVersion != newVersion
+          else { return }
+
           lastCleanupVersion = newVersion
           await checkForNotificationsOfNonExistingCalendars(store: store)
         }
