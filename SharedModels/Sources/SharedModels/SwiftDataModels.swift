@@ -20,6 +20,8 @@ public final class HabitCalendarEntity {
   public var notificationPrivacyModeRawValue: String = NotificationPrivacyMode.full.rawValue
   public var suppressWhenCompleted: Bool = true
   public var additionalReminderTimesJSON: String? // JSON-encoded [ReminderTime]
+  public var streakProtectionEnabled: Bool = true
+  public var streakProtectionThreshold: Int = 5
   public var order: Int = 0
 
   public init(
@@ -39,6 +41,8 @@ public final class HabitCalendarEntity {
     notificationPrivacyModeRawValue: String = NotificationPrivacyMode.full.rawValue,
     suppressWhenCompleted: Bool = true,
     additionalReminderTimesJSON: String? = nil,
+    streakProtectionEnabled: Bool = true,
+    streakProtectionThreshold: Int = 5,
     order: Int = 0
   ) {
     self.id = id
@@ -57,6 +61,8 @@ public final class HabitCalendarEntity {
     self.notificationPrivacyModeRawValue = notificationPrivacyModeRawValue
     self.suppressWhenCompleted = suppressWhenCompleted
     self.additionalReminderTimesJSON = additionalReminderTimesJSON
+    self.streakProtectionEnabled = streakProtectionEnabled
+    self.streakProtectionThreshold = streakProtectionThreshold
     self.order = order
   }
 }
@@ -217,7 +223,9 @@ extension HabitCalendarEntity {
       reminderTimeZone: reminderTimeZone,
       notificationPrivacyMode: privacyMode,
       suppressWhenCompleted: suppressWhenCompleted,
-      additionalReminderTimes: additionalTimes
+      additionalReminderTimes: additionalTimes,
+      streakProtectionEnabled: streakProtectionEnabled,
+      streakProtectionThreshold: streakProtectionThreshold
     ) {
       return calendar
     }
@@ -239,7 +247,9 @@ extension HabitCalendarEntity {
       reminderTimeZone: reminderTimeZone,
       notificationPrivacyMode: privacyMode,
       suppressWhenCompleted: suppressWhenCompleted,
-      additionalReminderTimes: additionalTimes
+      additionalReminderTimes: additionalTimes,
+      streakProtectionEnabled: streakProtectionEnabled,
+      streakProtectionThreshold: streakProtectionThreshold
     )
   }
 
@@ -259,6 +269,8 @@ extension HabitCalendarEntity {
     notificationPrivacyModeRawValue = model.notificationPrivacyMode.rawValue
     suppressWhenCompleted = model.suppressWhenCompleted
     additionalReminderTimesJSON = Self.encodeAdditionalReminderTimes(model.additionalReminderTimes)
+    streakProtectionEnabled = model.streakProtectionEnabled
+    streakProtectionThreshold = model.streakProtectionThreshold
     order = model.order
   }
 
@@ -280,6 +292,8 @@ extension HabitCalendarEntity {
       notificationPrivacyModeRawValue: model.notificationPrivacyMode.rawValue,
       suppressWhenCompleted: model.suppressWhenCompleted,
       additionalReminderTimesJSON: encodeAdditionalReminderTimes(model.additionalReminderTimes),
+      streakProtectionEnabled: model.streakProtectionEnabled,
+      streakProtectionThreshold: model.streakProtectionThreshold,
       order: model.order
     )
   }
