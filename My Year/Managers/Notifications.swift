@@ -348,11 +348,6 @@ public func scheduleNotifications(
 ) {
   let notificationId = calendar.id.uuidString
   
-  // Schedule streak protection if store available
-  if let store = store {
-    scheduleStreakProtectionReminder(for: calendar, store: store)
-  }
-  
   // Remove all existing notifications for this calendar (primary + additional + streak protection)
   var allNotificationIds = [notificationId]
   for (index, _) in calendar.additionalReminderTimes.enumerated() {
@@ -369,6 +364,11 @@ public func scheduleNotifications(
         calendar.recurringReminderEnabled else {
     completion(.success(()))
     return
+  }
+  
+  // Schedule streak protection if store available
+  if let store = store {
+    scheduleStreakProtectionReminder(for: calendar, store: store)
   }
   
   // Collect all reminder times (primary + additional)
