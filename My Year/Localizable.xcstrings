@@ -463,6 +463,9 @@
         }
       }
     },
+    "Additional reminders" : {
+
+    },
     "Additional reminders (Premium)" : {
 
     },
@@ -1055,6 +1058,9 @@
         }
       }
     },
+    "Determines how the notifications appear on your lock screen." : {
+
+    },
     "Distance" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -1230,6 +1236,9 @@
       }
     },
     "Extra reminders are available when your habit has a daily target." : {
+
+    },
+    "Extra reminders for daily repeating habits." : {
 
     },
     "Feature Requests" : {

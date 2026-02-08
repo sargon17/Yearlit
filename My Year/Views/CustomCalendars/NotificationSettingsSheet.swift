@@ -59,15 +59,12 @@ struct NotificationSettingsSheet: View {
     NavigationStack {
       ScrollView {
         VStack(spacing: 32) {
-          NotificationSection(label: "Daily Reminder") {
-            VStack(spacing: 2) {
+          NotificationSection(label: "Daily Reminder", description: "A recurring notification at your chosen time.") {
+            VStack(spacing: 1) {
               HStack {
                 VStack(alignment: .leading, spacing: 4) {
                   Text("Send a daily reminder")
                     .labelStyle(type: .secondary)
-                  Text("A recurring notification at your chosen time.")
-                    .font(.caption)
-                    .foregroundStyle(.textTertiary)
                 }
                 Spacer()
                 Toggle("", isOn: $recurringReminderEnabled)
@@ -78,25 +75,18 @@ struct NotificationSettingsSheet: View {
               .notificationSurface()
 
               if recurringReminderEnabled {
-                VStack(spacing: 2) {
-                  VStack(spacing: 6) {
-                    HStack {
-                      Text("Time")
-                        .labelStyle(type: .secondary)
-                      Spacer()
-                    }
-                    .padding(.horizontal)
-                    .padding(.top, 10)
+                VStack {
+                  HStack(spacing: 6) {
+                    Text("Time")
+                      .labelStyle(type: .secondary)
 
+                    Spacer()
                     DatePicker("", selection: $reminderTime, displayedComponents: [.hourAndMinute])
-                      .labelsHidden()
                       .tint(Color(calendar.color))
-                      .datePickerStyle(.wheel)
-                      .inputStyle(radius: 4, color: Color(calendar.color))
-                      .colorScheme(.dark)
-                      .padding(.horizontal)
-                      .padding(.bottom, 10)
+                      .datePickerStyle(.graphical)
+                      .frame(maxWidth: .greatestFiniteMagnitude)
                   }
+                  .padding(.leading)
                   .notificationSurface()
                 }
               }
@@ -104,79 +94,28 @@ struct NotificationSettingsSheet: View {
           }
 
           if recurringReminderEnabled {
-            NotificationSection(label: "Privacy") {
-              VStack(spacing: 2) {
-                HStack {
-                  VStack(alignment: .leading, spacing: 4) {
-                    Text("Lock screen text")
-                      .labelStyle(type: .secondary)
-                    Text(notificationPrivacyMode.detail)
-                      .font(.caption)
-                      .foregroundStyle(.textTertiary)
-                  }
-                  Spacer()
-                  Picker("Privacy Level", selection: $notificationPrivacyMode) {
-                    ForEach(NotificationPrivacyMode.allCases, id: \.self) { mode in
-                      Text(mode.description).tag(mode)
-                    }
-                  }
-                  .pickerStyle(.menu)
-                  .tint(Color(calendar.color))
-                }
-                .padding(.horizontal)
-                .padding(.vertical, 10)
-                .notificationSurface()
-
-                HStack {
-                  VStack(alignment: .leading, spacing: 4) {
-                    Text("Smart suppression")
-                      .labelStyle(type: .secondary)
-                    Text("Skips the reminder if you already logged today.")
-                      .font(.caption)
-                      .foregroundStyle(.textTertiary)
-                  }
-                  Spacer()
-                  Toggle("", isOn: $suppressWhenCompleted)
-                }
-                .tint(Color(calendar.color))
-                .padding(.horizontal)
-                .padding(.vertical, 10)
-                .notificationSurface()
-              }
-            }
-
-            NotificationSection(label: "Multiple Times") {
-              VStack(spacing: 2) {
-                if calendar.trackingType != .multipleDaily {
+            if calendar.trackingType == .multipleDaily {
+              NotificationSection(
+                label: "Multiple Times",
+                description: "Extra reminders for daily repeating habits."
+              ) {
+                VStack(spacing: 1) {
                   HStack {
                     VStack(alignment: .leading, spacing: 4) {
-                      Text("Only for Target tracking")
+                      Text("Additional reminders")
                         .labelStyle(type: .secondary)
-                      Text("Extra reminders are available when your habit has a daily target.")
-                        .font(.caption)
-                        .foregroundStyle(.textTertiary)
                     }
                     Spacer()
+                    Button(
+                      action: addAdditionalReminderTime,
+                      label: {
+                        Image(systemName: "plus")
+                          .font(.system(size: 16, design: .monospaced))
+                          .foregroundStyle(.textTertiary)
+                      })
                   }
                   .padding(.horizontal)
-                  .padding(.vertical, 12)
-                  .notificationSurface()
-                } else {
-                  HStack {
-                    VStack(alignment: .leading, spacing: 4) {
-                      Text("Additional reminders (Premium)")
-                        .labelStyle(type: .secondary)
-                      Text("Up to \(maxTotalReminderTimesPerDay) total times per day.")
-                        .font(.caption)
-                        .foregroundStyle(.textTertiary)
-                    }
-                    Spacer()
-                    Button("Add") { addAdditionalReminderTime() }
-                      .fontWeight(.bold)
-                      .tint(Color(calendar.color))
-                  }
-                  .padding(.horizontal)
-                  .padding(.vertical, 10)
+                  .padding(.vertical, 14)
                   .notificationSurface()
 
                   if !isPremiumUser {
@@ -197,17 +136,7 @@ struct NotificationSettingsSheet: View {
                     .notificationSurface()
                   }
 
-                  if additionalReminderTimes.isEmpty {
-                    HStack {
-                      Text("No additional times.")
-                        .font(.footnote)
-                        .foregroundStyle(.textTertiary)
-                      Spacer()
-                    }
-                    .padding(.horizontal)
-                    .padding(.vertical, 12)
-                    .notificationSurface()
-                  } else {
+                  if !additionalReminderTimes.isEmpty {
                     ForEach(additionalReminderTimes.indices, id: \.self) { idx in
                       additionalTimeRow(index: idx)
                     }
@@ -254,6 +183,53 @@ struct NotificationSettingsSheet: View {
                   .padding(.vertical, 10)
                   .notificationSurface()
                 }
+
+                HStack {
+                  VStack(alignment: .leading, spacing: 4) {
+                    Text("Smart suppression")
+                      .labelStyle(type: .secondary)
+                    Text("Skips the reminder if you already logged today.")
+                      .font(.caption)
+                      .foregroundStyle(.textTertiary)
+                  }
+                  Spacer()
+                  Toggle("", isOn: $suppressWhenCompleted)
+                }
+                .tint(Color(calendar.color))
+                .padding(.horizontal)
+                .padding(.vertical, 10)
+                .notificationSurface()
+              }
+            }
+
+            NotificationSection(
+              label: "Privacy", description: "Determines how the notifications appear on your lock screen."
+            ) {
+              VStack(spacing: 1) {
+                VStack {
+                  HStack(spacing: 6) {
+                    VStack(alignment: .leading, spacing: 4) {
+                      Text("Lock screen text")
+                        .labelStyle(type: .secondary)
+                      Text(notificationPrivacyMode.detail)
+                        .descriptionStyle()
+                    }
+
+                    Spacer()
+                  }
+                  .padding(.horizontal)
+
+                  Picker("Privacy Level", selection: $notificationPrivacyMode) {
+                    ForEach(NotificationPrivacyMode.allCases, id: \.self) { mode in
+                      Text(mode.description).tag(mode)
+                    }
+                  }
+                  .pickerStyle(.segmented)
+                  .font(.system(size: 12, design: .monospaced))
+                  .padding(.horizontal, 6)
+                }
+                .padding(.vertical, 12)
+                .notificationSurface()
               }
             }
           }
@@ -358,8 +334,9 @@ extension NotificationSettingsSheet {
         }
         additionalReminderTimes.remove(at: index)
       } label: {
-        Text("Remove")
-          .foregroundStyle(.moodTerrible)
+        Image(systemName: "minus")
+          .font(.system(size: 16, design: .monospaced))
+          .foregroundStyle(.red.secondary)
       }
       .buttonStyle(.plain)
       .disabled(!isPremiumUser)
@@ -403,27 +380,42 @@ extension NotificationSettingsSheet {
 private struct NotificationSection<Content: View>: View {
   let label: LocalizedStringKey
   let content: () -> Content
+  let description: LocalizedStringKey?
   @Environment(\.colorScheme) private var colorScheme
 
-  init(label: LocalizedStringKey, @ViewBuilder content: @escaping () -> Content) {
+  init(
+    label: LocalizedStringKey,
+    @ViewBuilder content: @escaping () -> Content,
+    description: LocalizedStringKey? = nil
+  ) {
     self.label = label
     self.content = content
+    self.description = description
   }
 
   var body: some View {
     VStack(alignment: .leading, spacing: 8) {
-      Text(label)
-        .labelStyle(type: .tertiary)
+      VStack(alignment: .leading, spacing: 4) {
+        Text(label)
+          .labelStyle(type: .secondary)
+          .textCase(nil)
+        if let description = description {
+          Text(description)
+            .descriptionStyle()
+            .textCase(nil)
+        }
+      }
 
-      VStack(alignment: .leading, spacing: 2) {
+      VStack(alignment: .leading, spacing: 1) {
         content()
       }
       // Show 2pt black gaps between each flat surface.
-      .padding(2)
+      .padding(1)
       .background(
-        RoundedRectangle(cornerRadius: 6)
+        Rectangle()
           .fill(getVoidColor(colorScheme: colorScheme))
       )
+
     }
     .frame(maxWidth: .infinity, alignment: .leading)
   }

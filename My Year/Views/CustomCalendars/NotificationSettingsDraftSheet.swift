@@ -281,6 +281,7 @@ extension NotificationSettingsDraftSheet {
       VStack(alignment: .leading, spacing: 8) {
         Text(label)
           .labelStyle(type: .tertiary)
+          .textCase(nil)
 
         VStack(alignment: .leading, spacing: 2) {
           content()
