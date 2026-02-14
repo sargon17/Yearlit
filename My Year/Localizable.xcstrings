@@ -81,6 +81,12 @@
             "state" : "new",
             "value" : "%lld days down! You're building momentum 🚀"
           }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld днів позаду! Ти набираєш темп 🚀"
+          }
         }
       }
     },
@@ -131,6 +137,12 @@
             "state" : "new",
             "value" : "✨ Amazing! %lld days in a row. One more today!"
           }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "✨ Неймовірно! %lld днів поспіль. Додай ще один сьогодні!"
+          }
         }
       }
     },
@@ -171,6 +183,12 @@
             "state" : "new",
             "value" : "💪 %lld days strong! Don't break it now!"
           }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "💪 Уже %lld днів поспіль! Не зламай серію!"
+          }
         }
       }
     },
@@ -201,6 +219,12 @@
             "state" : "new",
             "value" : "🔥 Don't break your %lld-day streak!"
           }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "🔥 Не зламай свою серію у %lld днів!"
+          }
         }
       }
     },
@@ -221,6 +245,12 @@
             "state" : "new",
             "value" : "🔥 Streak at risk!"
           }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "🔥 Серія під загрозою!"
+          }
         }
       }
     },
@@ -230,6 +260,12 @@
           "stringUnit" : {
             "state" : "new",
             "value" : "🔥 You're on a %lld-day streak! Keep it alive!"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "🔥 У тебе серія %lld днів! Не зупиняйся!"
           }
         }
       }
@@ -355,7 +391,14 @@
       }
     },
     "A recurring notification at your chosen time." : {
-
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Повторюване сповіщення у вибраний час."
+          }
+        }
+      }
     },
     "A simple habit calendar." : {
       "localizations" : {
@@ -408,7 +451,14 @@
       }
     },
     "Add" : {
-
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Додати"
+          }
+        }
+      }
     },
     "Add at least one habit to the stack." : {
       "localizations" : {
@@ -461,10 +511,24 @@
       }
     },
     "Additional reminders" : {
-
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Додаткові нагадування"
+          }
+        }
+      }
     },
     "Additional reminders (Premium)" : {
-
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Додаткові нагадування (Premium)"
+          }
+        }
+      }
     },
     "After I wake up" : {
       "localizations" : {
@@ -587,7 +651,14 @@
       }
     },
     "At 9 PM, if your streak is at risk, we send one extra reminder." : {
-
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "О 21:00, якщо серія під загрозою, ми надішлемо додаткове нагадування."
+          }
+        }
+      }
     },
     "Attractive" : {
       "localizations" : {
@@ -893,7 +964,14 @@
       }
     },
     "Daily Reminder" : {
-
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Щоденне нагадування"
+          }
+        }
+      }
     },
     "Daily Target" : {
       "localizations" : {
@@ -941,6 +1019,12 @@
           "stringUnit" : {
             "state" : "new",
             "value" : "Day %lld of your streak! Keep going 💪"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "День %lld твоєї серії! Продовжуй 💪"
           }
         }
       }
@@ -1056,7 +1140,14 @@
       }
     },
     "Determines how the notifications appear on your lock screen." : {
-
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Визначає, як сповіщення виглядають на екрані блокування."
+          }
+        }
+      }
     },
     "Distance" : {
       "extractionState" : "stale",
@@ -1075,6 +1166,12 @@
           "stringUnit" : {
             "state" : "new",
             "value" : "Don't forget to log your habit today"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Не забудь записати свою звичку сьогодні"
           }
         }
       }
@@ -1161,6 +1258,7 @@
       }
     },
     "Enable Runtime Debug" : {
+      "extractionState" : "stale",
       "localizations" : {
         "uk" : {
           "stringUnit" : {
@@ -1219,6 +1317,12 @@
             "state" : "new",
             "value" : "Every day counts! Log your progress today 📊"
           }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Кожен день важливий! Запиши прогрес сьогодні 📊"
+          }
         }
       }
     },
@@ -1233,10 +1337,24 @@
       }
     },
     "Extra reminders are available when your habit has a daily target." : {
-
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Додаткові нагадування доступні, коли у звички є щоденна ціль."
+          }
+        }
+      }
     },
     "Extra reminders for daily repeating habits." : {
-
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Додаткові нагадування для звичок, що повторюються щодня."
+          }
+        }
+      }
     },
     "Feature Requests" : {
       "localizations" : {
@@ -1329,6 +1447,28 @@
         }
       }
     },
+    "Full Details" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Повні деталі"
+          }
+        }
+      }
+    },
+    "Generic Message" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Загальне повідомлення"
+          }
+        }
+      }
+    },
     "Get PRO" : {
       "localizations" : {
         "uk" : {
@@ -1366,6 +1506,12 @@
           "stringUnit" : {
             "state" : "new",
             "value" : "Great job yesterday! Let's keep it going today 🎯"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Вчора чудово! Продовжимо сьогодні 🎯"
           }
         }
       }
@@ -1596,7 +1742,14 @@
       }
     },
     "Late-day rescue reminder" : {
-
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Вечірнє рятувальне нагадування"
+          }
+        }
+      }
     },
     "Leave a Review" : {
       "localizations" : {
@@ -1660,7 +1813,14 @@
       }
     },
     "Lock screen text" : {
-
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Текст на екрані блокування"
+          }
+        }
+      }
     },
     "Log a numeric value per day, like pages read or minutes practiced." : {
       "localizations" : {
@@ -1817,7 +1977,14 @@
       }
     },
     "Multiple Times" : {
-
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Кілька разів"
+          }
+        }
+      }
     },
     "Multiple times (unlimited)" : {
       "extractionState" : "stale",
@@ -1950,11 +2117,24 @@
             "state" : "new",
             "value" : "Nice! %1$lld in a row. Let's make it %2$lld!"
           }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Клас! %lld поспіль. Зробімо %lld!"
+          }
         }
       }
     },
     "No additional times." : {
-
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Немає додаткових часів."
+          }
+        }
+      }
     },
     "No archived calendars yet." : {
       "localizations" : {
@@ -2006,6 +2186,17 @@
         }
       }
     },
+    "No Text (Badge Only)" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Без тексту (лише бейдж)"
+          }
+        }
+      }
+    },
     "None" : {
       "localizations" : {
         "uk" : {
@@ -2017,7 +2208,14 @@
       }
     },
     "Notification settings" : {
-
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Налаштування сповіщень"
+          }
+        }
+      }
     },
     "notification.action.log" : {
       "comment" : "Quick action to log habit from notification",
@@ -2027,6 +2225,12 @@
           "stringUnit" : {
             "state" : "new",
             "value" : "Log Now"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Записати зараз"
           }
         }
       }
@@ -2040,6 +2244,12 @@
             "state" : "new",
             "value" : "Remind me in 1 hour"
           }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Нагадати через 1 годину"
+          }
         }
       }
     },
@@ -2051,6 +2261,12 @@
           "stringUnit" : {
             "state" : "new",
             "value" : "Invalid calendar data for notification scheduling."
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Недійсні дані календаря для планування сповіщень."
           }
         }
       }
@@ -2064,6 +2280,12 @@
             "state" : "new",
             "value" : "Notification permissions are required. Please enable them in Settings."
           }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Потрібен дозвіл на сповіщення. Увімкніть його в Налаштуваннях."
+          }
         }
       }
     },
@@ -2075,6 +2297,12 @@
           "stringUnit" : {
             "state" : "new",
             "value" : "Notification permissions need to be granted."
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Потрібно надати дозвіл на сповіщення."
           }
         }
       }
@@ -2088,6 +2316,12 @@
             "state" : "new",
             "value" : "Failed to schedule notification: %@"
           }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Не вдалося запланувати сповіщення: %@"
+          }
         }
       }
     },
@@ -2100,6 +2334,12 @@
             "state" : "new",
             "value" : "Unable to determine notification status."
           }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Не вдалося визначити статус сповіщень."
+          }
         }
       }
     },
@@ -2111,6 +2351,12 @@
           "stringUnit" : {
             "state" : "new",
             "value" : "Notifications are not supported in this mode."
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Сповіщення не підтримуються в цьому режимі."
           }
         }
       }
@@ -2260,7 +2506,14 @@
       }
     },
     "Notifications" : {
-
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Сповіщення"
+          }
+        }
+      }
     },
     "Now at %lld days" : {
       "localizations" : {
@@ -2296,10 +2549,24 @@
 
     },
     "Off • add a daily reminder when you're ready." : {
-
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Вимкнено • додайте щоденне нагадування, коли будете готові."
+          }
+        }
+      }
     },
     "Off • set a daily reminder and privacy level." : {
-
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Вимкнено • налаштуйте щоденне нагадування та рівень приватності."
+          }
+        }
+      }
     },
     "OK" : {
       "localizations" : {
@@ -2312,10 +2579,24 @@
       }
     },
     "On • set your time, privacy, and suppression." : {
-
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Увімкнено • встановіть час, приватність і приглушення."
+          }
+        }
+      }
     },
     "On • tap to customize privacy, suppression, and more." : {
-
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Увімкнено • натисніть, щоб налаштувати приватність, приглушення та інше."
+          }
+        }
+      }
     },
     "Once a day" : {
       "extractionState" : "stale",
@@ -2339,8 +2620,26 @@
         }
       }
     },
+    "Only badge and sound, no text visible on lock screen" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Лише бейдж і звук, без тексту на екрані блокування"
+          }
+        }
+      }
+    },
     "Only for Target tracking" : {
-
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Лише для відстеження цілі"
+          }
+        }
+      }
     },
     "Oops" : {
       "localizations" : {
@@ -2479,13 +2778,34 @@
       }
     },
     "Privacy" : {
-
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Приватність"
+          }
+        }
+      }
     },
     "Privacy Level" : {
-
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Рівень приватності"
+          }
+        }
+      }
     },
     "Privacy Policy" : {
-
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Політика конфіденційності"
+          }
+        }
+      }
     },
     "PRO" : {
       "localizations" : {
@@ -2525,6 +2845,12 @@
             "state" : "new",
             "value" : "Quick! Log %@ before midnight"
           }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Швидко! Запиши %@ до опівночі"
+          }
         }
       }
     },
@@ -2549,7 +2875,25 @@
       }
     },
     "Reminders are hard and still evolving. Expect small changes, and occasional delays or misses while we tune reliability." : {
-
+      "extractionState" : "stale",
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Нагадування ще в розробці й продовжують вдосконалюватися. Можливі невеликі зміни, а також інколи затримки або пропуски, поки ми налаштовуємо стабільність."
+          }
+        }
+      }
+    },
+    "Reminders are in beta and still evolving. Expect small changes, and occasional delays or misses while we tune reliability." : {
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Нагадування ще в бета-режимі й продовжують вдосконалюватися. Можливі невеликі зміни, а також інколи затримки або пропуски, поки ми налаштовуємо стабільність."
+          }
+        }
+      }
     },
     "Remove" : {
 
@@ -2585,6 +2929,7 @@
       }
     },
     "Reset What's New" : {
+      "extractionState" : "stale",
       "localizations" : {
         "uk" : {
           "stringUnit" : {
@@ -2676,7 +3021,14 @@
       }
     },
     "Send a daily reminder" : {
-
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Надсилати щоденне нагадування"
+          }
+        }
+      }
     },
     "Send request" : {
       "localizations" : {
@@ -2759,6 +3111,28 @@
         }
       }
     },
+    "Show generic reminder message" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Показувати загальне повідомлення-нагадування"
+          }
+        }
+      }
+    },
+    "Show habit name and target in notifications" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Показувати назву звички та ціль у сповіщеннях"
+          }
+        }
+      }
+    },
     "Shrink it down — start small and simple." : {
       "localizations" : {
         "uk" : {
@@ -2780,7 +3154,14 @@
       }
     },
     "Skips the reminder if you already logged today." : {
-
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Пропускає нагадування, якщо ти вже записав(ла) сьогодні."
+          }
+        }
+      }
     },
     "Small changes → Big results." : {
       "localizations" : {
@@ -2799,11 +3180,24 @@
             "state" : "new",
             "value" : "Small steps, big results. Let's track %@! 🎯"
           }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Малі кроки, великі результати. Відстежимо %@! 🎯"
+          }
         }
       }
     },
     "Smart suppression" : {
-
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Розумне приглушення"
+          }
+        }
+      }
     },
     "So if something’s missing, or something could work better, let me know." : {
       "localizations" : {
@@ -2956,7 +3350,14 @@
       }
     },
     "Streak Protection" : {
-
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Захист серії"
+          }
+        }
+      }
     },
     "Streak Range" : {
       "localizations" : {
@@ -3194,6 +3595,12 @@
             "state" : "new",
             "value" : "Time to build your habit! (Target: %lld)"
           }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Час зміцнювати звичку! (Ціль: %lld)"
+          }
         }
       }
     },
@@ -3379,7 +3786,14 @@
       }
     },
     "Up to %lld total times per day." : {
-
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "До %lld разів на день загалом."
+          }
+        }
+      }
     },
     "Upgrade" : {
       "localizations" : {
@@ -3392,7 +3806,14 @@
       }
     },
     "Upgrade to Premium to add more times." : {
-
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Оновіться до Premium, щоб додати більше часів."
+          }
+        }
+      }
     },
     "Value" : {
       "localizations" : {
@@ -3416,6 +3837,7 @@
       }
     },
     "Wand Fill Force: %.2f" : {
+      "extractionState" : "stale",
       "localizations" : {
         "uk" : {
           "stringUnit" : {
@@ -3436,7 +3858,14 @@
       }
     },
     "We will send you a reminder when you're about to miss a day." : {
-
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ми надішлемо нагадування, коли є ризик пропустити день."
+          }
+        }
+      }
     },
     "We’ll make this better together — one step, one habit, one consistent day at a time." : {
       "localizations" : {
@@ -3516,6 +3945,12 @@
             "state" : "new",
             "value" : "Yesterday ✅ Today? Let's go! 🔥"
           }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Учора ✅ Сьогодні? Поїхали! 🔥"
+          }
         }
       }
     },
@@ -3566,6 +4001,12 @@
             "state" : "new",
             "value" : "You did it yesterday, you can do it today! 💚"
           }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Учора вийшло, вийде й сьогодні! 💚"
+          }
         }
       }
     },
@@ -3585,6 +4026,12 @@
           "stringUnit" : {
             "state" : "new",
             "value" : "You're at %lld%% this week! Keep pushing 💪"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Цього тижня вже %lld%%! Продовжуй 💪"
           }
         }
       }
