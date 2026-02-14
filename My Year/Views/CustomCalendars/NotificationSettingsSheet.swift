@@ -1,3 +1,4 @@
+import Garnish
 import RevenueCat
 import RevenueCatUI
 import SharedModels
@@ -59,6 +60,16 @@ struct NotificationSettingsSheet: View {
     NavigationStack {
       ScrollView {
         VStack(spacing: 32) {
+          VStack(alignment: .leading, spacing: 6) {
+            betaBadge()
+            Text(
+              "Reminders are in beta and still evolving. Expect small changes, and occasional delays or misses while we tune reliability."
+            )
+            .descriptionStyle()
+            .textCase(nil)
+          }
+          .frame(maxWidth: .infinity, alignment: .leading)
+
           NotificationSection(label: "Daily Reminder", description: "A recurring notification at your chosen time.") {
             VStack(spacing: 1) {
               HStack {
@@ -102,58 +113,48 @@ struct NotificationSettingsSheet: View {
                 VStack(spacing: 1) {
                   HStack {
                     VStack(alignment: .leading, spacing: 4) {
-                      Text("Additional reminders")
-                        .labelStyle(type: .secondary)
+                      HStack(spacing: 6) {
+                        Text("Additional reminders")
+                          .labelStyle(type: .secondary)
+                        if !isPremiumUser {
+                          proBadge()
+                        }
+                      }
                     }
                     Spacer()
-                    Button(
-                      action: addAdditionalReminderTime,
-                      label: {
-                        Image(systemName: "plus")
-                          .font(.system(size: 16, design: .monospaced))
-                          .foregroundStyle(.textTertiary)
-                      })
+                    if additionalReminderTimes.count < maxAdditionalReminderTimes {
+                      Button(
+                        action: addAdditionalReminderTime,
+                        label: {
+                          ZStack {
+                            Image(systemName: "plus")
+                              .font(.system(size: 16, design: .monospaced))
+                              .foregroundStyle(.textTertiary)
+                          }.frame(width: 24, height: 24)
+                        })
+                    }
                   }
                   .padding(.horizontal)
                   .padding(.vertical, 14)
                   .notificationSurface()
 
-                  if !isPremiumUser {
-                    HStack(spacing: 8) {
-                      Image(systemName: "lock.fill")
-                        .font(.system(size: 12, design: .monospaced))
-                        .foregroundStyle(.textTertiary)
-                      Text("Upgrade to Premium to add more times.")
-                        .font(.footnote)
-                        .foregroundStyle(.textTertiary)
-                      Spacer()
-                      Button("Upgrade") { showPremiumPaywall() }
-                        .fontWeight(.bold)
-                        .tint(Color(calendar.color))
-                    }
-                    .padding(.horizontal)
-                    .padding(.vertical, 12)
-                    .notificationSurface()
-                  }
-
                   if !additionalReminderTimes.isEmpty {
-                    ForEach(additionalReminderTimes.indices, id: \.self) { idx in
-                      additionalTimeRow(index: idx)
+                    ForEach(additionalReminderTimes, id: \.id) { time in
+                      additionalTimeRow(time: time)
                     }
                   }
                 }
               }
             }
 
-            NotificationSection(label: "Streak Protection") {
-              VStack(spacing: 2) {
+            NotificationSection(
+              label: "Streak Protection", description: "We will send you a reminder when you're about to miss a day."
+            ) {
+              VStack(spacing: 1) {
                 HStack {
                   VStack(alignment: .leading, spacing: 4) {
                     Text("Late-day rescue reminder")
                       .labelStyle(type: .secondary)
-                    Text("At 9 PM, if your streak is at risk, we send one extra reminder.")
-                      .font(.caption)
-                      .foregroundStyle(.textTertiary)
                   }
                   Spacer()
                   Toggle("", isOn: $streakProtectionEnabled)
@@ -163,34 +164,10 @@ struct NotificationSettingsSheet: View {
                 .padding(.vertical, 10)
                 .notificationSurface()
 
-                if streakProtectionEnabled {
-                  HStack {
-                    VStack(alignment: .leading, spacing: 4) {
-                      Text("Threshold")
-                        .labelStyle(type: .secondary)
-                      Text("Only triggers when your streak is at least this long.")
-                        .font(.caption)
-                        .foregroundStyle(.textTertiary)
-                    }
-                    Spacer()
-                    Stepper(value: $streakProtectionThreshold, in: 1...60) {
-                      Text("\(streakProtectionThreshold) days")
-                        .foregroundStyle(.textSecondary)
-                    }
-                    .tint(Color(calendar.color))
-                  }
-                  .padding(.horizontal)
-                  .padding(.vertical, 10)
-                  .notificationSurface()
-                }
-
                 HStack {
                   VStack(alignment: .leading, spacing: 4) {
                     Text("Smart suppression")
                       .labelStyle(type: .secondary)
-                    Text("Skips the reminder if you already logged today.")
-                      .font(.caption)
-                      .foregroundStyle(.textTertiary)
                   }
                   Spacer()
                   Toggle("", isOn: $suppressWhenCompleted)
@@ -264,6 +241,48 @@ extension NotificationSettingsSheet {
     }
   }
 
+  private func proBadge() -> some View {
+    let bgColor = try! GarnishColor.blend(.surfaceMuted, with: .moodExcellent, ratio: 0.2)
+    let fgColor = try! GarnishColor.blend(.textPrimary, with: .moodExcellent, ratio: 0.5)
+    let strokeStyle = StrokeStyle(
+      lineWidth: 1, lineCap: .round, lineJoin: .bevel, miterLimit: 1, dash: [2], dashPhase: 3
+    )
+
+    return badge(text: "PRO", bgColor: bgColor, fgColor: fgColor, strokeStyle: strokeStyle)
+  }
+
+  private func betaBadge() -> some View {
+    let bgColor = Color("surface-muted").opacity(0.4)
+    let fgColor = Color.textTertiary
+
+    return badge(text: "BETA", bgColor: bgColor, fgColor: fgColor, strokeStyle: nil)
+  }
+
+  private func badge(
+    text: String,
+    bgColor: Color,
+    fgColor: Color,
+    strokeStyle: StrokeStyle?
+  ) -> some View {
+    let shape = RoundedRectangle(cornerRadius: 4)
+
+    return Text(text)
+      .font(.system(size: 8, design: .monospaced))
+      .padding(.horizontal, 6)
+      .padding(.vertical, 2)
+      .background(
+        Group {
+          if let strokeStyle {
+            shape.stroke(style: strokeStyle)
+          } else {
+            shape.strokeBorder(fgColor, lineWidth: 1)
+          }
+        }
+      )
+      .background(bgColor)
+      .foregroundColor(fgColor)
+  }
+
   private func normalizedAdditionalReminderTimes(_ times: [ReminderTime]) -> [ReminderTime] {
     guard calendar.trackingType == .multipleDaily else {
       return []
@@ -297,12 +316,12 @@ extension NotificationSettingsSheet {
     let base = additionalReminderTimes.last?.toDate() ?? reminderTime
     let next = Calendar.current.date(byAdding: .hour, value: 1, to: base) ?? base
     let proposed = ReminderTime(from: next)
-    additionalReminderTimes = normalizedAdditionalReminderTimes(additionalReminderTimes + [proposed])
+    withAnimation(.easeOut(duration: 0.15)) {
+      additionalReminderTimes = normalizedAdditionalReminderTimes(additionalReminderTimes + [proposed])
+    }
   }
 
-  private func additionalTimeRow(index: Int) -> some View {
-    let time = additionalReminderTimes[index]
-
+  private func additionalTimeRow(time: ReminderTime) -> some View {
     return HStack {
       DatePicker(
         "",
@@ -311,6 +330,9 @@ extension NotificationSettingsSheet {
           set: { newDate in
             guard isPremiumUser else {
               showPremiumPaywall()
+              return
+            }
+            guard let index = additionalReminderTimes.firstIndex(where: { $0.id == time.id }) else {
               return
             }
             var updated = additionalReminderTimes
@@ -332,18 +354,31 @@ extension NotificationSettingsSheet {
           showPremiumPaywall()
           return
         }
-        additionalReminderTimes.remove(at: index)
+        withAnimation(.easeIn(duration: 0.12)) {
+          additionalReminderTimes.removeAll { $0.id == time.id }
+        }
       } label: {
-        Image(systemName: "minus")
-          .font(.system(size: 16, design: .monospaced))
-          .foregroundStyle(.red.secondary)
+        ZStack {
+          Image(systemName: "minus")
+            .font(.system(size: 16, design: .monospaced))
+            .foregroundStyle(.red.secondary)
+        }
+        .frame(width: 24, height: 24)
+        .contentShape(Rectangle())
       }
       .buttonStyle(.plain)
-      .disabled(!isPremiumUser)
+      .contentShape(Rectangle())
+
     }
     .padding(.horizontal)
     .padding(.vertical, 8)
     .notificationSurface()
+    .transition(
+      .asymmetric(
+        insertion: .opacity.combined(with: .offset(y: 8)),
+        removal: .opacity.combined(with: .offset(y: -8))
+      )
+    )
   }
 
   private func saveAndDismiss() {

@@ -205,26 +205,6 @@ struct NotificationSettingsDraftSheet: View {
                 .padding(.vertical, 10)
                 .notificationSurface()
 
-                if streakProtectionEnabled {
-                  HStack {
-                    VStack(alignment: .leading, spacing: 4) {
-                      Text("Threshold")
-                        .labelStyle(type: .secondary)
-                      Text("Only triggers when your streak is at least this long.")
-                        .font(.caption)
-                        .foregroundStyle(.textTertiary)
-                    }
-                    Spacer()
-                    Stepper(value: $streakProtectionThreshold, in: 1...60) {
-                      Text("\(streakProtectionThreshold) days")
-                        .foregroundStyle(.textSecondary)
-                    }
-                    .tint(accentColor)
-                  }
-                  .padding(.horizontal)
-                  .padding(.vertical, 10)
-                  .notificationSurface()
-                }
               }
             }
           }

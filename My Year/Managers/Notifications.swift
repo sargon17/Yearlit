@@ -203,46 +203,43 @@ private func calculateStreakStats(
   store: CustomCalendarStore
 ) -> StreakStats {
   var currentStreak = 0
-  var completedYesterday = false
   var weeklyCompleted = 0
 
-  // Calculate current streak (consecutive days from today backwards)
-  let today = LocalDayCalendar.startOfDay(for: Date())
+  let dayCalendar = LocalDayCalendar.calendar
   let dateFormatter = DayKeyFormatter.shared
-  var checkDate = today
+  let today = LocalDayCalendar.startOfDay(for: Date())
 
-  for dayOffset in 0..<365 {
-    let dayKey = dateFormatter.string(from: checkDate)
-
-    if let entry = calendar.entries[dayKey] {
-      let isSuccess = isEntrySuccess(entry: entry, calendar: calendar)
-
-      if dayOffset == 1 {
-        completedYesterday = isSuccess
-      }
-
-      if dayOffset < 7 && isSuccess {
-        weeklyCompleted += 1
-      }
-
-      if isSuccess {
-        if dayOffset <= currentStreak {
-          currentStreak += 1
-        }
-      } else {
-        // Streak broken, stop counting
-        if dayOffset > 0 {
-          break
-        }
-      }
-    } else {
-      // No entry, streak broken
-      if dayOffset > 0 {
-        break
-      }
+  // Current streak: consecutive fulfilled days from today backwards.
+  var streakDate = today
+  for _ in 0..<365 {
+    let dayKey = dateFormatter.string(from: streakDate)
+    guard let entry = calendar.entries[dayKey],
+      isEntrySuccess(entry: entry, calendar: calendar)
+    else {
+      break
     }
 
-    checkDate = Calendar.current.date(byAdding: .day, value: -1, to: checkDate) ?? checkDate
+    currentStreak += 1
+    streakDate = dayCalendar.date(byAdding: .day, value: -1, to: streakDate) ?? streakDate
+  }
+
+  // Yesterday success.
+  let yesterday = dayCalendar.date(byAdding: .day, value: -1, to: today) ?? today
+  let yesterdayKey = dateFormatter.string(from: yesterday)
+  let completedYesterday = calendar.entries[yesterdayKey].map {
+    isEntrySuccess(entry: $0, calendar: calendar)
+  } ?? false
+
+  // Weekly completion over last 7 days.
+  var weeklyDate = today
+  for _ in 0..<7 {
+    let dayKey = dateFormatter.string(from: weeklyDate)
+    if let entry = calendar.entries[dayKey],
+      isEntrySuccess(entry: entry, calendar: calendar)
+    {
+      weeklyCompleted += 1
+    }
+    weeklyDate = dayCalendar.date(byAdding: .day, value: -1, to: weeklyDate) ?? weeklyDate
   }
 
   let weeklyCompletionRate = Double(weeklyCompleted) / 7.0
@@ -256,12 +253,17 @@ private func calculateStreakStats(
 
 /// Helper to determine if an entry counts as "success"
 private func isEntrySuccess(entry: CalendarEntry, calendar: CustomCalendar) -> Bool {
+  isEntryFulfilledForNotification(entry, calendar: calendar)
+}
+
+/// Unified fulfillment check for notification logic.
+/// Keeps suppression and streak/content calculations aligned.
+internal func isEntryFulfilledForNotification(_ entry: CalendarEntry, calendar: CustomCalendar) -> Bool {
   switch calendar.trackingType {
   case .binary:
     return entry.completed
   case .counter:
-    let loggedValue = entry.count
-    return loggedValue != 0
+    return entry.count > 0
   case .multipleDaily:
     return entry.count >= calendar.dailyTarget
   }
@@ -304,6 +306,8 @@ private func deriveCalendarId(from request: UNNotificationRequest) -> UUID? {
   )
 }
 
+private let streakProtectionIdentifierSuffix = "-streak-protection"
+
 private func removePendingNotifications(for calendarId: UUID, completion: @escaping () -> Void) {
   UNUserNotificationCenter.current().getPendingNotificationRequests { requests in
     let identifiersToRemove = requests.compactMap { request -> String? in
@@ -311,6 +315,20 @@ private func removePendingNotifications(for calendarId: UUID, completion: @escap
         return nil
       }
       return request.identifier
+    }
+
+    if !identifiersToRemove.isEmpty {
+      UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: identifiersToRemove)
+    }
+
+    completion()
+  }
+}
+
+private func removeAllPendingStreakProtectionNotifications(completion: @escaping () -> Void) {
+  UNUserNotificationCenter.current().getPendingNotificationRequests { requests in
+    let identifiersToRemove = requests.compactMap { request -> String? in
+      request.identifier.hasSuffix(streakProtectionIdentifierSuffix) ? request.identifier : nil
     }
 
     if !identifiersToRemove.isEmpty {
@@ -331,18 +349,27 @@ public func scheduleStreakProtectionReminder(
   for calendar: CustomCalendar,
   store: CustomCalendarStore
 ) {
+  let resolvedCalendar = calendar
+
   // Only schedule if enabled and reminders are on
-  guard calendar.streakProtectionEnabled,
-    calendar.recurringReminderEnabled
+  guard resolvedCalendar.streakProtectionEnabled,
+    resolvedCalendar.recurringReminderEnabled
   else {
     return
   }
 
-  // Calculate current streak
-  let stats = calculateStreakStats(for: calendar, store: store)
+  // If today is already fulfilled, there is no streak risk.
+  if let todayEntry = store.getEntry(calendarId: resolvedCalendar.id, date: Date()),
+    isEntryFulfilledForNotification(todayEntry, calendar: resolvedCalendar)
+  {
+    return
+  }
 
-  // Only protect significant streaks
-  guard stats.currentStreak >= calendar.streakProtectionThreshold else {
+  // Calculate streak ending yesterday (the one at risk if today is missed).
+  let streakAtRisk = calculateStreakEndingYesterday(for: resolvedCalendar)
+
+  // Only protect significant streaks.
+  guard streakAtRisk >= resolvedCalendar.streakProtectionThreshold else {
     return
   }
 
@@ -358,19 +385,19 @@ public func scheduleStreakProtectionReminder(
     return
   }
 
-  let notificationId = "\(calendar.id.uuidString)-streak-protection"
+  let notificationId = "\(resolvedCalendar.id.uuidString)\(streakProtectionIdentifierSuffix)"
   let content = UNMutableNotificationContent()
 
   // Urgent, streak-focused copy
-  switch calendar.notificationPrivacyMode {
+  switch resolvedCalendar.notificationPrivacyMode {
   case .full:
     content.title = String(
       format: String(localized: "🔥 Don't break your %lld-day streak!"),
-      stats.currentStreak
+      streakAtRisk
     )
     content.body = String(
       format: String(localized: "Quick! Log %@ before midnight"),
-      calendar.name
+      resolvedCalendar.name
     )
 
   case .generic:
@@ -386,8 +413,8 @@ public func scheduleStreakProtectionReminder(
   content.sound = .default
   content.categoryIdentifier = NotificationAction.categoryIdentifier
   content.userInfo = [
-    "calendarId": calendar.id.uuidString,
-    "calendarName": calendar.name,
+    "calendarId": resolvedCalendar.id.uuidString,
+    "calendarName": resolvedCalendar.name,
     "isStreakProtection": true
   ]
 
@@ -411,9 +438,46 @@ public func scheduleStreakProtectionReminder(
     if let error = error {
       print("❌ Failed to schedule streak protection: \(error)")
     } else {
-      print("🛡️ Scheduled streak protection for \(calendar.name) at 9 PM (\(stats.currentStreak)-day streak)")
+      print("🛡️ Scheduled streak protection for \(resolvedCalendar.name) at 9 PM (\(streakAtRisk)-day streak)")
     }
   }
+}
+
+/// Refreshes one-time streak protection reminders for all calendars.
+/// Call on app launch / app active to re-evaluate daily streak risk.
+public func refreshStreakProtectionReminders(store: CustomCalendarStore) {
+  removeAllPendingStreakProtectionNotifications {
+    DispatchQueue.main.async {
+      for calendar in store.calendars where !calendar.isArchived {
+        scheduleStreakProtectionReminder(for: calendar, store: store)
+      }
+    }
+  }
+}
+
+/// Calculates consecutive fulfilled days ending at yesterday.
+private func calculateStreakEndingYesterday(for calendar: CustomCalendar) -> Int {
+  let formatter = DayKeyFormatter.shared
+  let dayCalendar = LocalDayCalendar.calendar
+  guard let startDate = dayCalendar.date(byAdding: .day, value: -1, to: LocalDayCalendar.startOfDay(for: Date())) else {
+    return 0
+  }
+
+  var streak = 0
+  var checkDate = startDate
+
+  for _ in 0..<365 {
+    let dayKey = formatter.string(from: checkDate)
+    guard let entry = calendar.entries[dayKey],
+      isEntrySuccess(entry: entry, calendar: calendar)
+    else {
+      break
+    }
+    streak += 1
+    checkDate = dayCalendar.date(byAdding: .day, value: -1, to: checkDate) ?? checkDate
+  }
+
+  return streak
 }
 
 // MARK: - Notification Scheduling
@@ -856,25 +920,27 @@ public func shouldSuppressNotification(for calendar: CustomCalendar, store: Cust
   let today = Date()
 
   guard let entry = store.getEntry(calendarId: calendar.id, date: today) else {
+    #if DEBUG
+      print(
+        "🔎 Notification suppression decision: calendarId=\(calendar.id.uuidString) "
+          + "trackingType=\(calendar.trackingType) entryCount=nil entryCompleted=nil suppress=false"
+      )
+    #endif
     // No entry for today, show notification
     return false
   }
 
-  // Check based on tracking type
-  switch calendar.trackingType {
-  case .binary:
-    // Binary: suppress if completed
-    return entry.completed
+  let shouldSuppress = isEntryFulfilledForNotification(entry, calendar: calendar)
 
-  case .counter:
-    // Counter: suppress if any value has been logged
-    let loggedValue = entry.count
-    return loggedValue != 0
+  #if DEBUG
+    print(
+      "🔎 Notification suppression decision: calendarId=\(calendar.id.uuidString) "
+        + "trackingType=\(calendar.trackingType) entryCount=\(entry.count) "
+        + "entryCompleted=\(entry.completed) suppress=\(shouldSuppress)"
+    )
+  #endif
 
-  case .multipleDaily:
-    // Multiple daily: suppress if target reached
-    return entry.count >= calendar.dailyTarget
-  }
+  return shouldSuppress
 }
 
 // MARK: - Permission Helpers

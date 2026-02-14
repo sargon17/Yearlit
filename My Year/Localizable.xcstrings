@@ -74,9 +74,6 @@
         }
       }
     },
-    "%lld days" : {
-
-    },
     "%lld days down! You're building momentum 🚀" : {
       "localizations" : {
         "en" : {
@@ -2345,9 +2342,6 @@
     "Only for Target tracking" : {
 
     },
-    "Only triggers when your streak is at least this long." : {
-
-    },
     "Oops" : {
       "localizations" : {
         "uk" : {
@@ -2553,6 +2547,9 @@
           }
         }
       }
+    },
+    "Reminders are hard and still evolving. Expect small changes, and occasional delays or misses while we tune reliability." : {
+
     },
     "Remove" : {
 
@@ -3180,9 +3177,6 @@
         }
       }
     },
-    "Threshold" : {
-
-    },
     "Time" : {
       "localizations" : {
         "uk" : {
@@ -3440,6 +3434,9 @@
           }
         }
       }
+    },
+    "We will send you a reminder when you're about to miss a day." : {
+
     },
     "We’ll make this better together — one step, one habit, one consistent day at a time." : {
       "localizations" : {

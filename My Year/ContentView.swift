@@ -19,6 +19,7 @@ struct ContentView: View {
   @State private var lastCleanupVersion: Int = -1
   @State private var cleanupTask: Task<Void, Never>?
   @EnvironmentObject private var whatsNewManager: WhatsNewManager
+  @Environment(\.scenePhase) private var scenePhase
 
   var body: some View {
     AppRouter()
@@ -57,11 +58,17 @@ struct ContentView: View {
 
           lastCleanupVersion = newVersion
           await checkForNotificationsOfNonExistingCalendars(store: store)
+          refreshStreakProtectionReminders(store: store)
         }
       }
       .task {
         // Initial cleanup on app launch
         await checkForNotificationsOfNonExistingCalendars(store: store)
+        refreshStreakProtectionReminders(store: store)
+      }
+      .onChange(of: scenePhase) { _, newPhase in
+        guard newPhase == .active else { return }
+        refreshStreakProtectionReminders(store: store)
       }
       .toolbarBackground(.hidden, for: .navigationBar)
       .font(.system(.body, design: .monospaced))
