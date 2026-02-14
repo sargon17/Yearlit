@@ -2,6 +2,8 @@ import SwiftUI
 
 struct FeatureRequestsListItem: View {
   let request: Request
+  let isUpvoted: Bool
+  let onToggleUpvote: () -> Void
 
   @EnvironmentObject private var featureRequestManager: FeatureRequestManager
 
@@ -27,6 +29,18 @@ struct FeatureRequestsListItem: View {
           .body()
           .lineLimit(3)
       }
+      HStack(spacing: 12) {
+        Button {
+          onToggleUpvote()
+        } label: {
+          Label("\(request.resolvedUpvoteCount)", systemImage: isUpvoted ? "hand.thumbsup.fill" : "hand.thumbsup")
+        }
+        .buttonStyle(.borderless)
+
+        Label("Comments", systemImage: "text.bubble")
+          .foregroundColor(.textSecondary)
+      }
+      .font(.footnote)
     }
   }
 }

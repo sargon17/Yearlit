@@ -15,7 +15,11 @@ struct FeatureRequestsList: View {
           Section(group.status.displayName) {
             ForEach(group.requests) { request in
               FeatureRequestsListItem(
-                request: request
+                request: request,
+                isUpvoted: featureRequestManager.viewerUpvotes.contains(request.id),
+                onToggleUpvote: {
+                  handleUpvote(request: request)
+                }
               )
               .contentShape(Rectangle())
               .onTapGesture {
@@ -46,13 +50,10 @@ struct FeatureRequestsList: View {
       }
     }
     .task {
-    }.refreshable {
       await updateList()
     }
-    .onAppear {
-      Task {
-        requestsList = await featureRequestManager.getRequests()
-      }
+    .refreshable {
+      await updateList()
     }
   }
 }
@@ -87,8 +88,42 @@ extension FeatureRequestsList {
   }
 
   func updateList() async {
-    print("hello there")
-    requestsList = await featureRequestManager.reloadRequests()
+    async let requests = featureRequestManager.reloadRequests()
+    async let upvotes = featureRequestManager.getViewerUpvotes()
+    requestsList = await requests
+    _ = await upvotes
+  }
+
+  func handleUpvote(request: Request) {
+    Task {
+      let wasUpvoted = featureRequestManager.viewerUpvotes.contains(request.id)
+      updateLocalUpvote(requestId: request.id, isUpvoted: !wasUpvoted)
+      let success = await featureRequestManager.toggleUpvote(requestId: request.id)
+      if !success {
+        await updateList()
+      }
+    }
+  }
+
+  func updateLocalUpvote(requestId: String, isUpvoted: Bool) {
+    guard var list = requestsList else { return }
+    guard let index = list.requests.firstIndex(where: { $0.id == requestId }) else { return }
+    let current = list.requests[index]
+    let delta = isUpvoted ? 1 : -1
+    let updatedCount = max((current.upvoteCount ?? 0) + delta, 0)
+    let updatedRequest = Request(
+      _id: current._id,
+      _creationTime: current._creationTime,
+      text: current.text,
+      description: current.description,
+      clientId: current.clientId,
+      upvoteCount: updatedCount,
+      status: current.status,
+      project: current.project,
+      computedStatus: current.computedStatus
+    )
+    list.requests[index] = updatedRequest
+    requestsList = list
   }
 
   var groupedRequests: [RequestGroup] {
