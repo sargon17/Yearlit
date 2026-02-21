@@ -22,7 +22,8 @@ struct FeatureRequestsListItem: View {
         }
       }
       FeatureStatusBadge(
-        label: request.computedStatus.displayName
+        label: request.computedStatus.displayName,
+        color: request.computedStatus.color
       )
       if let description = request.description {
         Text(description)

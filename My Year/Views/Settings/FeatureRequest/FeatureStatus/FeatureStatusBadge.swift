@@ -2,12 +2,18 @@ import SwiftUI
 
 struct FeatureStatusBadge: View {
   var label: String
+  var color: String?
+
+  private var badgeColor: Color {
+    guard let color, !color.isEmpty else { return .red }
+    return Color(color)
+  }
 
   var body: some View {
     VStack {
       HStack(spacing: 6) {
         Circle()
-          .foregroundColor(.red)
+          .foregroundColor(badgeColor)
           .frame(width: 8, height: 8)
         Text(label).font(.system(size: 9))
           .foregroundColor(.textSecondary)

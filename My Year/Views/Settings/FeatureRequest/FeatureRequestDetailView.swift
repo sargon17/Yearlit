@@ -15,7 +15,10 @@ struct FeatureRequestDetailView: View {
 
   var body: some View {
     VStack(alignment: .leading, spacing: 16) {
-      FeatureStatusBadge(label: request.computedStatus.displayName)
+      FeatureStatusBadge(
+        label: request.computedStatus.displayName,
+        color: request.computedStatus.color
+      )
       if let description = request.description {
         Text(description).body()
       }

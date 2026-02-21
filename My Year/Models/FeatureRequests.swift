@@ -128,6 +128,7 @@ struct RequestStatus: Codable, Identifiable {
   let description: String?
   let project: String?  // opzionale
   let type: RequestStatusType
+  let color: String?
 
   var id: String { _id }
 }
