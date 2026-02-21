@@ -6,7 +6,7 @@ struct FeatureStatusBadge: View {
 
   private var badgeColor: Color {
     guard let color, !color.isEmpty else { return .red }
-    return Color(color)
+    return Color(hex: color) ?? Color(color)
   }
 
   var body: some View {
