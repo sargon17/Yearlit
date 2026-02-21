@@ -30,6 +30,7 @@ struct FeatureRequestDetailView: View {
           Label("\(request.resolvedUpvoteCount)", systemImage: isUpvoted ? "hand.thumbsup.fill" : "hand.thumbsup")
         }
         .buttonStyle(.borderless)
+        .disabled(!featureRequestManager.viewerUpvotesLoaded)
 
         Label("Comments", systemImage: "text.bubble")
           .foregroundColor(.textSecondary)
@@ -39,7 +40,7 @@ struct FeatureRequestDetailView: View {
       VStack(alignment: .leading, spacing: 12) {
         Text("Comments").h4()
         if comments.isEmpty {
-          Text("No comments yet").body().foregroundColor(.textSecondary)
+          Text("No comments yet.").body().foregroundColor(.textSecondary)
         } else {
           ForEach(comments) { comment in
             commentRow(comment: comment)
@@ -109,8 +110,8 @@ extension FeatureRequestDetailView {
       let updatedComments = await featureRequestManager.addComment(requestId: request.id, text: trimmedText)
       if !updatedComments.isEmpty {
         comments = updatedComments
+        commentText = ""
       }
-      commentText = ""
       isSubmittingComment = false
     }
   }

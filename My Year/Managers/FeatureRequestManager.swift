@@ -24,6 +24,7 @@ final class FeatureRequestManager: ObservableObject {
 
   @Published private(set) var user: WishAppUser
   @Published private(set) var viewerUpvotes: Set<String> = []
+  @Published private(set) var viewerUpvotesLoaded = false
 
   init(appID: String, defaults: UserDefaults = .standard) {
     self.appID = appID
@@ -112,8 +113,10 @@ final class FeatureRequestManager: ObservableObject {
       )
       let upvotes = Set(response.upvotes)
       viewerUpvotes = upvotes
+      viewerUpvotesLoaded = true
       return upvotes
     } catch {
+      viewerUpvotesLoaded = true
       return viewerUpvotes
     }
   }
@@ -127,7 +130,7 @@ final class FeatureRequestManager: ObservableObject {
         endpoint: endpoint,
         type: FeatureRequestCommentsResponse.self
       )
-      return response.comments
+      return response.comments.filter { !$0.body.isEmpty && !$0.authorClientId.isEmpty }
     } catch {
       return []
     }
