@@ -130,7 +130,9 @@ final class FeatureRequestManager: ObservableObject {
         endpoint: endpoint,
         type: FeatureRequestCommentsResponse.self
       )
-      return response.comments.filter { !$0.body.isEmpty && !$0.authorClientId.isEmpty }
+      return response.comments.filter {
+        !$0.body.isEmpty && ($0.isDeveloper || !$0.authorClientId.isEmpty)
+      }
     } catch {
       return []
     }
