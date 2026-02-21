@@ -138,6 +138,6 @@ extension FeatureRequestsList {
         let sortedRequests = requests.sorted { $0._creationTime > $1._creationTime }
         return RequestGroup(status: status, requests: sortedRequests)
       }
-      .sorted { $0.status.displayName.localizedCaseInsensitiveCompare($1.status.displayName) == .orderedAscending }
+      .sorted { $0.status._creationTime < $1.status._creationTime }
   }
 }
