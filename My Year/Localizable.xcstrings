@@ -76,6 +76,9 @@
     "About" : {
 
     },
+    "Add a comment" : {
+
+    },
     "Add at least one habit to the stack." : {
 
     },
@@ -142,6 +145,9 @@
     "Cancel" : {
 
     },
+    "Comments" : {
+
+    },
     "Completed" : {
 
     },
@@ -182,6 +188,9 @@
 
     },
     "Delete Calendar?" : {
+
+    },
+    "developer" : {
 
     },
     "Don’t just set goals" : {
@@ -328,6 +337,9 @@
     "No archived calendars yet." : {
 
     },
+    "No comments yet" : {
+
+    },
     "No habit stacks yet" : {
 
     },
@@ -423,6 +435,9 @@
 
     },
     "Select Year" : {
+
+    },
+    "Send" : {
 
     },
     "Send request" : {
@@ -580,6 +595,9 @@
 
     },
     "Yearlit is still growing — just like the people who use it." : {
+
+    },
+    "you" : {
 
     },
     "You are on PRO." : {
