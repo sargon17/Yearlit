@@ -46,8 +46,8 @@ struct Request: Codable, Identifiable {
 struct FeatureRequestComment: Decodable, Identifiable, Equatable {
   let _id: String
   let _creationTime: Double
-  let text: String
-  let clientId: String
+  let body: String
+  let authorClientId: String
   let isDeveloper: Bool
 
   var id: String { _id }
@@ -55,20 +55,20 @@ struct FeatureRequestComment: Decodable, Identifiable, Equatable {
   enum CodingKeys: String, CodingKey {
     case _id
     case _creationTime
-    case text
-    case clientId
+    case body
+    case authorClientId
+    case authorType
     case isDeveloper
     case developer
     case isStaff
-    case authorType
   }
 
   init(from decoder: Decoder) throws {
     let container = try decoder.container(keyedBy: CodingKeys.self)
     _id = try container.decode(String.self, forKey: ._id)
-    _creationTime = try container.decode(Double.self, forKey: ._creationTime)
-    text = (try? container.decode(String.self, forKey: .text)) ?? ""
-    clientId = (try? container.decode(String.self, forKey: .clientId)) ?? ""
+    _creationTime = (try? container.decode(Double.self, forKey: ._creationTime)) ?? 0
+    body = (try? container.decode(String.self, forKey: .body)) ?? ""
+    authorClientId = (try? container.decode(String.self, forKey: .authorClientId)) ?? ""
     let isDeveloper = (try? container.decode(Bool.self, forKey: .isDeveloper))
       ?? (try? container.decode(Bool.self, forKey: .developer))
       ?? (try? container.decode(Bool.self, forKey: .isStaff))

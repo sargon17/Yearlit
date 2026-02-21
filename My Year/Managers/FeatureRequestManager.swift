@@ -10,12 +10,11 @@ final class FeatureRequestManager: ObservableObject {
   }
 
   private struct CreateCommentRequest: Codable {
-    let text: String
+    let body: String
     let clientId: String
   }
 
   private struct ToggleUpvoteRequest: Codable {
-    let requestId: String
     let clientId: String
   }
 
@@ -121,7 +120,7 @@ final class FeatureRequestManager: ObservableObject {
 
   func getComments(requestId: String) async -> [FeatureRequestComment] {
     let endpoint =
-      "\(baseURL)project/\(appID)/request/\(requestId)/comments/"
+      "\(baseURL)project/\(appID)/request/\(requestId)/comments"
 
     do {
       let response = try await HTTP.get(
@@ -136,13 +135,13 @@ final class FeatureRequestManager: ObservableObject {
 
   func addComment(requestId: String, text: String) async -> [FeatureRequestComment] {
     let endpoint =
-      "\(baseURL)project/\(appID)/request/\(requestId)/comments/"
+      "\(baseURL)project/\(appID)/request/\(requestId)/comment"
 
     do {
       try await HTTP.post(
         endpoint: endpoint,
         data: CreateCommentRequest(
-          text: text,
+          body: text,
           clientId: user.id.uuidString
         )
       )
@@ -154,11 +153,11 @@ final class FeatureRequestManager: ObservableObject {
   }
 
   func deleteComment(requestId: String, comment: FeatureRequestComment) async -> Bool {
-    guard isCurrentUser(id: comment.clientId) else { return false }
+    guard isCurrentUser(id: comment.authorClientId) else { return false }
 
     let clientId = user.id.uuidString
     let endpoint =
-      "\(baseURL)project/\(appID)/request/\(requestId)/comments/\(comment.id)?clientId=\(clientId)"
+      "\(baseURL)project/\(appID)/request/\(requestId)/comment/\(comment.id)?clientId=\(clientId)"
 
     do {
       try await HTTP.delete(endpoint: endpoint)
@@ -175,13 +174,12 @@ final class FeatureRequestManager: ObservableObject {
     updateCachedUpvote(requestId: requestId, isUpvoted: nextUpvoted)
 
     let endpoint =
-      "\(baseURL)project/\(appID)/upvote/"
+      "\(baseURL)project/\(appID)/request/\(requestId)/upvote"
 
     do {
       try await HTTP.post(
         endpoint: endpoint,
         data: ToggleUpvoteRequest(
-          requestId: requestId,
           clientId: user.id.uuidString
         )
       )

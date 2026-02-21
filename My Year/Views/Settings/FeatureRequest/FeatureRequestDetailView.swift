@@ -113,7 +113,7 @@ extension FeatureRequestDetailView {
   }
 
   func handleDeleteComment(_ comment: FeatureRequestComment) {
-    guard featureRequestManager.isCurrentUser(id: comment.clientId) else { return }
+    guard featureRequestManager.isCurrentUser(id: comment.authorClientId) else { return }
     let existing = comments
     comments.removeAll { $0.id == comment.id }
     Task {
@@ -163,7 +163,7 @@ extension FeatureRequestDetailView {
             .cornerRadius(4)
             .font(.system(size: 10))
         }
-        if featureRequestManager.isCurrentUser(id: comment.clientId) {
+        if featureRequestManager.isCurrentUser(id: comment.authorClientId) {
           Text("you")
             .padding(.horizontal, 6)
             .padding(.vertical, 2)
@@ -173,7 +173,7 @@ extension FeatureRequestDetailView {
             .font(.system(size: 10))
         }
         Spacer()
-        if featureRequestManager.isCurrentUser(id: comment.clientId) {
+        if featureRequestManager.isCurrentUser(id: comment.authorClientId) {
           Button(role: .destructive) {
             handleDeleteComment(comment)
           } label: {
@@ -182,7 +182,7 @@ extension FeatureRequestDetailView {
           .buttonStyle(.borderless)
         }
       }
-      Text(comment.text).body()
+      Text(comment.body).body()
     }
     .padding(.vertical, 8)
   }
