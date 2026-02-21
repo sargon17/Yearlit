@@ -5,6 +5,7 @@ struct FeatureRequestDetailView: View {
   @State private var comments: [FeatureRequestComment] = []
   @State private var commentText = ""
   @State private var isSubmittingComment = false
+  @State private var isTogglingUpvote = false
 
   @EnvironmentObject private var featureRequestManager: FeatureRequestManager
   @Environment(\.router) private var router
@@ -30,7 +31,7 @@ struct FeatureRequestDetailView: View {
           Label("\(request.resolvedUpvoteCount)", systemImage: isUpvoted ? "hand.thumbsup.fill" : "hand.thumbsup")
         }
         .buttonStyle(.borderless)
-        .disabled(!featureRequestManager.viewerUpvotesLoaded)
+        .disabled(!featureRequestManager.viewerUpvotesLoaded || isTogglingUpvote)
 
         Label("Comments", systemImage: "text.bubble")
           .foregroundColor(.textSecondary)
@@ -129,13 +130,18 @@ extension FeatureRequestDetailView {
   }
 
   func handleUpvote() {
+    guard !isTogglingUpvote else { return }
+    isTogglingUpvote = true
+
     Task {
-      let wasUpvoted = featureRequestManager.viewerUpvotes.contains(request.id)
+      let upvotes = await featureRequestManager.getViewerUpvotes()
+      let wasUpvoted = upvotes.contains(request.id)
       updateLocalUpvote(isUpvoted: !wasUpvoted)
-      let success = await featureRequestManager.toggleUpvote(requestId: request.id)
+      let success = await featureRequestManager.toggleUpvote(requestId: request.id, wasUpvoted: wasUpvoted)
       if !success {
         updateLocalUpvote(isUpvoted: wasUpvoted)
       }
+      isTogglingUpvote = false
     }
   }
 

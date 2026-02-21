@@ -3,6 +3,7 @@ import SwiftUI
 struct FeatureRequestsListItem: View {
   let request: Request
   let isUpvoted: Bool
+  let isTogglingUpvote: Bool
   let onToggleUpvote: () -> Void
 
   @EnvironmentObject private var featureRequestManager: FeatureRequestManager
@@ -37,7 +38,7 @@ struct FeatureRequestsListItem: View {
           Label("\(request.resolvedUpvoteCount)", systemImage: isUpvoted ? "hand.thumbsup.fill" : "hand.thumbsup")
         }
         .buttonStyle(.borderless)
-        .disabled(!featureRequestManager.viewerUpvotesLoaded)
+        .disabled(!featureRequestManager.viewerUpvotesLoaded || isTogglingUpvote)
 
         Label("Comments", systemImage: "text.bubble")
           .foregroundColor(.textSecondary)

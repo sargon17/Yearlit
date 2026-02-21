@@ -4,6 +4,7 @@ import SwiftfulRouting
 struct FeatureRequestsList: View {
   @State private var requestsList: FeatureRequestsListResponse?
   @State private var showsOnlyMine = false
+  @State private var togglingUpvotes: Set<String> = []
 
   @EnvironmentObject private var featureRequestManager: FeatureRequestManager
   @Environment(\.router) private var router
@@ -17,6 +18,7 @@ struct FeatureRequestsList: View {
               FeatureRequestsListItem(
                 request: request,
                 isUpvoted: featureRequestManager.viewerUpvotes.contains(request.id),
+                isTogglingUpvote: togglingUpvotes.contains(request.id),
                 onToggleUpvote: {
                   handleUpvote(request: request)
                 }
@@ -95,13 +97,18 @@ extension FeatureRequestsList {
   }
 
   func handleUpvote(request: Request) {
+    guard !togglingUpvotes.contains(request.id) else { return }
+    togglingUpvotes.insert(request.id)
+
     Task {
-      let wasUpvoted = featureRequestManager.viewerUpvotes.contains(request.id)
+      let upvotes = await featureRequestManager.getViewerUpvotes()
+      let wasUpvoted = upvotes.contains(request.id)
       updateLocalUpvote(requestId: request.id, isUpvoted: !wasUpvoted)
-      let success = await featureRequestManager.toggleUpvote(requestId: request.id)
+      let success = await featureRequestManager.toggleUpvote(requestId: request.id, wasUpvoted: wasUpvoted)
       if !success {
-        await updateList()
+        updateLocalUpvote(requestId: request.id, isUpvoted: wasUpvoted)
       }
+      togglingUpvotes.remove(request.id)
     }
   }
 

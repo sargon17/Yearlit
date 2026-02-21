@@ -172,9 +172,9 @@ final class FeatureRequestManager: ObservableObject {
     }
   }
 
-  func toggleUpvote(requestId: String) async -> Bool {
-    let wasUpvoted = viewerUpvotes.contains(requestId)
-    let nextUpvoted = !wasUpvoted
+  func toggleUpvote(requestId: String, wasUpvoted: Bool? = nil) async -> Bool {
+    let currentWasUpvoted = wasUpvoted ?? viewerUpvotes.contains(requestId)
+    let nextUpvoted = !currentWasUpvoted
     updateViewerUpvotes(requestId: requestId, isUpvoted: nextUpvoted)
     updateCachedUpvote(requestId: requestId, isUpvoted: nextUpvoted)
 
@@ -188,10 +188,11 @@ final class FeatureRequestManager: ObservableObject {
           clientId: user.id.uuidString
         )
       )
+      _ = await getViewerUpvotes()
       return true
     } catch {
-      updateViewerUpvotes(requestId: requestId, isUpvoted: wasUpvoted)
-      updateCachedUpvote(requestId: requestId, isUpvoted: wasUpvoted)
+      updateViewerUpvotes(requestId: requestId, isUpvoted: currentWasUpvoted)
+      updateCachedUpvote(requestId: requestId, isUpvoted: currentWasUpvoted)
       return false
     }
   }
