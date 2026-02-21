@@ -7,6 +7,8 @@ private let baseURL = "https://qualified-viper-293.convex.site/api/"
 final class FeatureRequestManager: ObservableObject {
   private enum Constants {
     static let userDefaultsKey = "FeatureRequestManager.userUUID"
+    static let keychainService = "com.tymofyeyev.yearlit.wish"
+    static let keychainAccount = "feature-request-client-id"
   }
 
   private struct CreateCommentRequest: Codable {
@@ -35,14 +37,33 @@ final class FeatureRequestManager: ObservableObject {
   }
 
   private static func loadOrCreateIdentifier(from defaults: UserDefaults) -> UUID {
+    if let keychainValue = KeychainStore.read(
+      account: Constants.keychainAccount,
+      service: Constants.keychainService
+    ),
+      let keychainUUID = UUID(uuidString: keychainValue)
+    {
+      return keychainUUID
+    }
+
     if let storedValue = defaults.string(forKey: Constants.userDefaultsKey),
       let storedUUID = UUID(uuidString: storedValue)
     {
+      KeychainStore.save(
+        value: storedUUID.uuidString,
+        account: Constants.keychainAccount,
+        service: Constants.keychainService
+      )
       return storedUUID
     }
 
     let newUUID = UUID()
     defaults.set(newUUID.uuidString, forKey: Constants.userDefaultsKey)
+    KeychainStore.save(
+      value: newUUID.uuidString,
+      account: Constants.keychainAccount,
+      service: Constants.keychainService
+    )
     return newUUID
   }
 
