@@ -1258,7 +1258,6 @@
       }
     },
     "Enable Runtime Debug" : {
-      "extractionState" : "stale",
       "localizations" : {
         "uk" : {
           "stringUnit" : {
@@ -2929,7 +2928,6 @@
       }
     },
     "Reset What's New" : {
-      "extractionState" : "stale",
       "localizations" : {
         "uk" : {
           "stringUnit" : {
@@ -3837,7 +3835,6 @@
       }
     },
     "Wand Fill Force: %.2f" : {
-      "extractionState" : "stale",
       "localizations" : {
         "uk" : {
           "stringUnit" : {
