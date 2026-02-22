@@ -5,10 +5,10 @@ import Foundation
 /// - Parameter date: The date to check.
 /// - Returns: `true` if the given date is today, `false` otherwise.
 public func isToday(date: Date) -> Bool {
-  let calendar = Calendar.current
-  let today = calendar.startOfDay(for: Date())
-  let inputDate = calendar.startOfDay(for: date)
-  return inputDate == today
+    let calendar = Calendar.current
+    let today = calendar.startOfDay(for: Date())
+    let inputDate = calendar.startOfDay(for: date)
+    return inputDate == today
 }
 
 /// Formats a given date into a string.
@@ -22,23 +22,23 @@ public func isToday(date: Date) -> Bool {
 /// Output: "2024-01-15"
 /// ```
 public func customDateFormatter(date: Date) -> String {
-  DayKeyFormatterLocal.shared.string(from: date)
+    DayKeyFormatterLocal.shared.string(from: date)
 }
 
 private enum DayKeyFormatterLocal {
-  static let shared: DateFormatter = {
-    let formatter = DateFormatter()
-    formatter.dateFormat = "yyyy-MM-dd"
-    formatter.calendar = Calendar(identifier: .gregorian)
-    formatter.locale = Locale(identifier: "en_US_POSIX")
-    formatter.timeZone = .autoupdatingCurrent
-    return formatter
-  }()
+    static let shared: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy-MM-dd"
+        formatter.calendar = Calendar(identifier: .gregorian)
+        formatter.locale = Locale(identifier: "en_US_POSIX")
+        formatter.timeZone = .autoupdatingCurrent
+        return formatter
+    }()
 }
 
 public let dateFormatterLong: DateFormatter = {
-  let formatter = DateFormatter()
-  formatter.dateStyle = .long
-  formatter.timeStyle = .none
-  return formatter
+    let formatter = DateFormatter()
+    formatter.dateStyle = .long
+    formatter.timeStyle = .none
+    return formatter
 }()

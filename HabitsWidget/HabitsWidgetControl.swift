@@ -11,61 +11,60 @@ import SwiftUI
 import WidgetKit
 
 struct HabitsWidgetControl: ControlWidget {
-  static let kind: String = "HabitsWidgetControl"
+    static let kind: String = "HabitsWidgetControl"
 
-  var body: some ControlWidgetConfiguration {
-    AppIntentControlConfiguration(
-      kind: Self.kind,
-      provider: Provider()
-    ) { value in
-      ControlWidgetButton(
-        "Quick Add",
-        action: HabitQuickAddIntent(calendarId: value.calendarId)
-      ) { _ in
-        Label("Quick Add", systemImage: "plus.circle")
-      }
+    var body: some ControlWidgetConfiguration {
+        AppIntentControlConfiguration(
+            kind: Self.kind,
+            provider: Provider()
+        ) { value in
+            ControlWidgetButton(
+                "Quick Add",
+                action: HabitQuickAddIntent(calendarId: value.calendarId)
+            ) { _ in
+                Label("Quick Add", systemImage: "plus.circle")
+            }
+        }
+        .displayName("Habit Quick Add")
+        .description("Quickly add entries to your habit tracker.")
     }
-    .displayName("Habit Quick Add")
-    .description("Quickly add entries to your habit tracker.")
-  }
 }
 
 extension HabitsWidgetControl {
-  struct Value {
-    var isCompleted: Bool
-    var calendarId: String
-  }
-
-  struct Provider: AppIntentControlValueProvider {
-    func previewValue(configuration: HabitConfiguration) -> Value {
-      HabitsWidgetControl.Value(isCompleted: false, calendarId: configuration.calendarId)
+    struct Value {
+        var isCompleted: Bool
+        var calendarId: String
     }
 
-    func currentValue(configuration: HabitConfiguration) async throws -> Value {
-      let store = CustomCalendarStore.shared
-      store.loadCalendars()
+    struct Provider: AppIntentControlValueProvider {
+        func previewValue(configuration: HabitConfiguration) -> Value {
+            HabitsWidgetControl.Value(isCompleted: false, calendarId: configuration.calendarId)
+        }
 
-      guard
-        let calendar = store.calendars.first(where: { $0.id.uuidString == configuration.calendarId }
-        )
-      else {
-        return Value(isCompleted: false, calendarId: configuration.calendarId)
-      }
+        func currentValue(configuration: HabitConfiguration) async throws -> Value {
+            let store = CustomCalendarStore.shared
+            store.loadCalendars()
 
-      let valStore = ValuationStore.shared
-      let today = valStore.dateForDay(valStore.currentDayNumber - 1)
-      let isCompleted = store.getEntry(calendarId: calendar.id, date: today)?.completed ?? false
+            guard
+                let calendar = store.calendars.first(where: { $0.id.uuidString == configuration.calendarId })
+            else {
+                return Value(isCompleted: false, calendarId: configuration.calendarId)
+            }
 
-      return Value(isCompleted: isCompleted, calendarId: configuration.calendarId)
+            let valStore = ValuationStore.shared
+            let today = valStore.dateForDay(valStore.currentDayNumber - 1)
+            let isCompleted = store.getEntry(calendarId: calendar.id, date: today)?.completed ?? false
+
+            return Value(isCompleted: isCompleted, calendarId: configuration.calendarId)
+        }
     }
-  }
 }
 
 struct HabitConfiguration: ControlConfigurationIntent {
-  static let title: LocalizedStringResource = "Habit Configuration"
+    static let title: LocalizedStringResource = "Habit Configuration"
 
-  @Parameter(title: "Calendar ID", default: "default")
-  var calendarId: String
+    @Parameter(title: "Calendar ID", default: "default")
+    var calendarId: String
 }
 
 // struct HabitQuickAddIntent: SetValueIntent {

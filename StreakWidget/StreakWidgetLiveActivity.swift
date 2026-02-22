@@ -6,16 +6,16 @@
 //
 
 import ActivityKit
-import WidgetKit
 import SwiftUI
+import WidgetKit
 
 struct StreakWidgetAttributes: ActivityAttributes {
-    public struct ContentState: Codable, Hashable {
-        // Dynamic stateful properties about your activity go here!
+    struct ContentState: Codable, Hashable {
+        /// Dynamic stateful properties about your activity go here!
         var emoji: String
     }
 
-    // Fixed non-changing properties about your activity go here!
+    /// Fixed non-changing properties about your activity go here!
     var name: String
 }
 
@@ -56,24 +56,24 @@ struct StreakWidgetLiveActivity: Widget {
     }
 }
 
-extension StreakWidgetAttributes {
-    fileprivate static var preview: StreakWidgetAttributes {
+private extension StreakWidgetAttributes {
+    static var preview: StreakWidgetAttributes {
         StreakWidgetAttributes(name: "World")
     }
 }
 
-extension StreakWidgetAttributes.ContentState {
-    fileprivate static var smiley: StreakWidgetAttributes.ContentState {
+private extension StreakWidgetAttributes.ContentState {
+    static var smiley: StreakWidgetAttributes.ContentState {
         StreakWidgetAttributes.ContentState(emoji: "😀")
-     }
-     
-     fileprivate static var starEyes: StreakWidgetAttributes.ContentState {
-         StreakWidgetAttributes.ContentState(emoji: "🤩")
-     }
+    }
+
+    static var starEyes: StreakWidgetAttributes.ContentState {
+        StreakWidgetAttributes.ContentState(emoji: "🤩")
+    }
 }
 
 #Preview("Notification", as: .content, using: StreakWidgetAttributes.preview) {
-   StreakWidgetLiveActivity()
+    StreakWidgetLiveActivity()
 } contentStates: {
     StreakWidgetAttributes.ContentState.smiley
     StreakWidgetAttributes.ContentState.starEyes
