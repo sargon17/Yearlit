@@ -7,7 +7,7 @@
   "languages": {
     "Swift": {
       "enable_language_server": true,
-      "language_servers": ["sourcekit-lsp", "package-swift-lsp", "..."],
+      "language_servers": ["sourcekit-lsp", "!package-swift-lsp", "..."],
       "formatter": "language_server",
       "format_on_save": "on",
       "tab_size": 2,

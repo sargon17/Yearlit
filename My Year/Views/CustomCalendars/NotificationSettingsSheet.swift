@@ -88,16 +88,15 @@ struct NotificationSettingsSheet: View {
               if recurringReminderEnabled {
 
                 HStack(spacing: 6) {
-                  Text("Time")
-                    .labelStyle(type: .secondary)
-
-                  Spacer()
                   DatePicker("", selection: $reminderTime, displayedComponents: [.hourAndMinute])
                     .tint(Color(calendar.color))
-                    .datePickerStyle(.makeBody())
+                    .datePickerStyle(.compact)
                     .labelsHidden()
+
+                  Spacer()
                 }
-                .padding(.leading)
+                .padding(.horizontal)
+                .padding(.vertical, 8)
                 .notificationSurface()
 
                 if calendar.trackingType == .multipleDaily {
