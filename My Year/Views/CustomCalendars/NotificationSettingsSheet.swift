@@ -86,43 +86,38 @@ struct NotificationSettingsSheet: View {
               .notificationSurface()
 
               if recurringReminderEnabled {
-                VStack {
-                  HStack(spacing: 6) {
-                    Text("Time")
-                      .labelStyle(type: .secondary)
 
-                    Spacer()
-                    DatePicker("", selection: $reminderTime, displayedComponents: [.hourAndMinute])
-                      .tint(Color(calendar.color))
-                      .datePickerStyle(.graphical)
-                      .frame(maxWidth: .greatestFiniteMagnitude)
-                  }
-                  .padding(.leading)
-                  .notificationSurface()
+                HStack(spacing: 6) {
+                  Text("Time")
+                    .labelStyle(type: .secondary)
+
+                  Spacer()
+                  DatePicker("", selection: $reminderTime, displayedComponents: [.hourAndMinute])
+                    .tint(Color(calendar.color))
+                    .datePickerStyle(.makeBody())
+                    .labelsHidden()
                 }
-              }
-            }
-          }
+                .padding(.leading)
+                .notificationSurface()
 
-          if recurringReminderEnabled {
-            if calendar.trackingType == .multipleDaily {
-              NotificationSection(
-                label: "Multiple Times",
-                description: "Extra reminders for daily repeating habits."
-              ) {
-                VStack(spacing: 1) {
-                  HStack {
-                    VStack(alignment: .leading, spacing: 4) {
-                      HStack(spacing: 6) {
-                        Text("Additional reminders")
-                          .labelStyle(type: .secondary)
-                        if !isPremiumUser {
-                          proBadge()
+                if calendar.trackingType == .multipleDaily {
+                  if !additionalReminderTimes.isEmpty {
+                    ForEach(additionalReminderTimes, id: \.id) { time in
+                      additionalTimeRow(time: time)
+                    }
+                  }
+                  if additionalReminderTimes.count < maxAdditionalReminderTimes {
+                    HStack {
+                      VStack(alignment: .leading, spacing: 4) {
+                        HStack(spacing: 6) {
+                          Text("Additional reminders")
+                            .labelStyle(type: .secondary)
+                          if !isPremiumUser {
+                            proBadge()
+                          }
                         }
                       }
-                    }
-                    Spacer()
-                    if additionalReminderTimes.count < maxAdditionalReminderTimes {
+                      Spacer()
                       Button(
                         action: addAdditionalReminderTime,
                         label: {
@@ -133,19 +128,57 @@ struct NotificationSettingsSheet: View {
                           }.frame(width: 24, height: 24)
                         })
                     }
-                  }
-                  .padding(.horizontal)
-                  .padding(.vertical, 14)
-                  .notificationSurface()
-
-                  if !additionalReminderTimes.isEmpty {
-                    ForEach(additionalReminderTimes, id: \.id) { time in
-                      additionalTimeRow(time: time)
-                    }
+                    .padding(.horizontal)
+                    .padding(.vertical, 14)
+                    .notificationSurface()
                   }
                 }
               }
             }
+          }
+
+          if recurringReminderEnabled {
+            // if calendar.trackingType == .multipleDaily {
+            //   NotificationSection(
+            //     label: "Multiple Times",
+            //     description: "Extra reminders for daily repeating habits."
+            //   ) {
+            //     VStack(spacing: 1) {
+            //       HStack {
+            //         VStack(alignment: .leading, spacing: 4) {
+            //           HStack(spacing: 6) {
+            //             Text("Additional reminders")
+            //               .labelStyle(type: .secondary)
+            //             if !isPremiumUser {
+            //               proBadge()
+            //             }
+            //           }
+            //         }
+            //         Spacer()
+            //         if additionalReminderTimes.count < maxAdditionalReminderTimes {
+            //           Button(
+            //             action: addAdditionalReminderTime,
+            //             label: {
+            //               ZStack {
+            //                 Image(systemName: "plus")
+            //                   .font(.system(size: 16, design: .monospaced))
+            //                   .foregroundStyle(.textTertiary)
+            //               }.frame(width: 24, height: 24)
+            //             })
+            //         }
+            //       }
+            //       .padding(.horizontal)
+            //       .padding(.vertical, 14)
+            //       .notificationSurface()
+
+            //       if !additionalReminderTimes.isEmpty {
+            //         ForEach(additionalReminderTimes, id: \.id) { time in
+            //           additionalTimeRow(time: time)
+            //         }
+            //       }
+            //     }
+            //   }
+            // }
 
             NotificationSection(
               label: "Streak Protection", description: "We will send you a reminder when you're about to miss a day."

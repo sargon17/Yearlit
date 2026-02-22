@@ -6,16 +6,16 @@
 //
 
 import ActivityKit
-import WidgetKit
 import SwiftUI
+import WidgetKit
 
 struct YearWidgetAttributes: ActivityAttributes {
-    public struct ContentState: Codable, Hashable {
-        // Dynamic stateful properties about your activity go here!
+    struct ContentState: Codable, Hashable {
+        /// Dynamic stateful properties about your activity go here!
         var emoji: String
     }
 
-    // Fixed non-changing properties about your activity go here!
+    /// Fixed non-changing properties about your activity go here!
     var name: String
 }
 
@@ -56,24 +56,24 @@ struct YearWidgetLiveActivity: Widget {
     }
 }
 
-extension YearWidgetAttributes {
-    fileprivate static var preview: YearWidgetAttributes {
+private extension YearWidgetAttributes {
+    static var preview: YearWidgetAttributes {
         YearWidgetAttributes(name: "World")
     }
 }
 
-extension YearWidgetAttributes.ContentState {
-    fileprivate static var smiley: YearWidgetAttributes.ContentState {
+private extension YearWidgetAttributes.ContentState {
+    static var smiley: YearWidgetAttributes.ContentState {
         YearWidgetAttributes.ContentState(emoji: "😀")
-     }
-     
-     fileprivate static var starEyes: YearWidgetAttributes.ContentState {
-         YearWidgetAttributes.ContentState(emoji: "🤩")
-     }
+    }
+
+    static var starEyes: YearWidgetAttributes.ContentState {
+        YearWidgetAttributes.ContentState(emoji: "🤩")
+    }
 }
 
 #Preview("Notification", as: .content, using: YearWidgetAttributes.preview) {
-   YearWidgetLiveActivity()
+    YearWidgetLiveActivity()
 } contentStates: {
     YearWidgetAttributes.ContentState.smiley
     YearWidgetAttributes.ContentState.starEyes

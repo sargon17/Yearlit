@@ -10,8 +10,8 @@ import WidgetKit
 
 @main
 struct HabitsWidgetBundle: WidgetBundle {
-  var body: some Widget {
-    HabitsWidget()
-    // HabitsWidgetControl()
-  }
+    var body: some Widget {
+        HabitsWidget()
+        // HabitsWidgetControl()
+    }
 }

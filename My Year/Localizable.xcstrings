@@ -1346,6 +1346,7 @@
       }
     },
     "Extra reminders for daily repeating habits." : {
+      "extractionState" : "stale",
       "localizations" : {
         "uk" : {
           "stringUnit" : {

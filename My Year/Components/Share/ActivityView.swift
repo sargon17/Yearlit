@@ -2,15 +2,15 @@ import SwiftUI
 import UIKit
 
 struct ActivityView: UIViewControllerRepresentable {
-  let activityItems: [Any]
-  let applicationActivities: [UIActivity]?
+    let activityItems: [Any]
+    let applicationActivities: [UIActivity]?
 
-  func makeUIViewController(context: Context) -> UIActivityViewController {
-    UIActivityViewController(
-      activityItems: activityItems,
-      applicationActivities: applicationActivities
-    )
-  }
+    func makeUIViewController(context _: Context) -> UIActivityViewController {
+        UIActivityViewController(
+            activityItems: activityItems,
+            applicationActivities: applicationActivities
+        )
+    }
 
-  func updateUIViewController(_ uiViewController: UIActivityViewController, context: Context) {}
+    func updateUIViewController(_: UIActivityViewController, context _: Context) {}
 }

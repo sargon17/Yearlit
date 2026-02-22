@@ -5,8 +5,8 @@
 //  Created by Mykhaylo Tymofyeyev  on 10/01/26.
 //
 
-import WidgetKit
 import SwiftUI
+import WidgetKit
 
 @main
 struct StreakWidgetBundle: WidgetBundle {

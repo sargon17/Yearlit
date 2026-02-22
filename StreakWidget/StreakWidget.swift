@@ -13,7 +13,7 @@ struct Provider: AppIntentTimelineProvider {
     typealias Entry = SimpleEntry
     typealias Intent = ConfigurationAppIntent
 
-    func placeholder(in context: Context) -> SimpleEntry {
+    func placeholder(in _: Context) -> SimpleEntry {
         let configuration = ConfigurationAppIntent.defaultCalendar
         let calendar = resolvedCalendar(for: configuration)
         let streakData = calendar.map { WidgetStreak.currentStreak(calendar: $0) }
@@ -26,7 +26,7 @@ struct Provider: AppIntentTimelineProvider {
         )
     }
 
-    func snapshot(for configuration: ConfigurationAppIntent, in context: Context) async -> SimpleEntry {
+    func snapshot(for configuration: ConfigurationAppIntent, in _: Context) async -> SimpleEntry {
         let calendar = resolvedCalendar(for: configuration)
         let streakData = calendar.map { WidgetStreak.currentStreak(calendar: $0) }
         return SimpleEntry(
@@ -38,7 +38,7 @@ struct Provider: AppIntentTimelineProvider {
         )
     }
 
-    func timeline(for configuration: ConfigurationAppIntent, in context: Context) async -> Timeline<SimpleEntry> {
+    func timeline(for configuration: ConfigurationAppIntent, in _: Context) async -> Timeline<SimpleEntry> {
         let currentDate = Date()
         let calendar = resolvedCalendar(for: configuration)
         let streakData = calendar.map { WidgetStreak.currentStreak(calendar: $0) }
@@ -74,7 +74,7 @@ struct SimpleEntry: TimelineEntry {
     let isAtRisk: Bool
 }
 
-struct StreakWidgetEntryView : View {
+struct StreakWidgetEntryView: View {
     var entry: Provider.Entry
     @Environment(\.colorScheme) private var colorScheme
 
@@ -91,34 +91,33 @@ struct StreakWidgetEntryView : View {
         } ?? nil
 
         VStack(alignment: .leading, spacing: 6) {
-          VStack {
-
-            if streakValue > 0 && !isAtRisk {
-              Text(
-                String(
-                  format: String(localized: "your current %@ streak is:"),
-                  calendarName.lowercased()
-                )
-              )
-            } else if streakValue > 0 && isAtRisk {
-              Text(
-                String(
-                  format: String(localized: "your current %@ streak is at risk"),
-                  calendarName.lowercased()
-                )
-              )
-              .foregroundColor(Color("qs-red"))
-            } else {
-              Text(calendarName.lowercased())
-                .foregroundColor(.textPrimary)
+            VStack {
+                if streakValue > 0 && !isAtRisk {
+                    Text(
+                        String(
+                            format: String(localized: "your current %@ streak is:"),
+                            calendarName.lowercased()
+                        )
+                    )
+                } else if streakValue > 0 && isAtRisk {
+                    Text(
+                        String(
+                            format: String(localized: "your current %@ streak is at risk"),
+                            calendarName.lowercased()
+                        )
+                    )
+                    .foregroundColor(Color("qs-red"))
+                } else {
+                    Text(calendarName.lowercased())
+                        .foregroundColor(.textPrimary)
+                }
             }
-          }
-          .foregroundColor(.textSecondary)
-          .font(.system(size: 10, design: .monospaced))
+            .foregroundColor(.textSecondary)
+            .font(.system(size: 10, design: .monospaced))
 
             WidgetSeparator()
-            .padding(.horizontal, -16)
-            .padding(.bottom, 4)
+                .padding(.horizontal, -16)
+                .padding(.bottom, 4)
 
             Spacer()
 
