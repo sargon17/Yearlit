@@ -30,19 +30,12 @@ final class FeatureRequestManager: ObservableObject {
   @Published private(set) var viewerUpvotesLoaded = false
   @Published private(set) var upvotesSupported = true
 
-  private func log(_ message: String) {
-    #if DEBUG
-      print("[FeatureRequestManager] \(message)")
-    #endif
-  }
-
   init(appID: String, defaults: UserDefaults = .standard) {
     self.appID = appID
     self.defaults = defaults
 
     let identifier = Self.loadOrCreateIdentifier(from: defaults)
     user = WishAppUser(id: identifier)
-    log("initialized appID=\(appID) userId=\(user.id.uuidString)")
   }
 
   private static func loadOrCreateIdentifier(from defaults: UserDefaults) -> UUID {
@@ -97,17 +90,14 @@ final class FeatureRequestManager: ObservableObject {
 
   func reloadRequests() async -> FeatureRequestsListResponse? {
     let endpoint = "\(baseURL)project/\(appID)/requests/"
-    log("reloadRequests endpoint=\(endpoint)")
     do {
       let fetched = try await HTTP.get(
         endpoint: endpoint,
         type: FeatureRequestsListResponse.self
       )
       requests = fetched
-      log("reloadRequests success count=\(fetched.requests.count)")
       return fetched
     } catch {
-      log("reloadRequests failed error=\(error.localizedDescription)")
       return requests
     }
   }
@@ -120,7 +110,6 @@ final class FeatureRequestManager: ObservableObject {
 
     let clientId = user.id.uuidString
     let endpoint = "\(baseURL)project/\(appID)/upvotes?clientId=\(clientId)"
-    log("getViewerUpvotes endpoint=\(endpoint)")
 
     do {
       let response = try await HTTP.get(
@@ -131,38 +120,32 @@ final class FeatureRequestManager: ObservableObject {
       viewerUpvotes = upvotes
       viewerUpvotesLoaded = true
       upvotesSupported = true
-      log("getViewerUpvotes success count=\(upvotes.count)")
       return upvotes
     } catch {
       viewerUpvotesLoaded = true
       upvotesSupported = false
-      log("getViewerUpvotes failed error=\(error.localizedDescription)")
       return viewerUpvotes
     }
   }
 
   func getComments(requestId: String) async -> [FeatureRequestComment] {
     let endpoint = "\(baseURL)project/\(appID)/request/\(requestId)/comments"
-    log("getComments requestId=\(requestId) endpoint=\(endpoint)")
 
     do {
       let response = try await HTTP.get(
         endpoint: endpoint,
         type: FeatureRequestCommentsResponse.self
       )
-      log("getComments success count=\(response.comments.count)")
       return response.comments.filter {
         !$0.body.isEmpty && ($0.isDeveloper || !$0.authorClientId.isEmpty)
       }
     } catch {
-      log("getComments failed requestId=\(requestId) error=\(error.localizedDescription)")
       return []
     }
   }
 
   func addComment(requestId: String, text: String) async -> [FeatureRequestComment] {
     let endpoint = "\(baseURL)project/\(appID)/request/\(requestId)/comment"
-    log("addComment requestId=\(requestId) endpoint=\(endpoint)")
 
     do {
       try await HTTP.post(
@@ -173,7 +156,6 @@ final class FeatureRequestManager: ObservableObject {
         )
       )
     } catch {
-      log("addComment failed requestId=\(requestId) error=\(error.localizedDescription)")
       return []
     }
 
@@ -185,14 +167,11 @@ final class FeatureRequestManager: ObservableObject {
 
     let clientId = user.id.uuidString
     let endpoint = "\(baseURL)project/\(appID)/request/\(requestId)/comment/\(comment.id)?clientId=\(clientId)"
-    log("deleteComment requestId=\(requestId) commentId=\(comment.id) endpoint=\(endpoint)")
 
     do {
       try await HTTP.delete(endpoint: endpoint)
-      log("deleteComment success commentId=\(comment.id)")
       return true
     } catch {
-      log("deleteComment failed commentId=\(comment.id) error=\(error.localizedDescription)")
       return false
     }
   }
@@ -204,7 +183,6 @@ final class FeatureRequestManager: ObservableObject {
 
     let clientId = user.id.uuidString
     let endpoint = "\(baseURL)project/\(appID)/request/\(requestId)?clientId=\(clientId)"
-    log("deleteRequest requestId=\(requestId) endpoint=\(endpoint)")
 
     do {
       try await HTTP.delete(endpoint: endpoint)
@@ -212,16 +190,13 @@ final class FeatureRequestManager: ObservableObject {
       updated.requests.removeAll { $0.id == requestId }
       requests = updated
       viewerUpvotes.remove(requestId)
-      log("deleteRequest success requestId=\(requestId)")
     } catch {
-      log("deleteRequest failed requestId=\(requestId) error=\(error.localizedDescription)")
       return
     }
   }
 
   func toggleUpvote(requestId: String, wasUpvoted: Bool? = nil) async -> Bool {
     guard upvotesSupported else {
-      log("toggleUpvote skipped: upvotes endpoint unsupported")
       return false
     }
 
@@ -231,7 +206,6 @@ final class FeatureRequestManager: ObservableObject {
     updateCachedUpvote(requestId: requestId, isUpvoted: nextUpvoted)
 
     let endpoint = "\(baseURL)project/\(appID)/request/\(requestId)/upvote"
-    log("toggleUpvote requestId=\(requestId) endpoint=\(endpoint) nextUpvoted=\(nextUpvoted)")
 
     do {
       try await HTTP.post(
@@ -241,12 +215,10 @@ final class FeatureRequestManager: ObservableObject {
         )
       )
       _ = await getViewerUpvotes()
-      log("toggleUpvote success requestId=\(requestId)")
       return true
     } catch {
       updateViewerUpvotes(requestId: requestId, isUpvoted: currentWasUpvoted)
       updateCachedUpvote(requestId: requestId, isUpvoted: currentWasUpvoted)
-      log("toggleUpvote failed requestId=\(requestId) error=\(error.localizedDescription)")
       return false
     }
   }
@@ -288,7 +260,6 @@ final class FeatureRequestManager: ObservableObject {
     onError: (() -> Void)? = nil
   ) async {
     let endpoint = "\(baseURL)project/\(appID)/request/"
-    log("createRequest endpoint=\(endpoint)")
     do {
       try await HTTP.post(
         endpoint: endpoint,
@@ -301,10 +272,8 @@ final class FeatureRequestManager: ObservableObject {
       )
 
       invalidateRequests()
-      log("createRequest success")
       onSuccess?()
     } catch {
-      log("createRequest failed error=\(error.localizedDescription)")
       onError?()
     }
   }
