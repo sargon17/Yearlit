@@ -1,7 +1,7 @@
 import RevenueCat
 
 func isPremium(
-  customerInfo: CustomerInfo?
+    customerInfo: CustomerInfo?
 ) -> Bool {
-  return customerInfo?.entitlements["premium"]?.isActive ?? false
+    return customerInfo?.entitlements["premium"]?.isActive ?? false
 }

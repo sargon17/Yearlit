@@ -35,8 +35,7 @@ extension YearWidgetControl {
         }
 
         func currentValue() async throws -> Bool {
-            let isRunning = true // Check if the timer is running
-            return isRunning
+            return true // Check if the timer is running
         }
     }
 }

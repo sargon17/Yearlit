@@ -1,13 +1,13 @@
-import SwiftUI
 import SwiftfulRouting
+import SwiftUI
 
 struct FeatureRequestsList: View {
   @State private var requestsList: FeatureRequestsListResponse?
   @State private var showsOnlyMine = false
   @State private var togglingUpvotes: Set<String> = []
 
-  @EnvironmentObject private var featureRequestManager: FeatureRequestManager
-  @Environment(\.router) private var router
+    @EnvironmentObject private var featureRequestManager: FeatureRequestManager
+    @Environment(\.router) private var router
 
   var body: some View {
     VStack {
@@ -28,28 +28,33 @@ struct FeatureRequestsList: View {
                 router.showScreen(.push) { _ in
                   FeatureRequestDetailView(request: request)
                 }
-              }
             }
-          }
+            .animation(.easeInOut, value: groupedRequests)
         }
-      }
-      .animation(.easeInOut, value: groupedRequests)
-    }
-    .navigationTitle("Feature Requests")
-    .toolbar {
-      ToolbarItem(placement: .navigationBarTrailing) {
-        Button {
-          withAnimation {
-            showsOnlyMine.toggle()
-          }
-        } label: {
-          Label("Your Requests", systemImage: showsOnlyMine ? "person.fill" : "person")
+        .navigationTitle("Feature Requests")
+        .toolbar {
+            ToolbarItem(placement: .navigationBarTrailing) {
+                Button {
+                    withAnimation {
+                        showsOnlyMine.toggle()
+                    }
+                } label: {
+                    Label("Your Requests", systemImage: showsOnlyMine ? "person.fill" : "person")
+                }
+                .accessibilityLabel("Filter your requests")
+            }
+            ToolbarItem(placement: .primaryAction) {
+                createRequestButton
+            }
         }
-        .accessibilityLabel("Filter your requests")
-      }
-      ToolbarItem(placement: .primaryAction) {
-        createRequestButton
-      }
+        .task {}.refreshable {
+            await updateList()
+        }
+        .onAppear {
+            Task {
+                requestsList = await featureRequestManager.getRequests()
+            }
+        }
     }
     .task {
       await updateList()
@@ -61,33 +66,35 @@ struct FeatureRequestsList: View {
 }
 
 extension FeatureRequestsList {
-  struct RequestGroup: Identifiable, Equatable {
-    let status: RequestStatus
-    let requests: [Request]
+    struct RequestGroup: Identifiable, Equatable {
+        let status: RequestStatus
+        let requests: [Request]
 
-    var id: String { status._id }
+        var id: String {
+            status._id
+        }
 
-    static func == (lhs: RequestGroup, rhs: RequestGroup) -> Bool {
-      lhs.status._id == rhs.status._id && lhs.requests.map(\.id) == rhs.requests.map(\.id)
+        static func == (lhs: RequestGroup, rhs: RequestGroup) -> Bool {
+            lhs.status._id == rhs.status._id && lhs.requests.map(\.id) == rhs.requests.map(\.id)
+        }
     }
-  }
 
-  var createRequestButton: some View {
-    Button {
-      router.showScreen(
-        .push,
-        // onDismiss: {
-        //   Task {
-        //     await updateList()
-        //   }
-        // }
-      ) { _ in
-        FeatureRequestForm()
-      }
-    } label: {
-      Label("New Request", systemImage: "plus")
+    var createRequestButton: some View {
+        Button {
+            router.showScreen(
+                .push
+                // onDismiss: {
+                //   Task {
+                //     await updateList()
+                //   }
+                // }
+            ) { _ in
+                FeatureRequestForm()
+            }
+        } label: {
+            Label("New Request", systemImage: "plus")
+        }
     }
-  }
 
   func updateList() async {
     async let requests = featureRequestManager.reloadRequests()

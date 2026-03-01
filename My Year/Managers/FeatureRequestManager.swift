@@ -67,60 +67,31 @@ final class FeatureRequestManager: ObservableObject {
     return newUUID
   }
 
-  func getUserId() -> String {
-    return user.id.uuidString
-  }
+    @Published private(set) var user: WishAppUser
 
-  func isCurrentUser(id: String) -> Bool {
-    return id == getUserId()
-  }
+    init(appID: String, defaults: UserDefaults = .standard) {
+        self.appID = appID
+        self.defaults = defaults
 
-  // returns the requests with a layer of caching (will not update the already saved requests in any case)
-  func getRequests() async -> FeatureRequestsListResponse? {
-    if requests != nil {
-      return requests
-    } else {
-      await fetchRequests()
-      return await getRequests()
+        let identifier = Self.loadOrCreateIdentifier(from: defaults)
+        user = WishAppUser(id: identifier)
     }
-  }
 
-  func reloadRequests() async -> FeatureRequestsListResponse? {
-    await fetchRequests()
-    return requests
-  }
+    private static func loadOrCreateIdentifier(from defaults: UserDefaults) -> UUID {
+        if let storedValue = defaults.string(forKey: Constants.userDefaultsKey),
+           let storedUUID = UUID(uuidString: storedValue)
+        {
+            return storedUUID
+        }
 
-  func invalidateRequests() {
-    requests = nil
-  }
-
-  // fetch request from the server
-  func fetchRequests() async {
-    let endpoint =
-      "\(baseURL)project/\(appID)/requests/"
-
-    do {
-      requests = try await HTTP.get(
-        endpoint: endpoint,
-        type: FeatureRequestsListResponse
-          .self
-      )
-    } catch {
-      print("error")
+        let newUUID = UUID()
+        defaults.set(newUUID.uuidString, forKey: Constants.userDefaultsKey)
+        return newUUID
     }
-  }
 
-  func deleteRequest(id: String) async {
-    let endpoint =
-      "\(baseURL)project/\(appID)/request/\(id)"
-
-    do {
-      try await HTTP.delete(endpoint: endpoint)
-      invalidateRequests()
-    } catch {
-      print("error")
+    func getUserId() -> String {
+        return user.id.uuidString
     }
-  }
 
   func getViewerUpvotes() async -> Set<String> {
     let clientId = user.id.uuidString
@@ -270,5 +241,4 @@ final class FeatureRequestManager: ObservableObject {
     } catch {
       onError?()
     }
-  }
 }

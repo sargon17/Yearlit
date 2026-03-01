@@ -1,7 +1,7 @@
-import WidgetKit
-import SwiftUI
-import SharedModels
 import AppIntents
+import SharedModels
+import SwiftUI
+import WidgetKit
 
 struct SimpleEntry: TimelineEntry {
     let date: Date
@@ -12,11 +12,11 @@ struct Provider: TimelineProvider {
     typealias Entry = SimpleEntry
     let store = ValuationStore.shared
 
-    func placeholder(in context: Context) -> SimpleEntry {
+    func placeholder(in _: Context) -> SimpleEntry {
         return SimpleEntry(date: Date(), valuations: [:])
     }
 
-    func getSnapshot(in context: Context, completion: @escaping (SimpleEntry) -> ()) {
+    func getSnapshot(in _: Context, completion: @escaping (SimpleEntry) -> Void) {
         print("Widget: Getting snapshot")
         store.loadValuations()
         let entry = SimpleEntry(date: Date(), valuations: store.valuations)
@@ -24,7 +24,7 @@ struct Provider: TimelineProvider {
         completion(entry)
     }
 
-    func getTimeline(in context: Context, completion: @escaping (Timeline<Entry>) -> ()) {
+    func getTimeline(in _: Context, completion: @escaping (Timeline<Entry>) -> Void) {
         print("Widget: Getting timeline")
         store.loadValuations()
 
@@ -64,11 +64,11 @@ struct HorizontalYearGrid: View {
         self.inactiveRatio = inactiveRatio
         switch family {
         case .systemLarge:
-            self.dotSize = 9.0
+            dotSize = 9.0
         case .systemMedium:
-            self.dotSize = 7.0
+            dotSize = 7.0
         default:
-            self.dotSize = 5.0
+            dotSize = 5.0
         }
     }
 
@@ -97,13 +97,13 @@ struct HorizontalYearGrid: View {
             HStack(spacing: 6) {
                 if family == .systemLarge || family == .systemMedium {
                     Text(Calendar.current.component(.year, from: Date()).description)
-                    .font(.system(size: 12, design: .monospaced))
-                    .foregroundColor(Color("text-primary"))
-                    .fontWeight(.heavy)
+                        .font(.system(size: 12, design: .monospaced))
+                        .foregroundColor(Color("text-primary"))
+                        .fontWeight(.heavy)
 
                     Text("/")
-                    .font(.system(size: 12, design: .monospaced))
-                    .foregroundColor(Color("text-tertiary"))
+                        .font(.system(size: 12, design: .monospaced))
+                        .foregroundColor(Color("text-tertiary"))
                 }
 
                 let percent = Double(store.currentDayNumber) / Double(store.numberOfDaysInYear)
@@ -118,14 +118,17 @@ struct HorizontalYearGrid: View {
                     .font(.system(size: 9, design: .monospaced))
                     .foregroundColor(.qsOrange)
                     .fontWeight(.heavy)
-                + Text(" days left")
+                    + Text(" ")
+                    .font(.system(size: 9, design: .monospaced))
+                    .foregroundColor(.textTertiary)
+                    + Text("days left")
                     .font(.system(size: 9, design: .monospaced))
                     .foregroundColor(.textTertiary)
             }
 
             WidgetSeparator()
-            .padding(.horizontal, -16)
-            .padding(.bottom, 4)
+                .padding(.horizontal, -16)
+                .padding(.bottom, 4)
 
             GeometryReader { geometry in
                 let padding: CGFloat = 0
@@ -140,9 +143,9 @@ struct HorizontalYearGrid: View {
                 )
 
                 VStack(spacing: layout.verticalSpacing) {
-                    ForEach(0..<layout.rows, id: \.self) { row in
+                    ForEach(0 ..< layout.rows, id: \.self) { row in
                         HStack(spacing: layout.horizontalSpacing) {
-                            ForEach(0..<layout.columns, id: \.self) { col in
+                            ForEach(0 ..< layout.columns, id: \.self) { col in
                                 let day = row * layout.columns + col
                                 if day < store.numberOfDaysInYear {
                                     let color = colorForDay(day)
@@ -167,19 +170,19 @@ struct YearWidgetEntryView: View {
     @Environment(\.colorScheme) private var colorScheme
 
     var body: some View {
-      let backgroundColor = WidgetStyle.surfaceMutedColor(for: colorScheme)
+        let backgroundColor = WidgetStyle.surfaceMutedColor(for: colorScheme)
         let primaryTextColor = WidgetStyle.textPrimaryColor(for: colorScheme)
         let inactiveRatio = 0.04
 
-          HorizontalYearGrid(
-              family: family,
-              valuations: entry.valuations,
-              backgroundColor: backgroundColor,
-              textPrimaryColor: primaryTextColor,
-              inactiveRatio: inactiveRatio
-          )
-          .containerBackground(backgroundColor, for: .widget)
-          .widgetAccentable(false)
+        HorizontalYearGrid(
+            family: family,
+            valuations: entry.valuations,
+            backgroundColor: backgroundColor,
+            textPrimaryColor: primaryTextColor,
+            inactiveRatio: inactiveRatio
+        )
+        .containerBackground(backgroundColor, for: .widget)
+        .widgetAccentable(false)
     }
 }
 

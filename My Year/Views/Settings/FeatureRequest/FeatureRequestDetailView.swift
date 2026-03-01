@@ -7,8 +7,8 @@ struct FeatureRequestDetailView: View {
   @State private var isSubmittingComment = false
   @State private var isTogglingUpvote = false
 
-  @EnvironmentObject private var featureRequestManager: FeatureRequestManager
-  @Environment(\.router) private var router
+    @EnvironmentObject private var featureRequestManager: FeatureRequestManager
+    @Environment(\.router) private var router
 
   init(request: Request) {
     _request = State(initialValue: request)
@@ -68,7 +68,6 @@ struct FeatureRequestDetailView: View {
         ToolbarItem(placement: .destructiveAction) {
           deleteButton
         }
-      }
     }
     .task {
       await refreshComments()
@@ -77,18 +76,19 @@ struct FeatureRequestDetailView: View {
 }
 
 extension FeatureRequestDetailView {
-  var deleteButton: some View {
-    Button(role: .destructive) {
-      handleDelete()
-    } label: {
-      Label("delete", systemImage: "trash")
-    }.buttonStyle(.borderless)
-  }
+    var deleteButton: some View {
+        Button(role: .destructive) {
+            handleDelete()
+        } label: {
+            Label("delete", systemImage: "trash")
+        }.buttonStyle(.borderless)
+    }
 
-  func handleDelete() {
-    Task {
-      await featureRequestManager.deleteRequest(id: request._id)
-      router.dismissScreen()
+    func handleDelete() {
+        Task {
+            await featureRequestManager.deleteRequest(id: request._id)
+            router.dismissScreen()
+        }
     }
   }
 

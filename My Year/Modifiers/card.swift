@@ -1,22 +1,21 @@
 import SwiftUI
 
 struct CardModifier: ViewModifier {
-  @Environment(\.colorScheme) var colorScheme
+    @Environment(\.colorScheme) var colorScheme
 
-  func body(content: Content) -> some View {
-    VStack {
-
-      content
-        .padding()
-        .sameLevelBorder(radius: 8)
+    func body(content: Content) -> some View {
+        VStack {
+            content
+                .padding()
+                .sameLevelBorder(radius: 8)
+        }
+        .padding(.all, 2)
+        .background(getVoidColor(colorScheme: colorScheme))
     }
-    .padding(.all, 2)
-    .background(getVoidColor(colorScheme: colorScheme))
-  }
 }
 
 extension View {
-  func cardStyle() -> some View {
-    self.modifier(CardModifier())
-  }
+    func cardStyle() -> some View {
+        modifier(CardModifier())
+    }
 }

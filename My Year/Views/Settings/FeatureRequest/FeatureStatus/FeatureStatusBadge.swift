@@ -34,7 +34,6 @@ struct FeatureStatusBadge: View {
         .strokeBorder(
           .black.opacity(0.1)
         )
-    )
-    .cornerRadius(8)
-  }
+        .cornerRadius(8)
+    }
 }

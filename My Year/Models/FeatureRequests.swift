@@ -1,11 +1,11 @@
 import Foundation
 
 struct WishAppUser: Codable, Equatable {
-  let id: UUID
+    let id: UUID
 
-  init(id: UUID = UUID()) {
-    self.id = id
-  }
+    init(id: UUID = UUID()) {
+        self.id = id
+    }
 }
 
 struct FeatureRequestsListResponse: Codable {
@@ -14,17 +14,17 @@ struct FeatureRequestsListResponse: Codable {
 }
 
 struct Project: Codable {
-  let _creationTime: Double
-  let _id: String
-  let title: String
-  let user: String
+    let _creationTime: Double
+    let _id: String
+    let title: String
+    let user: String
 }
 
 struct CreateRequest: Codable {
-  let text: String
-  let description: String?
-  let clientId: String
-  let project: String  // riferimento a un id di projects
+    let text: String
+    let description: String?
+    let clientId: String
+    let project: String // riferimento a un id di projects
 }
 
 struct Request: Codable, Identifiable {
@@ -130,10 +130,12 @@ struct RequestStatus: Codable, Identifiable {
   let type: RequestStatusType
   let color: String?
 
-  var id: String { _id }
+    var id: String {
+        _id
+    }
 }
 
 enum RequestStatusType: String, Codable {
-  case custom
-  case `default`
+    case custom
+    case `default`
 }
