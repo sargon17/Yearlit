@@ -40,7 +40,11 @@ struct FeatureRequestsListItem: View {
           Label("\(request.resolvedUpvoteCount)", systemImage: isUpvoted ? "hand.thumbsup.fill" : "hand.thumbsup")
         }
         .buttonStyle(.borderless)
-        .disabled(!featureRequestManager.viewerUpvotesLoaded || isTogglingUpvote)
+        .disabled(
+          !featureRequestManager.viewerUpvotesLoaded
+            || !featureRequestManager.upvotesSupported
+            || isTogglingUpvote
+        )
 
         Label("Comments", systemImage: "text.bubble")
           .foregroundColor(.textSecondary)
