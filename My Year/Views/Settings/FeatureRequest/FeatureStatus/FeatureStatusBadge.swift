@@ -35,5 +35,6 @@ struct FeatureStatusBadge: View {
           .black.opacity(0.1)
         )
         .cornerRadius(8)
-    }
+    )
+  }
 }

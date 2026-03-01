@@ -67,36 +67,41 @@ final class FeatureRequestManager: ObservableObject {
     return newUUID
   }
 
-    @Published private(set) var user: WishAppUser
+  func getUserId() -> String {
+    user.id.uuidString
+  }
 
-    init(appID: String, defaults: UserDefaults = .standard) {
-        self.appID = appID
-        self.defaults = defaults
+  func isCurrentUser(id: String) -> Bool {
+    id == user.id.uuidString
+  }
 
-        let identifier = Self.loadOrCreateIdentifier(from: defaults)
-        user = WishAppUser(id: identifier)
+  func invalidateRequests() {
+    requests = nil
+  }
+
+  func getRequests() async -> FeatureRequestsListResponse? {
+    if let requests {
+      return requests
     }
+    return await reloadRequests()
+  }
 
-    private static func loadOrCreateIdentifier(from defaults: UserDefaults) -> UUID {
-        if let storedValue = defaults.string(forKey: Constants.userDefaultsKey),
-           let storedUUID = UUID(uuidString: storedValue)
-        {
-            return storedUUID
-        }
-
-        let newUUID = UUID()
-        defaults.set(newUUID.uuidString, forKey: Constants.userDefaultsKey)
-        return newUUID
+  func reloadRequests() async -> FeatureRequestsListResponse? {
+    do {
+      let fetched = try await HTTP.get(
+        endpoint: "\(baseURL)project/\(appID)/request",
+        type: FeatureRequestsListResponse.self
+      )
+      requests = fetched
+      return fetched
+    } catch {
+      return requests
     }
-
-    func getUserId() -> String {
-        return user.id.uuidString
-    }
+  }
 
   func getViewerUpvotes() async -> Set<String> {
     let clientId = user.id.uuidString
-    let endpoint =
-      "\(baseURL)project/\(appID)/upvotes?clientId=\(clientId)"
+    let endpoint = "\(baseURL)project/\(appID)/upvotes?clientId=\(clientId)"
 
     do {
       let response = try await HTTP.get(
@@ -114,8 +119,7 @@ final class FeatureRequestManager: ObservableObject {
   }
 
   func getComments(requestId: String) async -> [FeatureRequestComment] {
-    let endpoint =
-      "\(baseURL)project/\(appID)/request/\(requestId)/comments"
+    let endpoint = "\(baseURL)project/\(appID)/request/\(requestId)/comments"
 
     do {
       let response = try await HTTP.get(
@@ -131,8 +135,7 @@ final class FeatureRequestManager: ObservableObject {
   }
 
   func addComment(requestId: String, text: String) async -> [FeatureRequestComment] {
-    let endpoint =
-      "\(baseURL)project/\(appID)/request/\(requestId)/comment"
+    let endpoint = "\(baseURL)project/\(appID)/request/\(requestId)/comment"
 
     do {
       try await HTTP.post(
@@ -153,8 +156,7 @@ final class FeatureRequestManager: ObservableObject {
     guard isCurrentUser(id: comment.authorClientId) else { return false }
 
     let clientId = user.id.uuidString
-    let endpoint =
-      "\(baseURL)project/\(appID)/request/\(requestId)/comment/\(comment.id)?clientId=\(clientId)"
+    let endpoint = "\(baseURL)project/\(appID)/request/\(requestId)/comment/\(comment.id)?clientId=\(clientId)"
 
     do {
       try await HTTP.delete(endpoint: endpoint)
@@ -164,14 +166,32 @@ final class FeatureRequestManager: ObservableObject {
     }
   }
 
+  func deleteRequest(id requestId: String) async {
+    guard let currentRequests = requests, currentRequests.requests.contains(where: { $0.id == requestId }) else {
+      return
+    }
+
+    let clientId = user.id.uuidString
+    let endpoint = "\(baseURL)project/\(appID)/request/\(requestId)?clientId=\(clientId)"
+
+    do {
+      try await HTTP.delete(endpoint: endpoint)
+      var updated = currentRequests
+      updated.requests.removeAll { $0.id == requestId }
+      requests = updated
+      viewerUpvotes.remove(requestId)
+    } catch {
+      return
+    }
+  }
+
   func toggleUpvote(requestId: String, wasUpvoted: Bool? = nil) async -> Bool {
     let currentWasUpvoted = wasUpvoted ?? viewerUpvotes.contains(requestId)
     let nextUpvoted = !currentWasUpvoted
     updateViewerUpvotes(requestId: requestId, isUpvoted: nextUpvoted)
     updateCachedUpvote(requestId: requestId, isUpvoted: nextUpvoted)
 
-    let endpoint =
-      "\(baseURL)project/\(appID)/request/\(requestId)/upvote"
+    let endpoint = "\(baseURL)project/\(appID)/request/\(requestId)/upvote"
 
     do {
       try await HTTP.post(
@@ -241,4 +261,5 @@ final class FeatureRequestManager: ObservableObject {
     } catch {
       onError?()
     }
+  }
 }
