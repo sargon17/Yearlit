@@ -2799,6 +2799,7 @@
       }
     },
     "Privacy Policy" : {
+      "extractionState" : "stale",
       "localizations" : {
         "uk" : {
           "stringUnit" : {
@@ -3469,9 +3470,6 @@
           }
         }
       }
-    },
-    "Terms" : {
-
     },
     "Thank you for your support!" : {
       "localizations" : {
