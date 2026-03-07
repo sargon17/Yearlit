@@ -5,74 +5,25 @@
 
     },
     " from people actually using it." : {
-      "localizations" : {
-        "uk" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : " від людей, які справді ним користуються."
-          }
-        }
-      }
+
     },
     " it" : {
-      "localizations" : {
-        "uk" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "."
-          }
-        }
-      }
+
     },
     " show up every day, even when motivation wasn’t there." : {
-      "localizations" : {
-        "uk" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : " триматися щодня, навіть коли мотивації не було."
-          }
-        }
-      }
+
     },
     " yearlit" : {
-      "localizations" : {
-        "uk" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : " yearlit"
-          }
-        }
-      }
+
     },
     "[tymofyeyev.com](https://tymofyeyev.com)" : {
-      "localizations" : {
-        "uk" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "[tymofyeyev.com](https://tymofyeyev.com)"
-          }
-        }
-      }
+
     },
     "%@" : {
-      "localizations" : {
-        "uk" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@"
-          }
-        }
-      }
+
     },
     "%lld" : {
-      "localizations" : {
-        "uk" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%lld"
-          }
-        }
-      }
+
     },
     "%lld days down! You're building momentum 🚀" : {
       "localizations" : {
@@ -111,24 +62,10 @@
       }
     },
     "%lld steps" : {
-      "localizations" : {
-        "uk" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%lld кроків"
-          }
-        }
-      }
+
     },
     "•" : {
-      "localizations" : {
-        "uk" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "•"
-          }
-        }
-      }
+
     },
     "✨ Amazing! %lld days in a row. One more today!" : {
       "localizations" : {
@@ -147,34 +84,13 @@
       }
     },
     "👉 ‘I’m a learner’" : {
-      "localizations" : {
-        "uk" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "👉 «Я — учень»"
-          }
-        }
-      }
+
     },
     "👉 ‘I’m a reader’" : {
-      "localizations" : {
-        "uk" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "👉 «Я — читач»"
-          }
-        }
-      }
+
     },
     "👉 ‘I’m a runner’" : {
-      "localizations" : {
-        "uk" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "👉 «Я — бігун»"
-          }
-        }
-      }
+
     },
     "💪 %lld days strong! Don't break it now!" : {
       "localizations" : {
@@ -193,24 +109,10 @@
       }
     },
     "📅 One dot = one day" : {
-      "localizations" : {
-        "uk" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "📅 Одна крапка = один день"
-          }
-        }
-      }
+
     },
     "📊 Spot patterns at a glance" : {
-      "localizations" : {
-        "uk" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "📊 Помічай закономірності з першого погляду"
-          }
-        }
-      }
+
     },
     "🔥 Don't break your %lld-day streak!" : {
       "localizations" : {
@@ -229,14 +131,7 @@
       }
     },
     "🔥 See your streaks grow" : {
-      "localizations" : {
-        "uk" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "🔥 Бач, як ростуть твої серії"
-          }
-        }
-      }
+
     },
     "🔥 Streak at risk!" : {
       "localizations" : {
@@ -271,54 +166,19 @@
       }
     },
     "1. Cue" : {
-      "localizations" : {
-        "uk" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "1. Сигнал"
-          }
-        }
-      }
+
     },
     "1% better each day = 37x growth in a year." : {
-      "localizations" : {
-        "uk" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "1% кращий щодня = 37× зростання за рік."
-          }
-        }
-      }
+
     },
     "2. Craving" : {
-      "localizations" : {
-        "uk" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "2. Потяг"
-          }
-        }
-      }
+
     },
     "3. Action" : {
-      "localizations" : {
-        "uk" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "3. Дія"
-          }
-        }
-      }
+
     },
     "4. Reward" : {
-      "localizations" : {
-        "uk" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "4. Нагорода"
-          }
-        }
-      }
+
     },
     "7d" : {
       "localizations" : {
@@ -351,14 +211,7 @@
       }
     },
     "37×" : {
-      "localizations" : {
-        "uk" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "37×"
-          }
-        }
-      }
+
     },
     "100 days showed up" : {
       "localizations" : {
@@ -401,34 +254,13 @@
       }
     },
     "A simple habit calendar." : {
-      "localizations" : {
-        "uk" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Простий календар звичок."
-          }
-        }
-      }
+
     },
     "A Work in Progress" : {
-      "localizations" : {
-        "uk" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "У процесі розробки"
-          }
-        }
-      }
+
     },
     "About" : {
-      "localizations" : {
-        "uk" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Про застосунок"
-          }
-        }
-      }
+
     },
     "Absolutely unreal" : {
       "localizations" : {
@@ -460,55 +292,23 @@
         }
       }
     },
+    "Add a comment" : {
+
+    },
     "Add at least one habit to the stack." : {
-      "localizations" : {
-        "uk" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Додай щонайменше одну звичку до стеку."
-          }
-        }
-      }
+
     },
     "Add Calendar" : {
-      "localizations" : {
-        "uk" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Додати календар"
-          }
-        }
-      }
+
     },
     "Add existing streak" : {
-      "localizations" : {
-        "uk" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Додати наявну серію"
-          }
-        }
-      }
+
     },
     "Add Morning Routine Sample" : {
-      "localizations" : {
-        "uk" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Додати приклад ранкової рутини"
-          }
-        }
-      }
+
     },
     "Add Step" : {
-      "localizations" : {
-        "uk" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Додати крок"
-          }
-        }
-      }
+
     },
     "Additional reminders" : {
       "localizations" : {
@@ -531,24 +331,10 @@
       }
     },
     "After I wake up" : {
-      "localizations" : {
-        "uk" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Після того, як я прокинусь"
-          }
-        }
-      }
+
     },
     "All your journal notes in one place." : {
-      "localizations" : {
-        "uk" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Усі твої нотатки щоденника в одному місці."
-          }
-        }
-      }
+
     },
     "Already active streak?" : {
       "localizations" : {
@@ -561,94 +347,31 @@
       }
     },
     "Already started elsewhere? Bring your streak here." : {
-      "localizations" : {
-        "uk" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Вже почав(ла) десь ще? Перенеси свою серію сюди."
-          }
-        }
-      }
+
     },
     "And along the way, I realized I wasn’t the only one who needed this." : {
-      "localizations" : {
-        "uk" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "І з часом я зрозумів, що не лише мені це потрібно."
-          }
-        }
-      }
+
     },
     "And every time, I’d wonder, “Why can’t I stick with this?”" : {
-      "localizations" : {
-        "uk" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "І щоразу я думав: «Чому я не можу триматися цього?»"
-          }
-        }
-      }
+
     },
     "Apply" : {
-      "localizations" : {
-        "uk" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Застосувати"
-          }
-        }
-      }
+
     },
     "Archive Calendar" : {
-      "localizations" : {
-        "uk" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Архівувати календар"
-          }
-        }
-      }
+
     },
     "Archived Calendars" : {
-      "localizations" : {
-        "uk" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Архівні календарі"
-          }
-        }
-      }
+
     },
     "Archiving hides this calendar from your boards without deleting past data." : {
-      "localizations" : {
-        "uk" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Архівація приховує цей календар з дошок без видалення минулих даних."
-          }
-        }
-      }
+
     },
     "Are you sure you want to delete '%@'? This action cannot be undone." : {
-      "localizations" : {
-        "uk" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Ви впевнені, що хочете видалити «%@»? Цю дію неможливо скасувати."
-          }
-        }
-      }
+
     },
     "Are you sure you want to delete this calendar? This action cannot be undone." : {
-      "localizations" : {
-        "uk" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Ви впевнені, що хочете видалити цей календар? Цю дію неможливо скасувати."
-          }
-        }
-      }
+
     },
     "At 9 PM, if your streak is at risk, we send one extra reminder." : {
       "localizations" : {
@@ -671,14 +394,7 @@
       }
     },
     "Backfilling %lld days." : {
-      "localizations" : {
-        "uk" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Додаємо заднім числом %lld днів."
-          }
-        }
-      }
+
     },
     "Beast mode" : {
       "localizations" : {
@@ -691,14 +407,7 @@
       }
     },
     "Because every update, every improvement, comes from " : {
-      "localizations" : {
-        "uk" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Бо кожне оновлення, кожне покращення приходить від "
-          }
-        }
-      }
+
     },
     "Best Day" : {
       "localizations" : {
@@ -711,14 +420,7 @@
       }
     },
     "Best Weekday" : {
-      "localizations" : {
-        "uk" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Найкращий день тижня"
-          }
-        }
-      }
+
     },
     "Binary" : {
       "localizations" : {
@@ -731,14 +433,7 @@
       }
     },
     "Brew coffee" : {
-      "localizations" : {
-        "uk" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Заварити каву"
-          }
-        }
-      }
+
     },
     "Built different" : {
       "localizations" : {
@@ -761,14 +456,7 @@
       }
     },
     "Calendars" : {
-      "localizations" : {
-        "uk" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Календарі"
-          }
-        }
-      }
+
     },
     "Calories (kcal)" : {
       "extractionState" : "stale",
@@ -782,14 +470,7 @@
       }
     },
     "Cancel" : {
-      "localizations" : {
-        "uk" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Скасувати"
-          }
-        }
-      }
+
     },
     "Century club" : {
       "localizations" : {
@@ -821,15 +502,11 @@
         }
       }
     },
+    "Comments" : {
+
+    },
     "Completed" : {
-      "localizations" : {
-        "uk" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Завершено"
-          }
-        }
-      }
+
     },
     "Completion Rate (30d)" : {
       "localizations" : {
@@ -852,24 +529,10 @@
       }
     },
     "Contacts" : {
-      "localizations" : {
-        "uk" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Контакти"
-          }
-        }
-      }
+
     },
     "Copy App User ID" : {
-      "localizations" : {
-        "uk" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Скопіювати ID користувача застосунку"
-          }
-        }
-      }
+
     },
     "Count" : {
       "localizations" : {
@@ -892,24 +555,10 @@
       }
     },
     "Create" : {
-      "localizations" : {
-        "uk" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Створити"
-          }
-        }
-      }
+
     },
     "Create your first stack to chain habits together." : {
-      "localizations" : {
-        "uk" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Створи перший стек, щоб з'єднати звички."
-          }
-        }
-      }
+
     },
     "Cups" : {
       "extractionState" : "stale",
@@ -934,14 +583,7 @@
       }
     },
     "Currency Symbol" : {
-      "localizations" : {
-        "uk" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Символ валюти"
-          }
-        }
-      }
+
     },
     "Current" : {
       "localizations" : {
@@ -974,24 +616,10 @@
       }
     },
     "Daily Target" : {
-      "localizations" : {
-        "uk" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Денна ціль"
-          }
-        }
-      }
+
     },
     "Daily Training" : {
-      "localizations" : {
-        "uk" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Щоденне тренування"
-          }
-        }
-      }
+
     },
     "Daily Value" : {
       "localizations" : {
@@ -1080,64 +708,19 @@
       }
     },
     "Decide the kind of person you want to be" : {
-      "localizations" : {
-        "uk" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Визнач, якою людиною ти хочеш бути"
-          }
-        }
-      }
+
     },
     "Default Quick Add Value" : {
-      "localizations" : {
-        "uk" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Значення швидкого додавання за замовчуванням"
-          }
-        }
-      }
-    },
-    "delete" : {
-      "localizations" : {
-        "uk" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "видалити"
-          }
-        }
-      }
+
     },
     "Delete" : {
-      "localizations" : {
-        "uk" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Видалити"
-          }
-        }
-      }
+
     },
     "Delete Calendar" : {
-      "localizations" : {
-        "uk" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Видалити календар"
-          }
-        }
-      }
+
     },
     "Delete Calendar?" : {
-      "localizations" : {
-        "uk" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Видалити календар?"
-          }
-        }
-      }
+
     },
     "Determines how the notifications appear on your lock screen." : {
       "localizations" : {
@@ -1148,6 +731,9 @@
           }
         }
       }
+    },
+    "developer" : {
+
     },
     "Distance" : {
       "extractionState" : "stale",
@@ -1177,34 +763,13 @@
       }
     },
     "Don’t just set goals" : {
-      "localizations" : {
-        "uk" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Не просто став цілі"
-          }
-        }
-      }
+
     },
     "Don’t keep it to yourself. The fastest way to make this app better for you is to tell me what’s on your mind." : {
-      "localizations" : {
-        "uk" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Не тримай це при собі. Найшвидший спосіб зробити застосунок кращим для тебе — сказати мені, що в тебе на думці."
-          }
-        }
-      }
+
     },
     "Done" : {
-      "localizations" : {
-        "uk" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Готово"
-          }
-        }
-      }
+
     },
     "Doses" : {
       "extractionState" : "stale",
@@ -1228,55 +793,16 @@
       }
     },
     "Edit Calendar" : {
-      "localizations" : {
-        "uk" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Редагувати календар"
-          }
-        }
-      }
+
     },
     "Edit Stack" : {
-      "localizations" : {
-        "uk" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Редагувати стек"
-          }
-        }
-      }
+
     },
     "Enable Mood Tracking" : {
-      "localizations" : {
-        "uk" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Увімкнути відстеження настрою"
-          }
-        }
-      }
-    },
-    "Enable Runtime Debug" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "uk" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Увімкнути налагодження під час роботи"
-          }
-        }
-      }
+
     },
     "End" : {
-      "localizations" : {
-        "uk" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Кінець"
-          }
-        }
-      }
+
     },
     "Energy/Calories" : {
       "extractionState" : "stale",
@@ -1301,14 +827,7 @@
       }
     },
     "Error" : {
-      "localizations" : {
-        "uk" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Помилка"
-          }
-        }
-      }
+
     },
     "Every day counts! Log your progress today 📊" : {
       "localizations" : {
@@ -1327,14 +846,7 @@
       }
     },
     "Existing Streak" : {
-      "localizations" : {
-        "uk" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Наявна серія"
-          }
-        }
-      }
+
     },
     "Extra reminders are available when your habit has a daily target." : {
       "localizations" : {
@@ -1358,24 +870,10 @@
       }
     },
     "Feature Requests" : {
-      "localizations" : {
-        "uk" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Запити на функції"
-          }
-        }
-      }
+
     },
     "Features" : {
-      "localizations" : {
-        "uk" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Функції"
-          }
-        }
-      }
+
     },
     "Fifty days strong" : {
       "localizations" : {
@@ -1388,14 +886,7 @@
       }
     },
     "Filter your requests" : {
-      "localizations" : {
-        "uk" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Фільтруй свої запити"
-          }
-        }
-      }
+
     },
     "First day down" : {
       "localizations" : {
@@ -1471,14 +962,7 @@
       }
     },
     "Get PRO" : {
-      "localizations" : {
-        "uk" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Отримати PRO"
-          }
-        }
-      }
+
     },
     "Give it a name" : {
       "localizations" : {
@@ -1518,34 +1002,13 @@
       }
     },
     "Habits shape your days." : {
-      "localizations" : {
-        "uk" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Звички формують твої дні."
-          }
-        }
-      }
+
     },
     "help myself" : {
-      "localizations" : {
-        "uk" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "допомогти собі"
-          }
-        }
-      }
+
     },
     "Hi, I’m Mykhaylo." : {
-      "localizations" : {
-        "uk" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Привіт, я Михайло."
-          }
-        }
-      }
+
     },
     "Hours" : {
       "extractionState" : "stale",
@@ -1559,114 +1022,37 @@
       }
     },
     "How was your day?" : {
-      "localizations" : {
-        "uk" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Як минув твій день?"
-          }
-        }
-      }
+
     },
     "How Yearlit Helps You" : {
-      "localizations" : {
-        "uk" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Як Yearlit тобі допомагає"
-          }
-        }
-      }
+
     },
     "I created it because I " : {
-      "localizations" : {
-        "uk" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Я створив його, бо він мені "
-          }
-        }
-      }
+
     },
     "I didn’t create this app because I mastered the problem." : {
-      "localizations" : {
-        "uk" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Я створив цей застосунок не тому, що вже подолав проблему."
-          }
-        }
-      }
+
     },
     "I’d start things with energy and optimism… only to fade when the spark wore off." : {
-      "localizations" : {
-        "uk" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Я починав із енергією та оптимізмом… а потім згасав, коли іскра зникала."
-          }
-        }
-      }
+
     },
     "I’m the person behind Yearlit — designer, builder, and fellow struggler when it comes to staying consistent." : {
-      "localizations" : {
-        "uk" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Я стою за Yearlit — дизайнер, розробник і такий самий борець за послідовність."
-          }
-        }
-      }
+
     },
     "I’ve always believed consistency is a kind of superpower." : {
-      "localizations" : {
-        "uk" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Я завжди вірив, що послідовність — це своєрідна суперсила."
-          }
-        }
-      }
+
     },
     "Independently engineered. Lovingly crafted." : {
-      "localizations" : {
-        "uk" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Створено самостійно. З любов'ю."
-          }
-        }
-      }
+
     },
     "It’s for anyone who’s ever wanted to follow through, but found it hard to keep going." : {
-      "localizations" : {
-        "uk" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Для кожного, хто хотів доводити справи до кінця, але не міг витримати темп."
-          }
-        }
-      }
+
     },
     "It’s not perfect, and I’m okay with that." : {
-      "localizations" : {
-        "uk" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Це не ідеально, і я з цим мирюся."
-          }
-        }
-      }
+
     },
     "It’s the quiet force that turns small, ordinary actions into extraordinary results over time." : {
-      "localizations" : {
-        "uk" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Це тиха сила, що з часом перетворює маленькі звичні дії на великі результати."
-          }
-        }
-      }
+
     },
     "Items" : {
       "extractionState" : "stale",
@@ -1680,14 +1066,7 @@
       }
     },
     "Journal" : {
-      "localizations" : {
-        "uk" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Щоденник"
-          }
-        }
-      }
+
     },
     "Keep it going" : {
       "localizations" : {
@@ -1753,24 +1132,10 @@
       }
     },
     "Leave a Review" : {
-      "localizations" : {
-        "uk" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Залишити відгук"
-          }
-        }
-      }
+
     },
     "Left: " : {
-      "localizations" : {
-        "uk" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Залишилось: "
-          }
-        }
-      }
+
     },
     "Legendary streak" : {
       "localizations" : {
@@ -1783,24 +1148,10 @@
       }
     },
     "Link calendars once you create them." : {
-      "localizations" : {
-        "uk" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Після створення можна зв'язати календарі."
-          }
-        }
-      }
+
     },
     "Linked calendar" : {
-      "localizations" : {
-        "uk" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Пов'язаний календар"
-          }
-        }
-      }
+
     },
     "Liters (l)" : {
       "extractionState" : "stale",
@@ -1854,14 +1205,7 @@
       }
     },
     "Mail the Developer" : {
-      "localizations" : {
-        "uk" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Написати розробнику"
-          }
-        }
-      }
+
     },
     "Make progress visible and rewarding right away." : {
       "localizations" : {
@@ -1874,14 +1218,7 @@
       }
     },
     "Message on Telegram" : {
-      "localizations" : {
-        "uk" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Написати в Telegram"
-          }
-        }
-      }
+
     },
     "Meters (m)" : {
       "extractionState" : "stale",
@@ -1906,14 +1243,7 @@
       }
     },
     "Milestone" : {
-      "localizations" : {
-        "uk" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Віха"
-          }
-        }
-      }
+
     },
     "Milliliters (ml)" : {
       "extractionState" : "stale",
@@ -1948,34 +1278,13 @@
       }
     },
     "Monthly Breakdown" : {
-      "localizations" : {
-        "uk" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Щомісячна статистика"
-          }
-        }
-      }
+
     },
     "Mood journal /" : {
-      "localizations" : {
-        "uk" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Щоденник настрою /"
-          }
-        }
-      }
+
     },
     "Morning Routine" : {
-      "localizations" : {
-        "uk" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Ранкова рутина"
-          }
-        }
-      }
+
     },
     "Multiple Times" : {
       "localizations" : {
@@ -2032,84 +1341,28 @@
       }
     },
     "My goal is to make Yearlit the most useful tool out there for building consistency — but I can’t do that alone." : {
-      "localizations" : {
-        "uk" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Моя мета — зробити Yearlit найкориснішим інструментом для послідовності — але без вас я цього не зроблю."
-          }
-        }
-      }
+
     },
     "My Note to You" : {
-      "localizations" : {
-        "uk" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Моя нотатка для тебе"
-          }
-        }
-      }
+
     },
     "Mykhaylo Tymofyeyev" : {
-      "localizations" : {
-        "uk" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Mykhaylo Tymofyeyev"
-          }
-        }
-      }
+
     },
     "needed" : {
-      "localizations" : {
-        "uk" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "потрібен"
-          }
-        }
-      }
+
     },
     "New Calendar" : {
-      "localizations" : {
-        "uk" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Новий календар"
-          }
-        }
-      }
+
     },
     "New Request" : {
-      "localizations" : {
-        "uk" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Новий запит"
-          }
-        }
-      }
+
     },
     "New Stack" : {
-      "localizations" : {
-        "uk" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Новий стек"
-          }
-        }
-      }
+
     },
     "Next" : {
-      "localizations" : {
-        "uk" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Далі"
-          }
-        }
-      }
+
     },
     "Nice! %lld in a row. Let's make it %lld!" : {
       "localizations" : {
@@ -2138,14 +1391,10 @@
       }
     },
     "No archived calendars yet." : {
-      "localizations" : {
-        "uk" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Поки немає архівних календарів."
-          }
-        }
-      }
+
+    },
+    "No comments yet." : {
+
     },
     "No excuses" : {
       "localizations" : {
@@ -2158,24 +1407,10 @@
       }
     },
     "No habit stacks yet" : {
-      "localizations" : {
-        "uk" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Поки немає стеків звичок"
-          }
-        }
-      }
+
     },
     "No journal entries yet." : {
-      "localizations" : {
-        "uk" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Поки немає записів у щоденнику."
-          }
-        }
-      }
+
     },
     "No misses" : {
       "localizations" : {
@@ -2199,14 +1434,7 @@
       }
     },
     "None" : {
-      "localizations" : {
-        "uk" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Немає"
-          }
-        }
-      }
+
     },
     "Notification settings" : {
       "localizations" : {
@@ -2366,16 +1594,10 @@
       "comment" : "Notification body for calendar reminder",
       "extractionState" : "stale",
       "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Don't forget to track %1$@ today! (Target: %2$d)"
-          }
-        },
         "uk" : {
           "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Час відмітити звичку в календарі."
+            "state" : "translated",
+            "value" : " від людей, які справді ним користуються."
           }
         }
       }
@@ -3021,6 +2243,9 @@
           }
         }
       }
+    },
+    "Send" : {
+
     },
     "Send a daily reminder" : {
       "localizations" : {
@@ -3952,6 +3177,9 @@
           }
         }
       }
+    },
+    "you" : {
+
     },
     "You are in it" : {
       "localizations" : {

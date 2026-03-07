@@ -3,16 +3,16 @@ import SwiftUI
 extension HTTP {
     static func delete(endpoint: String) async throws {
         guard let url = URL(string: endpoint) else {
-            print("HTTP.delete: Error parsing the URL")
             throw GetError.error1
         }
         var request = URLRequest(url: url)
         request.httpMethod = "DELETE"
 
-        let (_, res) = try await URLSession.shared.data(for: request)
+        let (data, res) = try await URLSession.shared.data(for: request)
 
-        guard let response = res as? HTTPURLResponse, response.statusCode == 200 else {
-            print("HTTP.delete: Error during request")
+        guard let response = res as? HTTPURLResponse,
+              (200 ... 299).contains(response.statusCode) else
+        {
             throw GetError.error2
         }
     }
