@@ -4,6 +4,7 @@ struct Features: View {
   @AppStorage("isMoodTrackingEnabled") var isMoodTrackingEnabled: Bool = false  // Default to enabled
   @AppStorage("runtimeDebugEnabled") var runtimeDebugEnabled: Bool = false  // Add new debug setting
   @AppStorage("wandFillForce") var wandFillForce: Double = 0.5  // Default wand fill force
+  @EnvironmentObject private var whatsNewManager: WhatsNewManager
 
   var body: some View {
     Section(header: Text("Features")) {
