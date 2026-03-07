@@ -3,7 +3,6 @@ import SwiftUI
 
 struct SettingsView: View {
   @State private var customerInfo: CustomerInfo?
-  @EnvironmentObject private var whatsNewManager: WhatsNewManager
 
   var body: some View {
     VStack(spacing: 0) {
