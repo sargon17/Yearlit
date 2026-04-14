@@ -56,7 +56,6 @@
 "Yearlit" = "Yearlit";
 "Yearlit is still growing — just like the people who use it." = "Yearlit è ancora in crescita, proprio come le persone che lo usano.";
 "You are in it" = "Ci sei dentro";
-"You did it yesterday, you can do it today! 💚" = "L'hai fatto ieri, puoi farlo anche oggi! 💚";
 "Your days shape your life." = "Le tue giornate plasmano la tua vita.";
 
 /* Notifications and streak copy */
@@ -152,7 +151,7 @@
 "We’ll make this better together — one step, one habit, one consistent day at a time." = "Lo miglioreremo insieme — un passo, un'abitudine, una giornata costante alla volta.";
 "This is real" = "È reale";
 "This will overwrite %lld days within a %lld-day range." = "Questo sovrascriverà %lld giorni all'interno di un intervallo di %lld giorni.";
-"Tap a calendar to unarchive it and bring it back to your boards." = "Tocca un calendario per riarchiviarlo e riportarlo nei tuoi board.";
+"Tap a calendar to unarchive it and bring it back to your boards." = "Tocca un calendario per dearchiviarlo e riportarlo nei tuoi board.";
 "Unarchiving restores this calendar to your boards and tracking lists." = "La riarchiviazione ripristina questo calendario nei tuoi board e negli elenchi di monitoraggio.";
 "Archiving hides this calendar from your boards without deleting past data." = "L'archiviazione nasconde questo calendario dai tuoi board senza eliminare i dati passati.";
 
@@ -192,4 +191,3 @@
 "Beast mode" = "Modalità bestia";
 "No misses" = "Nessuna mancata";
 "No excuses" = "Nessuna scusa";
-
