@@ -2,7 +2,8 @@ import RevenueCat
 import SwiftUI
 
 struct SettingsView: View {
-    @AppStorage("isMoodTrackingEnabled") var isMoodTrackingEnabled: Bool = false // Default to enabled
+    @AppStorage(AppStorageKeys.isMoodTrackingEnabled) var isMoodTrackingEnabled: Bool = false // Default to disabled
+    @AppStorage(AppStorageKeys.isRecapViewEnabled) var isRecapViewEnabled: Bool = false // Default to disabled
     @AppStorage("runtimeDebugEnabled") var runtimeDebugEnabled: Bool = false // Add new debug setting
     @AppStorage("wandFillForce") var wandFillForce: Double = 0.5 // Default wand fill force
     @State private var customerInfo: CustomerInfo?
@@ -23,6 +24,7 @@ struct SettingsView: View {
                 }
                 Section(header: Text("Features")) {
                     Toggle("Enable Mood Tracking", isOn: $isMoodTrackingEnabled)
+                    Toggle("Enable Recap View", isOn: $isRecapViewEnabled)
                     #if DEBUG
                         Toggle("Enable Runtime Debug", isOn: $runtimeDebugEnabled) // Add conditional debug toggle
                         if runtimeDebugEnabled {
