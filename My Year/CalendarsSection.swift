@@ -11,7 +11,8 @@ struct CalendarsSection: View {
     @ObservedObject private var valuationStore = ValuationStore.shared
 
     @State private var selectedIndex: Int = 0
-    @AppStorage("isMoodTrackingEnabled") var isMoodTrackingEnabled: Bool = true
+    @AppStorage(AppStorageKeys.isMoodTrackingEnabled) var isMoodTrackingEnabled: Bool = false
+    @AppStorage(AppStorageKeys.isRecapViewEnabled) var isRecapViewEnabled: Bool = false
 
     @Environment(\.router) private var router
 
@@ -52,11 +53,13 @@ struct CalendarsSection: View {
                                 .slide()
                         }
 
-                        AllCalendarsRecapView()
-                            .id("recap")
-                            .frame(width: width)
-                            .containerRelativeFrame(.horizontal, count: 1, spacing: 0)
-                            .slide()
+                        if isRecapViewEnabled {
+                            AllCalendarsRecapView()
+                                .id("recap")
+                                .frame(width: width)
+                                .containerRelativeFrame(.horizontal, count: 1, spacing: 0)
+                                .slide()
+                        }
 
                         // Custom Calendars
                         let activeCalendars = store.calendars.filter { !$0.isArchived }

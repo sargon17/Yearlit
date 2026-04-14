@@ -16,7 +16,7 @@ private let logger = Logger(subsystem: "com.sargon17.My-Year", category: "Views"
 
 struct MoodTrackingCalendar: View {
     let store = ValuationStore.shared
-    @AppStorage("isMoodTrackingEnabled") var isMoodTrackingEnabled: Bool = false
+    @AppStorage(AppStorageKeys.isMoodTrackingEnabled) var isMoodTrackingEnabled: Bool = false
     @AppStorage("lastMoodPromptDayKey") private var lastMoodPromptDayKey: String = ""
     @Environment(\.router) private var router
 
