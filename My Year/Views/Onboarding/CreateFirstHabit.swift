@@ -49,7 +49,7 @@ struct CreateFirstHabit: View {
         )
 
         store.addCalendar(calendar)
-        scheduleNotifications(for: calendar, store: store)
+        rescheduleNotifications(for: calendar, store: store)
 
         onNext()
     }

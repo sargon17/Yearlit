@@ -107,7 +107,7 @@ struct CreateCalendarView: View {
             streakProtectionEnabled: streakProtectionEnabled,
             streakProtectionThreshold: streakProtectionThreshold
         )
-        scheduleNotifications(for: calendar, store: CustomCalendarStore.shared)
+        rescheduleNotifications(for: calendar, store: CustomCalendarStore.shared)
         onCreate(calendar)
     }
 

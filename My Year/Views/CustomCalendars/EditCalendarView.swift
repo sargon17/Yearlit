@@ -329,7 +329,7 @@ struct EditCalendarView: View {
                             var updatedCalendar = calendar
                             updatedCalendar.isArchived.toggle()
                             isArchived = updatedCalendar.isArchived
-                            scheduleNotifications(for: updatedCalendar, store: CustomCalendarStore.shared)
+                            rescheduleNotifications(for: updatedCalendar, store: CustomCalendarStore.shared)
                             onSave(updatedCalendar)
                             dismiss()
                         }) {
@@ -413,7 +413,7 @@ struct EditCalendarView: View {
                         return
                     }
                     let updatedCalendar = makeUpdatedCalendar()
-                    scheduleNotifications(for: updatedCalendar, store: CustomCalendarStore.shared)
+                    rescheduleNotifications(for: updatedCalendar, store: CustomCalendarStore.shared)
                     onSave(updatedCalendar)
                     dismiss()
                 }
@@ -453,7 +453,7 @@ struct EditCalendarView: View {
             entries: entries,
             isArchived: overrideArchived ?? isArchived,
             recurringReminderEnabled: recurringReminderEnabled,
-            reminderTime: recurringReminderEnabled ? validateReminderTime(reminderTime) : nil,
+            reminderTime: recurringReminderEnabled ? reminderTime : nil,
             order: calendar.order,
             unit: (trackingType == .counter || trackingType == .multipleDaily) ? selectedUnit : nil,
             defaultRecordValue: (trackingType == .counter || trackingType == .multipleDaily)

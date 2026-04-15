@@ -438,7 +438,7 @@ extension NotificationSettingsSheet {
     updatedCalendar.streakProtectionEnabled = streakProtectionEnabled
     updatedCalendar.streakProtectionThreshold = streakProtectionThreshold
 
-    scheduleNotifications(for: updatedCalendar, store: CustomCalendarStore.shared)
+    rescheduleNotifications(for: updatedCalendar, store: CustomCalendarStore.shared)
     onSave(updatedCalendar)
     dismiss()
   }

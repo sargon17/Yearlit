@@ -9,6 +9,53 @@ public enum NotificationAction {
     public static let categoryIdentifier = "HABIT_REMINDER"
 }
 
+private struct NotificationPlan {
+    let id: String
+    let content: UNNotificationContent
+    let trigger: UNNotificationTrigger
+}
+
+private enum NotificationRequestID {
+    private static let streakProtectionSuffix = "-streak-protection"
+
+    static func primary(calendarId: UUID, weekday: Int) -> String {
+        "\(calendarId.uuidString)-primary-\(weekday)"
+    }
+
+    static func additional(calendarId: UUID, index: Int) -> String {
+        "\(calendarId.uuidString)-additional-\(index)"
+    }
+
+    static func streakProtection(calendarId: UUID) -> String {
+        "\(calendarId.uuidString)\(streakProtectionSuffix)"
+    }
+
+    static func snooze(calendarId: UUID) -> String {
+        "\(calendarId.uuidString)-snooze"
+    }
+
+    static func isStreakProtection(_ id: String) -> Bool {
+        id.hasSuffix(streakProtectionSuffix)
+    }
+
+    static func calendarId(notificationIdentifier: String, userInfoCalendarId: String?) -> UUID? {
+        if let userInfoCalendarId,
+           let calendarId = UUID(uuidString: userInfoCalendarId)
+        {
+            return calendarId
+        }
+
+        if let calendarId = UUID(uuidString: notificationIdentifier) {
+            return calendarId
+        }
+
+        guard notificationIdentifier.count >= 36 else {
+            return nil
+        }
+        return UUID(uuidString: String(notificationIdentifier.prefix(36)))
+    }
+}
+
 // MARK: - Notification Categories Setup
 
 /// Sets up notification categories with quick actions
@@ -49,11 +96,9 @@ public func setupNotificationCategories() {
 
 public enum NotificationError: LocalizedError {
     case permissionDenied
-    case permissionNotDetermined
     case unsupportedMode
     case unknownStatus
     case schedulingFailed(Error)
-    case invalidCalendarData
 
     public var errorDescription: String? {
         switch self {
@@ -62,12 +107,6 @@ public enum NotificationError: LocalizedError {
                 "notification.error.permission_denied",
                 value: "Notification permissions are required. Please enable them in Settings.",
                 comment: "Error when notification permissions are denied"
-            )
-        case .permissionNotDetermined:
-            return NSLocalizedString(
-                "notification.error.permission_not_determined",
-                value: "Notification permissions need to be granted.",
-                comment: "Error when notification permissions haven't been requested yet"
             )
         case .unsupportedMode:
             return NSLocalizedString(
@@ -89,12 +128,6 @@ public enum NotificationError: LocalizedError {
                     comment: "Error when scheduling fails"
                 ),
                 error.localizedDescription
-            )
-        case .invalidCalendarData:
-            return NSLocalizedString(
-                "notification.error.invalid_data",
-                value: "Invalid calendar data for notification scheduling.",
-                comment: "Error when calendar data is invalid"
             )
         }
     }
@@ -260,7 +293,7 @@ private func isEntrySuccess(entry: CalendarEntry, calendar: CustomCalendar) -> B
 
 /// Unified fulfillment check for notification logic.
 /// Keeps suppression and streak/content calculations aligned.
-func isEntryFulfilledForNotification(_ entry: CalendarEntry, calendar: CustomCalendar) -> Bool {
+private func isEntryFulfilledForNotification(_ entry: CalendarEntry, calendar: CustomCalendar) -> Bool {
     switch calendar.trackingType {
     case .binary:
         return entry.completed
@@ -276,22 +309,11 @@ func isEntryFulfilledForNotification(_ entry: CalendarEntry, calendar: CustomCal
 /// Best-effort derivation of the calendar id a notification request belongs to.
 /// We prefer `userInfo["calendarId"]` since request identifiers may include suffixes
 /// (e.g. `-0`, `-streak-protection`, `-snooze`).
-func deriveCalendarId(notificationIdentifier: String, userInfoCalendarId: String?) -> UUID? {
-    if let userInfoCalendarId,
-       let calendarId = UUID(uuidString: userInfoCalendarId)
-    {
-        return calendarId
-    }
-
-    if let calendarId = UUID(uuidString: notificationIdentifier) {
-        return calendarId
-    }
-
-    // All of our derived identifiers are prefixed with the 36-char UUID string.
-    guard notificationIdentifier.count >= 36 else {
-        return nil
-    }
-    return UUID(uuidString: String(notificationIdentifier.prefix(36)))
+private func deriveCalendarId(notificationIdentifier: String, userInfoCalendarId: String?) -> UUID? {
+    NotificationRequestID.calendarId(
+        notificationIdentifier: notificationIdentifier,
+        userInfoCalendarId: userInfoCalendarId
+    )
 }
 
 private func deriveCalendarId(from request: UNNotificationRequest) -> UUID? {
@@ -300,8 +322,6 @@ private func deriveCalendarId(from request: UNNotificationRequest) -> UUID? {
         userInfoCalendarId: request.content.userInfo["calendarId"] as? String
     )
 }
-
-private let streakProtectionIdentifierSuffix = "-streak-protection"
 
 private func removePendingNotifications(for calendarId: UUID, completion: @escaping () -> Void) {
     UNUserNotificationCenter.current().getPendingNotificationRequests { requests in
@@ -323,7 +343,7 @@ private func removePendingNotifications(for calendarId: UUID, completion: @escap
 private func removeAllPendingStreakProtectionNotifications(completion: @escaping () -> Void) {
     UNUserNotificationCenter.current().getPendingNotificationRequests { requests in
         let identifiersToRemove = requests.compactMap { request -> String? in
-            request.identifier.hasSuffix(streakProtectionIdentifierSuffix) ? request.identifier : nil
+            NotificationRequestID.isStreakProtection(request.identifier) ? request.identifier : nil
         }
 
         if !identifiersToRemove.isEmpty {
@@ -340,53 +360,57 @@ private func removeAllPendingStreakProtectionNotifications(completion: @escaping
 /// - Parameters:
 ///   - calendar: The calendar to protect
 ///   - store: Calendar store for streak calculation
-public func scheduleStreakProtectionReminder(
+private func scheduleStreakProtectionReminder(
     for calendar: CustomCalendar,
     store: CustomCalendarStore
 ) {
-    let notificationId = "\(calendar.id.uuidString)\(streakProtectionIdentifierSuffix)"
+    let notificationId = NotificationRequestID.streakProtection(calendarId: calendar.id)
     UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: [notificationId])
 
-    let resolvedCalendar = calendar
-
-    // Only schedule if enabled and reminders are on
-    guard resolvedCalendar.streakProtectionEnabled,
-          resolvedCalendar.recurringReminderEnabled
-    else {
+    guard let plan = makeStreakProtectionPlan(for: calendar, store: store) else {
         return
     }
 
-    // If today is already fulfilled, there is no streak risk.
-    if let todayEntry = store.getEntry(calendarId: resolvedCalendar.id, date: Date()),
-       isEntryFulfilledForNotification(todayEntry, calendar: resolvedCalendar)
+    scheduleNotificationPlans([plan]) { _ in }
+}
+
+private func makeStreakProtectionPlan(for calendar: CustomCalendar, store: CustomCalendarStore) -> NotificationPlan? {
+    guard calendar.streakProtectionEnabled,
+          calendar.recurringReminderEnabled
+    else { return nil }
+
+    if let todayEntry = store.getEntry(calendarId: calendar.id, date: Date()),
+       isEntryFulfilledForNotification(todayEntry, calendar: calendar)
     {
-        return
+        return nil
     }
 
-    // Calculate streak ending yesterday (the one at risk if today is missed).
-    let streakAtRisk = calculateStreakEndingYesterday(for: resolvedCalendar)
+    let streakAtRisk = calculateStreakEndingYesterday(for: calendar)
 
-    // Only protect significant streaks.
-    guard streakAtRisk >= resolvedCalendar.streakProtectionThreshold else {
-        return
-    }
+    guard streakAtRisk >= calendar.streakProtectionThreshold else { return nil }
 
-    // Schedule notification for 9 PM today
     let now = Date()
-    let calendar_swift = Calendar.current
-    guard let ninePM = calendar_swift.date(bySettingHour: 21, minute: 0, second: 0, of: now) else {
-        return
-    }
+    let calendarSwift = Calendar.current
+    guard let ninePM = calendarSwift.date(bySettingHour: 21, minute: 0, second: 0, of: now),
+          ninePM > now
+    else { return nil }
 
-    // Only schedule if 9 PM is in the future
-    guard ninePM > now else {
-        return
-    }
+    let triggerDate = calendarSwift.dateComponents(
+        [.year, .month, .day, .hour, .minute],
+        from: ninePM
+    )
 
+    return NotificationPlan(
+        id: NotificationRequestID.streakProtection(calendarId: calendar.id),
+        content: makeStreakProtectionContent(for: calendar, streakAtRisk: streakAtRisk),
+        trigger: UNCalendarNotificationTrigger(dateMatching: triggerDate, repeats: false)
+    )
+}
+
+private func makeStreakProtectionContent(for calendar: CustomCalendar, streakAtRisk: Int) -> UNNotificationContent {
     let content = UNMutableNotificationContent()
 
-    // Urgent, streak-focused copy
-    switch resolvedCalendar.notificationPrivacyMode {
+    switch calendar.notificationPrivacyMode {
     case .full:
         content.title = String(
             format: String(localized: "🔥 Don't break your %lld-day streak!"),
@@ -394,7 +418,7 @@ public func scheduleStreakProtectionReminder(
         )
         content.body = String(
             format: String(localized: "Quick! Log %@ before midnight"),
-            resolvedCalendar.name
+            calendar.name
         )
 
     case .generic:
@@ -410,34 +434,12 @@ public func scheduleStreakProtectionReminder(
     content.sound = .default
     content.categoryIdentifier = NotificationAction.categoryIdentifier
     content.userInfo = [
-        "calendarId": resolvedCalendar.id.uuidString,
-        "calendarName": resolvedCalendar.name,
+        "calendarId": calendar.id.uuidString,
+        "calendarName": calendar.name,
         "isStreakProtection": true,
     ]
 
-    // Schedule for 9 PM today (one-time, not recurring)
-    let triggerDate = calendar_swift.dateComponents(
-        [.year, .month, .day, .hour, .minute],
-        from: ninePM
-    )
-    let trigger = UNCalendarNotificationTrigger(
-        dateMatching: triggerDate,
-        repeats: false
-    )
-
-    let request = UNNotificationRequest(
-        identifier: notificationId,
-        content: content,
-        trigger: trigger
-    )
-
-    UNUserNotificationCenter.current().add(request) { error in
-        if let error = error {
-            print("❌ Failed to schedule streak protection: \(error)")
-        } else {
-            print("🛡️ Scheduled streak protection for \(resolvedCalendar.name) at 9 PM (\(streakAtRisk)-day streak)")
-        }
-    }
+    return content
 }
 
 /// Refreshes one-time streak protection reminders for all calendars.
@@ -479,18 +481,17 @@ private func calculateStreakEndingYesterday(for calendar: CustomCalendar) -> Int
 
 // MARK: - Notification Scheduling
 
-/// Schedules notifications for a calendar with proper error handling and permission checks
+/// Replaces every pending notification for a calendar with the current reminder plan.
 /// - Parameters:
-///   - calendar: The calendar to schedule notifications for
-///   - store: Optional calendar store for dynamic content
+///   - calendar: The calendar to reschedule notifications for
+///   - store: Calendar store for streak-protection checks
 ///   - completion: Completion handler called with result (success or error)
-public func scheduleNotifications(
+public func rescheduleNotifications(
     for calendar: CustomCalendar,
-    store: CustomCalendarStore? = nil,
+    store: CustomCalendarStore,
     completion: @escaping (Result<Void, NotificationError>) -> Void = { _ in }
 ) {
     removePendingNotifications(for: calendar.id) {
-        // If calendar is archived or reminder disabled, we're done (already removed)
         guard !calendar.isArchived,
               calendar.recurringReminderEnabled
         else {
@@ -498,175 +499,73 @@ public func scheduleNotifications(
             return
         }
 
-        // Collect all reminder times (primary + additional)
-        var allReminderTimes: [(hour: Int, minute: Int, isPrimary: Bool)] = []
-        if let hour = calendar.reminderHour, let minute = calendar.reminderMinute {
-            allReminderTimes.append((hour, minute, true))
-        }
-        for reminderTime in calendar.additionalReminderTimes {
-            allReminderTimes.append((reminderTime.hour, reminderTime.minute, false))
-        }
-
-        // If no reminder times configured, nothing to schedule
-        guard !allReminderTimes.isEmpty else {
+        let reminderPlans = makeReminderPlans(for: calendar)
+        guard !reminderPlans.isEmpty else {
             completion(.success(()))
             return
         }
 
-        // Check notification permissions before scheduling
-        UNUserNotificationCenter.current().getNotificationSettings { settings in
-            switch settings.authorizationStatus {
-            case .notDetermined:
-                // Request permission first
-                UNUserNotificationCenter.current().requestAuthorization(
-                    options: [.alert, .sound, .badge]
-                ) { granted, error in
-                    if let error = error {
-                        completion(.failure(.schedulingFailed(error)))
-                    } else if granted {
-                        // Schedule streak protection if store available
-                        if let store = store {
-                            scheduleStreakProtectionReminder(for: calendar, store: store)
-                        }
-
-                        _scheduleAllReminders(
-                            for: calendar,
-                            reminderTimes: allReminderTimes,
-                            completion: completion
-                        )
-                    } else {
-                        completion(.failure(.permissionDenied))
-                    }
-                }
-
-            case .authorized, .provisional:
-                // Schedule streak protection if store available
-                if let store = store {
-                    scheduleStreakProtectionReminder(for: calendar, store: store)
-                }
-
-                _scheduleAllReminders(
-                    for: calendar,
-                    reminderTimes: allReminderTimes,
-                    completion: completion
-                )
-
-            case .denied:
-                completion(.failure(.permissionDenied))
-
-            case .ephemeral:
-                completion(.failure(.unsupportedMode))
-
-            @unknown default:
-                completion(.failure(.unknownStatus))
+        requestNotificationAuthorizationIfNeeded { result in
+            switch result {
+            case .success:
+                let plans = reminderPlans + [makeStreakProtectionPlan(for: calendar, store: store)].compactMap { $0 }
+                scheduleNotificationPlans(plans, completion: completion)
+            case let .failure(error):
+                completion(.failure(error))
             }
         }
     }
 }
 
-/// Schedule all reminder times for a calendar
-private func _scheduleAllReminders(
-    for calendar: CustomCalendar,
-    reminderTimes: [(hour: Int, minute: Int, isPrimary: Bool)],
-    completion: @escaping (Result<Void, NotificationError>) -> Void
-) {
-    let group = DispatchGroup()
-    let errorsQueue = DispatchQueue(label: "notification-scheduling-errors")
-    var errors: [Error] = []
+private func makeReminderPlans(for calendar: CustomCalendar) -> [NotificationPlan] {
+    var plans: [NotificationPlan] = []
 
-    var additionalIndex = 0
-    for reminderTime in reminderTimes {
-        if reminderTime.isPrimary {
-            for weekday in 1 ... 7 {
-                group.enter()
-                _scheduleNotificationInternal(
+    if let hour = calendar.reminderHour,
+       let minute = calendar.reminderMinute
+    {
+        for weekday in 1 ... 7 {
+            plans.append(
+                makeReminderPlan(
                     for: calendar,
-                    notificationId: "\(calendar.id.uuidString)-primary-\(weekday)",
-                    hour: reminderTime.hour,
-                    minute: reminderTime.minute,
+                    id: NotificationRequestID.primary(calendarId: calendar.id, weekday: weekday),
+                    hour: hour,
+                    minute: minute,
                     weekday: weekday,
                     isPrimary: true
-                ) { result in
-                    if case let .failure(error) = result {
-                        errorsQueue.sync {
-                            errors.append(error)
-                        }
-                    }
-                    group.leave()
-                }
-            }
-        } else {
-            group.enter()
-            let notificationId = "\(calendar.id.uuidString)-\(additionalIndex)"
-            additionalIndex += 1
+                )
+            )
+        }
+    }
 
-            _scheduleNotificationInternal(
+    for (index, reminderTime) in calendar.additionalReminderTimes.enumerated() {
+        plans.append(
+            makeReminderPlan(
                 for: calendar,
-                notificationId: notificationId,
+                id: NotificationRequestID.additional(calendarId: calendar.id, index: index),
                 hour: reminderTime.hour,
                 minute: reminderTime.minute,
                 weekday: nil,
                 isPrimary: false
-            ) { result in
-                if case let .failure(error) = result {
-                    errorsQueue.sync {
-                        errors.append(error)
-                    }
-                }
-                group.leave()
-            }
-        }
+            )
+        )
     }
 
-    group.notify(queue: .main) {
-        let firstError = errorsQueue.sync {
-            errors.first as? NotificationError
-        }
-        if let firstError {
-            completion(.failure(firstError))
-        } else {
-            completion(.success(()))
-        }
-    }
+    return plans
 }
 
-/// Internal function to actually schedule the notification after permission checks
-private func _scheduleNotificationInternal(
+private func makeReminderPlan(
     for calendar: CustomCalendar,
-    notificationId: String,
+    id: String,
     hour: Int,
     minute: Int,
     weekday: Int?,
-    isPrimary: Bool,
-    completion: @escaping (Result<Void, NotificationError>) -> Void
-) {
-    let content = UNMutableNotificationContent()
-
-    let reminderContent = makeReminderContent(for: calendar, weekday: weekday, isPrimary: isPrimary)
-    content.title = reminderContent.title
-    content.body = reminderContent.body
-    if calendar.notificationPrivacyMode == .hidden {
-        content.badge = NSNumber(value: 1)
-    }
-
-    content.sound = .default
-
-    // Set category for quick actions
-    content.categoryIdentifier = NotificationAction.categoryIdentifier
-
-    // Store calendar ID for action handling
-    content.userInfo = [
-        "calendarId": calendar.id.uuidString,
-        "calendarName": calendar.name,
-    ]
-
-    // Set up timezone-aware trigger
+    isPrimary: Bool
+) -> NotificationPlan {
     var components = DateComponents()
     components.weekday = weekday
     components.hour = hour
     components.minute = minute
 
-    // Use stored timezone if available, otherwise current
     if let timeZoneIdentifier = calendar.reminderTimeZone,
        let timeZone = TimeZone(identifier: timeZoneIdentifier)
     {
@@ -675,23 +574,106 @@ private func _scheduleNotificationInternal(
         components.timeZone = TimeZone.current
     }
 
-    let trigger = UNCalendarNotificationTrigger(
-        dateMatching: components,
-        repeats: true
+    return NotificationPlan(
+        id: id,
+        content: makeReminderNotificationContent(for: calendar, weekday: weekday, isPrimary: isPrimary),
+        trigger: UNCalendarNotificationTrigger(dateMatching: components, repeats: true)
     )
+}
 
-    let request = UNNotificationRequest(
-        identifier: notificationId,
-        content: content,
-        trigger: trigger
-    )
+private func makeReminderNotificationContent(
+    for calendar: CustomCalendar,
+    weekday: Int?,
+    isPrimary: Bool
+) -> UNNotificationContent {
+    let content = UNMutableNotificationContent()
+    let reminderContent = makeReminderContent(for: calendar, weekday: weekday, isPrimary: isPrimary)
 
-    UNUserNotificationCenter.current().add(request) { error in
-        if let error = error {
-            print("❌ Failed to schedule notification for \(calendar.name): \(error)")
-            completion(.failure(.schedulingFailed(error)))
+    content.title = reminderContent.title
+    content.body = reminderContent.body
+    if calendar.notificationPrivacyMode == .hidden {
+        content.badge = NSNumber(value: 1)
+    }
+
+    content.sound = .default
+    content.categoryIdentifier = NotificationAction.categoryIdentifier
+    content.userInfo = [
+        "calendarId": calendar.id.uuidString,
+        "calendarName": calendar.name,
+    ]
+
+    return content
+}
+
+private func requestNotificationAuthorizationIfNeeded(
+    completion: @escaping (Result<Void, NotificationError>) -> Void
+) {
+    UNUserNotificationCenter.current().getNotificationSettings { settings in
+        switch settings.authorizationStatus {
+        case .notDetermined:
+            UNUserNotificationCenter.current().requestAuthorization(
+                options: [.alert, .sound, .badge]
+            ) { granted, error in
+                if let error {
+                    completion(.failure(.schedulingFailed(error)))
+                } else if granted {
+                    completion(.success(()))
+                } else {
+                    completion(.failure(.permissionDenied))
+                }
+            }
+
+        case .authorized, .provisional:
+            completion(.success(()))
+
+        case .denied:
+            completion(.failure(.permissionDenied))
+
+        case .ephemeral:
+            completion(.failure(.unsupportedMode))
+
+        @unknown default:
+            completion(.failure(.unknownStatus))
+        }
+    }
+}
+
+private func scheduleNotificationPlans(
+    _ plans: [NotificationPlan],
+    completion: @escaping (Result<Void, NotificationError>) -> Void
+) {
+    guard !plans.isEmpty else {
+        completion(.success(()))
+        return
+    }
+
+    let group = DispatchGroup()
+    let errorsQueue = DispatchQueue(label: "notification-scheduling-errors")
+    var errors: [NotificationError] = []
+
+    for plan in plans {
+        group.enter()
+        let request = UNNotificationRequest(
+            identifier: plan.id,
+            content: plan.content,
+            trigger: plan.trigger
+        )
+
+        UNUserNotificationCenter.current().add(request) { error in
+            if let error {
+                errorsQueue.sync {
+                    errors.append(.schedulingFailed(error))
+                }
+            }
+            group.leave()
+        }
+    }
+
+    group.notify(queue: .main) {
+        let firstError = errorsQueue.sync { errors.first }
+        if let firstError {
+            completion(.failure(firstError))
         } else {
-            print("✅ Scheduled notification for \(calendar.name) at \(hour):\(String(format: "%02d", minute))")
             completion(.success(()))
         }
     }
@@ -734,33 +716,6 @@ public func checkForNotificationsOfNonExistingCalendars(store: CustomCalendarSto
     if removedCount > 0 {
         print("✨ Cleaned up \(removedCount) orphaned notification(s)")
     }
-}
-
-// MARK: - Validation (Legacy - preserved for compatibility)
-
-/// Validates and adjusts reminder time (LEGACY - not actively used)
-/// - Parameter time: The time to validate
-/// - Returns: Adjusted time if original was in the past
-@available(*, deprecated, message: "This function is not actively used and has known issues")
-public func validateReminderTime(_ time: Date) -> Date {
-    let calendar = Calendar.current
-    let now = Date()
-
-    // If the absolute date is in the past, shift forward
-    if time < now {
-        let targetComponents = calendar.dateComponents([.hour, .minute], from: time)
-
-        // Find the next occurrence of this time
-        if let nextOccurrence = calendar.nextDate(
-            after: now,
-            matching: targetComponents,
-            matchingPolicy: .nextTime
-        ) {
-            return nextOccurrence
-        }
-    }
-
-    return time
 }
 
 // MARK: - Notification Actions Handler
@@ -827,7 +782,7 @@ private func handleQuickLog(for calendar: CustomCalendar, store: CustomCalendarS
 
 /// Snooze handler - reschedules notification for 1 hour later
 private func handleSnooze(for calendar: CustomCalendar) {
-    let notificationId = "\(calendar.id.uuidString)-snooze"
+    let notificationId = NotificationRequestID.snooze(calendarId: calendar.id)
     let content = UNMutableNotificationContent()
 
     // Apply privacy mode with localization
@@ -872,19 +827,18 @@ private func handleSnooze(for calendar: CustomCalendar) {
         "calendarName": calendar.name,
     ]
 
-    // Schedule for 1 hour from now
-    let trigger = UNTimeIntervalNotificationTrigger(timeInterval: 3600, repeats: false)
-    let request = UNNotificationRequest(
-        identifier: notificationId,
+    let plan = NotificationPlan(
+        id: notificationId,
         content: content,
-        trigger: trigger
+        trigger: UNTimeIntervalNotificationTrigger(timeInterval: 3600, repeats: false)
     )
 
-    UNUserNotificationCenter.current().add(request) { error in
-        if let error = error {
-            print("❌ Failed to schedule snooze notification: \(error)")
-        } else {
+    scheduleNotificationPlans([plan]) { result in
+        switch result {
+        case .success:
             print("⏰ Snoozed notification for \(calendar.name) for 1 hour")
+        case let .failure(error):
+            print("❌ Failed to schedule snooze notification: \(error)")
         }
     }
 }
