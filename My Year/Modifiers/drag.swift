@@ -27,8 +27,8 @@ struct ContextOrDragModifier: ViewModifier {
                 Text("Edit Calendar")
             }
             Divider()
-            Button(action: toggleArchiveStatus) {
-                Text(calendar.isArchived ? "Unarchive Calendar" : "Archive Calendar")
+            Button(action: archiveCalendar) {
+                Text("Archive Calendar")
             }
             Divider()
             Button(action: {
@@ -39,10 +39,12 @@ struct ContextOrDragModifier: ViewModifier {
         }
     }
 
-    private func toggleArchiveStatus() {
+    private func archiveCalendar() {
+        guard !calendar.isArchived else { return }
+
         var updatedCalendar = calendar
-        updatedCalendar.isArchived.toggle()
-        scheduleNotifications(for: updatedCalendar, store: store)
+        updatedCalendar.isArchived = true
+        rescheduleNotifications(for: updatedCalendar, store: store)
         withAnimation(.spring(response: 0.35, dampingFraction: 0.85)) {
             store.updateCalendar(updatedCalendar)
         }

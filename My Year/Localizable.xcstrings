@@ -3716,7 +3716,7 @@
     },
     "notification.error.invalid_data" : {
       "comment" : "Error when calendar data is invalid",
-      "extractionState" : "extracted_with_value",
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -3764,7 +3764,7 @@
     },
     "notification.error.permission_not_determined" : {
       "comment" : "Error when notification permissions haven't been requested yet",
-      "extractionState" : "extracted_with_value",
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -3858,6 +3858,54 @@
         }
       }
     },
+    "notification.reminder.additional.full" : {
+      "comment" : "Additional reminder body with habit name",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Quick check-in: log %@."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Controllo rapido: registra %@."
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Швидка перевірка: запиши %@."
+          }
+        }
+      }
+    },
+    "notification.reminder.additional.generic" : {
+      "comment" : "Additional generic reminder body",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Quick check-in. Log your habit."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Controllo rapido. Registra la tua abitudine."
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Швидка перевірка. Запиши свою звичку."
+          }
+        }
+      }
+    },
     "notification.reminder.body" : {
       "comment" : "Notification body for calendar reminder",
       "extractionState" : "stale",
@@ -3920,6 +3968,54 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Час записати свою щоденну звичку"
+          }
+        }
+      }
+    },
+    "notification.reminder.primary.full" : {
+      "comment" : "Daily primary reminder body with habit name",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Time for today's check-in. Log %@."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "È il momento del check-in di oggi. Registra %@."
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Час для сьогоднішньої перевірки. Запиши %@."
+          }
+        }
+      }
+    },
+    "notification.reminder.primary.generic" : {
+      "comment" : "Daily primary generic reminder body",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Time for today's check-in. Log your habit."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "È il momento del check-in di oggi. Registra la tua abitudine."
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Час для сьогоднішньої перевірки. Запиши свою звичку."
           }
         }
       }
@@ -6156,6 +6252,7 @@
       }
     },
     "Unarchive Calendar" : {
+      "extractionState" : "stale",
       "localizations" : {
         "it" : {
           "stringUnit" : {
@@ -6728,102 +6825,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Саме твої пропозиції та ідеї його формують."
-          }
-        }
-      }
-    },
-    "notification.reminder.additional.full" : {
-      "comment" : "Additional reminder body with habit name",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Quick check-in: log %@."
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Controllo rapido: registra %@."
-          }
-        },
-        "uk" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Швидка перевірка: запиши %@."
-          }
-        }
-      }
-    },
-    "notification.reminder.additional.generic" : {
-      "comment" : "Additional generic reminder body",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Quick check-in. Log your habit."
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Controllo rapido. Registra la tua abitudine."
-          }
-        },
-        "uk" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Швидка перевірка. Запиши свою звичку."
-          }
-        }
-      }
-    },
-    "notification.reminder.primary.full" : {
-      "comment" : "Daily primary reminder body with habit name",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Time for today's check-in. Log %@."
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "È il momento del check-in di oggi. Registra %@."
-          }
-        },
-        "uk" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Час для сьогоднішньої перевірки. Запиши %@."
-          }
-        }
-      }
-    },
-    "notification.reminder.primary.generic" : {
-      "comment" : "Daily primary generic reminder body",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Time for today's check-in. Log your habit."
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "È il momento del check-in di oggi. Registra la tua abitudine."
-          }
-        },
-        "uk" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Час для сьогоднішньої перевірки. Запиши свою звичку."
           }
         }
       }
