@@ -84,7 +84,6 @@ struct CalendarsOverview: View {
         .listStyle(.plain)
         .scrollContentBackground(.hidden)
         .scrollIndicators(.hidden)
-        .animation(.spring(), value: store.calendars.map { $0.order })
         .surfaceBackground(Color("surface-muted"), ignoresSafeArea: true)
         .navigationTitle("Calendars")
         .toolbar {
