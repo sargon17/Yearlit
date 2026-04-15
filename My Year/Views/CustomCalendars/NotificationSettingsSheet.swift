@@ -274,8 +274,8 @@ extension NotificationSettingsSheet {
   }
 
   private func proBadge() -> some View {
-    let bgColor = try! GarnishColor.blend(.surfaceMuted, with: .moodExcellent, ratio: 0.2)
-    let fgColor = try! GarnishColor.blend(.textPrimary, with: .moodExcellent, ratio: 0.5)
+    let bgColor = GarnishColor.blend(.surfaceMuted, with: .moodExcellent, ratio: 0.2)
+    let fgColor = GarnishColor.blend(.textPrimary, with: .moodExcellent, ratio: 0.5)
     let strokeStyle = StrokeStyle(
       lineWidth: 1, lineCap: .round, lineJoin: .bevel, miterLimit: 1, dash: [2], dashPhase: 3
     )
@@ -452,8 +452,8 @@ private struct NotificationSection<Content: View>: View {
 
   init(
     label: LocalizedStringKey,
-    @ViewBuilder content: @escaping () -> Content,
-    description: LocalizedStringKey? = nil
+    description: LocalizedStringKey? = nil,
+    @ViewBuilder content: @escaping () -> Content
   ) {
     self.label = label
     self.content = content

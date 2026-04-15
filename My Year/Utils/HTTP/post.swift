@@ -16,7 +16,7 @@ extension HTTP {
 
         request.httpBody = jsonData
 
-        let (data, res) = try await URLSession.shared.data(for: request)
+        let (_, res) = try await URLSession.shared.data(for: request)
 
         guard let response = res as? HTTPURLResponse,
               (200 ... 299).contains(response.statusCode) else

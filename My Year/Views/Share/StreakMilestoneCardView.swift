@@ -179,16 +179,16 @@ struct StreakMilestoneCardView: View {
     }
 
     private var dividerLight: Color {
-        try! GarnishColor.blend(baseColor, with: foregroundColor, ratio: 0.18)
+        GarnishColor.blend(baseColor, with: foregroundColor, ratio: 0.18)
     }
 
     private var dividerDark: Color {
         let opposite = try! Garnish.contrastingShade(of: foregroundColor)
-        return try! GarnishColor.blend(baseColor, with: opposite, ratio: 0.18)
+        return GarnishColor.blend(baseColor, with: opposite, ratio: 0.18)
     }
 
     private var highlightColor: Color {
-        try! GarnishColor.blend(baseColor, with: foregroundColor, ratio: 0.2)
+        GarnishColor.blend(baseColor, with: foregroundColor, ratio: 0.2)
     }
 
     private var copy: MilestoneCopy {
