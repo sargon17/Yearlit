@@ -6156,7 +6156,6 @@
       }
     },
     "Unarchive Calendar" : {
-      "extractionState" : "stale",
       "localizations" : {
         "it" : {
           "stringUnit" : {
