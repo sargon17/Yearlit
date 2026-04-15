@@ -9,6 +9,7 @@ struct CalendarsOverview: View {
     @Binding var scrollPosition: ScrollPosition
     @Environment(\.dismiss) private var dismiss
     @Environment(\.colorScheme) private var colorScheme
+    @Environment(\.editMode) private var editMode
     @State private var showingArchivedCalendars = false
     @State private var showingJournalEntries = false
 
@@ -33,6 +34,7 @@ struct CalendarsOverview: View {
                     VStack(spacing: 0) {
                         CalendarsOverviewsItem(calendar: calendar, store: store)
                             .onTapGesture {
+                                guard editMode?.wrappedValue.isEditing != true else { return }
                                 dismiss()
                                 scrollPosition.scrollTo(id: calendar.id.uuidString)
                             }

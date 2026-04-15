@@ -553,12 +553,15 @@ public final class CustomCalendarStore: ObservableObject {
     public func updateCalendar(_ calendar: CustomCalendar) {
         do {
             let context = makeContext()
-            guard let entity = fetchCalendarEntity(id: calendar.id, in: context) else { return }
+            let entities = fetchCalendarEntities(id: calendar.id, in: context)
+            guard let entity = entities.first else { return }
             var calendarToSave = calendar
             if entity.isArchived, !calendar.isArchived {
                 calendarToSave.order = activeCalendarCount(excluding: calendar.id, in: context)
             }
-            entity.apply(from: calendarToSave)
+            for entity in entities {
+                entity.apply(from: calendarToSave)
+            }
 
             let existingEntries = try fetchEntries(for: calendarToSave.id, in: context)
             var existingByKey = existingEntries.reduce(into: [String: CalendarEntryEntity]()) { partialResult, entry in
@@ -603,12 +606,15 @@ public final class CustomCalendarStore: ObservableObject {
     public func deleteCalendar(id: UUID) {
         do {
             let context = makeContext()
-            guard let entity = fetchCalendarEntity(id: id, in: context) else { return }
+            let entities = fetchCalendarEntities(id: id, in: context)
+            guard !entities.isEmpty else { return }
             let entries = try fetchEntries(for: id, in: context)
             for entry in entries {
                 context.delete(entry)
             }
-            context.delete(entity)
+            for entity in entities {
+                context.delete(entity)
+            }
             try persistChanges(in: context)
             bumpDataVersion()
             loadCalendars(showLoadingIndicator: false)
@@ -625,10 +631,8 @@ public final class CustomCalendarStore: ObservableObject {
         do {
             let context = makeContext()
             persistCalendarOrder(reordered, in: context)
-            calendars = reordered
-            bumpDataVersion()
             try persistChanges(in: context)
-            loadCalendars(showLoadingIndicator: false)
+            calendars = reordered
         } catch {
             NSLog("Failed to move calendars: \(error)")
         }
@@ -644,10 +648,8 @@ public final class CustomCalendarStore: ObservableObject {
         do {
             let context = makeContext()
             persistCalendarOrder(reordered, in: context)
-            calendars = reordered
-            bumpDataVersion()
             try persistChanges(in: context)
-            loadCalendars(showLoadingIndicator: false)
+            calendars = reordered
         } catch {
             NSLog("Failed to move active calendars: \(error)")
         }
@@ -728,10 +730,12 @@ public final class CustomCalendarStore: ObservableObject {
     }
 
     private func fetchCalendarEntity(id: UUID, in context: ModelContext) -> HabitCalendarEntity? {
+        fetchCalendarEntities(id: id, in: context).first
+    }
+
+    private func fetchCalendarEntities(id: UUID, in context: ModelContext) -> [HabitCalendarEntity] {
         let predicate = #Predicate<HabitCalendarEntity> { $0.id == id }
-        var descriptor = FetchDescriptor(predicate: predicate)
-        descriptor.fetchLimit = 1
-        return try? context.fetch(descriptor).first
+        return (try? context.fetch(FetchDescriptor(predicate: predicate))) ?? []
     }
 
     private func fetchEntries(for calendarId: UUID, in context: ModelContext) throws -> [CalendarEntryEntity] {
@@ -755,7 +759,7 @@ public final class CustomCalendarStore: ObservableObject {
 
     private func persistCalendarOrder(_ orderedCalendars: [CustomCalendar], in context: ModelContext) {
         for calendar in orderedCalendars {
-            if let entity = fetchCalendarEntity(id: calendar.id, in: context) {
+            for entity in fetchCalendarEntities(id: calendar.id, in: context) {
                 entity.order = calendar.order
             }
         }
