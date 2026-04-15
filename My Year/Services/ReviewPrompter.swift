@@ -130,7 +130,7 @@ final class ReviewPrompter {
         let urlString = "https://apps.apple.com/app/id\(appID)?action=write-review"
         guard let url = URL(string: urlString) else { return }
         if let vc = vc {
-            let safari = SFSafePresenter.present(url, from: vc)
+            _ = SFSafePresenter.present(url, from: vc)
             // If you don’t want to pull in SFSafariViewController helper,
             // you can just call UIApplication.shared.open(url).
         } else {

@@ -92,7 +92,6 @@ struct HorizontalYearGrid: View {
     }
 
     var body: some View {
-        let today = Date()
         VStack {
             HStack(spacing: 6) {
                 if family == .systemLarge || family == .systemMedium {

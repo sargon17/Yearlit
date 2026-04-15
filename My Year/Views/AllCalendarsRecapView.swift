@@ -112,10 +112,8 @@ struct AllCalendarsRecapView: View {
 
     var body: some View {
         let selectedYear = valuationStore.selectedYear
-        let calendars = store.calendars
         let dataVersion = store.dataVersion
         let daySeed = Calendar.current.startOfDay(for: Date())
-        let daySeedKey = Self.daySeedFormatter.string(from: daySeed)
         let statsSignature = makeCacheKey(year: selectedYear, daySeed: daySeed, dataVersion: dataVersion)
         let statsTaskId = "\(statsSignature.identifier)|\(statsRefreshToken.uuidString)"
         let todayKeyDate = getYearDatesArray(for: selectedYear).first { Calendar.current.isDate($0, inSameDayAs: Date()) }

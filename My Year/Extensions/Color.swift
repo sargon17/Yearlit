@@ -11,7 +11,7 @@ public extension Color {
     }
 
     static var brandSecondary: Color {
-        return try! GarnishColor.blend(.qsOrange, with: .surfaceMuted, ratio: 0.2)
+        return GarnishColor.blend(.qsOrange, with: .surfaceMuted, ratio: 0.2)
     }
 
     static var brandSecondaryInverted: Color {
@@ -19,7 +19,7 @@ public extension Color {
     }
 
     static var buttonBackground: Color {
-        return try! GarnishColor.blend(.surfaceMuted, with: .textPrimary, ratio: 0.05)
+        return GarnishColor.blend(.surfaceMuted, with: .textPrimary, ratio: 0.05)
     }
 
   init?(hex: String) {
