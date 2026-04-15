@@ -990,7 +990,6 @@
       }
     },
     "Archive Calendar" : {
-      "extractionState" : "stale",
       "localizations" : {
         "it" : {
           "stringUnit" : {

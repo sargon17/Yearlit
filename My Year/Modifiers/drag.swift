@@ -27,11 +27,25 @@ struct ContextOrDragModifier: ViewModifier {
                 Text("Edit Calendar")
             }
             Divider()
+            Button(action: archiveCalendar) {
+                Text("Archive Calendar")
+            }
+            Divider()
             Button(action: {
                 showDeleteConfirmation = true
             }) {
                 Text("Delete Calendar")
             }
+        }
+    }
+
+    private func archiveCalendar() {
+        guard !calendar.isArchived else { return }
+        var updatedCalendar = calendar
+        updatedCalendar.isArchived = true
+        scheduleNotifications(for: updatedCalendar, store: store)
+        withAnimation(.spring(response: 0.35, dampingFraction: 0.85)) {
+            store.updateCalendar(updatedCalendar)
         }
     }
 }
