@@ -143,7 +143,7 @@ struct CalendarsSection: View {
                     customerInfo = info
                 }
             }
-            .onChange(of: whatsNewManager.pendingRelease?.version) { _ in
+            .onChange(of: whatsNewManager.pendingRelease?.version) { _, _ in
                 guard let release = whatsNewManager.takePendingRelease() else { return }
                 router.showScreen(.sheet) { _ in
                     WhatsNewSheetView(release: release) {

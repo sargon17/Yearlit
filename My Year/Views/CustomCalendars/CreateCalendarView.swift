@@ -176,9 +176,6 @@ struct CreateCalendarView: View {
                                         .labelStyle(type: .secondary)
 
                                     Spacer()
-                                    if selectedUnit == nil {
-                                        Text("None")
-                                    }
                                     Picker("Unit of Measure", selection: $selectedUnit) {
                                         ForEach(UnitOfMeasure.Category.allCases, id: \.self) {
                                             category in
