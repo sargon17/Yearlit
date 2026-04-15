@@ -990,7 +990,6 @@
       }
     },
     "Archive Calendar" : {
-      "extractionState" : "stale",
       "localizations" : {
         "it" : {
           "stringUnit" : {
@@ -6157,7 +6156,6 @@
       }
     },
     "Unarchive Calendar" : {
-      "extractionState" : "stale",
       "localizations" : {
         "it" : {
           "stringUnit" : {
