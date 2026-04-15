@@ -42,7 +42,7 @@ struct CalendarStatisticsView: View {
             }
             return unit.displayName
         } else {
-            return "Entries"
+            return "Times"
         }
     }
 

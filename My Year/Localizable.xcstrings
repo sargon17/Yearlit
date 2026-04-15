@@ -799,7 +799,7 @@
         "it": {
           "stringUnit": {
             "state": "translated",
-            "value": "Aggiungi serie esistente"
+            "value": "Aggiungi una serie esistente"
           }
         },
         "uk": {
@@ -913,7 +913,7 @@
         "it": {
           "stringUnit": {
             "state": "translated",
-            "value": "Hai già una serie attiva?"
+            "value": "Hai già una serie in corso?"
           }
         },
         "uk": {
@@ -1029,7 +1029,7 @@
         "it": {
           "stringUnit": {
             "state": "translated",
-            "value": "L'archiviazione nasconde questo calendario dai tuoi board senza eliminare i dati passati."
+            "value": "L'archiviazione nasconde questo calendario dalle tue bacheche senza eliminare i dati passati."
           }
         },
         "uk": {
@@ -1045,7 +1045,7 @@
         "it": {
           "stringUnit": {
             "state": "translated",
-            "value": "Sei sicuro di voler eliminare '%@'? Questa azione non può essere annullata."
+            "value": "Vuoi davvero eliminare '%@'? Questa azione non può essere annullata."
           }
         },
         "uk": {
@@ -1061,7 +1061,7 @@
         "it": {
           "stringUnit": {
             "state": "translated",
-            "value": "Sei sicuro di voler eliminare questo calendario? Questa azione non può essere annullata."
+            "value": "Vuoi davvero eliminare questo calendario? Questa azione non può essere annullata."
           }
         },
         "uk": {
@@ -1210,7 +1210,7 @@
         "it": {
           "stringUnit": {
             "state": "translated",
-            "value": "Binario"
+            "value": "Sì/No"
           }
         },
         "uk": {
@@ -1260,7 +1260,7 @@
         "it": {
           "stringUnit": {
             "state": "translated",
-            "value": "Calendario Name"
+            "value": "Nome calendario"
           }
         },
         "uk": {
@@ -1345,7 +1345,7 @@
         "it": {
           "stringUnit": {
             "state": "translated",
-            "value": "Effettua il check-in più volte al giorno verso un obiettivo quotidiano."
+            "value": "Registra più completamenti al giorno fino a raggiungere un obiettivo quotidiano."
           }
         },
         "uk": {
@@ -1696,7 +1696,7 @@
         "it": {
           "stringUnit": {
             "state": "translated",
-            "value": "Zona pericolosa"
+            "value": "Zona critica"
           }
         },
         "uk": {
@@ -1836,7 +1836,7 @@
         "it": {
           "stringUnit": {
             "state": "translated",
-            "value": "Valore predefinito dell'aggiunta rapida"
+            "value": "Valore rapido predefinito"
           }
         },
         "uk": {
@@ -2099,6 +2099,22 @@
           "stringUnit": {
             "state": "translated",
             "value": "Увімкнути відстеження настрою"
+          }
+        }
+      }
+    },
+    "Enable Recap View": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Attiva riepilogo"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Увімкнути підсумок"
           }
         }
       }
@@ -3001,7 +3017,7 @@
         "it": {
           "stringUnit": {
             "state": "translated",
-            "value": "Registra ogni giorno un valore numerico, come pagine lette o minuti praticati."
+            "value": "Registra un valore numerico al giorno, come pagine lette o minuti di pratica."
           }
         },
         "uk": {
@@ -3403,7 +3419,7 @@
         "it": {
           "stringUnit": {
             "state": "translated",
-            "value": "Nuovo Calendario"
+            "value": "Nuovo calendario"
           }
         },
         "uk": {
@@ -4152,7 +4168,7 @@
         "it": {
           "stringUnit": {
             "state": "translated",
-            "value": "Disattivato • imposta un promemoria giornaliero e il livello di privacy."
+            "value": "Non attivo • imposta un promemoria giornaliero e il livello di privacy."
           }
         },
         "uk": {
@@ -4202,7 +4218,7 @@
         "it": {
           "stringUnit": {
             "state": "translated",
-            "value": "Attivato • tocca per personalizzare privacy, soppressione e altro."
+            "value": "Attivo • tocca per personalizzare privacy, soppressione e altro."
           }
         },
         "uk": {
@@ -5040,7 +5056,7 @@
         "it": {
           "stringUnit": {
             "state": "translated",
-            "value": "Impostazioni per %@"
+            "value": "Impostazioni: %@"
           }
         },
         "uk": {
@@ -6027,7 +6043,7 @@
         "it": {
           "stringUnit": {
             "state": "translated",
-            "value": "Traccia ogni giorno un semplice sì/no. Ottimo per abitudini che completi o salti."
+            "value": "Registra un semplice sì/no ogni giorno. Ideale per abitudini che completi o salti."
           }
         },
         "uk": {
@@ -6060,7 +6076,7 @@
         "it": {
           "stringUnit": {
             "state": "translated",
-            "value": "Monitoraggio Type"
+            "value": "Tipo di tracciamento"
           }
         },
         "uk": {
@@ -6145,7 +6161,7 @@
         "it": {
           "stringUnit": {
             "state": "translated",
-            "value": "Riarchivia calendario"
+            "value": "Ripristina calendario"
           }
         },
         "uk": {
@@ -6162,7 +6178,7 @@
         "it": {
           "stringUnit": {
             "state": "translated",
-            "value": "La dearchiviazione ripristina questo calendario nei tuoi board e negli elenchi di monitoraggio."
+            "value": "Il ripristino riporta questo calendario nelle tue bacheche e negli elenchi di tracciamento."
           }
         },
         "uk": {
@@ -6561,7 +6577,7 @@
         "it": {
           "stringUnit": {
             "state": "translated",
-            "value": "Tu are on PRO."
+            "value": "Hai PRO attivo."
           }
         },
         "uk": {
