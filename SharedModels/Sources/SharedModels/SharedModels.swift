@@ -620,7 +620,7 @@ public final class CustomCalendarStore: ObservableObject {
     public func moveCalendar(fromOffsets indices: IndexSet, toOffset destination: Int) {
         var reordered = Self.normalizedCalendarOrder(calendars)
         reordered.move(fromOffsets: indices, toOffset: destination)
-        reordered = Self.normalizedCalendarOrder(reordered)
+        reordered = Self.assigningContiguousOrder(to: reordered)
 
         do {
             let context = makeContext()
@@ -844,11 +844,19 @@ public final class CustomCalendarStore: ObservableObject {
         reorderedActiveCalendars.move(fromOffsets: indices, toOffset: destination)
 
         let archivedCalendars = normalizedCalendars.filter(\.isArchived)
-        return normalizedCalendarOrder(reorderedActiveCalendars + archivedCalendars)
+        return assigningContiguousOrder(to: reorderedActiveCalendars + archivedCalendars)
     }
 
     private static func sortCalendars(_ calendars: [CustomCalendar]) -> [CustomCalendar] {
         normalizedCalendarOrder(calendars)
+    }
+
+    private static func assigningContiguousOrder(to calendars: [CustomCalendar]) -> [CustomCalendar] {
+        calendars.enumerated().map { index, calendar in
+            var orderedCalendar = calendar
+            orderedCalendar.order = index
+            return orderedCalendar
+        }
     }
 
     private static func calendarOrderSort(_ lhs: CustomCalendar, _ rhs: CustomCalendar) -> Bool {
