@@ -6782,338 +6782,50 @@
         }
       }
     },
-    "notification.reminder.primary.sunday.full" : {
-      "comment" : "Sunday primary reminder body with habit name",
+    "notification.reminder.primary.full" : {
+      "comment" : "Daily primary reminder body with habit name",
       "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "End the week with clean data. Update %@."
+            "value" : "Time for today's check-in. Log %@."
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Chiudi la settimana con dati puliti. Aggiorna %@."
+            "value" : "È il momento del check-in di oggi. Registra %@."
           }
         },
         "uk" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Заверши тиждень чистими даними. Онови %@."
+            "value" : "Час для сьогоднішньої перевірки. Запиши %@."
           }
         }
       }
     },
-    "notification.reminder.primary.monday.full" : {
-      "comment" : "Monday primary reminder body with habit name",
+    "notification.reminder.primary.generic" : {
+      "comment" : "Daily primary generic reminder body",
       "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Start the week clean. Log %@."
+            "value" : "Time for today's check-in. Log your habit."
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Inizia la settimana con ordine. Registra %@."
+            "value" : "È il momento del check-in di oggi. Registra la tua abitudine."
           }
         },
         "uk" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Почни тиждень охайно. Запиши %@."
-          }
-        }
-      }
-    },
-    "notification.reminder.primary.tuesday.full" : {
-      "comment" : "Tuesday primary reminder body with habit name",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Tiny check-in. Record %@."
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Piccolo check-in. Registra %@."
-          }
-        },
-        "uk" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Короткий чек-ін. Запиши %@."
-          }
-        }
-      }
-    },
-    "notification.reminder.primary.wednesday.full" : {
-      "comment" : "Wednesday primary reminder body with habit name",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Midweek data point: update %@."
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Dato di metà settimana: aggiorna %@."
-          }
-        },
-        "uk" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Дані середини тижня: онови %@."
-          }
-        }
-      }
-    },
-    "notification.reminder.primary.thursday.full" : {
-      "comment" : "Thursday primary reminder body with habit name",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Keep the signal alive. Log %@."
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Mantieni vivo il segnale. Registra %@."
-          }
-        },
-        "uk" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Тримай сигнал живим. Запиши %@."
-          }
-        }
-      }
-    },
-    "notification.reminder.primary.friday.full" : {
-      "comment" : "Friday primary reminder body with habit name",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Close the loop before the weekend. Record %@."
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Chiudi il cerchio prima del weekend. Registra %@."
-          }
-        },
-        "uk" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Закрий цикл перед вихідними. Запиши %@."
-          }
-        }
-      }
-    },
-    "notification.reminder.primary.saturday.full" : {
-      "comment" : "Saturday primary reminder body with habit name",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Still counts today. Log %@."
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Conta anche oggi. Registra %@."
-          }
-        },
-        "uk" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Сьогодні теж рахується. Запиши %@."
-          }
-        }
-      }
-    },
-    "notification.reminder.primary.sunday.generic" : {
-      "comment" : "Sunday primary generic reminder body",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "End the week with clean data."
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Chiudi la settimana con dati puliti."
-          }
-        },
-        "uk" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Заверши тиждень чистими даними."
-          }
-        }
-      }
-    },
-    "notification.reminder.primary.monday.generic" : {
-      "comment" : "Monday primary generic reminder body",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Start the week clean. Log your habit."
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Inizia la settimana con ordine. Registra la tua abitudine."
-          }
-        },
-        "uk" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Почни тиждень охайно. Запиши свою звичку."
-          }
-        }
-      }
-    },
-    "notification.reminder.primary.tuesday.generic" : {
-      "comment" : "Tuesday primary generic reminder body",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Tiny check-in. Record today's progress."
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Piccolo check-in. Registra i progressi di oggi."
-          }
-        },
-        "uk" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Короткий чек-ін. Запиши сьогоднішній прогрес."
-          }
-        }
-      }
-    },
-    "notification.reminder.primary.wednesday.generic" : {
-      "comment" : "Wednesday primary generic reminder body",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Midweek data point."
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Dato di metà settimana."
-          }
-        },
-        "uk" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Дані середини тижня."
-          }
-        }
-      }
-    },
-    "notification.reminder.primary.thursday.generic" : {
-      "comment" : "Thursday primary generic reminder body",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Keep the signal alive."
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Mantieni vivo il segnale."
-          }
-        },
-        "uk" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Тримай сигнал живим."
-          }
-        }
-      }
-    },
-    "notification.reminder.primary.friday.generic" : {
-      "comment" : "Friday primary generic reminder body",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Close the loop before the weekend."
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Chiudi il cerchio prima del weekend."
-          }
-        },
-        "uk" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Закрий цикл перед вихідними."
-          }
-        }
-      }
-    },
-    "notification.reminder.primary.saturday.generic" : {
-      "comment" : "Saturday primary generic reminder body",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Still counts today."
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Conta anche oggi."
-          }
-        },
-        "uk" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Сьогодні теж рахується."
+            "value" : "Час для сьогоднішньої перевірки. Запиши свою звичку."
           }
         }
       }

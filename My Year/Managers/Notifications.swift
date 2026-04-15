@@ -18,8 +18,8 @@ private struct NotificationPlan {
 private enum NotificationRequestID {
     private static let streakProtectionSuffix = "-streak-protection"
 
-    static func primary(calendarId: UUID, weekday: Int) -> String {
-        "\(calendarId.uuidString)-primary-\(weekday)"
+    static func primary(calendarId: UUID) -> String {
+        "\(calendarId.uuidString)-primary"
     }
 
     static func additional(calendarId: UUID, index: Int) -> String {
@@ -137,7 +137,6 @@ public enum NotificationError: LocalizedError {
 
 private func makeReminderContent(
     for calendar: CustomCalendar,
-    weekday: Int?,
     isPrimary: Bool
 ) -> (title: String, body: String) {
     switch calendar.notificationPrivacyMode {
@@ -148,7 +147,7 @@ private func makeReminderContent(
             comment: "Notification title with habit name"
         )
         let title = String(format: titleFormat, calendar.name)
-        let bodyFormat = fullReminderBodyFormat(weekday: weekday, isPrimary: isPrimary)
+        let bodyFormat = fullReminderBodyFormat(isPrimary: isPrimary)
         return (title, String(format: bodyFormat, calendar.name))
 
     case .generic:
@@ -157,133 +156,43 @@ private func makeReminderContent(
             value: "Habit Reminder",
             comment: "Generic notification title"
         )
-        return (title, genericReminderBody(weekday: weekday, isPrimary: isPrimary))
+        return (title, genericReminderBody(isPrimary: isPrimary))
 
     case .hidden:
         return ("", "")
     }
 }
 
-private func fullReminderBodyFormat(weekday: Int?, isPrimary: Bool) -> String {
-    guard isPrimary, let weekday else {
+private func fullReminderBodyFormat(isPrimary: Bool) -> String {
+    if isPrimary {
         return NSLocalizedString(
-            "notification.reminder.additional.full",
-            value: "Quick check-in: log %@.",
-            comment: "Additional reminder body with habit name"
+            "notification.reminder.primary.full",
+            value: "Time for today's check-in. Log %@.",
+            comment: "Daily primary reminder body with habit name"
         )
     }
 
-    switch weekday {
-    case 1:
-        return NSLocalizedString(
-            "notification.reminder.primary.sunday.full",
-            value: "End the week with clean data. Update %@.",
-            comment: "Sunday primary reminder body with habit name"
-        )
-    case 2:
-        return NSLocalizedString(
-            "notification.reminder.primary.monday.full",
-            value: "Start the week clean. Log %@.",
-            comment: "Monday primary reminder body with habit name"
-        )
-    case 3:
-        return NSLocalizedString(
-            "notification.reminder.primary.tuesday.full",
-            value: "Tiny check-in. Record %@.",
-            comment: "Tuesday primary reminder body with habit name"
-        )
-    case 4:
-        return NSLocalizedString(
-            "notification.reminder.primary.wednesday.full",
-            value: "Midweek data point: update %@.",
-            comment: "Wednesday primary reminder body with habit name"
-        )
-    case 5:
-        return NSLocalizedString(
-            "notification.reminder.primary.thursday.full",
-            value: "Keep the signal alive. Log %@.",
-            comment: "Thursday primary reminder body with habit name"
-        )
-    case 6:
-        return NSLocalizedString(
-            "notification.reminder.primary.friday.full",
-            value: "Close the loop before the weekend. Record %@.",
-            comment: "Friday primary reminder body with habit name"
-        )
-    case 7:
-        return NSLocalizedString(
-            "notification.reminder.primary.saturday.full",
-            value: "Still counts today. Log %@.",
-            comment: "Saturday primary reminder body with habit name"
-        )
-    default:
-        return NSLocalizedString(
-            "notification.reminder.additional.full",
-            value: "Quick check-in: log %@.",
-            comment: "Fallback reminder body with habit name"
-        )
-    }
+    return NSLocalizedString(
+        "notification.reminder.additional.full",
+        value: "Quick check-in: log %@.",
+        comment: "Additional reminder body with habit name"
+    )
 }
 
-private func genericReminderBody(weekday: Int?, isPrimary: Bool) -> String {
-    guard isPrimary, let weekday else {
+private func genericReminderBody(isPrimary: Bool) -> String {
+    if isPrimary {
         return NSLocalizedString(
-            "notification.reminder.additional.generic",
-            value: "Quick check-in. Log your habit.",
-            comment: "Additional generic reminder body"
+            "notification.reminder.primary.generic",
+            value: "Time for today's check-in. Log your habit.",
+            comment: "Daily primary generic reminder body"
         )
     }
 
-    switch weekday {
-    case 1:
-        return NSLocalizedString(
-            "notification.reminder.primary.sunday.generic",
-            value: "End the week with clean data.",
-            comment: "Sunday primary generic reminder body"
-        )
-    case 2:
-        return NSLocalizedString(
-            "notification.reminder.primary.monday.generic",
-            value: "Start the week clean. Log your habit.",
-            comment: "Monday primary generic reminder body"
-        )
-    case 3:
-        return NSLocalizedString(
-            "notification.reminder.primary.tuesday.generic",
-            value: "Tiny check-in. Record today's progress.",
-            comment: "Tuesday primary generic reminder body"
-        )
-    case 4:
-        return NSLocalizedString(
-            "notification.reminder.primary.wednesday.generic",
-            value: "Midweek data point.",
-            comment: "Wednesday primary generic reminder body"
-        )
-    case 5:
-        return NSLocalizedString(
-            "notification.reminder.primary.thursday.generic",
-            value: "Keep the signal alive.",
-            comment: "Thursday primary generic reminder body"
-        )
-    case 6:
-        return NSLocalizedString(
-            "notification.reminder.primary.friday.generic",
-            value: "Close the loop before the weekend.",
-            comment: "Friday primary generic reminder body"
-        )
-    case 7:
-        return NSLocalizedString(
-            "notification.reminder.primary.saturday.generic",
-            value: "Still counts today.",
-            comment: "Saturday primary generic reminder body"
-        )
-    default:
-        return NSLocalizedString(
-            "notification.reminder.additional.generic",
-            value: "Quick check-in. Log your habit.",
-            comment: "Fallback generic reminder body"
-        )
-    }
+    return NSLocalizedString(
+        "notification.reminder.additional.generic",
+        value: "Quick check-in. Log your habit.",
+        comment: "Additional generic reminder body"
+    )
 }
 
 /// Helper to determine if an entry counts as "success"
@@ -293,7 +202,7 @@ private func isEntrySuccess(entry: CalendarEntry, calendar: CustomCalendar) -> B
 
 /// Unified fulfillment check for notification logic.
 /// Keeps suppression and streak/content calculations aligned.
-private func isEntryFulfilledForNotification(_ entry: CalendarEntry, calendar: CustomCalendar) -> Bool {
+func isEntryFulfilledForNotification(_ entry: CalendarEntry, calendar: CustomCalendar) -> Bool {
     switch calendar.trackingType {
     case .binary:
         return entry.completed
@@ -309,7 +218,7 @@ private func isEntryFulfilledForNotification(_ entry: CalendarEntry, calendar: C
 /// Best-effort derivation of the calendar id a notification request belongs to.
 /// We prefer `userInfo["calendarId"]` since request identifiers may include suffixes
 /// (e.g. `-0`, `-streak-protection`, `-snooze`).
-private func deriveCalendarId(notificationIdentifier: String, userInfoCalendarId: String?) -> UUID? {
+func deriveCalendarId(notificationIdentifier: String, userInfoCalendarId: String?) -> UUID? {
     NotificationRequestID.calendarId(
         notificationIdentifier: notificationIdentifier,
         userInfoCalendarId: userInfoCalendarId
@@ -523,18 +432,15 @@ private func makeReminderPlans(for calendar: CustomCalendar) -> [NotificationPla
     if let hour = calendar.reminderHour,
        let minute = calendar.reminderMinute
     {
-        for weekday in 1 ... 7 {
-            plans.append(
-                makeReminderPlan(
-                    for: calendar,
-                    id: NotificationRequestID.primary(calendarId: calendar.id, weekday: weekday),
-                    hour: hour,
-                    minute: minute,
-                    weekday: weekday,
-                    isPrimary: true
-                )
+        plans.append(
+            makeReminderPlan(
+                for: calendar,
+                id: NotificationRequestID.primary(calendarId: calendar.id),
+                hour: hour,
+                minute: minute,
+                isPrimary: true
             )
-        }
+        )
     }
 
     for (index, reminderTime) in calendar.additionalReminderTimes.enumerated() {
@@ -544,7 +450,6 @@ private func makeReminderPlans(for calendar: CustomCalendar) -> [NotificationPla
                 id: NotificationRequestID.additional(calendarId: calendar.id, index: index),
                 hour: reminderTime.hour,
                 minute: reminderTime.minute,
-                weekday: nil,
                 isPrimary: false
             )
         )
@@ -558,11 +463,9 @@ private func makeReminderPlan(
     id: String,
     hour: Int,
     minute: Int,
-    weekday: Int?,
     isPrimary: Bool
 ) -> NotificationPlan {
     var components = DateComponents()
-    components.weekday = weekday
     components.hour = hour
     components.minute = minute
 
@@ -576,18 +479,17 @@ private func makeReminderPlan(
 
     return NotificationPlan(
         id: id,
-        content: makeReminderNotificationContent(for: calendar, weekday: weekday, isPrimary: isPrimary),
+        content: makeReminderNotificationContent(for: calendar, isPrimary: isPrimary),
         trigger: UNCalendarNotificationTrigger(dateMatching: components, repeats: true)
     )
 }
 
 private func makeReminderNotificationContent(
     for calendar: CustomCalendar,
-    weekday: Int?,
     isPrimary: Bool
 ) -> UNNotificationContent {
     let content = UNMutableNotificationContent()
-    let reminderContent = makeReminderContent(for: calendar, weekday: weekday, isPrimary: isPrimary)
+    let reminderContent = makeReminderContent(for: calendar, isPrimary: isPrimary)
 
     content.title = reminderContent.title
     content.body = reminderContent.body
