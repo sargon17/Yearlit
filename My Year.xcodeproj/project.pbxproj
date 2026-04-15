@@ -103,6 +103,7 @@
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				Assets.xcassets,
+				Localizable.xcstrings,
 			);
 			target = 78B025AA2D354F0B00E70B4C /* YearWidgetExtension */;
 		};
@@ -117,6 +118,7 @@
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				Assets.xcassets,
+				Localizable.xcstrings,
 			);
 			target = 780D107C2F12B7760067F54C /* StreakWidgetExtension */;
 		};
@@ -145,6 +147,7 @@
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				Assets.xcassets,
+				Localizable.xcstrings,
 				Utils/Date.swift,
 			);
 			target = 7867EFF22D6B6CBD00A459CE /* HabitsWidgetExtension */;
@@ -1054,7 +1057,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = "sargon17.My-Year.YearWidget";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
-				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
@@ -1082,7 +1085,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = "sargon17.My-Year.YearWidget";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
-				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
