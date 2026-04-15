@@ -100,155 +100,157 @@ public enum NotificationError: LocalizedError {
     }
 }
 
-// MARK: - Dynamic Notification Content
+// MARK: - Reminder Content
 
-/// Generates dynamic, motivational notification content based on calendar progress
-/// - Parameters:
-///   - calendar: The calendar to generate content for
-///   - store: The calendar store for accessing stats
-/// - Returns: Tuple of (title, body) with motivational content
-private func generateDynamicContent(
+private func makeReminderContent(
     for calendar: CustomCalendar,
-    store: CustomCalendarStore
+    weekday: Int?,
+    isPrimary: Bool
 ) -> (title: String, body: String) {
-    let stats = calculateStreakStats(for: calendar, store: store)
-
-    // Base title
-    let titleFormat = NSLocalizedString(
-        "notification.reminder.title.full",
-        value: "Time to log %@",
-        comment: "Notification title with habit name"
-    )
-    let title = String(format: titleFormat, calendar.name)
-
-    // Dynamic body based on streak and progress
-    var body: String
-
-    if stats.currentStreak >= 7 {
-        // Long streak - emphasize maintenance
-        let messages = [
-            String(
-                format: String(localized: "🔥 You're on a %lld-day streak! Keep it alive!"),
-                stats.currentStreak
-            ),
-            String(
-                format: String(localized: "💪 %lld days strong! Don't break it now!"),
-                stats.currentStreak
-            ),
-            String(
-                format: String(localized: "✨ Amazing! %lld days in a row. One more today!"),
-                stats.currentStreak
-            ),
-        ]
-        body = messages.randomElement() ?? messages[0]
-
-    } else if stats.currentStreak >= 3 {
-        // Building momentum
-        let messages = [
-            String(
-                format: String(localized: "%lld days down! You're building momentum 🚀"),
-                stats.currentStreak
-            ),
-            String(
-                format: String(localized: "Day %lld of your streak! Keep going 💪"),
-                stats.currentStreak
-            ),
-            String(
-                format: String(localized: "Nice! %lld in a row. Let's make it %lld!"),
-                stats.currentStreak,
-                stats.currentStreak + 1
-            ),
-        ]
-        body = messages.randomElement() ?? messages[0]
-
-    } else if stats.completedYesterday {
-        // Did it yesterday, encourage continuation
-        let messages = [
-            String(localized: "Great job yesterday! Let's keep it going today 🎯"),
-            String(localized: "You did it yesterday, you can do it today! 💚"),
-            String(localized: "Yesterday ✅ Today? Let's go! 🔥"),
-        ]
-        body = messages.randomElement() ?? messages[0]
-
-    } else if stats.weeklyCompletionRate > 0.7 {
-        // Good weekly progress
-        let weekPercent = stats.weeklyCompletionRate.formatted(.percent.precision(.fractionLength(0)))
-        body = String(
-            format: String(localized: "You're at %@ this week! Keep pushing 💪"),
-            weekPercent
+    switch calendar.notificationPrivacyMode {
+    case .full:
+        let titleFormat = NSLocalizedString(
+            "notification.reminder.title.full",
+            value: "Time to log %@",
+            comment: "Notification title with habit name"
         )
+        let title = String(format: titleFormat, calendar.name)
+        let bodyFormat = fullReminderBodyFormat(weekday: weekday, isPrimary: isPrimary)
+        return (title, String(format: bodyFormat, calendar.name))
 
-    } else {
-        // Default motivational message
-        let messages = [
-            String(
-                format: String(localized: "Time to build your habit! (Target: %lld)"),
-                calendar.dailyTarget
-            ),
-            String(localized: "Every day counts! Log your progress today 📊"),
-            String(
-                format: String(localized: "Small steps, big results. Let's track %@! 🎯"),
-                calendar.name
-            ),
-        ]
-        body = messages.randomElement() ?? messages[0]
+    case .generic:
+        let title = NSLocalizedString(
+            "notification.reminder.title.generic",
+            value: "Habit Reminder",
+            comment: "Generic notification title"
+        )
+        return (title, genericReminderBody(weekday: weekday, isPrimary: isPrimary))
+
+    case .hidden:
+        return ("", "")
     }
-
-    return (title, body)
 }
 
-/// Calculate streak statistics for a calendar
-private func calculateStreakStats(
-    for calendar: CustomCalendar,
-    store _: CustomCalendarStore
-) -> StreakStats {
-    var currentStreak = 0
-    var weeklyCompleted = 0
-
-    let dayCalendar = LocalDayCalendar.calendar
-    let dateFormatter = DayKeyFormatter.shared
-    let today = LocalDayCalendar.startOfDay(for: Date())
-
-    // Current streak: consecutive fulfilled days from today backwards.
-    var streakDate = today
-    for _ in 0 ..< 365 {
-        let dayKey = dateFormatter.string(from: streakDate)
-        guard let entry = calendar.entries[dayKey],
-              isEntrySuccess(entry: entry, calendar: calendar)
-        else {
-            break
-        }
-
-        currentStreak += 1
-        streakDate = dayCalendar.date(byAdding: .day, value: -1, to: streakDate) ?? streakDate
+private func fullReminderBodyFormat(weekday: Int?, isPrimary: Bool) -> String {
+    guard isPrimary, let weekday else {
+        return NSLocalizedString(
+            "notification.reminder.additional.full",
+            value: "Quick check-in: log %@.",
+            comment: "Additional reminder body with habit name"
+        )
     }
 
-    // Yesterday success.
-    let yesterday = dayCalendar.date(byAdding: .day, value: -1, to: today) ?? today
-    let yesterdayKey = dateFormatter.string(from: yesterday)
-    let completedYesterday = calendar.entries[yesterdayKey].map {
-        isEntrySuccess(entry: $0, calendar: calendar)
-    } ?? false
+    switch weekday {
+    case 1:
+        return NSLocalizedString(
+            "notification.reminder.primary.sunday.full",
+            value: "End the week with clean data. Update %@.",
+            comment: "Sunday primary reminder body with habit name"
+        )
+    case 2:
+        return NSLocalizedString(
+            "notification.reminder.primary.monday.full",
+            value: "Start the week clean. Log %@.",
+            comment: "Monday primary reminder body with habit name"
+        )
+    case 3:
+        return NSLocalizedString(
+            "notification.reminder.primary.tuesday.full",
+            value: "Tiny check-in. Record %@.",
+            comment: "Tuesday primary reminder body with habit name"
+        )
+    case 4:
+        return NSLocalizedString(
+            "notification.reminder.primary.wednesday.full",
+            value: "Midweek data point: update %@.",
+            comment: "Wednesday primary reminder body with habit name"
+        )
+    case 5:
+        return NSLocalizedString(
+            "notification.reminder.primary.thursday.full",
+            value: "Keep the signal alive. Log %@.",
+            comment: "Thursday primary reminder body with habit name"
+        )
+    case 6:
+        return NSLocalizedString(
+            "notification.reminder.primary.friday.full",
+            value: "Close the loop before the weekend. Record %@.",
+            comment: "Friday primary reminder body with habit name"
+        )
+    case 7:
+        return NSLocalizedString(
+            "notification.reminder.primary.saturday.full",
+            value: "Still counts today. Log %@.",
+            comment: "Saturday primary reminder body with habit name"
+        )
+    default:
+        return NSLocalizedString(
+            "notification.reminder.additional.full",
+            value: "Quick check-in: log %@.",
+            comment: "Fallback reminder body with habit name"
+        )
+    }
+}
 
-    // Weekly completion over last 7 days.
-    var weeklyDate = today
-    for _ in 0 ..< 7 {
-        let dayKey = dateFormatter.string(from: weeklyDate)
-        if let entry = calendar.entries[dayKey],
-           isEntrySuccess(entry: entry, calendar: calendar)
-        {
-            weeklyCompleted += 1
-        }
-        weeklyDate = dayCalendar.date(byAdding: .day, value: -1, to: weeklyDate) ?? weeklyDate
+private func genericReminderBody(weekday: Int?, isPrimary: Bool) -> String {
+    guard isPrimary, let weekday else {
+        return NSLocalizedString(
+            "notification.reminder.additional.generic",
+            value: "Quick check-in. Log your habit.",
+            comment: "Additional generic reminder body"
+        )
     }
 
-    let weeklyCompletionRate = Double(weeklyCompleted) / 7.0
-
-    return StreakStats(
-        currentStreak: currentStreak,
-        completedYesterday: completedYesterday,
-        weeklyCompletionRate: weeklyCompletionRate
-    )
+    switch weekday {
+    case 1:
+        return NSLocalizedString(
+            "notification.reminder.primary.sunday.generic",
+            value: "End the week with clean data.",
+            comment: "Sunday primary generic reminder body"
+        )
+    case 2:
+        return NSLocalizedString(
+            "notification.reminder.primary.monday.generic",
+            value: "Start the week clean. Log your habit.",
+            comment: "Monday primary generic reminder body"
+        )
+    case 3:
+        return NSLocalizedString(
+            "notification.reminder.primary.tuesday.generic",
+            value: "Tiny check-in. Record today's progress.",
+            comment: "Tuesday primary generic reminder body"
+        )
+    case 4:
+        return NSLocalizedString(
+            "notification.reminder.primary.wednesday.generic",
+            value: "Midweek data point.",
+            comment: "Wednesday primary generic reminder body"
+        )
+    case 5:
+        return NSLocalizedString(
+            "notification.reminder.primary.thursday.generic",
+            value: "Keep the signal alive.",
+            comment: "Thursday primary generic reminder body"
+        )
+    case 6:
+        return NSLocalizedString(
+            "notification.reminder.primary.friday.generic",
+            value: "Close the loop before the weekend.",
+            comment: "Friday primary generic reminder body"
+        )
+    case 7:
+        return NSLocalizedString(
+            "notification.reminder.primary.saturday.generic",
+            value: "Still counts today.",
+            comment: "Saturday primary generic reminder body"
+        )
+    default:
+        return NSLocalizedString(
+            "notification.reminder.additional.generic",
+            value: "Quick check-in. Log your habit.",
+            comment: "Fallback generic reminder body"
+        )
+    }
 }
 
 /// Helper to determine if an entry counts as "success"
@@ -267,13 +269,6 @@ func isEntryFulfilledForNotification(_ entry: CalendarEntry, calendar: CustomCal
     case .multipleDaily:
         return entry.count >= calendar.dailyTarget
     }
-}
-
-/// Streak statistics for notification content
-private struct StreakStats {
-    let currentStreak: Int
-    let completedYesterday: Bool
-    let weeklyCompletionRate: Double
 }
 
 // MARK: - Request ID Utilities
@@ -349,6 +344,9 @@ public func scheduleStreakProtectionReminder(
     for calendar: CustomCalendar,
     store: CustomCalendarStore
 ) {
+    let notificationId = "\(calendar.id.uuidString)\(streakProtectionIdentifierSuffix)"
+    UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: [notificationId])
+
     let resolvedCalendar = calendar
 
     // Only schedule if enabled and reminders are on
@@ -385,7 +383,6 @@ public func scheduleStreakProtectionReminder(
         return
     }
 
-    let notificationId = "\(resolvedCalendar.id.uuidString)\(streakProtectionIdentifierSuffix)"
     let content = UNMutableNotificationContent()
 
     // Urgent, streak-focused copy
@@ -535,7 +532,6 @@ public func scheduleNotifications(
                         _scheduleAllReminders(
                             for: calendar,
                             reminderTimes: allReminderTimes,
-                            store: store,
                             completion: completion
                         )
                     } else {
@@ -552,7 +548,6 @@ public func scheduleNotifications(
                 _scheduleAllReminders(
                     for: calendar,
                     reminderTimes: allReminderTimes,
-                    store: store,
                     completion: completion
                 )
 
@@ -573,40 +568,61 @@ public func scheduleNotifications(
 private func _scheduleAllReminders(
     for calendar: CustomCalendar,
     reminderTimes: [(hour: Int, minute: Int, isPrimary: Bool)],
-    store: CustomCalendarStore?,
     completion: @escaping (Result<Void, NotificationError>) -> Void
 ) {
     let group = DispatchGroup()
+    let errorsQueue = DispatchQueue(label: "notification-scheduling-errors")
     var errors: [Error] = []
 
     var additionalIndex = 0
     for reminderTime in reminderTimes {
-        group.enter()
-
-        let notificationId: String
         if reminderTime.isPrimary {
-            notificationId = calendar.id.uuidString
-        } else {
-            notificationId = "\(calendar.id.uuidString)-\(additionalIndex)"
-            additionalIndex += 1
-        }
-
-        _scheduleNotificationInternal(
-            for: calendar,
-            notificationId: notificationId,
-            hour: reminderTime.hour,
-            minute: reminderTime.minute,
-            store: store
-        ) { result in
-            if case let .failure(error) = result {
-                errors.append(error)
+            for weekday in 1 ... 7 {
+                group.enter()
+                _scheduleNotificationInternal(
+                    for: calendar,
+                    notificationId: "\(calendar.id.uuidString)-primary-\(weekday)",
+                    hour: reminderTime.hour,
+                    minute: reminderTime.minute,
+                    weekday: weekday,
+                    isPrimary: true
+                ) { result in
+                    if case let .failure(error) = result {
+                        errorsQueue.sync {
+                            errors.append(error)
+                        }
+                    }
+                    group.leave()
+                }
             }
-            group.leave()
+        } else {
+            group.enter()
+            let notificationId = "\(calendar.id.uuidString)-\(additionalIndex)"
+            additionalIndex += 1
+
+            _scheduleNotificationInternal(
+                for: calendar,
+                notificationId: notificationId,
+                hour: reminderTime.hour,
+                minute: reminderTime.minute,
+                weekday: nil,
+                isPrimary: false
+            ) { result in
+                if case let .failure(error) = result {
+                    errorsQueue.sync {
+                        errors.append(error)
+                    }
+                }
+                group.leave()
+            }
         }
     }
 
     group.notify(queue: .main) {
-        if let firstError = errors.first as? NotificationError {
+        let firstError = errorsQueue.sync {
+            errors.first as? NotificationError
+        }
+        if let firstError {
             completion(.failure(firstError))
         } else {
             completion(.success(()))
@@ -620,54 +636,17 @@ private func _scheduleNotificationInternal(
     notificationId: String,
     hour: Int,
     minute: Int,
-    store: CustomCalendarStore?,
+    weekday: Int?,
+    isPrimary: Bool,
     completion: @escaping (Result<Void, NotificationError>) -> Void
 ) {
     let content = UNMutableNotificationContent()
 
-    // Apply privacy mode settings with dynamic content
-    switch calendar.notificationPrivacyMode {
-    case .full:
-        // Use dynamic, motivational content if store is available
-        if let store = store {
-            let dynamicContent = generateDynamicContent(for: calendar, store: store)
-            content.title = dynamicContent.title
-            content.body = dynamicContent.body
-        } else {
-            // Fallback to static content
-            let titleFormat = NSLocalizedString(
-                "notification.reminder.title.full",
-                value: "Time to log %@",
-                comment: "Notification title with habit name"
-            )
-            content.title = String(format: titleFormat, calendar.name)
-
-            let bodyFormat = NSLocalizedString(
-                "notification.reminder.body.full",
-                value: "Don't forget to track %@ today! (Target: %d)",
-                comment: "Notification body with habit name and target"
-            )
-            content.body = String(format: bodyFormat, calendar.name, calendar.dailyTarget)
-        }
-
-    case .generic:
-        // Show generic message for privacy
-        content.title = NSLocalizedString(
-            "notification.reminder.title.generic",
-            value: "Habit Reminder",
-            comment: "Generic notification title"
-        )
-        content.body = NSLocalizedString(
-            "notification.reminder.body.generic",
-            value: "Time to log your daily habit",
-            comment: "Generic notification body"
-        )
-
-    case .hidden:
-        // No text, just badge and sound
+    let reminderContent = makeReminderContent(for: calendar, weekday: weekday, isPrimary: isPrimary)
+    content.title = reminderContent.title
+    content.body = reminderContent.body
+    if calendar.notificationPrivacyMode == .hidden {
         content.badge = NSNumber(value: 1)
-        content.title = ""
-        content.body = ""
     }
 
     content.sound = .default
@@ -683,6 +662,7 @@ private func _scheduleNotificationInternal(
 
     // Set up timezone-aware trigger
     var components = DateComponents()
+    components.weekday = weekday
     components.hour = hour
     components.minute = minute
 
