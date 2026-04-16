@@ -301,9 +301,8 @@ private func scheduleStreakProtectionReminder(
     store: CustomCalendarStore
 ) async throws {
     let notificationId = NotificationRequestID.streakProtection(calendarId: calendar.id)
-    UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: [notificationId])
-
     guard let plan = makeStreakProtectionPlan(for: calendar, store: store) else {
+        UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: [notificationId])
         return
     }
 
@@ -642,8 +641,7 @@ public func handleNotificationAction(
 ) {
     let userInfo = response.notification.request.content.userInfo
 
-    guard let calendarIdString = userInfo["calendarId"] as? String,
-          let calendarId = UUID(uuidString: calendarIdString),
+    guard let calendarId = NotificationRequestID.calendarId(userInfoCalendarId: userInfo["calendarId"] as? String),
           let calendar = store.calendars.first(where: { $0.id == calendarId })
     else {
         print("❌ Invalid calendar ID in notification action")
@@ -797,13 +795,25 @@ public func syncNotificationsAfterEntryChange(
         do {
             if shouldSuppressNotification(for: calendar, store: store) {
                 await removePendingReminderNotifications(for: calendar)
+                try await rescheduleStreakProtectionReminder(for: calendar, store: store)
             } else {
                 try await rescheduleNotifications(for: calendar, store: store)
             }
         } catch {
-    print("❌ Failed to sync notifications after entry change: \(error)")
+            print("❌ Failed to sync notifications after entry change: \(error)")
         }
     }
+}
+
+private func rescheduleStreakProtectionReminder(for calendar: CustomCalendar, store: CustomCalendarStore) async throws {
+    let notificationId = NotificationRequestID.streakProtection(calendarId: calendar.id)
+    UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: [notificationId])
+
+    guard let plan = makeStreakProtectionPlan(for: calendar, store: store) else {
+        return
+    }
+
+    try await scheduleNotificationPlans([plan])
 }
 
 // MARK: - Permission Helpers

@@ -18,9 +18,7 @@ struct CreateCalendarView: View {
     @State private var reminderTime: Date = .init()
     @State private var selectedUnit: UnitOfMeasure = .none
     @State private var defaultRecordValue: Int = 1
-    @State private var isPaywallPresented = false
-    @State private var errorMessage: String?
-    @State private var isAlertPresented = false
+    @State private var isSaving = false
     @State private var currencySymbol: String = "$"
     @State private var existingStreakEntries: [String: CalendarEntry] = [:]
     @State private var notificationPrivacyMode: NotificationPrivacyMode = .full
@@ -83,22 +81,32 @@ struct CreateCalendarView: View {
     }
 
     func createCalendar() async {
+        guard !isSaving else { return }
+        isSaving = true
+        defer { isSaving = false }
+
         let resolvedAdditionalTimes =
             (trackingType == .multipleDaily && isPremiumUser) ? additionalReminderTimes : []
+        let trimmedName = name.trimmingCharacters(in: .whitespacesAndNewlines)
+        let resolvedTarget = trackingType == .multipleDaily ? dailyTarget : 1
+        let resolvedUnit = (trackingType == .counter || trackingType == .multipleDaily) ? selectedUnit : nil
+        let resolvedDefaultRecordValue = (trackingType == .counter || trackingType == .multipleDaily)
+            ? defaultRecordValue : nil
+        let resolvedCurrencySymbol = ((trackingType == .counter || trackingType == .multipleDaily)
+            && selectedUnit == .currency) ? currencySymbol : nil
+
         let calendar = CustomCalendar(
-            name: name,
+            name: trimmedName,
             color: selectedColor,
             trackingType: trackingType,
-            dailyTarget: dailyTarget,
+            dailyTarget: resolvedTarget,
             entries: existingStreakEntries,
             isArchived: false,
             recurringReminderEnabled: recurringReminderEnabled,
             reminderTime: recurringReminderEnabled ? reminderTime : nil,
-            unit: (trackingType == .counter || trackingType == .multipleDaily) ? selectedUnit : nil,
-            defaultRecordValue: (trackingType == .counter || trackingType == .multipleDaily)
-                ? defaultRecordValue : nil,
-            currencySymbol: ((trackingType == .counter || trackingType == .multipleDaily)
-                && selectedUnit == .currency) ? currencySymbol : nil,
+            unit: resolvedUnit,
+            defaultRecordValue: resolvedDefaultRecordValue,
+            currencySymbol: resolvedCurrencySymbol,
             reminderTimeZone: TimeZone.current.identifier,
             notificationPrivacyMode: notificationPrivacyMode,
             additionalReminderTimes: resolvedAdditionalTimes,
@@ -114,15 +122,21 @@ struct CreateCalendarView: View {
             return
         }
 
+        var notificationError: Error?
         do {
             try await rescheduleNotifications(for: calendar, store: store)
-            onCreate(calendar)
-            dismiss()
         } catch {
+            notificationError = error
+        }
+
+        onCreate(calendar)
+        dismiss()
+
+        if let notificationError {
             router.showAlert(
                 .alert,
-                title: "Save completed with notification issues",
-                subtitle: error.localizedDescription
+                title: "Saved, notifications not updated",
+                subtitle: notificationError.localizedDescription
             )
         }
     }
@@ -358,21 +372,8 @@ struct CreateCalendarView: View {
                         await handleCreateCalendar()
                     }
                 }
-                .disabled(name.isEmpty)
+                .disabled(name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || isSaving)
             }
-        }
-        .sheet(isPresented: $isPaywallPresented) {
-            PaywallView(displayCloseButton: true)
-        }
-        .alert(isPresented: $isAlertPresented) {
-            Alert(
-                title: Text("Error"),
-                message: Text(errorMessage ?? "An unknown error occurred"),
-                dismissButton: .default(Text("OK")) {
-                    errorMessage = nil
-                    dismiss()
-                }
-            )
         }
         .onAppear {
             isNameFocused = true
@@ -387,7 +388,6 @@ struct CreateCalendarView: View {
         }
         .sheet(isPresented: $showingNotificationSettings) {
             NotificationSettingsDraftSheet(
-                calendarName: name,
                 trackingType: trackingType,
                 accentColor: Color(selectedColor),
                 customerInfo: customerInfo,

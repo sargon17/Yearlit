@@ -28,6 +28,7 @@ struct EditCalendarView: View {
     @State private var streakProtectionEnabled: Bool
     @State private var streakProtectionThreshold: Int
     @State private var showingNotificationSettings: Bool = false
+    @State private var isSaving = false
 
     @FocusState private var isNameFocused: Bool
     @Environment(\.colorScheme) var colorScheme
@@ -323,14 +324,31 @@ struct EditCalendarView: View {
                         Button(action: {
                             Task {
                                 do {
-                                    _ = try await updateArchiveState(!calendar.isArchived, to: calendar, store: store)
+                                    _ = try await updateArchiveState(!isArchived, to: calendar, store: store)
                                     dismiss()
                                 } catch {
-                                    router.showAlert(
-                                        .alert,
-                                        title: "Notification setup failed",
-                                        subtitle: error.localizedDescription
-                                    )
+                                    if let archiveError = error as? ArchiveStateError {
+                                        switch archiveError {
+                                        case .persistenceFailed:
+                                            router.showAlert(
+                                                .alert,
+                                                title: isArchived ? "Unarchive failed" : "Archive failed",
+                                                subtitle: "The calendar could not be updated."
+                                            )
+                                        case let .notificationSyncFailed(syncError):
+                                            router.showAlert(
+                                                .alert,
+                                                title: isArchived ? "Unarchived, notifications not updated" : "Archived, notifications not updated",
+                                                subtitle: syncError.localizedDescription
+                                            )
+                                        }
+                                    } else {
+                                        router.showAlert(
+                                            .alert,
+                                            title: isArchived ? "Unarchive failed" : "Archive failed",
+                                            subtitle: error.localizedDescription
+                                        )
+                                    }
                                 }
                             }
                         }) {
@@ -412,12 +430,11 @@ struct EditCalendarView: View {
                         await saveCalendar()
                     }
                 }
-                .disabled(name.isEmpty)
+                .disabled(name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || isSaving)
             }
         }
         .sheet(isPresented: $showingNotificationSettings) {
             NotificationSettingsDraftSheet(
-                calendarName: name,
                 trackingType: trackingType,
                 accentColor: Color(selectedColor),
                 customerInfo: customerInfo,
@@ -463,6 +480,10 @@ struct EditCalendarView: View {
     }
 
     private func saveCalendar() async {
+        guard !isSaving else { return }
+        isSaving = true
+        defer { isSaving = false }
+
         let trimmedName = name.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmedName.isEmpty && trimmedName.count <= 50 else {
             calendarError = .invalidName
@@ -480,14 +501,20 @@ struct EditCalendarView: View {
             return
         }
 
+        var notificationError: Error?
         do {
             try await rescheduleNotifications(for: updatedCalendar, store: store)
-            dismiss()
         } catch {
+            notificationError = error
+        }
+
+        dismiss()
+
+        if let notificationError {
             router.showAlert(
                 .alert,
-                title: "Notification setup failed",
-                subtitle: error.localizedDescription
+                title: "Saved, notifications not updated",
+                subtitle: notificationError.localizedDescription
             )
         }
     }

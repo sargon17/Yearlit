@@ -54,11 +54,7 @@ struct CalendarsOverview: View {
                 Button(action: {
                     router.showScreen(.sheet) { _ in
                         CreateCalendarView { newCalendar in
-                            store.addCalendar(newCalendar)
                             scrollPosition.scrollTo(id: newCalendar.id.uuidString)
-
-                            router.dismissScreen()
-
                             addPositiveEvent(.createdCalendar)
                         }
                     }

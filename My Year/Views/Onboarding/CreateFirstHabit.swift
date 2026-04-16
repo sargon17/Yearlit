@@ -23,9 +23,10 @@ struct CreateFirstHabit: View {
     @State private var additionalReminderTimes: [ReminderTime] = []
     @State private var streakProtectionEnabled: Bool = true
     @State private var streakProtectionThreshold: Int = 5
+    @State private var isSaving = false
 
     var disabled: Bool {
-        return name.count > 2 ? false : true
+        return name.count <= 2 || isSaving
     }
 
     func handleNext() {
@@ -35,6 +36,10 @@ struct CreateFirstHabit: View {
     }
 
     private func completeOnboarding() async {
+        guard !isSaving else { return }
+        isSaving = true
+        defer { isSaving = false }
+
         let calendar = CustomCalendar(
             name: name,
             color: "qs-orange",
@@ -62,17 +67,22 @@ struct CreateFirstHabit: View {
             return
         }
 
+        var notificationError: Error?
         do {
             try await rescheduleNotifications(for: calendar, store: store)
         } catch {
-            router.showAlert(
-                .alert,
-                title: "Notification setup failed",
-                subtitle: error.localizedDescription
-            )
+            notificationError = error
         }
 
         onNext()
+
+        if let notificationError {
+            router.showAlert(
+                .alert,
+                title: "Saved, notifications not updated",
+                subtitle: notificationError.localizedDescription
+            )
+        }
     }
 
     var body: some View {
@@ -146,7 +156,6 @@ struct CreateFirstHabit: View {
         }
         .sheet(isPresented: $showingNotificationSettings) {
             NotificationSettingsDraftSheet(
-                calendarName: name,
                 trackingType: .binary,
                 accentColor: .brand,
                 customerInfo: nil,

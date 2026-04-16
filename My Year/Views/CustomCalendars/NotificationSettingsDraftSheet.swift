@@ -9,7 +9,6 @@ struct NotificationSettingsDraftSheet: View {
     @Environment(\.router) private var router
     @Environment(\.colorScheme) private var colorScheme
 
-    let calendarName: String
     let trackingType: TrackingType
     let accentColor: Color
     let customerInfo: CustomerInfo?
@@ -47,7 +46,7 @@ struct NotificationSettingsDraftSheet: View {
                             .tint(accentColor)
                             .padding(.horizontal)
                             .padding(.vertical, 8)
-                            .notificationSurface()
+                            .notificationSettingsSurface()
 
                             if recurringReminderEnabled {
                                 VStack(spacing: 2) {
@@ -69,7 +68,7 @@ struct NotificationSettingsDraftSheet: View {
                                             .padding(.horizontal)
                                             .padding(.bottom, 10)
                                     }
-                                    .notificationSurface()
+                                    .notificationSettingsSurface()
                                 }
                             }
                         }
@@ -97,7 +96,7 @@ struct NotificationSettingsDraftSheet: View {
                                 }
                                 .padding(.horizontal)
                                 .padding(.vertical, 10)
-                                .notificationSurface()
+                                .notificationSettingsSurface()
 
                             }
                         }
@@ -117,7 +116,7 @@ struct NotificationSettingsDraftSheet: View {
                                     }
                                     .padding(.horizontal)
                                     .padding(.vertical, 12)
-                                    .notificationSurface()
+                                    .notificationSettingsSurface()
                                 } else {
                                     HStack {
                                         VStack(alignment: .leading, spacing: 4) {
@@ -134,7 +133,7 @@ struct NotificationSettingsDraftSheet: View {
                                     }
                                     .padding(.horizontal)
                                     .padding(.vertical, 10)
-                                    .notificationSurface()
+                                    .notificationSettingsSurface()
 
                                     if !isPremiumUser {
                                         HStack(spacing: 8) {
@@ -151,7 +150,7 @@ struct NotificationSettingsDraftSheet: View {
                                         }
                                         .padding(.horizontal)
                                         .padding(.vertical, 12)
-                                        .notificationSurface()
+                                        .notificationSettingsSurface()
                                     }
 
                                     if additionalReminderTimes.isEmpty {
@@ -163,7 +162,7 @@ struct NotificationSettingsDraftSheet: View {
                                         }
                                         .padding(.horizontal)
                                         .padding(.vertical, 12)
-                                        .notificationSurface()
+                                        .notificationSettingsSurface()
                                     } else {
                                         ForEach(additionalReminderTimes.indices, id: \.self) { idx in
                                             additionalTimeRow(index: idx)
@@ -189,7 +188,7 @@ struct NotificationSettingsDraftSheet: View {
                                 .tint(accentColor)
                                 .padding(.horizontal)
                                 .padding(.vertical, 10)
-                                .notificationSurface()
+                                .notificationSettingsSurface()
                             }
                         }
                     }
@@ -265,24 +264,11 @@ extension NotificationSettingsDraftSheet {
     }
 
     private func normalizedAdditionalReminderTimes(_ times: [ReminderTime]) -> [ReminderTime] {
-        guard trackingType == .multipleDaily else {
-            return []
-        }
-
-        var seen = Set<String>()
-        let deduped = times.filter { time in
-            let key = time.id
-            if seen.contains(key) { return false }
-            seen.insert(key)
-            return true
-        }
-
-        let sorted = deduped.sorted {
-            if $0.hour != $1.hour { return $0.hour < $1.hour }
-            return $0.minute < $1.minute
-        }
-
-        return Array(sorted.prefix(maxAdditionalReminderTimes))
+        NotificationSettingsSupport.normalizedAdditionalReminderTimes(
+            times,
+            trackingType: trackingType,
+            maxAdditionalReminderTimes: maxAdditionalReminderTimes
+        )
     }
 
     private func addAdditionalReminderTime() {
@@ -294,9 +280,10 @@ extension NotificationSettingsDraftSheet {
 
         guard additionalReminderTimes.count < maxAdditionalReminderTimes else { return }
 
-        let base = additionalReminderTimes.last?.toDate() ?? reminderTime
-        let next = Calendar.current.date(byAdding: .hour, value: 1, to: base) ?? base
-        let proposed = ReminderTime(from: next)
+        let proposed = NotificationSettingsSupport.nextAdditionalReminderTime(
+            existing: additionalReminderTimes,
+            reminderTime: reminderTime
+        )
         additionalReminderTimes = normalizedAdditionalReminderTimes(additionalReminderTimes + [proposed])
     }
 
@@ -342,16 +329,6 @@ extension NotificationSettingsDraftSheet {
         }
         .padding(.horizontal)
         .padding(.vertical, 8)
-        .notificationSurface()
-    }
-}
-
-private extension View {
-    func notificationSurface() -> some View {
-        sameLevelBorder(radius: 6, isFlat: true)
-            .overlay(
-                RoundedRectangle(cornerRadius: 6)
-                    .stroke(Color.black.opacity(0.75), lineWidth: 2)
-            )
+        .notificationSettingsSurface()
     }
 }
