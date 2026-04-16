@@ -326,10 +326,7 @@ struct EditCalendarView: View {
                 CustomSection(label: "Danger Zone") {
                     VStack(spacing: 2) {
                         Button(action: {
-                            var updatedCalendar = calendar
-                            updatedCalendar.isArchived.toggle()
-                            isArchived = updatedCalendar.isArchived
-                            rescheduleNotifications(for: updatedCalendar, store: CustomCalendarStore.shared)
+                            let updatedCalendar = setArchiveState(!calendar.isArchived, to: calendar, store: CustomCalendarStore.shared)
                             onSave(updatedCalendar)
                             dismiss()
                         }) {

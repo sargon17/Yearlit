@@ -42,9 +42,7 @@ struct ContextOrDragModifier: ViewModifier {
     private func archiveCalendar() {
         guard !calendar.isArchived else { return }
 
-        var updatedCalendar = calendar
-        updatedCalendar.isArchived = true
-        rescheduleNotifications(for: updatedCalendar, store: store)
+        let updatedCalendar = setArchiveState(true, to: calendar, store: store)
         withAnimation(.spring(response: 0.35, dampingFraction: 0.85)) {
             store.updateCalendar(updatedCalendar)
         }

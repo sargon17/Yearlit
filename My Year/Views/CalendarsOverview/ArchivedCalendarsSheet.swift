@@ -42,8 +42,7 @@ struct ArchivedCalendarsSheet: View {
                                 CalendarsOverviewsItem(calendar: calendar, store: store)
                                     .opacity(0.7)
                                     .onTapGesture {
-                                        var updatedCalendar = calendar
-                                        updatedCalendar.isArchived = false
+                                        let updatedCalendar = setArchiveState(false, to: calendar, store: store)
                                         withAnimation(.spring(response: 0.35, dampingFraction: 0.85)) {
                                             store.updateCalendar(updatedCalendar)
                                         }
