@@ -92,9 +92,7 @@ struct CalendarsSection: View {
                         .onTapGesture {
                             router.showScreen(.sheet) { _ in
                                 CreateCalendarView { newCalendar in
-                                    store.addCalendar(newCalendar)
                                     position.scrollTo(id: newCalendar.id.uuidString)
-                                    router.dismissScreen()
                                     addPositiveEvent(.createdCalendar)
                                 }
                             }

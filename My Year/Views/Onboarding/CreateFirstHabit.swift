@@ -7,6 +7,7 @@ struct CreateFirstHabit: View {
     let onNext: () -> Void
     @ObservedObject private var store = CustomCalendarStore.shared
     @Environment(\.colorScheme) var colorScheme
+    @Environment(\.router) private var router
 
     @State var name = ""
     @State var recurringReminderEnabled = true
@@ -29,6 +30,12 @@ struct CreateFirstHabit: View {
     }
 
     func handleNext() {
+        Task {
+            await completeOnboarding()
+        }
+    }
+
+    private func completeOnboarding() async {
         let calendar = CustomCalendar(
             name: name,
             color: "qs-orange",
@@ -49,7 +56,16 @@ struct CreateFirstHabit: View {
         )
 
         store.addCalendar(calendar)
-        rescheduleNotifications(for: calendar, store: store)
+
+        do {
+            try await rescheduleNotifications(for: calendar, store: store)
+        } catch {
+            router.showAlert(
+                .alert,
+                title: "Notification setup failed",
+                subtitle: error.localizedDescription
+            )
+        }
 
         onNext()
     }

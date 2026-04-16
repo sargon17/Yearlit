@@ -10,6 +10,7 @@ struct EditCalendarView: View {
     let onDelete: (CustomCalendar) -> Void
 
     @State private var customerInfo: CustomerInfo?
+    @ObservedObject private var store = CustomCalendarStore.shared
     @State private var name: String
     @State private var selectedColor: String
     @State private var trackingType: TrackingType
@@ -326,9 +327,18 @@ struct EditCalendarView: View {
                 CustomSection(label: "Danger Zone") {
                     VStack(spacing: 2) {
                         Button(action: {
-                            let updatedCalendar = setArchiveState(!calendar.isArchived, to: calendar, store: CustomCalendarStore.shared)
-                            onSave(updatedCalendar)
-                            dismiss()
+                            Task {
+                                do {
+                                    _ = try await setArchiveState(!calendar.isArchived, to: calendar, store: store)
+                                    dismiss()
+                                } catch {
+                                    router.showAlert(
+                                        .alert,
+                                        title: "Notification setup failed",
+                                        subtitle: error.localizedDescription
+                                    )
+                                }
+                            }
                         }) {
                             Text(isArchived ? "Unarchive Calendar" : "Archive Calendar")
                                 .frame(maxWidth: .infinity, alignment: .center)
@@ -404,15 +414,9 @@ struct EditCalendarView: View {
             }
             ToolbarItem(placement: .confirmationAction) {
                 Button("Save") {
-                    let trimmedName = name.trimmingCharacters(in: .whitespacesAndNewlines)
-                    guard !trimmedName.isEmpty && trimmedName.count <= 50 else {
-                        calendarError = .invalidName
-                        return
+                    Task {
+                        await saveCalendar()
                     }
-                    let updatedCalendar = makeUpdatedCalendar()
-                    rescheduleNotifications(for: updatedCalendar, store: CustomCalendarStore.shared)
-                    onSave(updatedCalendar)
-                    dismiss()
                 }
                 .disabled(name.isEmpty)
             }
@@ -464,5 +468,27 @@ struct EditCalendarView: View {
             streakProtectionEnabled: streakProtectionEnabled,
             streakProtectionThreshold: streakProtectionThreshold
         )
+    }
+
+    private func saveCalendar() async {
+        let trimmedName = name.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmedName.isEmpty && trimmedName.count <= 50 else {
+            calendarError = .invalidName
+            return
+        }
+
+        let updatedCalendar = makeUpdatedCalendar()
+        onSave(updatedCalendar)
+
+        do {
+            try await rescheduleNotifications(for: updatedCalendar, store: store)
+            dismiss()
+        } catch {
+            router.showAlert(
+                .alert,
+                title: "Notification setup failed",
+                subtitle: error.localizedDescription
+            )
+        }
     }
 }

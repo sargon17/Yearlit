@@ -83,7 +83,7 @@ struct CreateCalendarView: View {
         return customerInfo?.entitlements["premium"]?.isActive ?? false || store.calendars.count < 3
     }
 
-    func createCalendar() {
+    func createCalendar() async {
         let resolvedAdditionalTimes =
             (trackingType == .multipleDaily && isPremiumUser) ? additionalReminderTimes : []
         let calendar = CustomCalendar(
@@ -107,17 +107,29 @@ struct CreateCalendarView: View {
             streakProtectionEnabled: streakProtectionEnabled,
             streakProtectionThreshold: streakProtectionThreshold
         )
-        rescheduleNotifications(for: calendar, store: CustomCalendarStore.shared)
-        onCreate(calendar)
+        store.addCalendar(calendar)
+
+        do {
+            try await rescheduleNotifications(for: calendar, store: store)
+            onCreate(calendar)
+            dismiss()
+        } catch {
+            store.deleteCalendar(id: calendar.id)
+            router.showAlert(
+                .alert,
+                title: "Notification setup failed",
+                subtitle: error.localizedDescription
+            )
+        }
     }
 
-    func handleCreateCalendar() {
+    func handleCreateCalendar() async {
         if !userCanCreateCalendar() {
             router.showScreen(.sheet) { _ in
                 PaywallView(displayCloseButton: true)
             }
         } else {
-            createCalendar()
+            await createCalendar()
         }
     }
 
@@ -352,13 +364,8 @@ struct CreateCalendarView: View {
             }
             ToolbarItem(placement: .confirmationAction) {
                 Button("Create") {
-                    if !userCanCreateCalendar() {
-                        router.showScreen(.sheet) { _ in
-                            PaywallView(displayCloseButton: false)
-                        }
-                    } else {
-                        createCalendar()
-                        router.dismissScreen()
+                    Task {
+                        await handleCreateCalendar()
                     }
                 }
                 .disabled(name.isEmpty)

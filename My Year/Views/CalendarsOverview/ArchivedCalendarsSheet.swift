@@ -42,9 +42,16 @@ struct ArchivedCalendarsSheet: View {
                                 CalendarsOverviewsItem(calendar: calendar, store: store)
                                     .opacity(0.7)
                                     .onTapGesture {
-                                        let updatedCalendar = setArchiveState(false, to: calendar, store: store)
-                                        withAnimation(.spring(response: 0.35, dampingFraction: 0.85)) {
-                                            store.updateCalendar(updatedCalendar)
+                                        Task {
+                                            do {
+                                                _ = try await setArchiveState(false, to: calendar, store: store)
+                                            } catch {
+                                                router.showAlert(
+                                                    .alert,
+                                                    title: "Notification setup failed",
+                                                    subtitle: error.localizedDescription
+                                                )
+                                            }
                                         }
                                     }
                                     .transition(.opacity.combined(with: .scale(scale: 0.98)))

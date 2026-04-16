@@ -5,9 +5,10 @@ func setArchiveState(
     _ isArchived: Bool,
     to calendar: CustomCalendar,
     store: CustomCalendarStore
-) -> CustomCalendar {
+) async throws -> CustomCalendar {
     var updatedCalendar = calendar
     updatedCalendar.isArchived = isArchived
-    rescheduleNotifications(for: updatedCalendar, store: store)
+    store.updateCalendar(updatedCalendar)
+    try await rescheduleNotifications(for: updatedCalendar, store: store)
     return updatedCalendar
 }

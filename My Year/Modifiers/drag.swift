@@ -42,9 +42,16 @@ struct ContextOrDragModifier: ViewModifier {
     private func archiveCalendar() {
         guard !calendar.isArchived else { return }
 
-        let updatedCalendar = setArchiveState(true, to: calendar, store: store)
-        withAnimation(.spring(response: 0.35, dampingFraction: 0.85)) {
-            store.updateCalendar(updatedCalendar)
+        Task {
+            do {
+                _ = try await setArchiveState(true, to: calendar, store: store)
+            } catch {
+                router.showAlert(
+                    .alert,
+                    title: "Notification setup failed",
+                    subtitle: error.localizedDescription
+                )
+            }
         }
     }
 }

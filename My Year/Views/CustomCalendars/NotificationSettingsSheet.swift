@@ -9,6 +9,7 @@ struct NotificationSettingsSheet: View {
   @Environment(\.dismiss) private var dismiss
   @Environment(\.router) private var router
   @Environment(\.colorScheme) private var colorScheme
+  @ObservedObject private var store = CustomCalendarStore.shared
 
   let calendar: CustomCalendar
   let customerInfo: CustomerInfo?
@@ -247,14 +248,18 @@ struct NotificationSettingsSheet: View {
       }
       .navigationTitle("Notifications")
       .navigationBarTitleDisplayMode(.large)
-      .toolbar {
-        ToolbarItem(placement: .cancellationAction) {
-          Button("Cancel") { dismiss() }
+        .toolbar {
+          ToolbarItem(placement: .cancellationAction) {
+            Button("Cancel") { dismiss() }
+          }
+          ToolbarItem(placement: .confirmationAction) {
+          Button("Done") {
+            Task {
+              await saveAndDismiss()
+            }
+          }
+          }
         }
-        ToolbarItem(placement: .confirmationAction) {
-          Button("Done") { saveAndDismiss() }
-        }
-      }
       .surfaceBackground(Color("surface-muted"), ignoresSafeArea: true)
       .scrollContentBackground(.hidden)
       .scrollIndicators(.hidden)
@@ -413,7 +418,7 @@ extension NotificationSettingsSheet {
     )
   }
 
-  private func saveAndDismiss() {
+  private func saveAndDismiss() async {
     var updatedCalendar = calendar
     updatedCalendar.recurringReminderEnabled = recurringReminderEnabled
 
@@ -438,9 +443,18 @@ extension NotificationSettingsSheet {
     updatedCalendar.streakProtectionEnabled = streakProtectionEnabled
     updatedCalendar.streakProtectionThreshold = streakProtectionThreshold
 
-    rescheduleNotifications(for: updatedCalendar, store: CustomCalendarStore.shared)
     onSave(updatedCalendar)
-    dismiss()
+
+    do {
+      try await rescheduleNotifications(for: updatedCalendar, store: store)
+      dismiss()
+    } catch {
+      router.showAlert(
+        .alert,
+        title: "Notification setup failed",
+        subtitle: error.localizedDescription
+      )
+    }
   }
 }
 

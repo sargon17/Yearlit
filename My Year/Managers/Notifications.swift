@@ -232,34 +232,38 @@ private func deriveCalendarId(from request: UNNotificationRequest) -> UUID? {
     )
 }
 
-private func removePendingNotifications(for calendarId: UUID, completion: @escaping () -> Void) {
-    UNUserNotificationCenter.current().getPendingNotificationRequests { requests in
-        let identifiersToRemove = requests.compactMap { request -> String? in
-            guard deriveCalendarId(from: request) == calendarId else {
-                return nil
+private func removePendingNotifications(for calendarId: UUID) async {
+    await withCheckedContinuation { (continuation: CheckedContinuation<Void, Never>) in
+        UNUserNotificationCenter.current().getPendingNotificationRequests { requests in
+            let identifiersToRemove = requests.compactMap { request -> String? in
+                guard deriveCalendarId(from: request) == calendarId else {
+                    return nil
+                }
+                return request.identifier
             }
-            return request.identifier
-        }
 
-        if !identifiersToRemove.isEmpty {
-            UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: identifiersToRemove)
-        }
+            if !identifiersToRemove.isEmpty {
+                UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: identifiersToRemove)
+            }
 
-        completion()
+            continuation.resume()
+        }
     }
 }
 
-private func removeAllPendingStreakProtectionNotifications(completion: @escaping () -> Void) {
-    UNUserNotificationCenter.current().getPendingNotificationRequests { requests in
-        let identifiersToRemove = requests.compactMap { request -> String? in
-            NotificationRequestID.isStreakProtection(request.identifier) ? request.identifier : nil
-        }
+private func removeAllPendingStreakProtectionNotifications() async {
+    await withCheckedContinuation { (continuation: CheckedContinuation<Void, Never>) in
+        UNUserNotificationCenter.current().getPendingNotificationRequests { requests in
+            let identifiersToRemove = requests.compactMap { request -> String? in
+                NotificationRequestID.isStreakProtection(request.identifier) ? request.identifier : nil
+            }
 
-        if !identifiersToRemove.isEmpty {
-            UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: identifiersToRemove)
-        }
+            if !identifiersToRemove.isEmpty {
+                UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: identifiersToRemove)
+            }
 
-        completion()
+            continuation.resume()
+        }
     }
 }
 
@@ -273,14 +277,20 @@ private func scheduleStreakProtectionReminder(
     for calendar: CustomCalendar,
     store: CustomCalendarStore
 ) {
-    let notificationId = NotificationRequestID.streakProtection(calendarId: calendar.id)
-    UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: [notificationId])
+    Task {
+        let notificationId = NotificationRequestID.streakProtection(calendarId: calendar.id)
+        UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: [notificationId])
 
-    guard let plan = makeStreakProtectionPlan(for: calendar, store: store) else {
-        return
+        guard let plan = makeStreakProtectionPlan(for: calendar, store: store) else {
+            return
+        }
+
+        do {
+            try await scheduleNotificationPlans([plan])
+        } catch {
+            print("❌ Failed to schedule streak protection notification: \(error)")
+        }
     }
-
-    scheduleNotificationPlans([plan]) { _ in }
 }
 
 private func makeStreakProtectionPlan(for calendar: CustomCalendar, store: CustomCalendarStore) -> NotificationPlan? {
@@ -354,8 +364,10 @@ private func makeStreakProtectionContent(for calendar: CustomCalendar, streakAtR
 /// Refreshes one-time streak protection reminders for all calendars.
 /// Call on app launch / app active to re-evaluate daily streak risk.
 public func refreshStreakProtectionReminders(store: CustomCalendarStore) {
-    removeAllPendingStreakProtectionNotifications {
-        DispatchQueue.main.async {
+    Task {
+        await removeAllPendingStreakProtectionNotifications()
+
+        await MainActor.run {
             for calendar in store.calendars where !calendar.isArchived {
                 scheduleStreakProtectionReminder(for: calendar, store: store)
             }
@@ -397,33 +409,24 @@ private func calculateStreakEndingYesterday(for calendar: CustomCalendar) -> Int
 ///   - completion: Completion handler called with result (success or error)
 public func rescheduleNotifications(
     for calendar: CustomCalendar,
-    store: CustomCalendarStore,
-    completion: @escaping (Result<Void, NotificationError>) -> Void = { _ in }
-) {
-    removePendingNotifications(for: calendar.id) {
-        guard !calendar.isArchived,
-              calendar.recurringReminderEnabled
-        else {
-            completion(.success(()))
-            return
-        }
+    store: CustomCalendarStore
+) async throws {
+    await removePendingNotifications(for: calendar.id)
 
-        let reminderPlans = makeReminderPlans(for: calendar)
-        guard !reminderPlans.isEmpty else {
-            completion(.success(()))
-            return
-        }
-
-        requestNotificationAuthorizationIfNeeded { result in
-            switch result {
-            case .success:
-                let plans = reminderPlans + [makeStreakProtectionPlan(for: calendar, store: store)].compactMap { $0 }
-                scheduleNotificationPlans(plans, completion: completion)
-            case let .failure(error):
-                completion(.failure(error))
-            }
-        }
+    guard !calendar.isArchived,
+          calendar.recurringReminderEnabled
+    else {
+        return
     }
+
+    let reminderPlans = makeReminderPlans(for: calendar)
+    guard !reminderPlans.isEmpty else {
+        return
+    }
+
+    try await requestNotificationAuthorizationIfNeeded()
+    let plans = reminderPlans + [makeStreakProtectionPlan(for: calendar, store: store)].compactMap { $0 }
+    try await scheduleNotificationPlans(plans)
 }
 
 private func makeReminderPlans(for calendar: CustomCalendar) -> [NotificationPlan] {
@@ -507,76 +510,74 @@ private func makeReminderNotificationContent(
     return content
 }
 
-private func requestNotificationAuthorizationIfNeeded(
-    completion: @escaping (Result<Void, NotificationError>) -> Void
-) {
-    UNUserNotificationCenter.current().getNotificationSettings { settings in
-        switch settings.authorizationStatus {
-        case .notDetermined:
-            UNUserNotificationCenter.current().requestAuthorization(
-                options: [.alert, .sound, .badge]
-            ) { granted, error in
-                if let error {
-                    completion(.failure(.schedulingFailed(error)))
-                } else if granted {
-                    completion(.success(()))
-                } else {
-                    completion(.failure(.permissionDenied))
+private func requestNotificationAuthorizationIfNeeded() async throws {
+    try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
+        UNUserNotificationCenter.current().getNotificationSettings { settings in
+            switch settings.authorizationStatus {
+            case .notDetermined:
+                UNUserNotificationCenter.current().requestAuthorization(
+                    options: [.alert, .sound, .badge]
+                ) { granted, error in
+                    if let error {
+                        continuation.resume(throwing: NotificationError.schedulingFailed(error))
+                    } else if granted {
+                        continuation.resume()
+                    } else {
+                        continuation.resume(throwing: NotificationError.permissionDenied)
+                    }
                 }
+
+            case .authorized, .provisional:
+                continuation.resume()
+
+            case .denied:
+                continuation.resume(throwing: NotificationError.permissionDenied)
+
+            case .ephemeral:
+                continuation.resume(throwing: NotificationError.unsupportedMode)
+
+            @unknown default:
+                continuation.resume(throwing: NotificationError.unknownStatus)
             }
-
-        case .authorized, .provisional:
-            completion(.success(()))
-
-        case .denied:
-            completion(.failure(.permissionDenied))
-
-        case .ephemeral:
-            completion(.failure(.unsupportedMode))
-
-        @unknown default:
-            completion(.failure(.unknownStatus))
         }
     }
 }
 
-private func scheduleNotificationPlans(
-    _ plans: [NotificationPlan],
-    completion: @escaping (Result<Void, NotificationError>) -> Void
-) {
+private func scheduleNotificationPlans(_ plans: [NotificationPlan]) async throws {
     guard !plans.isEmpty else {
-        completion(.success(()))
         return
     }
 
-    let group = DispatchGroup()
-    let errorsQueue = DispatchQueue(label: "notification-scheduling-errors")
-    var errors: [NotificationError] = []
+    try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
+        let group = DispatchGroup()
+        let errorsQueue = DispatchQueue(label: "notification-scheduling-errors")
+        var errors: [NotificationError] = []
 
-    for plan in plans {
-        group.enter()
-        let request = UNNotificationRequest(
-            identifier: plan.id,
-            content: plan.content,
-            trigger: plan.trigger
-        )
+        for plan in plans {
+            group.enter()
+            let request = UNNotificationRequest(
+                identifier: plan.id,
+                content: plan.content,
+                trigger: plan.trigger
+            )
 
-        UNUserNotificationCenter.current().add(request) { error in
-            if let error {
-                errorsQueue.sync {
-                    errors.append(.schedulingFailed(error))
+            UNUserNotificationCenter.current().add(request) { error in
+                if let error {
+                    errorsQueue.sync {
+                        errors.append(.schedulingFailed(error))
+                    }
                 }
+                group.leave()
             }
-            group.leave()
         }
-    }
 
-    group.notify(queue: .main) {
-        let firstError = errorsQueue.sync { errors.first }
-        if let firstError {
-            completion(.failure(firstError))
-        } else {
-            completion(.success(()))
+        group.notify(queue: .main) {
+            let firstError = errorsQueue.sync { errors.first }
+            if let firstError {
+                continuation.resume(throwing: firstError)
+            } else {
+                continuation.resume()
+            }
         }
     }
 }
@@ -586,7 +587,8 @@ private func scheduleNotificationPlans(
 /// Cancels all pending notifications for a calendar
 /// - Parameter calendar: The calendar whose notifications should be cancelled
 public func cancelNotifications(for calendar: CustomCalendar) {
-    removePendingNotifications(for: calendar.id) {
+    Task {
+        await removePendingNotifications(for: calendar.id)
         print("🗑️ Cancelled notifications for \(calendar.name)")
     }
 }
@@ -735,11 +737,11 @@ private func handleSnooze(for calendar: CustomCalendar) {
         trigger: UNTimeIntervalNotificationTrigger(timeInterval: 3600, repeats: false)
     )
 
-    scheduleNotificationPlans([plan]) { result in
-        switch result {
-        case .success:
+    Task {
+        do {
+            try await scheduleNotificationPlans([plan])
             print("⏰ Snoozed notification for \(calendar.name) for 1 hour")
-        case let .failure(error):
+        } catch {
             print("❌ Failed to schedule snooze notification: \(error)")
         }
     }
