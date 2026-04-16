@@ -443,6 +443,15 @@ extension NotificationSettingsSheet {
     updatedCalendar.streakProtectionEnabled = streakProtectionEnabled
     updatedCalendar.streakProtectionThreshold = streakProtectionThreshold
 
+    guard store.updateCalendar(updatedCalendar) else {
+      router.showAlert(
+        .alert,
+        title: "Save failed",
+        subtitle: "The notification settings could not be saved."
+      )
+      return
+    }
+
     onSave(updatedCalendar)
 
     do {

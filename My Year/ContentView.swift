@@ -58,17 +58,19 @@ struct ContentView: View {
 
                     lastCleanupVersion = newVersion
                     await checkForNotificationsOfNonExistingCalendars(store: store)
-                    refreshStreakProtectionReminders(store: store)
+                    await refreshStreakProtectionReminders(store: store)
                 }
             }
             .task {
                 // Initial cleanup on app launch
                 await checkForNotificationsOfNonExistingCalendars(store: store)
-                refreshStreakProtectionReminders(store: store)
+                await refreshStreakProtectionReminders(store: store)
             }
             .onChange(of: scenePhase) { _, newPhase in
                 guard newPhase == .active else { return }
-                refreshStreakProtectionReminders(store: store)
+                Task {
+                    await refreshStreakProtectionReminders(store: store)
+                }
             }
             .toolbarBackground(.hidden, for: .navigationBar)
             .font(.system(.body, design: .monospaced))

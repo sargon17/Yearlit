@@ -329,7 +329,7 @@ struct EditCalendarView: View {
                         Button(action: {
                             Task {
                                 do {
-                                    _ = try await setArchiveState(!calendar.isArchived, to: calendar, store: store)
+                                    _ = try await updateArchiveState(!calendar.isArchived, to: calendar, store: store)
                                     dismiss()
                                 } catch {
                                     router.showAlert(
@@ -478,6 +478,16 @@ struct EditCalendarView: View {
         }
 
         let updatedCalendar = makeUpdatedCalendar()
+
+        guard store.updateCalendar(updatedCalendar) else {
+            router.showAlert(
+                .alert,
+                title: "Save failed",
+                subtitle: "The calendar could not be updated."
+            )
+            return
+        }
+
         onSave(updatedCalendar)
 
         do {

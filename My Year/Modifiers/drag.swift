@@ -44,7 +44,7 @@ struct ContextOrDragModifier: ViewModifier {
 
         Task {
             do {
-                _ = try await setArchiveState(true, to: calendar, store: store)
+                _ = try await updateArchiveState(true, to: calendar, store: store)
             } catch {
                 router.showAlert(
                     .alert,

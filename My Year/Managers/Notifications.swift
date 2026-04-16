@@ -98,6 +98,7 @@ public enum NotificationError: LocalizedError {
     case permissionDenied
     case unsupportedMode
     case unknownStatus
+    case authorizationRequestFailed(Error)
     case schedulingFailed(Error)
 
     public var errorDescription: String? {
@@ -119,6 +120,15 @@ public enum NotificationError: LocalizedError {
                 "notification.error.unknown_status",
                 value: "Unable to determine notification status.",
                 comment: "Error when notification status cannot be determined"
+            )
+        case let .authorizationRequestFailed(error):
+            return String(
+                format: NSLocalizedString(
+                    "notification.error.authorization_failed",
+                    value: "Failed to request notification authorization: %@",
+                    comment: "Error when authorization request fails"
+                ),
+                error.localizedDescription
             )
         case let .schedulingFailed(error):
             return String(
@@ -276,21 +286,15 @@ private func removeAllPendingStreakProtectionNotifications() async {
 private func scheduleStreakProtectionReminder(
     for calendar: CustomCalendar,
     store: CustomCalendarStore
-) {
-    Task {
-        let notificationId = NotificationRequestID.streakProtection(calendarId: calendar.id)
-        UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: [notificationId])
+) async throws {
+    let notificationId = NotificationRequestID.streakProtection(calendarId: calendar.id)
+    UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: [notificationId])
 
-        guard let plan = makeStreakProtectionPlan(for: calendar, store: store) else {
-            return
-        }
-
-        do {
-            try await scheduleNotificationPlans([plan])
-        } catch {
-            print("❌ Failed to schedule streak protection notification: \(error)")
-        }
+    guard let plan = makeStreakProtectionPlan(for: calendar, store: store) else {
+        return
     }
+
+    try await scheduleNotificationPlans([plan])
 }
 
 private func makeStreakProtectionPlan(for calendar: CustomCalendar, store: CustomCalendarStore) -> NotificationPlan? {
@@ -363,14 +367,14 @@ private func makeStreakProtectionContent(for calendar: CustomCalendar, streakAtR
 
 /// Refreshes one-time streak protection reminders for all calendars.
 /// Call on app launch / app active to re-evaluate daily streak risk.
-public func refreshStreakProtectionReminders(store: CustomCalendarStore) {
-    Task {
-        await removeAllPendingStreakProtectionNotifications()
+public func refreshStreakProtectionReminders(store: CustomCalendarStore) async {
+    await removeAllPendingStreakProtectionNotifications()
 
-        await MainActor.run {
-            for calendar in store.calendars where !calendar.isArchived {
-                scheduleStreakProtectionReminder(for: calendar, store: store)
-            }
+    for calendar in store.calendars where !calendar.isArchived {
+        do {
+            try await scheduleStreakProtectionReminder(for: calendar, store: store)
+        } catch {
+            print("❌ Failed to schedule streak protection notification: \(error)")
         }
     }
 }
@@ -519,7 +523,7 @@ private func requestNotificationAuthorizationIfNeeded() async throws {
                     options: [.alert, .sound, .badge]
                 ) { granted, error in
                     if let error {
-                        continuation.resume(throwing: NotificationError.schedulingFailed(error))
+                        continuation.resume(throwing: NotificationError.authorizationRequestFailed(error))
                     } else if granted {
                         continuation.resume()
                     } else {

@@ -521,7 +521,8 @@ public final class CustomCalendarStore: ObservableObject {
 
     // MARK: - Calendar Management
 
-    public func addCalendar(_ calendar: CustomCalendar) {
+    @discardableResult
+    public func addCalendar(_ calendar: CustomCalendar) -> Bool {
         var newCalendar = calendar
         newCalendar.order = calendar.isArchived ? calendars.count : calendars.filter { !$0.isArchived }.count
 
@@ -544,17 +545,21 @@ public final class CustomCalendarStore: ObservableObject {
 
             try persistChanges(in: context)
             bumpDataVersion()
+            loadCalendars(showLoadingIndicator: false)
+            return true
         } catch {
             NSLog("Failed to add calendar: \(error)")
+            loadCalendars(showLoadingIndicator: false)
+            return false
         }
-        loadCalendars(showLoadingIndicator: false)
     }
 
-    public func updateCalendar(_ calendar: CustomCalendar) {
+    @discardableResult
+    public func updateCalendar(_ calendar: CustomCalendar) -> Bool {
         do {
             let context = makeContext()
             let entities = fetchCalendarEntities(id: calendar.id, in: context)
-            guard let entity = entities.first else { return }
+            guard let entity = entities.first else { return false }
             var calendarToSave = calendar
             if entity.isArchived, !calendar.isArchived {
                 calendarToSave.order = activeCalendarCount(excluding: calendar.id, in: context)
@@ -598,16 +603,20 @@ public final class CustomCalendarStore: ObservableObject {
             try persistChanges(in: context)
             bumpDataVersion()
             loadCalendars(showLoadingIndicator: false)
+            return true
         } catch {
             NSLog("Failed to update calendar: \(error)")
+            loadCalendars(showLoadingIndicator: false)
+            return false
         }
     }
 
-    public func deleteCalendar(id: UUID) {
+    @discardableResult
+    public func deleteCalendar(id: UUID) -> Bool {
         do {
             let context = makeContext()
             let entities = fetchCalendarEntities(id: id, in: context)
-            guard !entities.isEmpty else { return }
+            guard !entities.isEmpty else { return false }
             let entries = try fetchEntries(for: id, in: context)
             for entry in entries {
                 context.delete(entry)
@@ -618,8 +627,11 @@ public final class CustomCalendarStore: ObservableObject {
             try persistChanges(in: context)
             bumpDataVersion()
             loadCalendars(showLoadingIndicator: false)
+            return true
         } catch {
             NSLog("Failed to delete calendar: \(error)")
+            loadCalendars(showLoadingIndicator: false)
+            return false
         }
     }
 

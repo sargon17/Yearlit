@@ -44,7 +44,7 @@ struct ArchivedCalendarsSheet: View {
                                     .onTapGesture {
                                         Task {
                                             do {
-                                                _ = try await setArchiveState(false, to: calendar, store: store)
+                                                _ = try await updateArchiveState(false, to: calendar, store: store)
                                             } catch {
                                                 router.showAlert(
                                                     .alert,

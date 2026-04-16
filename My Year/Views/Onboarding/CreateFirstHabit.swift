@@ -55,7 +55,14 @@ struct CreateFirstHabit: View {
             streakProtectionThreshold: streakProtectionThreshold
         )
 
-        store.addCalendar(calendar)
+        guard store.addCalendar(calendar) else {
+            router.showAlert(
+                .alert,
+                title: "Save failed",
+                subtitle: "The first habit could not be created."
+            )
+            return
+        }
 
         do {
             try await rescheduleNotifications(for: calendar, store: store)

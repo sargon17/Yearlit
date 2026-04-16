@@ -107,7 +107,14 @@ struct CreateCalendarView: View {
             streakProtectionEnabled: streakProtectionEnabled,
             streakProtectionThreshold: streakProtectionThreshold
         )
-        store.addCalendar(calendar)
+        guard store.addCalendar(calendar) else {
+            router.showAlert(
+                .alert,
+                title: "Save failed",
+                subtitle: "The calendar could not be created."
+            )
+            return
+        }
 
         do {
             try await rescheduleNotifications(for: calendar, store: store)
