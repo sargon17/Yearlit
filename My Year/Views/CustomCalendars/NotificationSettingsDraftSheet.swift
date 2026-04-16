@@ -17,7 +17,6 @@ struct NotificationSettingsDraftSheet: View {
     @Binding var recurringReminderEnabled: Bool
     @Binding var reminderTime: Date
     @Binding var notificationPrivacyMode: NotificationPrivacyMode
-    @Binding var suppressWhenCompleted: Bool
     @Binding var additionalReminderTimes: [ReminderTime]
     @Binding var streakProtectionEnabled: Bool
     @Binding var streakProtectionThreshold: Int
@@ -100,21 +99,6 @@ struct NotificationSettingsDraftSheet: View {
                                 .padding(.vertical, 10)
                                 .notificationSurface()
 
-                                HStack {
-                                    VStack(alignment: .leading, spacing: 4) {
-                                        Text("Smart suppression")
-                                            .labelStyle(type: .secondary)
-                                        Text("Skips the reminder if you already logged today.")
-                                            .font(.caption)
-                                            .foregroundStyle(.textTertiary)
-                                    }
-                                    Spacer()
-                                    Toggle("", isOn: $suppressWhenCompleted)
-                                }
-                                .tint(accentColor)
-                                .padding(.horizontal)
-                                .padding(.vertical, 10)
-                                .notificationSurface()
                             }
                         }
 

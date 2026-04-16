@@ -20,7 +20,6 @@ struct CreateFirstHabit: View {
     }()
 
     @State private var notificationPrivacyMode: NotificationPrivacyMode = .full
-    @State private var suppressWhenCompleted: Bool = true
     @State private var additionalReminderTimes: [ReminderTime] = []
     @State private var streakProtectionEnabled: Bool = true
     @State private var streakProtectionThreshold: Int = 5
@@ -49,7 +48,6 @@ struct CreateFirstHabit: View {
             currencySymbol: nil,
             reminderTimeZone: TimeZone.current.identifier,
             notificationPrivacyMode: notificationPrivacyMode,
-            suppressWhenCompleted: suppressWhenCompleted,
             additionalReminderTimes: [],
             streakProtectionEnabled: streakProtectionEnabled,
             streakProtectionThreshold: streakProtectionThreshold
@@ -155,7 +153,6 @@ struct CreateFirstHabit: View {
                 recurringReminderEnabled: $recurringReminderEnabled,
                 reminderTime: $reminderTime,
                 notificationPrivacyMode: $notificationPrivacyMode,
-                suppressWhenCompleted: $suppressWhenCompleted,
                 additionalReminderTimes: $additionalReminderTimes,
                 streakProtectionEnabled: $streakProtectionEnabled,
                 streakProtectionThreshold: $streakProtectionThreshold

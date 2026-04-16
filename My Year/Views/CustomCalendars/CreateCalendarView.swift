@@ -24,7 +24,6 @@ struct CreateCalendarView: View {
     @State private var currencySymbol: String = "$"
     @State private var existingStreakEntries: [String: CalendarEntry] = [:]
     @State private var notificationPrivacyMode: NotificationPrivacyMode = .full
-    @State private var suppressWhenCompleted: Bool = true
     @State private var additionalReminderTimes: [ReminderTime] = []
     @State private var streakProtectionEnabled: Bool = true
     @State private var streakProtectionThreshold: Int = 5
@@ -102,7 +101,6 @@ struct CreateCalendarView: View {
                 && selectedUnit == .currency) ? currencySymbol : nil,
             reminderTimeZone: TimeZone.current.identifier,
             notificationPrivacyMode: notificationPrivacyMode,
-            suppressWhenCompleted: suppressWhenCompleted,
             additionalReminderTimes: resolvedAdditionalTimes,
             streakProtectionEnabled: streakProtectionEnabled,
             streakProtectionThreshold: streakProtectionThreshold
@@ -321,21 +319,7 @@ struct CreateCalendarView: View {
                     ScrollView(.horizontal, showsIndicators: false) {
                         HStack {
                             ForEach(colors, id: \.self) { color in
-                                Circle()
-                                    .fill(Color(color))
-                                    .frame(width: 30, height: 30)
-                                    .overlay(
-                                        Circle()
-                                            .stroke(.white, lineWidth: selectedColor == color ? 2 : 0)
-                                    )
-                                    .onTapGesture {
-                                        withAnimation(.snappy) {
-                                            selectedColor = color
-                                        }
-                                        Task {
-                                            await hapticFeedback(.rigid)
-                                        }
-                                    }
+                                colorChip(color)
                             }
                         }.padding(2)
                             .padding(.horizontal, 10)
@@ -410,7 +394,6 @@ struct CreateCalendarView: View {
                 recurringReminderEnabled: $recurringReminderEnabled,
                 reminderTime: $reminderTime,
                 notificationPrivacyMode: $notificationPrivacyMode,
-                suppressWhenCompleted: $suppressWhenCompleted,
                 additionalReminderTimes: $additionalReminderTimes,
                 streakProtectionEnabled: $streakProtectionEnabled,
                 streakProtectionThreshold: $streakProtectionThreshold
@@ -428,4 +411,28 @@ struct CreateCalendarView: View {
             }
         }
     }
+}
+
+private extension CreateCalendarView {
+    func colorChip(_ color: String) -> some View {
+        Circle()
+            .fill(Color(color))
+            .frame(width: 30, height: 30)
+            .overlay(
+                Circle()
+                    .stroke(.white, lineWidth: selectedColor == color ? 2 : 0)
+            )
+            .onTapGesture {
+                withAnimation(.snappy) {
+                    selectedColor = color
+                }
+                Task {
+                    await hapticFeedback(.rigid)
+                }
+            }
+    }
+}
+
+private func colorCircle(_ color: String) -> some View {
+    Circle().fill(Color(color))
 }

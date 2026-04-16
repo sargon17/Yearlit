@@ -8,6 +8,7 @@ func updateCounterEntry(
     addValue: Int
 ) {
     var newEntry: CalendarEntry
+    let calendar = calendarStore.calendars.first(where: { $0.id == calendarId })
 
     if let entry = calendarStore.getEntry(calendarId: calendarId, date: date) {
         let newValue = entry.count + addValue
@@ -22,4 +23,8 @@ func updateCounterEntry(
     }
 
     calendarStore.addEntry(calendarId: calendarId, entry: newEntry)
+
+    if let calendar {
+        syncNotificationsAfterEntryChange(for: calendar, store: calendarStore)
+    }
 }

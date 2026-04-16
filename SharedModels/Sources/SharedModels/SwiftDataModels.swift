@@ -18,7 +18,6 @@ public final class HabitCalendarEntity {
     public var reminderMinute: Int?
     public var reminderTimeZone: String?
     public var notificationPrivacyModeRawValue: String = NotificationPrivacyMode.full.rawValue
-    public var suppressWhenCompleted: Bool = true
     public var additionalReminderTimesJSON: String? // JSON-encoded [ReminderTime]
     public var streakProtectionEnabled: Bool = true
     public var streakProtectionThreshold: Int = 5
@@ -39,7 +38,6 @@ public final class HabitCalendarEntity {
         reminderMinute: Int? = nil,
         reminderTimeZone: String? = nil,
         notificationPrivacyModeRawValue: String = NotificationPrivacyMode.full.rawValue,
-        suppressWhenCompleted: Bool = true,
         additionalReminderTimesJSON: String? = nil,
         streakProtectionEnabled: Bool = true,
         streakProtectionThreshold: Int = 5,
@@ -59,7 +57,6 @@ public final class HabitCalendarEntity {
         self.reminderMinute = reminderMinute
         self.reminderTimeZone = reminderTimeZone
         self.notificationPrivacyModeRawValue = notificationPrivacyModeRawValue
-        self.suppressWhenCompleted = suppressWhenCompleted
         self.additionalReminderTimesJSON = additionalReminderTimesJSON
         self.streakProtectionEnabled = streakProtectionEnabled
         self.streakProtectionThreshold = streakProtectionThreshold
@@ -224,7 +221,6 @@ extension HabitCalendarEntity {
             currencySymbol: currencySymbol,
             reminderTimeZone: reminderTimeZone,
             notificationPrivacyMode: privacyMode,
-            suppressWhenCompleted: suppressWhenCompleted,
             additionalReminderTimes: additionalTimes,
             streakProtectionEnabled: streakProtectionEnabled,
             streakProtectionThreshold: streakProtectionThreshold
@@ -248,7 +244,6 @@ extension HabitCalendarEntity {
             currencySymbol: currencySymbol,
             reminderTimeZone: reminderTimeZone,
             notificationPrivacyMode: privacyMode,
-            suppressWhenCompleted: suppressWhenCompleted,
             additionalReminderTimes: additionalTimes,
             streakProtectionEnabled: streakProtectionEnabled,
             streakProtectionThreshold: streakProtectionThreshold
@@ -269,7 +264,6 @@ extension HabitCalendarEntity {
         reminderMinute = model.reminderMinute
         reminderTimeZone = model.reminderTimeZone
         notificationPrivacyModeRawValue = model.notificationPrivacyMode.rawValue
-        suppressWhenCompleted = model.suppressWhenCompleted
         additionalReminderTimesJSON = Self.encodeAdditionalReminderTimes(model.additionalReminderTimes)
         streakProtectionEnabled = model.streakProtectionEnabled
         streakProtectionThreshold = model.streakProtectionThreshold
@@ -292,7 +286,6 @@ extension HabitCalendarEntity {
             reminderMinute: model.reminderMinute,
             reminderTimeZone: model.reminderTimeZone,
             notificationPrivacyModeRawValue: model.notificationPrivacyMode.rawValue,
-            suppressWhenCompleted: model.suppressWhenCompleted,
             additionalReminderTimesJSON: encodeAdditionalReminderTimes(model.additionalReminderTimes),
             streakProtectionEnabled: model.streakProtectionEnabled,
             streakProtectionThreshold: model.streakProtectionThreshold,

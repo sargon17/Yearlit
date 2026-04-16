@@ -13,9 +13,15 @@ func toggleBinaryEntry(
     if calendarStore.getEntry(calendarId: calendarId, date: date) == nil {
         let newEntry = defaultEntry(date: date, trackingType: .binary)
         calendarStore.addEntry(calendarId: calendarId, entry: newEntry)
+        if let calendar = calendarStore.calendars.first(where: { $0.id == calendarId }) {
+            syncNotificationsAfterEntryChange(for: calendar, store: calendarStore)
+        }
         return newEntry
     }
 
     calendarStore.deleteEntry(calendarId: calendarId, date: date)
+    if let calendar = calendarStore.calendars.first(where: { $0.id == calendarId }) {
+        syncNotificationsAfterEntryChange(for: calendar, store: calendarStore)
+    }
     return nil
 }

@@ -66,7 +66,6 @@ class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCenterDele
         if let calendarIdString = userInfo["calendarId"] as? String,
            let calendarId = UUID(uuidString: calendarIdString),
            let calendar = CustomCalendarStore.shared.calendars.first(where: { $0.id == calendarId }),
-           calendar.suppressWhenCompleted,
            shouldSuppressNotification(for: calendar, store: CustomCalendarStore.shared)
         {
             // Suppress notification - entry already completed

@@ -17,7 +17,6 @@ struct NotificationSettingsSheet: View {
   @State private var recurringReminderEnabled: Bool
   @State private var reminderTime: Date
   @State private var notificationPrivacyMode: NotificationPrivacyMode
-  @State private var suppressWhenCompleted: Bool
   @State private var additionalReminderTimes: [ReminderTime]
   @State private var streakProtectionEnabled: Bool
   @State private var streakProtectionThreshold: Int
@@ -48,7 +47,6 @@ struct NotificationSettingsSheet: View {
     }
 
     _notificationPrivacyMode = State(initialValue: calendar.notificationPrivacyMode)
-    _suppressWhenCompleted = State(initialValue: calendar.suppressWhenCompleted)
     _additionalReminderTimes = State(initialValue: calendar.additionalReminderTimes)
     _streakProtectionEnabled = State(initialValue: calendar.streakProtectionEnabled)
     _streakProtectionThreshold = State(initialValue: calendar.streakProtectionThreshold)
@@ -193,18 +191,6 @@ struct NotificationSettingsSheet: View {
                 .padding(.vertical, 10)
                 .notificationSurface()
 
-                HStack {
-                  VStack(alignment: .leading, spacing: 4) {
-                    Text("Smart suppression")
-                      .labelStyle(type: .secondary)
-                  }
-                  Spacer()
-                  Toggle("", isOn: $suppressWhenCompleted)
-                }
-                .tint(Color(calendar.color))
-                .padding(.horizontal)
-                .padding(.vertical, 10)
-                .notificationSurface()
               }
             }
 
@@ -428,7 +414,6 @@ extension NotificationSettingsSheet {
     }
 
     updatedCalendar.notificationPrivacyMode = notificationPrivacyMode
-    updatedCalendar.suppressWhenCompleted = suppressWhenCompleted
 
     if isPremiumUser && calendar.trackingType == .multipleDaily {
       updatedCalendar.additionalReminderTimes = normalizedAdditionalReminderTimes(additionalReminderTimes)

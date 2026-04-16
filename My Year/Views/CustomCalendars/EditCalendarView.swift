@@ -24,7 +24,6 @@ struct EditCalendarView: View {
     @State private var currencySymbol: String
     @State private var entries: [String: CalendarEntry]
     @State private var notificationPrivacyMode: NotificationPrivacyMode
-    @State private var suppressWhenCompleted: Bool
     @State private var additionalReminderTimes: [ReminderTime]
     @State private var streakProtectionEnabled: Bool
     @State private var streakProtectionThreshold: Int
@@ -51,7 +50,6 @@ struct EditCalendarView: View {
         _isArchived = State(initialValue: calendar.isArchived)
         _entries = State(initialValue: calendar.entries)
         _notificationPrivacyMode = State(initialValue: calendar.notificationPrivacyMode)
-        _suppressWhenCompleted = State(initialValue: calendar.suppressWhenCompleted)
         _additionalReminderTimes = State(initialValue: calendar.additionalReminderTimes)
         _streakProtectionEnabled = State(initialValue: calendar.streakProtectionEnabled)
         _streakProtectionThreshold = State(initialValue: calendar.streakProtectionThreshold)
@@ -426,7 +424,6 @@ struct EditCalendarView: View {
                 recurringReminderEnabled: $recurringReminderEnabled,
                 reminderTime: $reminderTime,
                 notificationPrivacyMode: $notificationPrivacyMode,
-                suppressWhenCompleted: $suppressWhenCompleted,
                 additionalReminderTimes: $additionalReminderTimes,
                 streakProtectionEnabled: $streakProtectionEnabled,
                 streakProtectionThreshold: $streakProtectionThreshold
@@ -459,7 +456,6 @@ struct EditCalendarView: View {
                 && selectedUnit == .currency) ? currencySymbol : nil,
             reminderTimeZone: calendar.reminderTimeZone,
             notificationPrivacyMode: notificationPrivacyMode,
-            suppressWhenCompleted: suppressWhenCompleted,
             additionalReminderTimes: additionalReminderTimes,
             streakProtectionEnabled: streakProtectionEnabled,
             streakProtectionThreshold: streakProtectionThreshold

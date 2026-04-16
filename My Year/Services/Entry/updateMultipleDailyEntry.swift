@@ -24,4 +24,6 @@ func updateMultipleDailyEntry(
     }
 
     calendarStore.addEntry(calendarId: calendarId, entry: newEntry)
+
+    syncNotificationsAfterEntryChange(for: calendar, store: calendarStore)
 }

@@ -252,6 +252,28 @@ private func removePendingNotifications(for calendar: CustomCalendar) async {
     await removePendingNotifications(for: calendar.id)
 }
 
+private func removePendingReminderNotifications(for calendar: CustomCalendar) async {
+    await withCheckedContinuation { (continuation: CheckedContinuation<Void, Never>) in
+        UNUserNotificationCenter.current().getPendingNotificationRequests { requests in
+            let identifiersToRemove = requests.compactMap { request -> String? in
+                guard deriveCalendarId(from: request) == calendar.id,
+                      request.identifier != NotificationRequestID.streakProtection(calendarId: calendar.id)
+                else {
+                    return nil
+                }
+
+                return request.identifier
+            }
+
+            if !identifiersToRemove.isEmpty {
+                UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: identifiersToRemove)
+            }
+
+            continuation.resume()
+        }
+    }
+}
+
 private func removeAllPendingStreakProtectionNotifications() async {
     await withCheckedContinuation { (continuation: CheckedContinuation<Void, Never>) in
         UNUserNotificationCenter.current().getPendingNotificationRequests { requests in
@@ -765,6 +787,23 @@ public func shouldSuppressNotification(for calendar: CustomCalendar, store: Cust
     #endif
 
     return shouldSuppress
+}
+
+public func syncNotificationsAfterEntryChange(
+    for calendar: CustomCalendar,
+    store: CustomCalendarStore
+) {
+    Task {
+        do {
+            if shouldSuppressNotification(for: calendar, store: store) {
+                await removePendingReminderNotifications(for: calendar)
+            } else {
+                try await rescheduleNotifications(for: calendar, store: store)
+            }
+        } catch {
+    print("❌ Failed to sync notifications after entry change: \(error)")
+        }
+    }
 }
 
 // MARK: - Permission Helpers

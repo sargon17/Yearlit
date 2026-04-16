@@ -3714,6 +3714,18 @@
         }
       }
     },
+    "notification.error.authorization_failed" : {
+      "comment" : "Error when authorization request fails",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Failed to request notification authorization: %@"
+          }
+        }
+      }
+    },
     "notification.error.invalid_data" : {
       "comment" : "Error when calendar data is invalid",
       "extractionState" : "stale",
@@ -5264,6 +5276,7 @@
       }
     },
     "Skips the reminder if you already logged today." : {
+      "extractionState" : "stale",
       "localizations" : {
         "it" : {
           "stringUnit" : {
@@ -5319,6 +5332,7 @@
       }
     },
     "Smart suppression" : {
+      "extractionState" : "stale",
       "localizations" : {
         "it" : {
           "stringUnit" : {
