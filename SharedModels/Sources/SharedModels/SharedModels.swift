@@ -240,7 +240,10 @@ public struct CustomCalendar: Codable, Identifiable {
         self.reminderTimeZone = reminderTimeZone ?? TimeZone.current.identifier
         self.notificationPrivacyMode = notificationPrivacyMode
         self.suppressWhenCompleted = suppressWhenCompleted
-        self.additionalReminderTimes = additionalReminderTimes
+        self.additionalReminderTimes = additionalReminderTimes.sorted {
+            if $0.hour != $1.hour { return $0.hour < $1.hour }
+            return $0.minute < $1.minute
+        }
         self.streakProtectionEnabled = streakProtectionEnabled
         self.streakProtectionThreshold = streakProtectionThreshold
         if let time = reminderTime {
@@ -296,7 +299,10 @@ public struct CustomCalendar: Codable, Identifiable {
         self.reminderTimeZone = reminderTimeZone ?? TimeZone.current.identifier
         self.notificationPrivacyMode = notificationPrivacyMode
         self.suppressWhenCompleted = suppressWhenCompleted
-        self.additionalReminderTimes = additionalReminderTimes
+        self.additionalReminderTimes = additionalReminderTimes.sorted {
+            if $0.hour != $1.hour { return $0.hour < $1.hour }
+            return $0.minute < $1.minute
+        }
         self.streakProtectionEnabled = streakProtectionEnabled
         self.streakProtectionThreshold = streakProtectionThreshold
         self.entries = entries

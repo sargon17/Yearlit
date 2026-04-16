@@ -2,6 +2,7 @@ import SharedModels
 
 enum ArchiveStateError: Error {
     case persistenceFailed
+    case notificationSyncFailed(Error)
 }
 
 /// Updates the archive state on a calendar and keeps its notifications in sync.
@@ -15,6 +16,12 @@ func updateArchiveState(
     guard store.updateCalendar(updatedCalendar) else {
         throw ArchiveStateError.persistenceFailed
     }
-    try await rescheduleNotifications(for: updatedCalendar, store: store)
+
+    do {
+        try await rescheduleNotifications(for: updatedCalendar, store: store)
+    } catch {
+        _ = store.updateCalendar(calendar)
+        throw ArchiveStateError.notificationSyncFailed(error)
+    }
     return updatedCalendar
 }

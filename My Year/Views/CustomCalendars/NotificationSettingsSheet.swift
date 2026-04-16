@@ -83,8 +83,7 @@ struct NotificationSettingsSheet: View {
               .padding(.vertical, 8)
               .notificationSurface()
 
-              if recurringReminderEnabled {
-
+    if recurringReminderEnabled {
                 HStack(spacing: 6) {
                   DatePicker("", selection: $reminderTime, displayedComponents: [.hourAndMinute])
                     .tint(Color(calendar.color))
@@ -455,7 +454,7 @@ extension NotificationSettingsSheet {
     } catch {
       router.showAlert(
         .alert,
-        title: "Notification setup failed",
+        title: "Save failed",
         subtitle: error.localizedDescription
       )
     }

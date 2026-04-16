@@ -43,9 +43,27 @@ struct ContextOrDragModifier: ViewModifier {
             do {
                 _ = try await updateArchiveState(true, to: calendar, store: store)
             } catch {
+                if let archiveError = error as? ArchiveStateError {
+                    switch archiveError {
+                    case .persistenceFailed:
+                        router.showAlert(
+                            .alert,
+                            title: "Archive failed",
+                            subtitle: "The calendar could not be archived."
+                        )
+                    case let .notificationSyncFailed(syncError):
+                        router.showAlert(
+                            .alert,
+                            title: "Archive saved, notifications not updated",
+                            subtitle: syncError.localizedDescription
+                        )
+                    }
+                    return
+                }
+
                 router.showAlert(
                     .alert,
-                    title: "Notification setup failed",
+                    title: "Archive failed",
                     subtitle: error.localizedDescription
                 )
             }
