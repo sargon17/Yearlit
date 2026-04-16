@@ -6,7 +6,6 @@ import SwiftUI
 struct EditCalendarView: View {
     @Environment(\.dismiss) private var dismiss: DismissAction
     let calendar: CustomCalendar
-    let onSave: (CustomCalendar) -> Void
     let onDelete: (CustomCalendar) -> Void
 
     @State private var customerInfo: CustomerInfo?
@@ -36,11 +35,10 @@ struct EditCalendarView: View {
     @Environment(\.router) private var router
 
     init(
-        calendar: CustomCalendar, onSave: @escaping (CustomCalendar) -> Void,
+        calendar: CustomCalendar,
         onDelete: @escaping (CustomCalendar) -> Void
     ) {
         self.calendar = calendar
-        self.onSave = onSave
         self.onDelete = onDelete
         _name = State(initialValue: calendar.name)
         _selectedColor = State(initialValue: calendar.color)
@@ -298,8 +296,6 @@ struct EditCalendarView: View {
                                     for (key, entry) in newEntries {
                                         entries[key] = entry
                                     }
-                                    let updatedCalendar = makeUpdatedCalendar()
-                                    onSave(updatedCalendar)
                                 }
                             }
                         }) {
@@ -487,8 +483,6 @@ struct EditCalendarView: View {
             )
             return
         }
-
-        onSave(updatedCalendar)
 
         do {
             try await rescheduleNotifications(for: updatedCalendar, store: store)

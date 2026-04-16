@@ -121,7 +121,14 @@ struct CreateCalendarView: View {
             onCreate(calendar)
             dismiss()
         } catch {
-            store.deleteCalendar(id: calendar.id)
+            if !store.deleteCalendar(id: calendar.id) {
+                router.showAlert(
+                    .alert,
+                    title: "Rollback failed",
+                    subtitle: "The calendar was created but could not be removed after notification setup failed."
+                )
+                return
+            }
             router.showAlert(
                 .alert,
                 title: "Notification setup failed",

@@ -13,7 +13,6 @@ struct NotificationSettingsSheet: View {
 
   let calendar: CustomCalendar
   let customerInfo: CustomerInfo?
-  let onSave: (CustomCalendar) -> Void
 
   @State private var recurringReminderEnabled: Bool
   @State private var reminderTime: Date
@@ -31,12 +30,10 @@ struct NotificationSettingsSheet: View {
 
   init(
     calendar: CustomCalendar,
-    customerInfo: CustomerInfo?,
-    onSave: @escaping (CustomCalendar) -> Void
+    customerInfo: CustomerInfo?
   ) {
     self.calendar = calendar
     self.customerInfo = customerInfo
-    self.onSave = onSave
 
     _recurringReminderEnabled = State(initialValue: calendar.recurringReminderEnabled)
 
@@ -451,8 +448,6 @@ extension NotificationSettingsSheet {
       )
       return
     }
-
-    onSave(updatedCalendar)
 
     do {
       try await rescheduleNotifications(for: updatedCalendar, store: store)

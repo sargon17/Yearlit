@@ -332,15 +332,12 @@ struct CustomCalendarView: View {
                                     .fontWeight(.black)
                                     .onTapGesture {
                                         router.showScreen(.sheet) { _ in
-                                            EditCalendarView(
-                                                calendar: resolvedCalendar,
-                                                onSave: { updatedCalendar in
-                                                    store.updateCalendar(updatedCalendar)
-                                                },
-                                                onDelete: { _ in
-                                                    store.deleteCalendar(id: resolvedCalendar.id)
-                                                }
-                                            )
+                                        EditCalendarView(
+                                            calendar: resolvedCalendar,
+                                            onDelete: { _ in
+                                                store.deleteCalendar(id: resolvedCalendar.id)
+                                            }
+                                        )
                                         }
                                     }
                                     .padding(.top)
@@ -415,10 +412,7 @@ struct CustomCalendarView: View {
                                     router.showScreen(.sheet) { _ in
                                         NotificationSettingsSheet(
                                             calendar: resolvedCalendar,
-                                            customerInfo: customerInfo,
-                                            onSave: { updatedCalendar in
-                                                store.updateCalendar(updatedCalendar)
-                                            }
+                                            customerInfo: customerInfo
                                         )
                                     }
                                 }

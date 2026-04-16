@@ -13,9 +13,6 @@ struct ContextOrDragModifier: ViewModifier {
                 router.showScreen(.sheet) { _ in
                     EditCalendarView(
                         calendar: calendar,
-                        onSave: { updatedCalendar in
-                            store.updateCalendar(updatedCalendar)
-                        },
                         onDelete: { _ in
                             store.deleteCalendar(id: calendar.id)
                         }

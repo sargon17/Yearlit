@@ -58,7 +58,6 @@ struct ContentView: View {
 
                     lastCleanupVersion = newVersion
                     await checkForNotificationsOfNonExistingCalendars(store: store)
-                    await refreshStreakProtectionReminders(store: store)
                 }
             }
             .task {
