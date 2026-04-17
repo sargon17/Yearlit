@@ -4,9 +4,8 @@ import SwiftUI
 /// Usa una chiave con versione così, se cambi onboarding, puoi forzare a rivederlo.
 final class OnboardingManager: ObservableObject {
     static let currentVersion = 1
-    private let key = "onboarding.seen.v\(currentVersion)"
 
-    @AppStorage("onboarding.seen.v1") private var seenV1: Bool = false
+    @AppStorage(AppStorageKeys.onboardingSeenV1) private var seenV1: Bool = false
 
     var hasSeenOnboarding: Bool {
         seenV1
