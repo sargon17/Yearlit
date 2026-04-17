@@ -3,7 +3,6 @@ import SwiftUI
 extension HTTP {
     public static func post(endpoint: String, data: Codable) async throws {
         guard let url = URL(string: endpoint) else {
-            print("error 1")
             throw POSTError.error1
         }
 
@@ -15,24 +14,15 @@ extension HTTP {
 
         let jsonData = try JSONEncoder().encode(data)
 
-        print(jsonData)
-
         request.httpBody = jsonData
 
-        let (data, res) = try await URLSession.shared.data(for: request)
+        let (_, res) = try await URLSession.shared.data(for: request)
 
-        guard let response = res as? HTTPURLResponse, response.statusCode == 200 else {
-            print("error 2")
+        guard let response = res as? HTTPURLResponse,
+              (200 ... 299).contains(response.statusCode) else
+        {
             throw POSTError.error2
         }
-
-        // do {
-        //   let decoder = JSONDecoder()
-        //   return try decoder.decode(type, from: data)
-        // } catch {
-        //   print("error 3")
-        //   throw GetError.error3
-        // }
     }
 
     enum POSTError: Error {

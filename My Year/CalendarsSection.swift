@@ -11,7 +11,8 @@ struct CalendarsSection: View {
     @ObservedObject private var valuationStore = ValuationStore.shared
 
     @State private var selectedIndex: Int = 0
-    @AppStorage("isMoodTrackingEnabled") var isMoodTrackingEnabled: Bool = true
+    @AppStorage(AppStorageKeys.isMoodTrackingEnabled) var isMoodTrackingEnabled: Bool = false
+    @AppStorage(AppStorageKeys.isRecapViewEnabled) var isRecapViewEnabled: Bool = false
 
     @Environment(\.router) private var router
 
@@ -52,11 +53,13 @@ struct CalendarsSection: View {
                                 .slide()
                         }
 
-                        AllCalendarsRecapView()
-                            .id("recap")
-                            .frame(width: width)
-                            .containerRelativeFrame(.horizontal, count: 1, spacing: 0)
-                            .slide()
+                        if isRecapViewEnabled {
+                            AllCalendarsRecapView()
+                                .id("recap")
+                                .frame(width: width)
+                                .containerRelativeFrame(.horizontal, count: 1, spacing: 0)
+                                .slide()
+                        }
 
                         // Custom Calendars
                         let activeCalendars = store.calendars.filter { !$0.isArchived }
@@ -140,7 +143,7 @@ struct CalendarsSection: View {
                     customerInfo = info
                 }
             }
-            .onChange(of: whatsNewManager.pendingRelease?.version) { _ in
+            .onChange(of: whatsNewManager.pendingRelease?.version) { _, _ in
                 guard let release = whatsNewManager.takePendingRelease() else { return }
                 router.showScreen(.sheet) { _ in
                     WhatsNewSheetView(release: release) {

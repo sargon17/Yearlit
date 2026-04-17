@@ -65,13 +65,13 @@ private struct SegmentedRing: View {
     /// 4 equally spaced segments with distinct colors
     private let segments: [(start: CGFloat, end: CGFloat, color: Color)] = [
         (
-            0.0, 0.25, try! GarnishColor.blend(.surfaceMuted, with: .qsOrange, ratio: 0.4)
+            0.0, 0.25, GarnishColor.blend(.surfaceMuted, with: .qsOrange, ratio: 0.4)
         ), // Cue
         (
-            0.25, 0.50, try! GarnishColor.blend(.surfaceMuted, with: .qsOrange, ratio: 0.6)
+            0.25, 0.50, GarnishColor.blend(.surfaceMuted, with: .qsOrange, ratio: 0.6)
         ), // Craving
         (
-            0.50, 0.75, try! GarnishColor.blend(.surfaceMuted, with: .qsOrange, ratio: 0.8)
+            0.50, 0.75, GarnishColor.blend(.surfaceMuted, with: .qsOrange, ratio: 0.8)
         ), // Action
         (0.75, 1.00, .qsOrange), // Reward
     ]

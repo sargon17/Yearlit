@@ -42,7 +42,7 @@ struct CalendarStatisticsView: View {
             }
             return unit.displayName
         } else {
-            return "Entries"
+            return "Times"
         }
     }
 
@@ -412,7 +412,7 @@ private func monthlyBars(
         HStack(spacing: 6) {
             ForEach(1 ... 12, id: \.self) { m in
                 let v = ratesByMonth[m] ?? 0
-                var bgColor: Color = GarnishColor.blend(
+                let bgColor: Color = GarnishColor.blend(
                     .surfaceMuted,
                     with: accentColor,
                     ratio: isLocked ? 0.2 : max(0.02, v)
@@ -465,8 +465,8 @@ struct PremiumGate<Content: View>: View {
 /// Section header helper
 @ViewBuilder
 private func sectionHeader(_ title: LocalizedStringKey, premium: Bool = false) -> some View {
-    let bgColor = try! GarnishColor.blend(.surfaceMuted, with: .moodExcellent, ratio: 0.2)
-    let fgColor = try! GarnishColor.blend(.textPrimary, with: .moodExcellent, ratio: 0.5)
+    let bgColor = GarnishColor.blend(.surfaceMuted, with: .moodExcellent, ratio: 0.2)
+    let fgColor = GarnishColor.blend(.textPrimary, with: .moodExcellent, ratio: 0.5)
 
     HStack {
         Text(title)

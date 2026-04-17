@@ -7,7 +7,7 @@ enum ShareImageRenderer {
         view: Content,
         size: CGSize,
         colorScheme: ColorScheme? = nil,
-        scale: CGFloat = UIScreen.main.scale
+        scale: CGFloat? = nil
     ) -> UIImage? {
         let base = view.frame(width: size.width, height: size.height)
         let content: AnyView = {
@@ -15,7 +15,7 @@ enum ShareImageRenderer {
             return AnyView(base.environment(\.colorScheme, colorScheme))
         }()
         let renderer = ImageRenderer(content: content)
-        renderer.scale = scale
+        renderer.scale = scale ?? UIScreen.main.scale
         return renderer.uiImage
     }
 }

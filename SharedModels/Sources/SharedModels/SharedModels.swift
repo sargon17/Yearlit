@@ -523,7 +523,7 @@ public final class CustomCalendarStore: ObservableObject {
 
     public func addCalendar(_ calendar: CustomCalendar) {
         var newCalendar = calendar
-        newCalendar.order = calendars.count
+        newCalendar.order = calendar.isArchived ? calendars.count : calendars.filter { !$0.isArchived }.count
 
         do {
             let context = makeContext()
@@ -553,10 +553,17 @@ public final class CustomCalendarStore: ObservableObject {
     public func updateCalendar(_ calendar: CustomCalendar) {
         do {
             let context = makeContext()
-            guard let entity = fetchCalendarEntity(id: calendar.id, in: context) else { return }
-            entity.apply(from: calendar)
+            let entities = fetchCalendarEntities(id: calendar.id, in: context)
+            guard let entity = entities.first else { return }
+            var calendarToSave = calendar
+            if entity.isArchived, !calendar.isArchived {
+                calendarToSave.order = activeCalendarCount(excluding: calendar.id, in: context)
+            }
+            for entity in entities {
+                entity.apply(from: calendarToSave)
+            }
 
-            let existingEntries = try fetchEntries(for: calendar.id, in: context)
+            let existingEntries = try fetchEntries(for: calendarToSave.id, in: context)
             var existingByKey = existingEntries.reduce(into: [String: CalendarEntryEntity]()) { partialResult, entry in
                 if let existing = partialResult[entry.dayKey] {
                     if entry.date > existing.date {
@@ -567,13 +574,13 @@ public final class CustomCalendarStore: ObservableObject {
                 }
             }
 
-            for (key, entryModel) in calendar.entries {
+            for (key, entryModel) in calendarToSave.entries {
                 if let entryEntity = existingByKey.removeValue(forKey: key) {
-                    entryEntity.apply(from: entryModel, calendarId: calendar.id, overrideDayKey: key)
+                    entryEntity.apply(from: entryModel, calendarId: calendarToSave.id, overrideDayKey: key)
                 } else {
                     let entryEntity = CalendarEntryEntity(
-                        compositeKey: CalendarEntryEntity.makeCompositeKey(calendarId: calendar.id, dayKey: key),
-                        calendarId: calendar.id,
+                        compositeKey: CalendarEntryEntity.makeCompositeKey(calendarId: calendarToSave.id, dayKey: key),
+                        calendarId: calendarToSave.id,
                         dayKey: key,
                         date: entryModel.date,
                         count: entryModel.count,
@@ -587,6 +594,7 @@ public final class CustomCalendarStore: ObservableObject {
                 context.delete(redundant)
             }
 
+            try persistNormalizedCalendarOrder(in: context)
             try persistChanges(in: context)
             bumpDataVersion()
             loadCalendars(showLoadingIndicator: false)
@@ -598,12 +606,15 @@ public final class CustomCalendarStore: ObservableObject {
     public func deleteCalendar(id: UUID) {
         do {
             let context = makeContext()
-            guard let entity = fetchCalendarEntity(id: id, in: context) else { return }
+            let entities = fetchCalendarEntities(id: id, in: context)
+            guard !entities.isEmpty else { return }
             let entries = try fetchEntries(for: id, in: context)
             for entry in entries {
                 context.delete(entry)
             }
-            context.delete(entity)
+            for entity in entities {
+                context.delete(entity)
+            }
             try persistChanges(in: context)
             bumpDataVersion()
             loadCalendars(showLoadingIndicator: false)
@@ -613,62 +624,32 @@ public final class CustomCalendarStore: ObservableObject {
     }
 
     public func moveCalendar(fromOffsets indices: IndexSet, toOffset destination: Int) {
-        var reordered = Self.sortCalendars(calendars)
+        var reordered = Self.normalizedCalendarOrder(calendars)
         reordered.move(fromOffsets: indices, toOffset: destination)
+        reordered = Self.assigningContiguousOrder(to: reordered)
 
         do {
             let context = makeContext()
-            for (index, var calendar) in reordered.enumerated() {
-                calendar.order = index
-                reordered[index] = calendar
-                if let entity = fetchCalendarEntity(id: calendar.id, in: context) {
-                    entity.order = index
-                }
-            }
-
-            calendars = reordered
-            bumpDataVersion()
+            persistCalendarOrder(reordered, in: context)
             try persistChanges(in: context)
-            loadCalendars(showLoadingIndicator: false)
+            calendars = reordered
         } catch {
             NSLog("Failed to move calendars: \(error)")
         }
     }
 
     public func moveActiveCalendars(fromOffsets indices: IndexSet, toOffset destination: Int) {
-        let orderedCalendars = Self.sortCalendars(calendars)
-        let activeCalendars = orderedCalendars.filter { !$0.isArchived }
-        guard !activeCalendars.isEmpty else { return }
-
-        var reorderedActive = activeCalendars
-        reorderedActive.move(fromOffsets: indices, toOffset: destination)
-
-        var activeIterator = reorderedActive.makeIterator()
-        var reorderedAll: [CustomCalendar] = []
-        reorderedAll.reserveCapacity(orderedCalendars.count)
-
-        for calendar in orderedCalendars {
-            if calendar.isArchived {
-                reorderedAll.append(calendar)
-            } else if let next = activeIterator.next() {
-                reorderedAll.append(next)
-            }
-        }
+        let reordered = Self.reorderedActiveCalendars(
+            calendars,
+            fromOffsets: indices,
+            toOffset: destination
+        )
 
         do {
             let context = makeContext()
-            for (index, var calendar) in reorderedAll.enumerated() {
-                calendar.order = index
-                reorderedAll[index] = calendar
-                if let entity = fetchCalendarEntity(id: calendar.id, in: context) {
-                    entity.order = index
-                }
-            }
-
-            calendars = reorderedAll
-            bumpDataVersion()
+            persistCalendarOrder(reordered, in: context)
             try persistChanges(in: context)
-            loadCalendars(showLoadingIndicator: false)
+            calendars = reordered
         } catch {
             NSLog("Failed to move active calendars: \(error)")
         }
@@ -749,10 +730,12 @@ public final class CustomCalendarStore: ObservableObject {
     }
 
     private func fetchCalendarEntity(id: UUID, in context: ModelContext) -> HabitCalendarEntity? {
+        fetchCalendarEntities(id: id, in: context).first
+    }
+
+    private func fetchCalendarEntities(id: UUID, in context: ModelContext) -> [HabitCalendarEntity] {
         let predicate = #Predicate<HabitCalendarEntity> { $0.id == id }
-        var descriptor = FetchDescriptor(predicate: predicate)
-        descriptor.fetchLimit = 1
-        return try? context.fetch(descriptor).first
+        return (try? context.fetch(FetchDescriptor(predicate: predicate))) ?? []
     }
 
     private func fetchEntries(for calendarId: UUID, in context: ModelContext) throws -> [CalendarEntryEntity] {
@@ -765,6 +748,36 @@ public final class CustomCalendarStore: ObservableObject {
         var descriptor = FetchDescriptor(predicate: predicate)
         descriptor.fetchLimit = 1
         return try? context.fetch(descriptor).first
+    }
+
+    private func activeCalendarCount(excluding excludedId: UUID, in context: ModelContext) -> Int {
+        let predicate = #Predicate<HabitCalendarEntity> { !$0.isArchived && $0.id != excludedId }
+        return (try? context.fetchCount(FetchDescriptor(predicate: predicate))) ?? calendars.filter {
+            !$0.isArchived && $0.id != excludedId
+        }.count
+    }
+
+    private func persistCalendarOrder(_ orderedCalendars: [CustomCalendar], in context: ModelContext) {
+        for calendar in orderedCalendars {
+            for entity in fetchCalendarEntities(id: calendar.id, in: context) {
+                entity.order = calendar.order
+            }
+        }
+    }
+
+    private func persistNormalizedCalendarOrder(in context: ModelContext) throws {
+        let entities = try context.fetch(FetchDescriptor<HabitCalendarEntity>())
+        let calendars = entities.map { $0.toCustomCalendar(entries: [:]) }
+        let normalizedCalendars = Self.normalizedCalendarOrder(calendars)
+        let orderById = normalizedCalendars.reduce(into: [UUID: Int]()) { result, calendar in
+            result[calendar.id] = min(result[calendar.id] ?? calendar.order, calendar.order)
+        }
+
+        for entity in entities {
+            if let normalizedOrder = orderById[entity.id], entity.order != normalizedOrder {
+                entity.order = normalizedOrder
+            }
+        }
     }
 
     private func persistChanges(in context: ModelContext) throws {
@@ -799,13 +812,62 @@ public final class CustomCalendarStore: ObservableObject {
         (try? fetchCalendars(container: container)) ?? []
     }
 
-    private static func sortCalendars(_ calendars: [CustomCalendar]) -> [CustomCalendar] {
-        calendars.sorted { lhs, rhs in
-            if lhs.order == rhs.order {
-                return lhs.id.uuidString < rhs.id.uuidString
-            }
-            return lhs.order < rhs.order
+    public static func normalizedCalendarOrder(_ calendars: [CustomCalendar]) -> [CustomCalendar] {
+        let activeCalendars = calendars
+            .filter { !$0.isArchived }
+            .sorted(by: calendarOrderSort)
+        let archivedCalendars = calendars
+            .filter(\.isArchived)
+            .sorted(by: calendarOrderSort)
+
+        return (activeCalendars + archivedCalendars).enumerated().map { index, calendar in
+            var normalizedCalendar = calendar
+            normalizedCalendar.order = index
+            return normalizedCalendar
         }
+    }
+
+    public static func reorderedActiveCalendars(
+        _ calendars: [CustomCalendar],
+        fromOffsets indices: IndexSet,
+        toOffset destination: Int
+    ) -> [CustomCalendar] {
+        let normalizedCalendars = normalizedCalendarOrder(calendars)
+        let activeCalendars = normalizedCalendars.filter { !$0.isArchived }
+        guard !activeCalendars.isEmpty else {
+            return normalizedCalendars
+        }
+        guard indices.allSatisfy({ activeCalendars.indices.contains($0) }) else {
+            return normalizedCalendars
+        }
+        guard (0 ... activeCalendars.count).contains(destination) else {
+            return normalizedCalendars
+        }
+
+        var reorderedActiveCalendars = activeCalendars
+        reorderedActiveCalendars.move(fromOffsets: indices, toOffset: destination)
+
+        let archivedCalendars = normalizedCalendars.filter(\.isArchived)
+        return assigningContiguousOrder(to: reorderedActiveCalendars + archivedCalendars)
+    }
+
+    private static func sortCalendars(_ calendars: [CustomCalendar]) -> [CustomCalendar] {
+        normalizedCalendarOrder(calendars)
+    }
+
+    private static func assigningContiguousOrder(to calendars: [CustomCalendar]) -> [CustomCalendar] {
+        calendars.enumerated().map { index, calendar in
+            var orderedCalendar = calendar
+            orderedCalendar.order = index
+            return orderedCalendar
+        }
+    }
+
+    private static func calendarOrderSort(_ lhs: CustomCalendar, _ rhs: CustomCalendar) -> Bool {
+        if lhs.order == rhs.order {
+            return lhs.id.uuidString < rhs.id.uuidString
+        }
+        return lhs.order < rhs.order
     }
 
     private func bumpDataVersion() {
@@ -846,7 +908,19 @@ public final class CustomCalendarStore: ObservableObject {
             }
         }
 
-        return Self.sortCalendars(Array(deduplicatedCalendars.values))
+        let normalizedCalendars = Self.normalizedCalendarOrder(Array(deduplicatedCalendars.values))
+        let orderById = Dictionary(uniqueKeysWithValues: normalizedCalendars.map { ($0.id, $0.order) })
+
+        for entity in calendarEntities {
+            if let normalizedOrder = orderById[entity.id], entity.order != normalizedOrder {
+                entity.order = normalizedOrder
+            }
+        }
+        if context.hasChanges {
+            try context.save()
+        }
+
+        return normalizedCalendars
     }
 }
 

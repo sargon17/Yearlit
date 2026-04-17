@@ -63,8 +63,6 @@ struct ExponentialGraph: View {
             let w = geo.size.width
             let h = geo.size.height
             let pad: CGFloat = 16
-            let gw = w - pad * 2
-            let gh = h - pad * 2
 
             ZStack {
                 // Axes

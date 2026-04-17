@@ -172,9 +172,9 @@ private func generateDynamicContent(
 
     } else if stats.weeklyCompletionRate > 0.7 {
         // Good weekly progress
-        let weekPercent = Int(stats.weeklyCompletionRate * 100)
+        let weekPercent = stats.weeklyCompletionRate.formatted(.percent.precision(.fractionLength(0)))
         body = String(
-            format: String(localized: "You're at %lld%% this week! Keep pushing 💪"),
+            format: String(localized: "You're at %@ this week! Keep pushing 💪"),
             weekPercent
         )
 
