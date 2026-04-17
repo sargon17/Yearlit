@@ -99,7 +99,7 @@ struct My_YearApp: App {
     #endif
 
     init() {
-        Purchases.configure(withAPIKey: "appl_rQKHOkYUqJKaipHpcSXlIpPgvPe")
+        Purchases.configure(withAPIKey: AppConfig.revenueCatAPIKey)
         AppStorageMigration.run()
 
         // * Reviews Promt Manager
