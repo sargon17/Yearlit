@@ -33,83 +33,6 @@ struct AllCalendarsRecapView: View {
         return CacheKey(scope: .overviewStatsBundle, identifier: identifier)
     }
 
-    private func computeOverallStats(
-        calendars: [CustomCalendar],
-        year: Int,
-        todayLocal: Date,
-        todayKeyDate: Date?
-    ) -> StatsBundle {
-        var cal = Calendar(identifier: .gregorian)
-        cal.locale = Locale(identifier: "en_US_POSIX")
-        cal.timeZone = .autoupdatingCurrent
-        let entriesByCalendar = Dictionary(uniqueKeysWithValues: calendars.map { ($0.id, $0.entries) })
-        let (totalCount, perDayTotal) = aggregateCounts(cal: cal, calendars: calendars)
-        let maxCount = perDayTotal.values.max() ?? 0
-
-        let (anySuccessByDay, dayMeanZ) = buildDailyMaps(
-            cal: cal,
-            year: year,
-            todayLocal: todayLocal,
-            calendars: calendars,
-            entriesByCalendar: entriesByCalendar
-        )
-
-        let allTimeSuccessByDay = buildAllTimeSuccessMap(
-            cal: cal,
-            todayLocal: todayLocal,
-            calendars: calendars
-        )
-        let activeDays = allTimeSuccessByDay.values.filter { $0 }.count
-        let (longestStreak, currentStreak) = computeStreaks(cal: cal, allTimeSuccessByDay)
-
-        let todayKeyCount: Int? = {
-            guard let keyDate = todayKeyDate else { return nil }
-            let key = dayKey(for: cal.startOfDay(for: keyDate))
-            return calendars.reduce(0) { partial, c in
-                let e = entry(for: c.id, dayKey: key, entriesByCalendar: entriesByCalendar)
-                return partial + (e?.count ?? 0)
-            }
-        }()
-
-        let (cr30, avg7, avg30) = computeRollingStats(
-            cal: cal,
-            todayLocal: todayLocal,
-            calendars: calendars,
-            anySuccessByDay: anySuccessByDay,
-            entriesByCalendar: entriesByCalendar
-        )
-
-        let (weekdayRates, bestWD) = computeWeekdayRates(cal: cal, dayMeanZ: dayMeanZ)
-
-        let monthlyRates = computeMonthlyRates(
-            cal: cal, year: year, todayLocal: todayLocal, dayMeanZ: dayMeanZ
-        )
-
-        let volatility = computeWeeklyVolatility(
-            cal: cal, todayLocal: todayLocal, anySuccessByDay: anySuccessByDay
-        )
-
-        let basic = CalendarStats(
-            activeDays: activeDays,
-            totalCount: totalCount,
-            maxCount: maxCount,
-            longestStreak: longestStreak,
-            currentStreak: currentStreak
-        )
-
-        return StatsBundle(
-            basic: basic,
-            completionRate30d: cr30,
-            bestWeekday: bestWD?.day,
-            weekdayRates: weekdayRates,
-            monthlyRates: monthlyRates,
-            rolling7d: avg7,
-            rolling30d: avg30,
-            volatilityStd: volatility,
-            todaysCount: todayKeyCount
-        )
-    }
-
     var body: some View {
         let selectedYear = valuationStore.selectedYear
         let dataVersion = store.dataVersion
@@ -259,8 +182,8 @@ struct AllCalendarsRecapView: View {
             let calendarsSnapshot = await MainActor.run { store.calendars }
             let currentVersion = await MainActor.run { store.dataVersion }
             guard currentVersion == dataVersion else { return }
-            let bundle = await Task.detached(priority: .userInitiated) {
-                computeOverallStats(
+            let bundle = await Task(priority: .userInitiated) {
+                computeOverallStatsBundle(
                     calendars: calendarsSnapshot,
                     year: selectedYear,
                     todayLocal: Date(),
@@ -281,6 +204,79 @@ struct AllCalendarsRecapView: View {
             }
         }
     }
+}
+
+func computeOverallStatsBundle(
+    calendars: [CustomCalendar],
+    year: Int,
+    todayLocal: Date,
+    todayKeyDate: Date?
+) -> StatsBundle {
+    var cal = Calendar(identifier: .gregorian)
+    cal.locale = Locale(identifier: "en_US_POSIX")
+    cal.timeZone = .autoupdatingCurrent
+    let entriesByCalendar = Dictionary(uniqueKeysWithValues: calendars.map { ($0.id, $0.entries) })
+    let q75ByCalendar = counterPercentile75ByCalendar(calendars: calendars)
+    let (totalCount, perDayTotal) = aggregateCounts(cal: cal, calendars: calendars)
+    let maxCount = perDayTotal.values.max() ?? 0
+
+    let (anySuccessByDay, dayMeanZ) = buildDailyMaps(
+        cal: cal,
+        year: year,
+        todayLocal: todayLocal,
+        calendars: calendars,
+        entriesByCalendar: entriesByCalendar,
+        q75ByCalendar: q75ByCalendar
+    )
+
+    let allTimeSuccessByDay = buildAllTimeSuccessMap(
+        cal: cal,
+        todayLocal: todayLocal,
+        calendars: calendars
+    )
+    let activeDays = allTimeSuccessByDay.values.filter { $0 }.count
+    let (longestStreak, currentStreak) = computeStreaks(cal: cal, allTimeSuccessByDay)
+
+    let todayKeyCount = todayKeyDate.map { keyDate in
+        perDayTotal[cal.startOfDay(for: keyDate)] ?? 0
+    }
+
+    let (cr30, avg7, avg30) = computeRollingStats(
+        cal: cal,
+        todayLocal: todayLocal,
+        anySuccessByDay: anySuccessByDay,
+        dayMeanZ: dayMeanZ
+    )
+
+    let (weekdayRates, bestWD) = computeWeekdayRates(cal: cal, dayMeanZ: dayMeanZ)
+
+    let monthlyRates = computeMonthlyRates(
+        cal: cal, year: year, todayLocal: todayLocal, dayMeanZ: dayMeanZ
+    )
+
+    let volatility = computeWeeklyVolatility(
+        cal: cal, todayLocal: todayLocal, anySuccessByDay: anySuccessByDay
+    )
+
+    let basic = CalendarStats(
+        activeDays: activeDays,
+        totalCount: totalCount,
+        maxCount: maxCount,
+        longestStreak: longestStreak,
+        currentStreak: currentStreak
+    )
+
+    return StatsBundle(
+        basic: basic,
+        completionRate30d: cr30,
+        bestWeekday: bestWD?.day,
+        weekdayRates: weekdayRates,
+        monthlyRates: monthlyRates,
+        rolling7d: avg7,
+        rolling30d: avg30,
+        volatilityStd: volatility,
+        todaysCount: todayKeyCount
+    )
 }
 
 private extension AllCalendarsRecapView {

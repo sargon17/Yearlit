@@ -87,17 +87,7 @@ struct OverallGridView: View {
 
                     // Heavy work off-main: compute q75 and numeric shades only
                     let result = await Task.detached(priority: .userInitiated) { () -> ([UUID: Double], [(Date, Double)]) in
-                        let pct75: [UUID: Double] = Dictionary(
-                            uniqueKeysWithValues: calendars.map { cal in
-                                if cal.trackingType == .counter {
-                                    let counts = cal.entries.values.map { $0.count }
-                                    let q = max(1, Int(percentile(counts, p: 0.75)))
-                                    return (cal.id, Double(q))
-                                } else {
-                                    return (cal.id, 1.0)
-                                }
-                            }
-                        )
+                        let pct75 = counterPercentile75ByCalendar(calendars: calendars)
 
                         let shades: [(Date, Double)] = datesArray.map { day in
                             if day > todayLocal { return (day, 0.0) }
