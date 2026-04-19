@@ -289,11 +289,12 @@ struct EditCalendarView: View {
                                     Text("Notification settings")
                                         .labelStyle(type: .secondary)
                                     Text(
-                                        recurringReminderEnabled
-                                            ? notificationSummary
-                                            : cadence == .weekly
-                                                ? "Off • set a weekly reminder and privacy level."
-                                                : "Off • set a daily reminder and privacy level."
+                                        NotificationSettingsHelpers.reminderSummary(
+                                            isEnabled: recurringReminderEnabled,
+                                            cadence: cadence,
+                                            reminderTime: reminderTime,
+                                            reminderWeekday: reminderWeekday
+                                        )
                                     )
                                     .font(.caption)
                                     .foregroundStyle(.textTertiary)
@@ -502,19 +503,5 @@ struct EditCalendarView: View {
             streakProtectionEnabled: streakProtectionEnabled,
             streakProtectionThreshold: streakProtectionThreshold
         )
-    }
-
-    private var notificationSummary: String {
-        let time = reminderTime.formatted(date: .omitted, time: .shortened)
-        if cadence == .weekly {
-            return "On • \(weekdayName(reminderWeekday)) at \(time)."
-        }
-        return "On • every day at \(time)."
-    }
-
-    private func weekdayName(_ weekday: Int) -> String {
-        let symbols = Calendar.current.weekdaySymbols
-        let index = max(1, min(7, weekday)) - 1
-        return symbols[index]
     }
 }

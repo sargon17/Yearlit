@@ -7,7 +7,6 @@ import SwiftUI
 struct NotificationSettingsDraftSheet: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.router) private var router
-    @Environment(\.colorScheme) private var colorScheme
 
     let calendarName: String
     let cadence: CalendarCadence
@@ -24,8 +23,6 @@ struct NotificationSettingsDraftSheet: View {
     @Binding var streakProtectionThreshold: Int
     @Binding var reminderWeekday: Int
 
-    private let maxTotalReminderTimesPerDay = 5
-
     private var isPremiumUser: Bool {
         isPremium(customerInfo: customerInfo)
     }
@@ -34,226 +31,40 @@ struct NotificationSettingsDraftSheet: View {
         NavigationStack {
             ScrollView {
                 VStack(spacing: 32) {
-                    NotificationSection(label: cadence == .weekly ? "Weekly Reminder" : "Daily Reminder") {
-                        VStack(spacing: 2) {
-                            HStack {
-                                VStack(alignment: .leading, spacing: 4) {
-                                    Text(cadence == .weekly ? "Send a weekly reminder" : "Send a daily reminder")
-                                        .labelStyle(type: .secondary)
-                                    Text(
-                                        cadence == .weekly
-                                            ? "A recurring notification on your chosen weekday and time."
-                                            : "A recurring notification at your chosen time."
-                                    )
-                                        .font(.caption)
-                                        .foregroundStyle(.textTertiary)
-                                }
-                                Spacer()
-                                Toggle("", isOn: $recurringReminderEnabled)
-                            }
-                            .tint(accentColor)
-                            .padding(.horizontal)
-                            .padding(.vertical, 8)
-                            .notificationSurface()
-
-                            if recurringReminderEnabled {
-                                VStack(spacing: 2) {
-                                    if cadence == .weekly {
-                                        HStack {
-                                            Text("Weekday")
-                                                .labelStyle(type: .secondary)
-                                            Spacer()
-                                            Picker("Weekday", selection: $reminderWeekday) {
-                                                ForEach(orderedWeekdays, id: \.self) { weekday in
-                                                    Text(weekdayName(weekday)).tag(weekday)
-                                                }
-                                            }
-                                            .pickerStyle(.menu)
-                                            .tint(accentColor)
-                                        }
-                                        .padding(.horizontal)
-                                        .padding(.vertical, 10)
-                                        .notificationSurface()
-                                    }
-
-                                    VStack(spacing: 6) {
-                                        HStack {
-                                            Text("Time")
-                                                .labelStyle(type: .secondary)
-                                            Spacer()
-                                        }
-                                        .padding(.horizontal)
-                                        .padding(.top, 10)
-
-                                        DatePicker("", selection: $reminderTime, displayedComponents: [.hourAndMinute])
-                                            .labelsHidden()
-                                            .tint(accentColor)
-                                            .datePickerStyle(.wheel)
-                                            .inputStyle(radius: 4, color: accentColor)
-                                            .colorScheme(.dark)
-                                            .padding(.horizontal)
-                                            .padding(.bottom, 10)
-                                    }
-                                    .notificationSurface()
-                                }
-                            }
-                        }
-                    }
+                    ReminderScheduleSection(
+                        cadence: cadence,
+                        accentColor: accentColor,
+                        style: .draft,
+                        recurringReminderEnabled: $recurringReminderEnabled,
+                        reminderTime: $reminderTime,
+                        reminderWeekday: $reminderWeekday
+                    )
 
                     if recurringReminderEnabled {
-                        NotificationSection(label: "Privacy") {
-                            VStack(spacing: 2) {
-                                HStack {
-                                    VStack(alignment: .leading, spacing: 4) {
-                                        Text("Lock screen text")
-                                            .labelStyle(type: .secondary)
-                                        Text(notificationPrivacyMode.detail)
-                                            .font(.caption)
-                                            .foregroundStyle(.textTertiary)
-                                    }
-                                    Spacer()
-                                    Picker("Privacy Level", selection: $notificationPrivacyMode) {
-                                        ForEach(NotificationPrivacyMode.allCases, id: \.self) { mode in
-                                            Text(mode.description).tag(mode)
-                                        }
-                                    }
-                                    .pickerStyle(.menu)
-                                    .tint(accentColor)
-                                }
-                                .padding(.horizontal)
-                                .padding(.vertical, 10)
-                                .notificationSurface()
+                        AdditionalRemindersSection(
+                            cadence: cadence,
+                            trackingType: trackingType,
+                            accentColor: accentColor,
+                            isPremiumUser: isPremiumUser,
+                            style: .draft,
+                            onUpgrade: showPremiumPaywall,
+                            additionalReminderTimes: $additionalReminderTimes,
+                            reminderTime: $reminderTime
+                        )
 
-                                HStack {
-                                    VStack(alignment: .leading, spacing: 4) {
-                                        Text("Smart suppression")
-                                            .labelStyle(type: .secondary)
-                                        Text(
-                                            cadence == .weekly
-                                                ? "While the app is open, hides reminders if you've already logged this week."
-                                                : "While the app is open, hides reminders if you've already logged today."
-                                        )
-                                            .font(.caption)
-                                            .foregroundStyle(.textTertiary)
-                                    }
-                                    Spacer()
-                                    Toggle("", isOn: $suppressWhenCompleted)
-                                }
-                                .tint(accentColor)
-                                .padding(.horizontal)
-                                .padding(.vertical, 10)
-                                .notificationSurface()
-                            }
-                        }
+                        ReminderBehaviorSection(
+                            cadence: cadence,
+                            accentColor: accentColor,
+                            style: .draft,
+                            suppressWhenCompleted: $suppressWhenCompleted,
+                            streakProtectionEnabled: $streakProtectionEnabled
+                        )
 
-                        NotificationSection(label: "Multiple Times") {
-                            VStack(spacing: 2) {
-                                if cadence == .weekly {
-                                    HStack {
-                                        VStack(alignment: .leading, spacing: 4) {
-                                            Text("Not available for weekly reminders")
-                                                .labelStyle(type: .secondary)
-                                            Text("Weekly calendars only send one reminder on the selected weekday.")
-                                                .font(.caption)
-                                                .foregroundStyle(.textTertiary)
-                                        }
-                                        Spacer()
-                                    }
-                                    .padding(.horizontal)
-                                    .padding(.vertical, 12)
-                                    .notificationSurface()
-                                } else if trackingType != .multipleDaily {
-                                    HStack {
-                                        VStack(alignment: .leading, spacing: 4) {
-                                            Text("Only for Target tracking")
-                                                .labelStyle(type: .secondary)
-                                            Text("Extra reminders are available when your habit has a daily target.")
-                                                .font(.caption)
-                                                .foregroundStyle(.textTertiary)
-                                        }
-                                        Spacer()
-                                    }
-                                    .padding(.horizontal)
-                                    .padding(.vertical, 12)
-                                    .notificationSurface()
-                                } else {
-                                    HStack {
-                                        VStack(alignment: .leading, spacing: 4) {
-                                            Text("Additional reminders (Premium)")
-                                                .labelStyle(type: .secondary)
-                                            Text("Up to \(maxTotalReminderTimesPerDay) total times per day.")
-                                                .font(.caption)
-                                                .foregroundStyle(.textTertiary)
-                                        }
-                                        Spacer()
-                                        Button("Add") { addAdditionalReminderTime() }
-                                            .fontWeight(.bold)
-                                            .tint(accentColor)
-                                    }
-                                    .padding(.horizontal)
-                                    .padding(.vertical, 10)
-                                    .notificationSurface()
-
-                                    if !isPremiumUser {
-                                        HStack(spacing: 8) {
-                                            Image(systemName: "lock.fill")
-                                                .font(.system(size: 12, design: .monospaced))
-                                                .foregroundStyle(.textTertiary)
-                                            Text("Upgrade to Premium to add more times.")
-                                                .font(.footnote)
-                                                .foregroundStyle(.textTertiary)
-                                            Spacer()
-                                            Button("Upgrade") { showPremiumPaywall() }
-                                                .fontWeight(.bold)
-                                                .tint(accentColor)
-                                        }
-                                        .padding(.horizontal)
-                                        .padding(.vertical, 12)
-                                        .notificationSurface()
-                                    }
-
-                                    if additionalReminderTimes.isEmpty {
-                                        HStack {
-                                            Text("No additional times.")
-                                                .font(.footnote)
-                                                .foregroundStyle(.textTertiary)
-                                            Spacer()
-                                        }
-                                        .padding(.horizontal)
-                                        .padding(.vertical, 12)
-                                        .notificationSurface()
-                                    } else {
-                                        ForEach(additionalReminderTimes.indices, id: \.self) { idx in
-                                            additionalTimeRow(index: idx)
-                                        }
-                                    }
-                                }
-                            }
-                        }
-
-                        NotificationSection(label: "Streak Protection") {
-                            VStack(spacing: 2) {
-                                HStack {
-                                    VStack(alignment: .leading, spacing: 4) {
-                                        Text("Late-day rescue reminder")
-                                            .labelStyle(type: .secondary)
-                                        Text(
-                                            cadence == .weekly
-                                                ? "On the last day of the week at 9 PM, if your streak is at risk, we send one extra reminder."
-                                                : "At 9 PM, if your streak is at risk, we send one extra reminder."
-                                        )
-                                            .font(.caption)
-                                            .foregroundStyle(.textTertiary)
-                                    }
-                                    Spacer()
-                                    Toggle("", isOn: $streakProtectionEnabled)
-                                }
-                                .tint(accentColor)
-                                .padding(.horizontal)
-                                .padding(.vertical, 10)
-                                .notificationSurface()
-                            }
-                        }
+                        PrivacySection(
+                            style: .draft,
+                            accentColor: accentColor,
+                            notificationPrivacyMode: $notificationPrivacyMode
+                        )
                     }
                 }
                 .padding()
@@ -266,14 +77,14 @@ struct NotificationSettingsDraftSheet: View {
                 }
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Done") {
-                        if cadence == .weekly || trackingType != .multipleDaily {
-                            additionalReminderTimes = []
-                        } else if !isPremiumUser {
-                            additionalReminderTimes = []
-                        } else {
-                            additionalReminderTimes = normalizedAdditionalReminderTimes(additionalReminderTimes)
-                        }
-
+                        additionalReminderTimes =
+                            (cadence == .daily && trackingType == .multipleDaily && isPremiumUser)
+                            ? NotificationSettingsHelpers.sanitizedAdditionalReminderTimes(
+                                additionalReminderTimes,
+                                cadence: cadence,
+                                trackingType: trackingType
+                            )
+                            : []
                         dismiss()
                     }
                 }
@@ -286,148 +97,9 @@ struct NotificationSettingsDraftSheet: View {
 }
 
 extension NotificationSettingsDraftSheet {
-    private var maxAdditionalReminderTimes: Int {
-        max(0, maxTotalReminderTimesPerDay - 1)
-    }
-
     private func showPremiumPaywall() {
         router.showScreen(.sheet) { _ in
             PaywallView(displayCloseButton: true)
         }
-    }
-
-    private struct NotificationSection<Content: View>: View {
-        let label: LocalizedStringKey
-        let content: () -> Content
-        @Environment(\.colorScheme) private var colorScheme
-
-        init(label: LocalizedStringKey, @ViewBuilder content: @escaping () -> Content) {
-            self.label = label
-            self.content = content
-        }
-
-        var body: some View {
-            VStack(alignment: .leading, spacing: 8) {
-                Text(label)
-                    .labelStyle(type: .tertiary)
-                    .textCase(nil)
-
-                VStack(alignment: .leading, spacing: 2) {
-                    content()
-                }
-                // Show 2pt black gaps between each flat surface.
-                .padding(2)
-                .background(
-                    RoundedRectangle(cornerRadius: 6)
-                        .fill(getVoidColor(colorScheme: colorScheme))
-                )
-            }
-            .frame(maxWidth: .infinity, alignment: .leading)
-        }
-    }
-
-    private func normalizedAdditionalReminderTimes(_ times: [ReminderTime]) -> [ReminderTime] {
-        guard trackingType == .multipleDaily else {
-            return []
-        }
-
-        var seen = Set<String>()
-        let deduped = times.filter { time in
-            let key = time.id
-            if seen.contains(key) { return false }
-            seen.insert(key)
-            return true
-        }
-
-        let sorted = deduped.sorted {
-            if $0.hour != $1.hour { return $0.hour < $1.hour }
-            return $0.minute < $1.minute
-        }
-
-        return Array(sorted.prefix(maxAdditionalReminderTimes))
-    }
-
-    private func addAdditionalReminderTime() {
-        guard cadence == .daily else { return }
-        guard trackingType == .multipleDaily else { return }
-        guard isPremiumUser else {
-            showPremiumPaywall()
-            return
-        }
-
-        guard additionalReminderTimes.count < maxAdditionalReminderTimes else { return }
-
-        let base = additionalReminderTimes.last?.toDate() ?? reminderTime
-        let next = Calendar.current.date(byAdding: .hour, value: 1, to: base) ?? base
-        let proposed = ReminderTime(from: next)
-        additionalReminderTimes = normalizedAdditionalReminderTimes(additionalReminderTimes + [proposed])
-    }
-
-    private func additionalTimeRow(index: Int) -> some View {
-        let time = additionalReminderTimes[index]
-
-        return HStack {
-            DatePicker(
-                "",
-                selection: Binding(
-                    get: { time.toDate() },
-                    set: { newDate in
-                        guard isPremiumUser else {
-                            showPremiumPaywall()
-                            return
-                        }
-                        var updated = additionalReminderTimes
-                        updated[index] = ReminderTime(from: newDate)
-                        additionalReminderTimes = normalizedAdditionalReminderTimes(updated)
-                    }
-                ),
-                displayedComponents: [.hourAndMinute]
-            )
-            .labelsHidden()
-            .tint(accentColor)
-            .datePickerStyle(.compact)
-            .disabled(!isPremiumUser)
-
-            Spacer()
-
-            Button(role: .destructive) {
-                guard isPremiumUser else {
-                    showPremiumPaywall()
-                    return
-                }
-                additionalReminderTimes.remove(at: index)
-            } label: {
-                Text("Remove")
-                    .foregroundStyle(.moodTerrible)
-            }
-            .buttonStyle(.plain)
-            .disabled(!isPremiumUser)
-        }
-        .padding(.horizontal)
-        .padding(.vertical, 8)
-        .notificationSurface()
-    }
-
-    private var orderedWeekdays: [Int] {
-        let calendar = Calendar.current
-        return (0 ..< 7).map { offset in
-            ((calendar.firstWeekday - 1 + offset) % 7) + 1
-        }
-    }
-
-    private func weekdayName(_ weekday: Int) -> String {
-        let symbols = Calendar.current.weekdaySymbols
-        let index = max(1, min(7, weekday)) - 1
-        return symbols[index]
-    }
-}
-
-private extension View {
-    func notificationSurface() -> some View {
-        sameLevelBorder(radius: 6, isFlat: true)
-            .overlay(
-                RoundedRectangle(cornerRadius: 6)
-                    .stroke(Color.black.opacity(0.75), lineWidth: 2)
-            )
     }
 }
