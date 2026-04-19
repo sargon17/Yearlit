@@ -11,6 +11,21 @@ struct YearCardShareView: View {
     let todaysCount: Int
     let trackingType: TrackingType
 
+    private var shareData: ShareCardData {
+        ShareCardData(
+            calendar: calendar,
+            year: year,
+            dates: dates,
+            stats: stats,
+            completionRate30d: completionRate30d,
+            rolling7d: 0,
+            rolling30d: 0,
+            bestWeekday: nil,
+            todaysCount: todaysCount,
+            trackingType: trackingType
+        )
+    }
+
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
             header
@@ -64,7 +79,7 @@ struct YearCardShareView: View {
             }
             HStack(spacing: 12) {
                 ShareCompactStatTile(
-                    title: "Today",
+                    title: shareData.currentPeriodTitle,
                     value: "\(todaysCount)",
                     accentColor: Color(calendar.color)
                 )
@@ -75,7 +90,7 @@ struct YearCardShareView: View {
                 )
                 if trackingType != .binary {
                     ShareCompactStatTile(
-                        title: "Best Day",
+                        title: shareData.bestPeriodTitle,
                         value: "\(stats.maxCount)",
                         accentColor: Color(calendar.color)
                     )
@@ -93,7 +108,7 @@ struct YearCardShareView: View {
                     accentColor: Color(calendar.color)
                 )
                 ShareCompactStatTile(
-                    title: "30d",
+                    title: shareData.completionWindowTitle,
                     value: sharePercent(completionRate30d),
                     accentColor: Color(calendar.color)
                 )

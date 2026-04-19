@@ -17,6 +17,7 @@ struct EditCalendarView: View {
     @State private var dailyTarget: Int
     @State private var recurringReminderEnabled: Bool
     @State private var reminderTime: Date
+    @State private var reminderWeekday: Int
     @State private var selectedUnit: UnitOfMeasure?
     @State private var defaultRecordValue: Int
     @State private var isArchived: Bool
@@ -48,6 +49,7 @@ struct EditCalendarView: View {
         _trackingType = State(initialValue: calendar.trackingType)
         _dailyTarget = State(initialValue: calendar.dailyTarget)
         _recurringReminderEnabled = State(initialValue: calendar.recurringReminderEnabled)
+        _reminderWeekday = State(initialValue: calendar.reminderWeekday ?? Calendar.current.component(.weekday, from: Date()))
         _selectedUnit = State(initialValue: calendar.unit)
         _defaultRecordValue = State(initialValue: calendar.defaultRecordValue ?? 1)
         _currencySymbol = State(initialValue: calendar.currencySymbol ?? "$")
@@ -288,8 +290,10 @@ struct EditCalendarView: View {
                                         .labelStyle(type: .secondary)
                                     Text(
                                         recurringReminderEnabled
-                                            ? "On • tap to customize privacy, suppression, and more."
-                                            : "Off • set a daily reminder and privacy level."
+                                            ? notificationSummary
+                                            : cadence == .weekly
+                                                ? "Off • set a weekly reminder and privacy level."
+                                                : "Off • set a daily reminder and privacy level."
                                     )
                                     .font(.caption)
                                     .foregroundStyle(.textTertiary)
@@ -450,6 +454,7 @@ struct EditCalendarView: View {
         .sheet(isPresented: $showingNotificationSettings) {
             NotificationSettingsDraftSheet(
                 calendarName: name,
+                cadence: cadence,
                 trackingType: trackingType,
                 accentColor: Color(selectedColor),
                 customerInfo: customerInfo,
@@ -459,7 +464,8 @@ struct EditCalendarView: View {
                 suppressWhenCompleted: $suppressWhenCompleted,
                 additionalReminderTimes: $additionalReminderTimes,
                 streakProtectionEnabled: $streakProtectionEnabled,
-                streakProtectionThreshold: $streakProtectionThreshold
+                streakProtectionThreshold: $streakProtectionThreshold,
+                reminderWeekday: $reminderWeekday
             )
         }
         .onChange(of: trackingType) { _, newValue in
@@ -483,6 +489,7 @@ struct EditCalendarView: View {
             recurringReminderEnabled: recurringReminderEnabled,
             reminderTime: recurringReminderEnabled ? validateReminderTime(reminderTime) : nil,
             order: calendar.order,
+            reminderWeekday: recurringReminderEnabled && cadence == .weekly ? reminderWeekday : nil,
             unit: (trackingType == .counter || trackingType == .multipleDaily) ? selectedUnit : nil,
             defaultRecordValue: (trackingType == .counter || trackingType == .multipleDaily)
                 ? defaultRecordValue : nil,
@@ -495,5 +502,19 @@ struct EditCalendarView: View {
             streakProtectionEnabled: streakProtectionEnabled,
             streakProtectionThreshold: streakProtectionThreshold
         )
+    }
+
+    private var notificationSummary: String {
+        let time = reminderTime.formatted(date: .omitted, time: .shortened)
+        if cadence == .weekly {
+            return "On • \(weekdayName(reminderWeekday)) at \(time)."
+        }
+        return "On • every day at \(time)."
+    }
+
+    private func weekdayName(_ weekday: Int) -> String {
+        let symbols = Calendar.current.weekdaySymbols
+        let index = max(1, min(7, weekday)) - 1
+        return symbols[index]
     }
 }

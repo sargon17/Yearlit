@@ -245,6 +245,7 @@ public struct CustomCalendar: Codable, Identifiable {
     public var recurringReminderEnabled: Bool
     public var reminderHour: Int?
     public var reminderMinute: Int?
+    public var reminderWeekday: Int?
     public var reminderTimeZone: String? // Store TimeZone.identifier for proper timezone handling
     public var notificationPrivacyMode: NotificationPrivacyMode = .full // Privacy mode for notifications
     public var suppressWhenCompleted: Bool = true // Don't send notification if entry already completed
@@ -259,6 +260,7 @@ public struct CustomCalendar: Codable, Identifiable {
         dailyTarget: Int = 1, entries: [String: CalendarEntry] = [:],
         isArchived: Bool = false,
         recurringReminderEnabled: Bool = false, reminderTime: Date? = nil, order: Int = 0,
+        reminderWeekday: Int? = nil,
         unit: UnitOfMeasure? = nil,
         defaultRecordValue: Int? = nil,
         currencySymbol: String? = nil,
@@ -281,6 +283,7 @@ public struct CustomCalendar: Codable, Identifiable {
         self.isArchived = isArchived
         self.recurringReminderEnabled = recurringReminderEnabled
         self.order = order
+        self.reminderWeekday = reminderWeekday
         self.reminderTimeZone = reminderTimeZone ?? TimeZone.current.identifier
         self.notificationPrivacyMode = notificationPrivacyMode
         self.suppressWhenCompleted = suppressWhenCompleted
@@ -305,6 +308,7 @@ public struct CustomCalendar: Codable, Identifiable {
         dailyTarget: Int = 1, entries: [String: CalendarEntry] = [:],
         isArchived: Bool = false,
         recurringReminderEnabled: Bool = false, reminderHour: Int? = nil, reminderMinute: Int? = nil,
+        reminderWeekday: Int? = nil,
         order: Int = 0,
         unit: UnitOfMeasure? = nil,
         defaultRecordValue: Int? = nil,
@@ -339,6 +343,7 @@ public struct CustomCalendar: Codable, Identifiable {
         self.order = order
         self.reminderHour = reminderHour
         self.reminderMinute = reminderMinute
+        self.reminderWeekday = reminderWeekday
         self.reminderTimeZone = reminderTimeZone ?? TimeZone.current.identifier
         self.notificationPrivacyMode = notificationPrivacyMode
         self.suppressWhenCompleted = suppressWhenCompleted
@@ -380,6 +385,7 @@ public struct CustomCalendar: Codable, Identifiable {
         case recurringReminderEnabled
         case reminderHour
         case reminderMinute
+        case reminderWeekday
         case reminderTimeZone
         case notificationPrivacyMode
         case suppressWhenCompleted
@@ -405,6 +411,7 @@ public struct CustomCalendar: Codable, Identifiable {
         recurringReminderEnabled = try container.decodeIfPresent(Bool.self, forKey: .recurringReminderEnabled) ?? false
         reminderHour = try container.decodeIfPresent(Int.self, forKey: .reminderHour)
         reminderMinute = try container.decodeIfPresent(Int.self, forKey: .reminderMinute)
+        reminderWeekday = try container.decodeIfPresent(Int.self, forKey: .reminderWeekday)
         reminderTimeZone = try container.decodeIfPresent(String.self, forKey: .reminderTimeZone) ?? TimeZone.current.identifier
         notificationPrivacyMode = try container.decodeIfPresent(NotificationPrivacyMode.self, forKey: .notificationPrivacyMode) ?? .full
         suppressWhenCompleted = try container.decodeIfPresent(Bool.self, forKey: .suppressWhenCompleted) ?? true
@@ -430,6 +437,7 @@ public struct CustomCalendar: Codable, Identifiable {
         try container.encode(recurringReminderEnabled, forKey: .recurringReminderEnabled)
         try container.encodeIfPresent(reminderHour, forKey: .reminderHour)
         try container.encodeIfPresent(reminderMinute, forKey: .reminderMinute)
+        try container.encodeIfPresent(reminderWeekday, forKey: .reminderWeekday)
         try container.encodeIfPresent(reminderTimeZone, forKey: .reminderTimeZone)
         try container.encode(notificationPrivacyMode, forKey: .notificationPrivacyMode)
         try container.encode(suppressWhenCompleted, forKey: .suppressWhenCompleted)

@@ -17,6 +17,7 @@ public final class HabitCalendarEntity {
     public var recurringReminderEnabled: Bool = false
     public var reminderHour: Int?
     public var reminderMinute: Int?
+    public var reminderWeekday: Int?
     public var reminderTimeZone: String?
     public var notificationPrivacyModeRawValue: String = NotificationPrivacyMode.full.rawValue
     public var suppressWhenCompleted: Bool = true
@@ -39,6 +40,7 @@ public final class HabitCalendarEntity {
         recurringReminderEnabled: Bool = false,
         reminderHour: Int? = nil,
         reminderMinute: Int? = nil,
+        reminderWeekday: Int? = nil,
         reminderTimeZone: String? = nil,
         notificationPrivacyModeRawValue: String = NotificationPrivacyMode.full.rawValue,
         suppressWhenCompleted: Bool = true,
@@ -60,6 +62,7 @@ public final class HabitCalendarEntity {
         self.recurringReminderEnabled = recurringReminderEnabled
         self.reminderHour = reminderHour
         self.reminderMinute = reminderMinute
+        self.reminderWeekday = reminderWeekday
         self.reminderTimeZone = reminderTimeZone
         self.notificationPrivacyModeRawValue = notificationPrivacyModeRawValue
         self.suppressWhenCompleted = suppressWhenCompleted
@@ -223,6 +226,7 @@ extension HabitCalendarEntity {
             recurringReminderEnabled: recurringReminderEnabled,
             reminderHour: reminderHour,
             reminderMinute: reminderMinute,
+            reminderWeekday: reminderWeekday,
             order: order,
             unit: unit,
             defaultRecordValue: defaultRecordValue,
@@ -249,6 +253,7 @@ extension HabitCalendarEntity {
             recurringReminderEnabled: recurringReminderEnabled,
             reminderTime: nil,
             order: order,
+            reminderWeekday: reminderWeekday,
             unit: unit,
             defaultRecordValue: defaultRecordValue,
             currencySymbol: currencySymbol,
@@ -274,6 +279,7 @@ extension HabitCalendarEntity {
         recurringReminderEnabled = model.recurringReminderEnabled
         reminderHour = model.reminderHour
         reminderMinute = model.reminderMinute
+        reminderWeekday = model.reminderWeekday
         reminderTimeZone = model.reminderTimeZone
         notificationPrivacyModeRawValue = model.notificationPrivacyMode.rawValue
         suppressWhenCompleted = model.suppressWhenCompleted
@@ -298,6 +304,7 @@ extension HabitCalendarEntity {
             recurringReminderEnabled: model.recurringReminderEnabled,
             reminderHour: model.reminderHour,
             reminderMinute: model.reminderMinute,
+            reminderWeekday: model.reminderWeekday,
             reminderTimeZone: model.reminderTimeZone,
             notificationPrivacyModeRawValue: model.notificationPrivacyMode.rawValue,
             suppressWhenCompleted: model.suppressWhenCompleted,

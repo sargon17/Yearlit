@@ -10,6 +10,7 @@ struct NotificationSettingsDraftSheet: View {
     @Environment(\.colorScheme) private var colorScheme
 
     let calendarName: String
+    let cadence: CalendarCadence
     let trackingType: TrackingType
     let accentColor: Color
     let customerInfo: CustomerInfo?
@@ -21,6 +22,7 @@ struct NotificationSettingsDraftSheet: View {
     @Binding var additionalReminderTimes: [ReminderTime]
     @Binding var streakProtectionEnabled: Bool
     @Binding var streakProtectionThreshold: Int
+    @Binding var reminderWeekday: Int
 
     private let maxTotalReminderTimesPerDay = 5
 
@@ -32,13 +34,17 @@ struct NotificationSettingsDraftSheet: View {
         NavigationStack {
             ScrollView {
                 VStack(spacing: 32) {
-                    NotificationSection(label: "Daily Reminder") {
+                    NotificationSection(label: cadence == .weekly ? "Weekly Reminder" : "Daily Reminder") {
                         VStack(spacing: 2) {
                             HStack {
                                 VStack(alignment: .leading, spacing: 4) {
-                                    Text("Send a daily reminder")
+                                    Text(cadence == .weekly ? "Send a weekly reminder" : "Send a daily reminder")
                                         .labelStyle(type: .secondary)
-                                    Text("A recurring notification at your chosen time.")
+                                    Text(
+                                        cadence == .weekly
+                                            ? "A recurring notification on your chosen weekday and time."
+                                            : "A recurring notification at your chosen time."
+                                    )
                                         .font(.caption)
                                         .foregroundStyle(.textTertiary)
                                 }
@@ -52,6 +58,24 @@ struct NotificationSettingsDraftSheet: View {
 
                             if recurringReminderEnabled {
                                 VStack(spacing: 2) {
+                                    if cadence == .weekly {
+                                        HStack {
+                                            Text("Weekday")
+                                                .labelStyle(type: .secondary)
+                                            Spacer()
+                                            Picker("Weekday", selection: $reminderWeekday) {
+                                                ForEach(orderedWeekdays, id: \.self) { weekday in
+                                                    Text(weekdayName(weekday)).tag(weekday)
+                                                }
+                                            }
+                                            .pickerStyle(.menu)
+                                            .tint(accentColor)
+                                        }
+                                        .padding(.horizontal)
+                                        .padding(.vertical, 10)
+                                        .notificationSurface()
+                                    }
+
                                     VStack(spacing: 6) {
                                         HStack {
                                             Text("Time")
@@ -104,7 +128,11 @@ struct NotificationSettingsDraftSheet: View {
                                     VStack(alignment: .leading, spacing: 4) {
                                         Text("Smart suppression")
                                             .labelStyle(type: .secondary)
-                                        Text("Skips the reminder if you already logged today.")
+                                        Text(
+                                            cadence == .weekly
+                                                ? "While the app is open, hides reminders if you've already logged this week."
+                                                : "While the app is open, hides reminders if you've already logged today."
+                                        )
                                             .font(.caption)
                                             .foregroundStyle(.textTertiary)
                                     }
@@ -120,7 +148,21 @@ struct NotificationSettingsDraftSheet: View {
 
                         NotificationSection(label: "Multiple Times") {
                             VStack(spacing: 2) {
-                                if trackingType != .multipleDaily {
+                                if cadence == .weekly {
+                                    HStack {
+                                        VStack(alignment: .leading, spacing: 4) {
+                                            Text("Not available for weekly reminders")
+                                                .labelStyle(type: .secondary)
+                                            Text("Weekly calendars only send one reminder on the selected weekday.")
+                                                .font(.caption)
+                                                .foregroundStyle(.textTertiary)
+                                        }
+                                        Spacer()
+                                    }
+                                    .padding(.horizontal)
+                                    .padding(.vertical, 12)
+                                    .notificationSurface()
+                                } else if trackingType != .multipleDaily {
                                     HStack {
                                         VStack(alignment: .leading, spacing: 4) {
                                             Text("Only for Target tracking")
@@ -195,7 +237,11 @@ struct NotificationSettingsDraftSheet: View {
                                     VStack(alignment: .leading, spacing: 4) {
                                         Text("Late-day rescue reminder")
                                             .labelStyle(type: .secondary)
-                                        Text("At 9 PM, if your streak is at risk, we send one extra reminder.")
+                                        Text(
+                                            cadence == .weekly
+                                                ? "On the last day of the week at 9 PM, if your streak is at risk, we send one extra reminder."
+                                                : "At 9 PM, if your streak is at risk, we send one extra reminder."
+                                        )
                                             .font(.caption)
                                             .foregroundStyle(.textTertiary)
                                     }
@@ -220,7 +266,7 @@ struct NotificationSettingsDraftSheet: View {
                 }
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Done") {
-                        if trackingType != .multipleDaily {
+                        if cadence == .weekly || trackingType != .multipleDaily {
                             additionalReminderTimes = []
                         } else if !isPremiumUser {
                             additionalReminderTimes = []
@@ -302,6 +348,7 @@ extension NotificationSettingsDraftSheet {
     }
 
     private func addAdditionalReminderTime() {
+        guard cadence == .daily else { return }
         guard trackingType == .multipleDaily else { return }
         guard isPremiumUser else {
             showPremiumPaywall()
@@ -359,6 +406,19 @@ extension NotificationSettingsDraftSheet {
         .padding(.horizontal)
         .padding(.vertical, 8)
         .notificationSurface()
+    }
+
+    private var orderedWeekdays: [Int] {
+        let calendar = Calendar.current
+        return (0 ..< 7).map { offset in
+            ((calendar.firstWeekday - 1 + offset) % 7) + 1
+        }
+    }
+
+    private func weekdayName(_ weekday: Int) -> String {
+        let symbols = Calendar.current.weekdaySymbols
+        let index = max(1, min(7, weekday)) - 1
+        return symbols[index]
     }
 }
 

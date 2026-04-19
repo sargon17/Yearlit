@@ -64,7 +64,7 @@ struct StreakFocusShareView: View {
                 .fontWeight(.black)
                 .lineLimit(1)
                 .minimumScaleFactor(0.7)
-            Text("Streak Focus")
+            Text(data.calendar.cadence == .weekly ? "Weekly Streak Focus" : "Streak Focus")
                 .font(.system(size: 12, design: .monospaced))
                 .foregroundColor(Color("text-tertiary"))
         }
@@ -104,23 +104,23 @@ struct PerformanceShareView: View {
 
                 HStack(spacing: 12) {
                     ShareCompactStatTile(
-                        title: "30d",
+                        title: data.completionWindowTitle,
                         value: sharePercent(data.completionRate30d),
                         accentColor: data.accentColor
                     )
                     ShareCompactStatTile(
-                        title: "7d",
+                        title: data.shortTrendTitle,
                         value: sharePercent(data.rolling7d),
                         accentColor: data.accentColor
                     )
                     ShareCompactStatTile(
-                        title: "30d Avg",
+                        title: data.averageWindowTitle,
                         value: sharePercent(data.rolling30d),
                         accentColor: data.accentColor
                     )
                 }
 
-                if let bestWeekday = data.bestWeekday {
+                if data.calendar.cadence == .daily, let bestWeekday = data.bestWeekday {
                     HStack {
                         Text("Best Weekday")
                             .font(.system(size: 10, design: .monospaced))

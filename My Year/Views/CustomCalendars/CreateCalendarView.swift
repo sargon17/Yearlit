@@ -17,6 +17,7 @@ struct CreateCalendarView: View {
     @State private var dailyTarget = 2
     @State private var recurringReminderEnabled: Bool = false
     @State private var reminderTime: Date = .init()
+    @State private var reminderWeekday: Int = Calendar.current.component(.weekday, from: Date())
     @State private var selectedUnit: UnitOfMeasure = .none
     @State private var defaultRecordValue: Int = 1
     @State private var isPaywallPresented = false
@@ -103,6 +104,7 @@ struct CreateCalendarView: View {
             isArchived: false,
             recurringReminderEnabled: recurringReminderEnabled,
             reminderTime: recurringReminderEnabled ? reminderTime : nil,
+            reminderWeekday: recurringReminderEnabled && cadence == .weekly ? reminderWeekday : nil,
             unit: (trackingType == .counter || trackingType == .multipleDaily) ? selectedUnit : nil,
             defaultRecordValue: (trackingType == .counter || trackingType == .multipleDaily)
                 ? defaultRecordValue : nil,
@@ -265,8 +267,10 @@ struct CreateCalendarView: View {
                                         .labelStyle(type: .secondary)
                                     Text(
                                         recurringReminderEnabled
-                                            ? "On • tap to customize privacy, suppression, and more."
-                                            : "Off • set a daily reminder and privacy level."
+                                            ? notificationSummary
+                                            : cadence == .weekly
+                                                ? "Off • set a weekly reminder and privacy level."
+                                                : "Off • set a daily reminder and privacy level."
                                     )
                                     .font(.caption)
                                     .foregroundStyle(.textTertiary)
@@ -288,7 +292,7 @@ struct CreateCalendarView: View {
                 CustomSection(label: "Already active streak?") {
                     VStack(spacing: 8) {
                         if !existingStreakEntries.isEmpty {
-                            Text("Backfilling \(existingStreakEntries.count) days.")
+                            Text("Backfilling \(existingStreakEntries.count) \(cadence == .weekly ? "weeks" : "days").")
                                 .font(.footnote)
                                 .foregroundStyle(.textTertiary)
                                 .frame(maxWidth: .infinity, alignment: .leading)
@@ -418,6 +422,7 @@ struct CreateCalendarView: View {
         .sheet(isPresented: $showingNotificationSettings) {
             NotificationSettingsDraftSheet(
                 calendarName: name,
+                cadence: cadence,
                 trackingType: trackingType,
                 accentColor: Color(selectedColor),
                 customerInfo: customerInfo,
@@ -427,7 +432,8 @@ struct CreateCalendarView: View {
                 suppressWhenCompleted: $suppressWhenCompleted,
                 additionalReminderTimes: $additionalReminderTimes,
                 streakProtectionEnabled: $streakProtectionEnabled,
-                streakProtectionThreshold: $streakProtectionThreshold
+                streakProtectionThreshold: $streakProtectionThreshold,
+                reminderWeekday: $reminderWeekday
             )
         }
         .onChange(of: trackingType) { _, _ in
@@ -441,5 +447,19 @@ struct CreateCalendarView: View {
                 existingStreakEntries = [:]
             }
         }
+    }
+
+    private var notificationSummary: String {
+        let time = reminderTime.formatted(date: .omitted, time: .shortened)
+        if cadence == .weekly {
+            return "On • \(weekdayName(reminderWeekday)) at \(time)."
+        }
+        return "On • every day at \(time)."
+    }
+
+    private func weekdayName(_ weekday: Int) -> String {
+        let symbols = Calendar.current.weekdaySymbols
+        let index = max(1, min(7, weekday)) - 1
+        return symbols[index]
     }
 }

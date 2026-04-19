@@ -36,7 +36,7 @@ enum CalendarShareTemplate: String, CaseIterable, Identifiable {
         case .streakFocus:
             return "Streaks + grid strip"
         case .performance:
-            return "Trends and best day"
+            return "Trends and progress"
         }
     }
 
@@ -187,7 +187,8 @@ struct CalendarShareSheet: View {
 
     private var shareMessage: String {
         let calendarName = calendar.name.capitalized
-        return "Here's my \(calendarName) progress!\n\ntracked using yearlit by @tymofyeyev "
+        let period = calendar.cadence == .weekly ? "weekly" : "daily"
+        return "Here's my \(period) \(calendarName) progress!\n\ntracked using yearlit by @tymofyeyev "
     }
 
     private var effectiveTemplate: CalendarShareTemplate {

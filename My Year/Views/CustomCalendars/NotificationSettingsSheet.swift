@@ -21,6 +21,7 @@ struct NotificationSettingsSheet: View {
   @State private var additionalReminderTimes: [ReminderTime]
   @State private var streakProtectionEnabled: Bool
   @State private var streakProtectionThreshold: Int
+  @State private var reminderWeekday: Int
 
   private let maxTotalReminderTimesPerDay = 5
 
@@ -54,6 +55,7 @@ struct NotificationSettingsSheet: View {
     _additionalReminderTimes = State(initialValue: calendar.additionalReminderTimes)
     _streakProtectionEnabled = State(initialValue: calendar.streakProtectionEnabled)
     _streakProtectionThreshold = State(initialValue: calendar.streakProtectionThreshold)
+    _reminderWeekday = State(initialValue: calendar.reminderWeekday ?? Calendar.current.component(.weekday, from: Date()))
   }
 
   var body: some View {
@@ -70,11 +72,16 @@ struct NotificationSettingsSheet: View {
           }
           .frame(maxWidth: .infinity, alignment: .leading)
 
-          NotificationSection(label: "Daily Reminder", description: "A recurring notification at your chosen time.") {
+          NotificationSection(
+            label: calendar.cadence == .weekly ? "Weekly Reminder" : "Daily Reminder",
+            description: calendar.cadence == .weekly
+              ? "A recurring notification on your chosen weekday and time."
+              : "A recurring notification at your chosen time."
+          ) {
             VStack(spacing: 1) {
               HStack {
                 VStack(alignment: .leading, spacing: 4) {
-                  Text("Send a daily reminder")
+                    Text(calendar.cadence == .weekly ? "Send a weekly reminder" : "Send a daily reminder")
                     .labelStyle(type: .secondary)
                 }
                 Spacer()
@@ -86,6 +93,26 @@ struct NotificationSettingsSheet: View {
               .notificationSurface()
 
               if recurringReminderEnabled {
+
+                if calendar.cadence == .weekly {
+                  HStack {
+                    Text("Weekday")
+                      .labelStyle(type: .secondary)
+
+                    Spacer()
+
+                    Picker("Weekday", selection: $reminderWeekday) {
+                      ForEach(orderedWeekdays, id: \.self) { weekday in
+                        Text(weekdayName(weekday)).tag(weekday)
+                      }
+                    }
+                    .pickerStyle(.menu)
+                    .tint(Color(calendar.color))
+                  }
+                  .padding(.horizontal)
+                  .padding(.vertical, 10)
+                  .notificationSurface()
+                }
 
                 HStack(spacing: 6) {
                   DatePicker("", selection: $reminderTime, displayedComponents: [.hourAndMinute])
@@ -99,7 +126,7 @@ struct NotificationSettingsSheet: View {
                 .padding(.vertical, 8)
                 .notificationSurface()
 
-                if calendar.trackingType == .multipleDaily {
+                if calendar.cadence == .daily && calendar.trackingType == .multipleDaily {
                   if !additionalReminderTimes.isEmpty {
                     ForEach(additionalReminderTimes, id: \.id) { time in
                       additionalTimeRow(time: time)
@@ -180,7 +207,10 @@ struct NotificationSettingsSheet: View {
             // }
 
             NotificationSection(
-              label: "Streak Protection", description: "We will send you a reminder when you're about to miss a day."
+              label: "Streak Protection",
+              description: calendar.cadence == .weekly
+                ? "We will send you a reminder when you're about to miss the week."
+                : "We will send you a reminder when you're about to miss a day."
             ) {
               VStack(spacing: 1) {
                 HStack {
@@ -200,6 +230,13 @@ struct NotificationSettingsSheet: View {
                   VStack(alignment: .leading, spacing: 4) {
                     Text("Smart suppression")
                       .labelStyle(type: .secondary)
+                    Text(
+                      calendar.cadence == .weekly
+                        ? "While the app is open, hides reminders if you've already logged this week."
+                        : "While the app is open, hides reminders if you've already logged today."
+                    )
+                    .font(.caption)
+                    .foregroundStyle(.textTertiary)
                   }
                   Spacer()
                   Toggle("", isOn: $suppressWhenCompleted)
@@ -316,6 +353,9 @@ extension NotificationSettingsSheet {
   }
 
   private func normalizedAdditionalReminderTimes(_ times: [ReminderTime]) -> [ReminderTime] {
+    guard calendar.cadence == .daily else {
+      return []
+    }
     guard calendar.trackingType == .multipleDaily else {
       return []
     }
@@ -337,6 +377,7 @@ extension NotificationSettingsSheet {
   }
 
   private func addAdditionalReminderTime() {
+    guard calendar.cadence == .daily else { return }
     guard calendar.trackingType == .multipleDaily else { return }
     guard isPremiumUser else {
       showPremiumPaywall()
@@ -421,15 +462,17 @@ extension NotificationSettingsSheet {
       let cal = Calendar.current
       updatedCalendar.reminderHour = cal.component(.hour, from: reminderTime)
       updatedCalendar.reminderMinute = cal.component(.minute, from: reminderTime)
+      updatedCalendar.reminderWeekday = calendar.cadence == .weekly ? reminderWeekday : nil
     } else {
       updatedCalendar.reminderHour = nil
       updatedCalendar.reminderMinute = nil
+      updatedCalendar.reminderWeekday = nil
     }
 
     updatedCalendar.notificationPrivacyMode = notificationPrivacyMode
     updatedCalendar.suppressWhenCompleted = suppressWhenCompleted
 
-    if isPremiumUser && calendar.trackingType == .multipleDaily {
+    if calendar.cadence == .daily && isPremiumUser && calendar.trackingType == .multipleDaily {
       updatedCalendar.additionalReminderTimes = normalizedAdditionalReminderTimes(additionalReminderTimes)
     } else {
       updatedCalendar.additionalReminderTimes = []
@@ -441,6 +484,19 @@ extension NotificationSettingsSheet {
     scheduleNotifications(for: updatedCalendar, store: CustomCalendarStore.shared)
     onSave(updatedCalendar)
     dismiss()
+  }
+
+  private var orderedWeekdays: [Int] {
+    let calendar = Calendar.current
+    return (0 ..< 7).map { offset in
+      ((calendar.firstWeekday - 1 + offset) % 7) + 1
+    }
+  }
+
+  private func weekdayName(_ weekday: Int) -> String {
+    let symbols = Calendar.current.weekdaySymbols
+    let index = max(1, min(7, weekday)) - 1
+    return symbols[index]
   }
 }
 
