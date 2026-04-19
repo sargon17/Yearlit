@@ -47,12 +47,18 @@ struct CustomCalendarView: View {
 
     private let today = Date()
 
-    private var calendarDates: [Date] {
+    private var yearDates: [Date] {
         getYearDatesArray(for: valuationStore.selectedYear)
     }
 
-    private var todayKeyDate: Date? {
-        calendarDates.first { Calendar.current.isDate($0, inSameDayAs: Date()) }
+    private var gridDates: [Date] {
+        activeCalendar.cadence == .weekly
+            ? getYearWeekDatesArray(for: valuationStore.selectedYear)
+            : yearDates
+    }
+
+    private var currentPeriodReferenceDate: Date? {
+        yearDates.first { Calendar.current.isDate($0, inSameDayAs: Date()) }
     }
 
     private var activeCalendar: CustomCalendar {
@@ -82,14 +88,20 @@ struct CustomCalendarView: View {
         // TODO: Implement clearEntries(calendarId:) in CustomCalendarStore to enable clearing before filling.
         store.clearEntries(calendarId: activeCalendar.id)
 
-        let calendar = Calendar.current
-        let startOfYear = calendar.date(
-            from: DateComponents(year: valuationStore.selectedYear, month: 1, day: 1)
-        )!
+        let sourceDates: [Date]
+        if activeCalendar.cadence == .weekly {
+            sourceDates = getYearWeekDatesArray(for: valuationStore.selectedYear)
+        } else {
+            let calendar = Calendar.current
+            let startOfYear = calendar.date(
+                from: DateComponents(year: valuationStore.selectedYear, month: 1, day: 1)
+            )!
+            sourceDates = (0 ..< valuationStore.currentDayNumber).compactMap { day in
+                calendar.date(byAdding: .day, value: day, to: startOfYear)
+            }
+        }
 
-        for day in 0 ..< valuationStore.currentDayNumber {
-            let date = calendar.date(byAdding: .day, value: day, to: startOfYear)!
-
+        for date in sourceDates {
             if date <= today, Double.random(in: 0.0 ... 1.0) < wandFillForce {
                 switch activeCalendar.trackingType {
                 case .binary:
@@ -141,97 +153,8 @@ struct CustomCalendarView: View {
         }
     }
 
-    private func getStats(for calendar: CustomCalendar) -> CalendarStats {
-        let activeDays = calendar.entries.values.filter { entry in
-            switch calendar.trackingType {
-            case .binary:
-                return entry.completed
-            case .counter, .multipleDaily:
-                return entry.count > 0
-            }
-        }.count
-
-        let totalCount = calendar.entries.values.reduce(0) { $0 + $1.count }
-        let maxCount = calendar.entries.values.map { $0.count }.max() ?? 0
-
-        var localCalendar = Calendar(identifier: .gregorian)
-        localCalendar.locale = Locale(identifier: "en_US_POSIX")
-        localCalendar.timeZone = .autoupdatingCurrent
-        let allTimeSuccessByDay = buildAllTimeSuccessMap(
-            cal: localCalendar,
-            todayLocal: today,
-            calendars: [calendar]
-        )
-        let (longestStreak, currentStreak) = computeStreaks(cal: localCalendar, allTimeSuccessByDay)
-
-        return CalendarStats(
-            activeDays: activeDays, totalCount: totalCount, maxCount: maxCount,
-            longestStreak: longestStreak, currentStreak: currentStreak
-        )
-    }
-
-    private func computeStatsBundle(
-        calendar: CustomCalendar,
-        year: Int,
-        todayLocal: Date,
-        todayKeyDate: Date?
-    ) -> StatsBundle {
-        let cal = Calendar.current
-        let entries = calendar.entries
-
-        // Riusa: getStats() già esistente per basic
-        let basic = getStats(for: calendar)
-
-        /// Adattatori leggeri
-        func entryOn(_ date: Date) -> CalendarEntry? {
-            entries[dayKey(for: date)]
-        }
-        func isSuccessOn(_ date: Date) -> Bool {
-            isEntrySuccess(entryOn(date), calendar: calendar)
-        }
-        func zOn(_ date: Date) -> Double {
-            normalizedProgress(for: calendar, entry: entryOn(date))
-        }
-
-        let (cr30, avg7, avg30) = computeRollingStatsSingle(
-            cal: cal, todayLocal: todayLocal, zOn: zOn, isSuccessOn: isSuccessOn
-        )
-
-        // Nuovo: weekday rates per singolo calendario + best day (normalizzati a max=1)
-        let (weekdayRates, bestWD) = computeWeekdayRatesSingle(
-            cal: cal, year: year, todayLocal: todayLocal,
-            trackingType: calendar.trackingType, zOn: zOn, isSuccessOn: isSuccessOn,
-            normalizeToMax: true
-        )
-
-        // Nuovo: breakdown mensile (CR binaria sul mese)
-        let monthly = computeMonthlyBinaryRates(
-            cal: cal, year: year, todayLocal: todayLocal, isSuccessOn: isSuccessOn
-        )
-
-        // Riusa schema: volatilità settimanale su CR (12 settimane)
-        let volatility = computeWeeklyVolatilityFromSuccess(
-            cal: cal, todayLocal: todayLocal, isSuccessOn: isSuccessOn
-        )
-
-        // Today's count for this calendar (optional)
-        let todaysCount: Int? = todayKeyDate.map { entries[dayKey(for: $0)]?.count ?? 0 }
-
-        return StatsBundle(
-            basic: basic,
-            completionRate30d: cr30,
-            bestWeekday: bestWD?.day,
-            weekdayRates: weekdayRates,
-            monthlyRates: monthly,
-            rolling7d: avg7,
-            rolling30d: avg30,
-            volatilityStd: volatility,
-            todaysCount: todaysCount
-        )
-    }
-
     private func handleQuickAdd() {
-        let entryDate = todayKeyDate ?? Date()
+        let entryDate = currentPeriodReferenceDate ?? Date()
         quickEntry(
             calendar: activeCalendar,
             date: entryDate,
@@ -268,7 +191,7 @@ struct CustomCalendarView: View {
                     milestone: milestone,
                     currentStreak: currentStreak,
                     kind: .streak,
-                    dates: calendarDates
+                    dates: gridDates
                 )
             }
             return
@@ -291,7 +214,7 @@ struct CustomCalendarView: View {
                 milestone: showedUpMilestone,
                 currentStreak: currentStreak,
                 kind: .showedUp,
-                dates: calendarDates
+                    dates: gridDates
             )
         }
     }
@@ -315,7 +238,7 @@ struct CustomCalendarView: View {
         let statsTaskId =
             "\(calendar.id.uuidString)|\(valuationStore.selectedYear)|\(dataVersion)|\(statsRefreshToken.uuidString)"
         let resolvedCalendar = activeCalendar
-        let resolvedTodayKeyDate = todayKeyDate
+        let resolvedCurrentPeriodReferenceDate = currentPeriodReferenceDate
 
         ScrollView {
             VStack(spacing: 10) {
@@ -357,6 +280,7 @@ struct CustomCalendarView: View {
                                 }
 
                                 if valuationStore.selectedYear == Calendar.current.component(.year, from: Date()) {
+                                    let isCompletedToday = store.getEntry(calendarId: resolvedCalendar.id, date: today)?.completed == true
                                     Button(action: {
                                         handleQuickAdd()
                                     }) {
@@ -367,8 +291,7 @@ struct CustomCalendarView: View {
 
                                             Image(
                                                 systemName: resolvedCalendar.trackingType == .binary
-                                                    && store.getEntry(calendarId: resolvedCalendar.id, date: today) != nil
-                                                    && store.getEntry(calendarId: resolvedCalendar.id, date: today)!.completed
+                                                    && isCompletedToday
                                                     ? "minus" : "plus"
                                             )
                                             .font(.system(size: 16))
@@ -434,33 +357,32 @@ struct CustomCalendarView: View {
                     calendar: resolvedCalendar,
                     store: store,
                     handleDayTap: handleDayTap,
-                    dates: calendarDates,
+                    dates: gridDates,
                     year: valuationStore.selectedYear
                 )
                 .frame(height: UIScreen.main.bounds.height * 0.55)
 
-                // Calculate today's count
-                let todaysLogCount: Int = {
-                    guard let keyDate = resolvedTodayKeyDate else { return 0 }
-                    return resolvedCalendar.entries[dayKey(for: keyDate)]?.count ?? 0
-                }()
+                let currentPeriodLogCount: Int? = resolvedCurrentPeriodReferenceDate.map {
+                    entry(for: resolvedCalendar, date: $0)?.count ?? 0
+                }
 
                 if let bundle = statsBundle {
                     CalendarStatisticsView(
                         stats: bundle.basic,
                         accentColor: Color(resolvedCalendar.color),
-                        todaysCount: todaysLogCount,
+                        currentPeriodCount: currentPeriodLogCount,
                         unit: resolvedCalendar.unit,
                         currencySymbol: resolvedCalendar.currencySymbol,
-                        completionRateLast30d: bundle.completionRate30d,
+                        completionRateTrailingLongWindow: bundle.completionRateTrailingLongWindow,
                         bestWeekday: bundle.bestWeekday,
                         weekdayRates: bundle.weekdayRates,
                         monthlyRates: bundle.monthlyRates,
-                        rolling7d: bundle.rolling7d,
-                        rolling30d: bundle.rolling30d,
+                        averageProgressTrailingShortWindow: bundle.averageProgressTrailingShortWindow,
+                        averageProgressTrailingLongWindow: bundle.averageProgressTrailingLongWindow,
                         volatilityStdDev: bundle.volatilityStd,
                         isPremium: isPremium(customerInfo: customerInfo),
                         onUpgrade: { isPaywallPresented = true },
+                        cadence: resolvedCalendar.cadence,
                         trackingType: resolvedCalendar.trackingType,
                         onTapCurrentStreak: {
                             guard
@@ -474,7 +396,7 @@ struct CustomCalendarView: View {
                                     milestone: milestone,
                                     currentStreak: currentStreak(for: resolvedCalendar),
                                     kind: .streak,
-                                    dates: calendarDates
+                                    dates: gridDates
                                 )
                             }
                         },
@@ -491,7 +413,7 @@ struct CustomCalendarView: View {
                                     milestone: milestone,
                                     currentStreak: currentStreak(for: resolvedCalendar),
                                     kind: .showedUp,
-                                    dates: calendarDates
+                                    dates: gridDates
                                 )
                             }
                         },
@@ -500,7 +422,7 @@ struct CustomCalendarView: View {
                                 CalendarShareSheet(
                                     calendar: resolvedCalendar,
                                     year: valuationStore.selectedYear,
-                                    dates: calendarDates,
+                                    dates: gridDates,
                                     statsBundle: statsBundle,
                                     isPremium: isPremium(customerInfo: customerInfo)
                                 )
@@ -586,11 +508,11 @@ struct CustomCalendarView: View {
         .task(id: statsTaskId) {
             let token = statsRefreshToken
             let bundle = await Task.detached(priority: .userInitiated) {
-                computeStatsBundle(
+                computeCalendarStatsBundle(
                     calendar: resolvedCalendar,
                     year: valuationStore.selectedYear,
                     todayLocal: Date(),
-                    todayKeyDate: resolvedTodayKeyDate
+                    currentPeriodReferenceDate: resolvedCurrentPeriodReferenceDate
                 )
             }.value
             if token == statsRefreshToken {

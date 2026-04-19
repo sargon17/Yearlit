@@ -8,7 +8,6 @@ import SwiftfulRouting
 struct NotificationSettingsSheet: View {
   @Environment(\.dismiss) private var dismiss
   @Environment(\.router) private var router
-  @Environment(\.colorScheme) private var colorScheme
 
   let calendar: CustomCalendar
   let customerInfo: CustomerInfo?
@@ -21,8 +20,7 @@ struct NotificationSettingsSheet: View {
   @State private var additionalReminderTimes: [ReminderTime]
   @State private var streakProtectionEnabled: Bool
   @State private var streakProtectionThreshold: Int
-
-  private let maxTotalReminderTimesPerDay = 5
+  @State private var reminderWeekday: Int
 
   private var isPremiumUser: Bool {
     isPremium(customerInfo: customerInfo)
@@ -39,8 +37,7 @@ struct NotificationSettingsSheet: View {
 
     _recurringReminderEnabled = State(initialValue: calendar.recurringReminderEnabled)
 
-    let defaultTime =
-      Calendar.current.date(bySettingHour: 9, minute: 0, second: 0, of: Date()) ?? Date()
+    let defaultTime = Calendar.current.date(bySettingHour: 9, minute: 0, second: 0, of: Date()) ?? Date()
     if calendar.recurringReminderEnabled, let hour = calendar.reminderHour, let minute = calendar.reminderMinute {
       _reminderTime = State(
         initialValue: Calendar.current.date(bySettingHour: hour, minute: minute, second: 0, of: Date()) ?? defaultTime
@@ -54,6 +51,7 @@ struct NotificationSettingsSheet: View {
     _additionalReminderTimes = State(initialValue: calendar.additionalReminderTimes)
     _streakProtectionEnabled = State(initialValue: calendar.streakProtectionEnabled)
     _streakProtectionThreshold = State(initialValue: calendar.streakProtectionThreshold)
+    _reminderWeekday = State(initialValue: calendar.reminderWeekday ?? Calendar.current.component(.weekday, from: Date()))
   }
 
   var body: some View {
@@ -70,177 +68,40 @@ struct NotificationSettingsSheet: View {
           }
           .frame(maxWidth: .infinity, alignment: .leading)
 
-          NotificationSection(label: "Daily Reminder", description: "A recurring notification at your chosen time.") {
-            VStack(spacing: 1) {
-              HStack {
-                VStack(alignment: .leading, spacing: 4) {
-                  Text("Send a daily reminder")
-                    .labelStyle(type: .secondary)
-                }
-                Spacer()
-                Toggle("", isOn: $recurringReminderEnabled)
-              }
-              .tint(Color(calendar.color))
-              .padding(.horizontal)
-              .padding(.vertical, 8)
-              .notificationSurface()
-
-              if recurringReminderEnabled {
-
-                HStack(spacing: 6) {
-                  DatePicker("", selection: $reminderTime, displayedComponents: [.hourAndMinute])
-                    .tint(Color(calendar.color))
-                    .datePickerStyle(.compact)
-                    .labelsHidden()
-
-                  Spacer()
-                }
-                .padding(.horizontal)
-                .padding(.vertical, 8)
-                .notificationSurface()
-
-                if calendar.trackingType == .multipleDaily {
-                  if !additionalReminderTimes.isEmpty {
-                    ForEach(additionalReminderTimes, id: \.id) { time in
-                      additionalTimeRow(time: time)
-                    }
-                  }
-                  if additionalReminderTimes.count < maxAdditionalReminderTimes {
-                    HStack {
-                      VStack(alignment: .leading, spacing: 4) {
-                        HStack(spacing: 6) {
-                          Text("Additional reminders")
-                            .labelStyle(type: .secondary)
-                          if !isPremiumUser {
-                            proBadge()
-                          }
-                        }
-                      }
-                      Spacer()
-                      Button(
-                        action: addAdditionalReminderTime,
-                        label: {
-                          ZStack {
-                            Image(systemName: "plus")
-                              .font(.system(size: 16, design: .monospaced))
-                              .foregroundStyle(.textTertiary)
-                          }.frame(width: 24, height: 24)
-                        })
-                    }
-                    .padding(.horizontal)
-                    .padding(.vertical, 14)
-                    .notificationSurface()
-                  }
-                }
-              }
-            }
-          }
+          ReminderScheduleSection(
+            cadence: calendar.cadence,
+            accentColor: Color(calendar.color),
+            style: .saved,
+            recurringReminderEnabled: $recurringReminderEnabled,
+            reminderTime: $reminderTime,
+            reminderWeekday: $reminderWeekday
+          )
 
           if recurringReminderEnabled {
-            // if calendar.trackingType == .multipleDaily {
-            //   NotificationSection(
-            //     label: "Multiple Times",
-            //     description: "Extra reminders for daily repeating habits."
-            //   ) {
-            //     VStack(spacing: 1) {
-            //       HStack {
-            //         VStack(alignment: .leading, spacing: 4) {
-            //           HStack(spacing: 6) {
-            //             Text("Additional reminders")
-            //               .labelStyle(type: .secondary)
-            //             if !isPremiumUser {
-            //               proBadge()
-            //             }
-            //           }
-            //         }
-            //         Spacer()
-            //         if additionalReminderTimes.count < maxAdditionalReminderTimes {
-            //           Button(
-            //             action: addAdditionalReminderTime,
-            //             label: {
-            //               ZStack {
-            //                 Image(systemName: "plus")
-            //                   .font(.system(size: 16, design: .monospaced))
-            //                   .foregroundStyle(.textTertiary)
-            //               }.frame(width: 24, height: 24)
-            //             })
-            //         }
-            //       }
-            //       .padding(.horizontal)
-            //       .padding(.vertical, 14)
-            //       .notificationSurface()
+            AdditionalRemindersSection(
+              cadence: calendar.cadence,
+              trackingType: calendar.trackingType,
+              accentColor: Color(calendar.color),
+              isPremiumUser: isPremiumUser,
+              style: .saved,
+              onUpgrade: showPremiumPaywall,
+              additionalReminderTimes: $additionalReminderTimes,
+              reminderTime: $reminderTime
+            )
 
-            //       if !additionalReminderTimes.isEmpty {
-            //         ForEach(additionalReminderTimes, id: \.id) { time in
-            //           additionalTimeRow(time: time)
-            //         }
-            //       }
-            //     }
-            //   }
-            // }
+            ReminderBehaviorSection(
+              cadence: calendar.cadence,
+              accentColor: Color(calendar.color),
+              style: .saved,
+              suppressWhenCompleted: $suppressWhenCompleted,
+              streakProtectionEnabled: $streakProtectionEnabled
+            )
 
-            NotificationSection(
-              label: "Streak Protection", description: "We will send you a reminder when you're about to miss a day."
-            ) {
-              VStack(spacing: 1) {
-                HStack {
-                  VStack(alignment: .leading, spacing: 4) {
-                    Text("Late-day rescue reminder")
-                      .labelStyle(type: .secondary)
-                  }
-                  Spacer()
-                  Toggle("", isOn: $streakProtectionEnabled)
-                }
-                .tint(Color(calendar.color))
-                .padding(.horizontal)
-                .padding(.vertical, 10)
-                .notificationSurface()
-
-                HStack {
-                  VStack(alignment: .leading, spacing: 4) {
-                    Text("Smart suppression")
-                      .labelStyle(type: .secondary)
-                  }
-                  Spacer()
-                  Toggle("", isOn: $suppressWhenCompleted)
-                }
-                .tint(Color(calendar.color))
-                .padding(.horizontal)
-                .padding(.vertical, 10)
-                .notificationSurface()
-              }
-            }
-
-            NotificationSection(
-              label: "Privacy", description: "Determines how the notifications appear on your lock screen."
-            ) {
-              VStack(spacing: 1) {
-                VStack {
-                  HStack(spacing: 6) {
-                    VStack(alignment: .leading, spacing: 4) {
-                      Text("Lock screen text")
-                        .labelStyle(type: .secondary)
-                      Text(notificationPrivacyMode.detail)
-                        .descriptionStyle()
-                    }
-
-                    Spacer()
-                  }
-                  .padding(.horizontal)
-
-                  Picker("Privacy Level", selection: $notificationPrivacyMode) {
-                    ForEach(NotificationPrivacyMode.allCases, id: \.self) { mode in
-                      Text(mode.description).tag(mode)
-                    }
-                  }
-                  .pickerStyle(.segmented)
-                  .font(.system(size: 12, design: .monospaced))
-                  .padding(.horizontal, 6)
-                }
-                .padding(.vertical, 12)
-                .notificationSurface()
-              }
-            }
+            PrivacySection(
+              style: .saved,
+              accentColor: Color(calendar.color),
+              notificationPrivacyMode: $notificationPrivacyMode
+            )
           }
         }
         .padding()
@@ -263,10 +124,6 @@ struct NotificationSettingsSheet: View {
 }
 
 extension NotificationSettingsSheet {
-  private var maxAdditionalReminderTimes: Int {
-    max(0, maxTotalReminderTimesPerDay - 1)
-  }
-
   private func showPremiumPaywall() {
     router.showScreen(.sheet) { _ in
       PaywallView(displayCloseButton: true)
@@ -315,104 +172,6 @@ extension NotificationSettingsSheet {
       .foregroundColor(fgColor)
   }
 
-  private func normalizedAdditionalReminderTimes(_ times: [ReminderTime]) -> [ReminderTime] {
-    guard calendar.trackingType == .multipleDaily else {
-      return []
-    }
-
-    var seen = Set<String>()
-    let deduped = times.filter { time in
-      let key = time.id
-      if seen.contains(key) { return false }
-      seen.insert(key)
-      return true
-    }
-
-    let sorted = deduped.sorted {
-      if $0.hour != $1.hour { return $0.hour < $1.hour }
-      return $0.minute < $1.minute
-    }
-
-    return Array(sorted.prefix(maxAdditionalReminderTimes))
-  }
-
-  private func addAdditionalReminderTime() {
-    guard calendar.trackingType == .multipleDaily else { return }
-    guard isPremiumUser else {
-      showPremiumPaywall()
-      return
-    }
-
-    guard additionalReminderTimes.count < maxAdditionalReminderTimes else { return }
-
-    let base = additionalReminderTimes.last?.toDate() ?? reminderTime
-    let next = Calendar.current.date(byAdding: .hour, value: 1, to: base) ?? base
-    let proposed = ReminderTime(from: next)
-    withAnimation(.easeOut(duration: 0.15)) {
-      additionalReminderTimes = normalizedAdditionalReminderTimes(additionalReminderTimes + [proposed])
-    }
-  }
-
-  private func additionalTimeRow(time: ReminderTime) -> some View {
-    return HStack {
-      DatePicker(
-        "",
-        selection: Binding(
-          get: { time.toDate() },
-          set: { newDate in
-            guard isPremiumUser else {
-              showPremiumPaywall()
-              return
-            }
-            guard let index = additionalReminderTimes.firstIndex(where: { $0.id == time.id }) else {
-              return
-            }
-            var updated = additionalReminderTimes
-            updated[index] = ReminderTime(from: newDate)
-            additionalReminderTimes = normalizedAdditionalReminderTimes(updated)
-          }
-        ),
-        displayedComponents: [.hourAndMinute]
-      )
-      .labelsHidden()
-      .tint(Color(calendar.color))
-      .datePickerStyle(.compact)
-      .disabled(!isPremiumUser)
-
-      Spacer()
-
-      Button(role: .destructive) {
-        guard isPremiumUser else {
-          showPremiumPaywall()
-          return
-        }
-        withAnimation(.easeIn(duration: 0.12)) {
-          additionalReminderTimes.removeAll { $0.id == time.id }
-        }
-      } label: {
-        ZStack {
-          Image(systemName: "minus")
-            .font(.system(size: 16, design: .monospaced))
-            .foregroundStyle(.red.secondary)
-        }
-        .frame(width: 24, height: 24)
-        .contentShape(Rectangle())
-      }
-      .buttonStyle(.plain)
-      .contentShape(Rectangle())
-
-    }
-    .padding(.horizontal)
-    .padding(.vertical, 8)
-    .notificationSurface()
-    .transition(
-      .asymmetric(
-        insertion: .opacity.combined(with: .offset(y: 8)),
-        removal: .opacity.combined(with: .offset(y: -8))
-      )
-    )
-  }
-
   private func saveAndDismiss() {
     var updatedCalendar = calendar
     updatedCalendar.recurringReminderEnabled = recurringReminderEnabled
@@ -421,80 +180,27 @@ extension NotificationSettingsSheet {
       let cal = Calendar.current
       updatedCalendar.reminderHour = cal.component(.hour, from: reminderTime)
       updatedCalendar.reminderMinute = cal.component(.minute, from: reminderTime)
+      updatedCalendar.reminderWeekday = calendar.cadence == .weekly ? reminderWeekday : nil
     } else {
       updatedCalendar.reminderHour = nil
       updatedCalendar.reminderMinute = nil
+      updatedCalendar.reminderWeekday = nil
     }
 
     updatedCalendar.notificationPrivacyMode = notificationPrivacyMode
     updatedCalendar.suppressWhenCompleted = suppressWhenCompleted
-
-    if isPremiumUser && calendar.trackingType == .multipleDaily {
-      updatedCalendar.additionalReminderTimes = normalizedAdditionalReminderTimes(additionalReminderTimes)
-    } else {
-      updatedCalendar.additionalReminderTimes = []
-    }
-
+    updatedCalendar.additionalReminderTimes =
+      (calendar.cadence == .daily && isPremiumUser && calendar.trackingType == .multipleDaily)
+      ? NotificationSettingsHelpers.sanitizedAdditionalReminderTimes(
+        additionalReminderTimes,
+        cadence: calendar.cadence,
+        trackingType: calendar.trackingType
+      ) : []
     updatedCalendar.streakProtectionEnabled = streakProtectionEnabled
     updatedCalendar.streakProtectionThreshold = streakProtectionThreshold
 
     scheduleNotifications(for: updatedCalendar, store: CustomCalendarStore.shared)
     onSave(updatedCalendar)
     dismiss()
-  }
-}
-
-private struct NotificationSection<Content: View>: View {
-  let label: LocalizedStringKey
-  let content: () -> Content
-  let description: LocalizedStringKey?
-  @Environment(\.colorScheme) private var colorScheme
-
-  init(
-    label: LocalizedStringKey,
-    description: LocalizedStringKey? = nil,
-    @ViewBuilder content: @escaping () -> Content
-  ) {
-    self.label = label
-    self.content = content
-    self.description = description
-  }
-
-  var body: some View {
-    VStack(alignment: .leading, spacing: 8) {
-      VStack(alignment: .leading, spacing: 4) {
-        Text(label)
-          .labelStyle(type: .secondary)
-          .textCase(nil)
-        if let description = description {
-          Text(description)
-            .descriptionStyle()
-            .textCase(nil)
-        }
-      }
-
-      VStack(alignment: .leading, spacing: 1) {
-        content()
-      }
-      // Show 2pt black gaps between each flat surface.
-      .padding(1)
-      .background(
-        Rectangle()
-          .fill(getVoidColor(colorScheme: colorScheme))
-      )
-
-    }
-    .frame(maxWidth: .infinity, alignment: .leading)
-  }
-}
-
-extension View {
-  fileprivate func notificationSurface() -> some View {
-    self
-      .sameLevelBorder(radius: 6, isFlat: true)
-      .overlay(
-        RoundedRectangle(cornerRadius: 6)
-          .stroke(Color.black.opacity(0.75), lineWidth: 2)
-      )
   }
 }

@@ -7,9 +7,24 @@ struct YearCardShareView: View {
     let year: Int
     let dates: [Date]
     let stats: CalendarStats
-    let completionRate30d: Double
-    let todaysCount: Int
+    let completionRateTrailingLongWindow: Double
+    let currentPeriodCount: Int
     let trackingType: TrackingType
+
+    private var shareData: ShareCardData {
+        ShareCardData(
+            calendar: calendar,
+            year: year,
+            dates: dates,
+            stats: stats,
+            completionRateTrailingLongWindow: completionRateTrailingLongWindow,
+            averageProgressTrailingShortWindow: 0,
+            averageProgressTrailingLongWindow: 0,
+            bestWeekday: nil,
+            currentPeriodCount: currentPeriodCount,
+            trackingType: trackingType
+        )
+    }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
@@ -64,8 +79,8 @@ struct YearCardShareView: View {
             }
             HStack(spacing: 12) {
                 ShareCompactStatTile(
-                    title: "Today",
-                    value: "\(todaysCount)",
+                    title: shareData.currentPeriodTitle,
+                    value: "\(currentPeriodCount)",
                     accentColor: Color(calendar.color)
                 )
                 ShareCompactStatTile(
@@ -75,7 +90,7 @@ struct YearCardShareView: View {
                 )
                 if trackingType != .binary {
                     ShareCompactStatTile(
-                        title: "Best Day",
+                        title: shareData.bestPeriodTitle,
                         value: "\(stats.maxCount)",
                         accentColor: Color(calendar.color)
                     )
@@ -93,8 +108,8 @@ struct YearCardShareView: View {
                     accentColor: Color(calendar.color)
                 )
                 ShareCompactStatTile(
-                    title: "30d",
-                    value: sharePercent(completionRate30d),
+                    title: shareData.completionWindowTitle,
+                    value: sharePercent(completionRateTrailingLongWindow),
                     accentColor: Color(calendar.color)
                 )
             }

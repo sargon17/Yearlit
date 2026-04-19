@@ -1,24 +1,27 @@
 import Foundation
 
 public enum WidgetStreak {
+    public static func longestStreak(
+        calendar: CustomCalendar,
+        calendarSystem: Calendar = WidgetStreak.makeLocalCalendar()
+    ) -> Int {
+        let successByDay = successByBucket(calendar: calendar, calendarSystem: calendarSystem)
+        return longestStreak(successByDay: successByDay, calendarSystem: calendarSystem, cadence: calendar.cadence)
+    }
+
     public static func currentStreak(
         calendar: CustomCalendar,
         today: Date = Date(),
         calendarSystem: Calendar = WidgetStreak.makeLocalCalendar(),
         allowTodayMissing: Bool = true
     ) -> (streak: Int, isAtRisk: Bool) {
-        var successByDay: [Date: Bool] = [:]
-        for entry in calendar.entries.values {
-            let day = calendarSystem.startOfDay(for: entry.date)
-            if isEntrySuccess(entry, calendar: calendar) {
-                successByDay[day] = true
-            }
-        }
+        let successByDay = successByBucket(calendar: calendar, calendarSystem: calendarSystem)
 
         return currentStreak(
             successByDay: successByDay,
             today: today,
             calendarSystem: calendarSystem,
+            cadence: calendar.cadence,
             allowTodayMissing: allowTodayMissing
         )
     }
@@ -27,14 +30,15 @@ public enum WidgetStreak {
         successByDay: [Date: Bool],
         today: Date = Date(),
         calendarSystem: Calendar = WidgetStreak.makeLocalCalendar(),
+        cadence: CalendarCadence = .daily,
         allowTodayMissing: Bool = true
     ) -> (streak: Int, isAtRisk: Bool) {
         guard !successByDay.isEmpty else { return (0, false) }
 
-        let normalizedToday = calendarSystem.startOfDay(for: today)
+        let normalizedToday = normalizedBucketDate(for: today, cadence: cadence, calendarSystem: calendarSystem)
         var normalized: [Date: Bool] = [:]
         for (date, success) in successByDay {
-            normalized[calendarSystem.startOfDay(for: date)] = success
+            normalized[normalizedBucketDate(for: date, cadence: cadence, calendarSystem: calendarSystem)] = success
         }
 
         let todaySuccess = normalized[normalizedToday]
@@ -45,19 +49,21 @@ public enum WidgetStreak {
         var isAtRisk = false
 
         if shouldSkipToday {
-            guard let previous = calendarSystem.date(byAdding: .day, value: -1, to: normalizedToday) else {
+            let component: Calendar.Component = cadence == .weekly ? .weekOfYear : .day
+            guard let previous = calendarSystem.date(byAdding: component, value: -1, to: normalizedToday) else {
                 return (0, false)
             }
-            cursor = calendarSystem.startOfDay(for: previous)
+            cursor = normalizedBucketDate(for: previous, cadence: cadence, calendarSystem: calendarSystem)
             isAtRisk = true
         }
 
         while normalized[cursor] == true {
             streak += 1
-            guard let previous = calendarSystem.date(byAdding: .day, value: -1, to: cursor) else {
+            let component: Calendar.Component = cadence == .weekly ? .weekOfYear : .day
+            guard let previous = calendarSystem.date(byAdding: component, value: -1, to: cursor) else {
                 break
             }
-            cursor = calendarSystem.startOfDay(for: previous)
+            cursor = normalizedBucketDate(for: previous, cadence: cadence, calendarSystem: calendarSystem)
         }
 
         if streak == 0 {
@@ -80,8 +86,69 @@ public enum WidgetStreak {
 
     public static func makeLocalCalendar() -> Calendar {
         var calendar = Calendar(identifier: .gregorian)
-        calendar.locale = Locale(identifier: "en_US_POSIX")
+        calendar.locale = .autoupdatingCurrent
         calendar.timeZone = .autoupdatingCurrent
         return calendar
+    }
+
+    private static func normalizedBucketDate(
+        for date: Date,
+        cadence: CalendarCadence,
+        calendarSystem: Calendar
+    ) -> Date {
+        switch cadence {
+        case .daily:
+            return calendarSystem.startOfDay(for: date)
+        case .weekly:
+            return calendarSystem.dateInterval(of: .weekOfYear, for: date)?.start ?? calendarSystem.startOfDay(for: date)
+        }
+    }
+
+    private static func successByBucket(
+        calendar: CustomCalendar,
+        calendarSystem: Calendar
+    ) -> [Date: Bool] {
+        var successByDay: [Date: Bool] = [:]
+        for entry in calendar.entries.values {
+            let day = normalizedBucketDate(for: entry.date, cadence: calendar.cadence, calendarSystem: calendarSystem)
+            if isEntrySuccess(entry, calendar: calendar) {
+                successByDay[day] = true
+            }
+        }
+        return successByDay
+    }
+
+    private static func longestStreak(
+        successByDay: [Date: Bool],
+        calendarSystem: Calendar,
+        cadence: CalendarCadence
+    ) -> Int {
+        let sortedDays = successByDay.keys.sorted()
+        guard !sortedDays.isEmpty else { return 0 }
+
+        let component: Calendar.Component = cadence == .weekly ? .weekOfYear : .day
+        var longest = 0
+        var current = 0
+        var previous: Date?
+
+        for day in sortedDays {
+            if let previous,
+               let expected = calendarSystem.date(byAdding: component, value: 1, to: previous),
+               normalizedBucketDate(for: expected, cadence: cadence, calendarSystem: calendarSystem) != day
+            {
+                current = 0
+            }
+
+            if successByDay[day] == true {
+                current += 1
+                longest = max(longest, current)
+            } else {
+                current = 0
+            }
+
+            previous = day
+        }
+
+        return longest
     }
 }

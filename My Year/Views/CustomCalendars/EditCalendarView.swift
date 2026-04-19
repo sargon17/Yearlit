@@ -12,10 +12,12 @@ struct EditCalendarView: View {
     @State private var customerInfo: CustomerInfo?
     @State private var name: String
     @State private var selectedColor: String
+    @State private var cadence: CalendarCadence
     @State private var trackingType: TrackingType
     @State private var dailyTarget: Int
     @State private var recurringReminderEnabled: Bool
     @State private var reminderTime: Date
+    @State private var reminderWeekday: Int
     @State private var selectedUnit: UnitOfMeasure?
     @State private var defaultRecordValue: Int
     @State private var isArchived: Bool
@@ -43,9 +45,11 @@ struct EditCalendarView: View {
         self.onDelete = onDelete
         _name = State(initialValue: calendar.name)
         _selectedColor = State(initialValue: calendar.color)
+        _cadence = State(initialValue: calendar.cadence)
         _trackingType = State(initialValue: calendar.trackingType)
         _dailyTarget = State(initialValue: calendar.dailyTarget)
         _recurringReminderEnabled = State(initialValue: calendar.recurringReminderEnabled)
+        _reminderWeekday = State(initialValue: calendar.reminderWeekday ?? Calendar.current.component(.weekday, from: Date()))
         _selectedUnit = State(initialValue: calendar.unit)
         _defaultRecordValue = State(initialValue: calendar.defaultRecordValue ?? 1)
         _currencySymbol = State(initialValue: calendar.currencySymbol ?? "$")
@@ -106,11 +110,17 @@ struct EditCalendarView: View {
     private var trackingTypeDescription: LocalizedStringKey {
         switch trackingType {
         case .binary:
-            return "Track a simple yes/no each day. Great for habits you either complete or skip."
+            return cadence == .daily
+                ? "Track a simple yes/no each day. Great for habits you either complete or skip."
+                : "Track a simple yes/no each week. Great for goals you either hit or miss across the week."
         case .counter:
-            return "Log a numeric value per day, like pages read or minutes practiced."
+            return cadence == .daily
+                ? "Log a numeric value per day, like pages read or minutes practiced."
+                : "Log a numeric value per week, like workouts done or kilometers covered."
         case .multipleDaily:
-            return "Check in multiple times per day toward a daily target."
+            return cadence == .daily
+                ? "Check in multiple times per day toward a daily target."
+                : "Check in multiple times across the week toward a weekly target."
         }
     }
 
@@ -128,6 +138,24 @@ struct EditCalendarView: View {
                     .inputStyle(color: Color(selectedColor))
                     .focused($isNameFocused)
                 }
+
+                CustomSection(label: "Cadence") {
+                    HStack {
+                        Text("Type")
+                            .labelStyle(type: .secondary)
+                        Spacer()
+                        Text(cadence.title)
+                            .foregroundStyle(.textSecondary)
+                    }
+                    .padding(.horizontal)
+                    .padding(.vertical, 10)
+                }
+
+                Text("Cadence can't be changed after creation.")
+                    .font(.footnote)
+                    .foregroundStyle(.textTertiary)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.horizontal, 8)
 
                 TrackingPicker(trackingType: $trackingType, color: Color(selectedColor))
 
@@ -148,7 +176,7 @@ struct EditCalendarView: View {
                         VStack(spacing: 2) {
                             if trackingType == .multipleDaily {
                                 HStack {
-                                    Text("Daily Target")
+                                    Text(cadence.targetTitle)
                                         .labelStyle(type: .secondary)
 
                                     Spacer()
@@ -261,9 +289,12 @@ struct EditCalendarView: View {
                                     Text("Notification settings")
                                         .labelStyle(type: .secondary)
                                     Text(
-                                        recurringReminderEnabled
-                                            ? "On • tap to customize privacy, suppression, and more."
-                                            : "Off • set a daily reminder and privacy level."
+                                        NotificationSettingsHelpers.reminderSummary(
+                                            isEnabled: recurringReminderEnabled,
+                                            cadence: cadence,
+                                            reminderTime: reminderTime,
+                                            reminderWeekday: reminderWeekday
+                                        )
                                     )
                                     .font(.caption)
                                     .foregroundStyle(.textTertiary)
@@ -288,6 +319,7 @@ struct EditCalendarView: View {
                         Button(action: {
                             router.showScreen(.sheet) { _ in
                                 ExistingStreakSheet(
+                                    cadence: cadence,
                                     trackingType: trackingType,
                                     dailyTarget: dailyTarget,
                                     defaultDailyValue: defaultRecordValue,
@@ -423,6 +455,7 @@ struct EditCalendarView: View {
         .sheet(isPresented: $showingNotificationSettings) {
             NotificationSettingsDraftSheet(
                 calendarName: name,
+                cadence: cadence,
                 trackingType: trackingType,
                 accentColor: Color(selectedColor),
                 customerInfo: customerInfo,
@@ -432,7 +465,8 @@ struct EditCalendarView: View {
                 suppressWhenCompleted: $suppressWhenCompleted,
                 additionalReminderTimes: $additionalReminderTimes,
                 streakProtectionEnabled: $streakProtectionEnabled,
-                streakProtectionThreshold: $streakProtectionThreshold
+                streakProtectionThreshold: $streakProtectionThreshold,
+                reminderWeekday: $reminderWeekday
             )
         }
         .onChange(of: trackingType) { _, newValue in
@@ -448,6 +482,7 @@ struct EditCalendarView: View {
             id: calendar.id,
             name: trimmedName,
             color: selectedColor,
+            cadence: cadence,
             trackingType: trackingType,
             dailyTarget: dailyTarget,
             entries: entries,
@@ -455,6 +490,7 @@ struct EditCalendarView: View {
             recurringReminderEnabled: recurringReminderEnabled,
             reminderTime: recurringReminderEnabled ? validateReminderTime(reminderTime) : nil,
             order: calendar.order,
+            reminderWeekday: recurringReminderEnabled && cadence == .weekly ? reminderWeekday : nil,
             unit: (trackingType == .counter || trackingType == .multipleDaily) ? selectedUnit : nil,
             defaultRecordValue: (trackingType == .counter || trackingType == .multipleDaily)
                 ? defaultRecordValue : nil,

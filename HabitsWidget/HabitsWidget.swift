@@ -103,10 +103,8 @@ struct HorizontalCalendarGrid: View {
             return inactiveDayColor(base: backgroundColor, overlay: textPrimaryColor, ratio: inactiveRatio)
         }
 
-        let key = customDateFormatter(date: normalized)
-
         if let calendar = calendar,
-           let entry = calendar.entries[key]
+           let entry = calendar.entry(for: normalized)
         {
             switch calendar.trackingType {
             case .binary:
@@ -152,19 +150,17 @@ struct HorizontalCalendarGrid: View {
 
                     HStack(spacing: 8) {
                         let today = Date()
-                        let formattedToday = customDateFormatter(date: today)
-
                         if calendar.trackingType != .binary && family != .systemSmall {
-                            if let todayEntry = calendar.entries[formattedToday] {
-                                TodaysCountView(count: todayEntry.count)
+                            if let todayEntry = calendar.entry(for: today) {
+                                TodaysCountView(count: todayEntry.count, cadence: calendar.cadence)
                             } else {
-                                TodaysCountView(count: 0)
+                                TodaysCountView(count: 0, cadence: calendar.cadence)
                             }
                         }
 
                         if family != .systemSmall {
                             if currentStreak > 0 {
-                                NumberOfDaysView(numberOfDays: currentStreak)
+                                NumberOfDaysView(numberOfDays: currentStreak, cadence: calendar.cadence)
                             }
                         }
 
@@ -231,6 +227,17 @@ struct HorizontalCalendarGrid: View {
     }
 
     private func datesForFamily(today: Date) -> [Date] {
+        if let calendar, calendar.cadence == .weekly {
+            switch family {
+            case .systemSmall:
+                return recentWeeks(from: today, weeks: 35)
+            case .systemMedium, .systemLarge:
+                return yearWeeks(containing: today)
+            default:
+                return yearWeeks(containing: today)
+            }
+        }
+
         switch family {
         case .systemSmall:
             return recentDates(from: today, days: 35)
@@ -248,6 +255,25 @@ struct HorizontalCalendarGrid: View {
             return [end]
         }
         return buildDates(from: start, to: end)
+    }
+
+    private func recentWeeks(from today: Date, weeks: Int) -> [Date] {
+        let end = LocalDayCalendar.startOfWeek(for: today)
+        guard let start = localCalendar.date(byAdding: .weekOfYear, value: -(weeks - 1), to: end) else {
+            return [end]
+        }
+        return buildWeekDates(from: start, to: end)
+    }
+
+    private func yearWeeks(containing date: Date) -> [Date] {
+        let year = localCalendar.component(.year, from: date)
+        guard let start = localCalendar.date(from: DateComponents(year: year, month: 1, day: 1)),
+              let end = localCalendar.date(from: DateComponents(year: year, month: 12, day: 31))
+        else {
+            return []
+        }
+
+        return buildWeekDates(from: LocalDayCalendar.startOfWeek(for: start), to: LocalDayCalendar.startOfWeek(for: end))
     }
 
     private func recentMonths(from today: Date, months: Int) -> [Date] {
@@ -268,6 +294,22 @@ struct HorizontalCalendarGrid: View {
             }
             current = next
         }
+        return dates
+    }
+
+    private func buildWeekDates(from start: Date, to end: Date) -> [Date] {
+        var dates: [Date] = []
+        var current = LocalDayCalendar.startOfWeek(for: start)
+        let last = LocalDayCalendar.startOfWeek(for: end)
+
+        while current <= last {
+            dates.append(current)
+            guard let next = localCalendar.date(byAdding: .weekOfYear, value: 1, to: current) else {
+                break
+            }
+            current = next
+        }
+
         return dates
     }
 }
@@ -297,11 +339,17 @@ struct QuickAddButtonContent: View {
 
 struct NumberOfDaysView: View {
     let numberOfDays: Int
+    let cadence: CalendarCadence
     let label: String
 
-    init(numberOfDays: Int) {
+    init(numberOfDays: Int, cadence: CalendarCadence) {
         self.numberOfDays = numberOfDays
-        label = numberOfDays == 1 ? String(localized: "day") : String(localized: "days streak")
+        self.cadence = cadence
+        if cadence == .weekly {
+            label = numberOfDays == 1 ? String(localized: "week") : String(localized: "weeks streak")
+        } else {
+            label = numberOfDays == 1 ? String(localized: "day") : String(localized: "days streak")
+        }
     }
 
     var body: some View {
@@ -319,11 +367,13 @@ struct NumberOfDaysView: View {
 
 struct TodaysCountView: View {
     let count: Int
+    let cadence: CalendarCadence
     let label: String
 
-    init(count: Int) {
+    init(count: Int, cadence: CalendarCadence) {
         self.count = count
-        label = String(localized: "today")
+        self.cadence = cadence
+        label = cadence == .weekly ? String(localized: "this week") : String(localized: "today")
     }
 
     var body: some View {
@@ -462,9 +512,13 @@ struct HabitQuickAddIntent: AppIntent, SetValueIntent {
         } else {
             switch calendar.trackingType {
             case .counter:
-                newEntry = CalendarEntry(date: today, count: 1, completed: true)
+                newEntry = CalendarEntry(date: today, count: addValue, completed: addValue > 0)
             case .multipleDaily:
-                newEntry = CalendarEntry(date: today, count: 1, completed: false)
+                newEntry = CalendarEntry(
+                    date: today,
+                    count: addValue,
+                    completed: addValue >= calendar.dailyTarget
+                )
             case .binary:
                 newEntry = CalendarEntry(date: today, count: 1, completed: true)
             }

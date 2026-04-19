@@ -14,13 +14,12 @@ func computeRollingStats(
     var zSum30 = 0.0
 
     for (i, d) in d30.enumerated() {
-        let key = dayKey(for: d)
         if anySuccessByDay[d] == true { succ30 += 1 }
 
         var zAccum = 0.0
         var zCount = 0.0
         for c in calendars {
-            if let e = entry(for: c.id, dayKey: key, entriesByCalendar: entriesByCalendar) {
+            if let e = entry(for: c, date: d, entriesByCalendar: entriesByCalendar) {
                 zAccum += normalizedProgress(for: c, entry: e)
                 zCount += 1
             }

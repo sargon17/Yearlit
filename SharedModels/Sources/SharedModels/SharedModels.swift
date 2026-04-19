@@ -189,11 +189,56 @@ public enum NotificationPrivacyMode: String, Codable, CaseIterable {
     }
 }
 
+public enum CalendarCadence: String, Codable, CaseIterable {
+    case daily
+    case weekly
+
+    public var title: String {
+        switch self {
+        case .daily:
+            return String(localized: "Daily")
+        case .weekly:
+            return String(localized: "Weekly")
+        }
+    }
+
+    public var targetTitle: String {
+        switch self {
+        case .daily:
+            return String(localized: "Daily Target")
+        case .weekly:
+            return String(localized: "Weekly Target")
+        }
+    }
+
+    public var periodTitle: String {
+        switch self {
+        case .daily:
+            return String(localized: "day")
+        case .weekly:
+            return String(localized: "week")
+        }
+    }
+
+    public var detailDescription: String {
+        switch self {
+        case .daily:
+            return String(localized: "Track progress one day at a time.")
+        case .weekly:
+            return String(localized: "Track progress across each week, with one dot per week in the year view.")
+        }
+    }
+}
+
 public struct CustomCalendar: Codable, Identifiable {
     public let id: UUID
     public var name: String
     public var color: String // Store as hex or named color
+    public var cadence: CalendarCadence
     public var trackingType: TrackingType
+    // Legacy persisted name kept to avoid risky data migration.
+    // Semantically this is the target for the calendar cadence period
+    // (daily for daily calendars, weekly for weekly calendars).
     public var dailyTarget: Int
     public var unit: UnitOfMeasure?
     public var currencySymbol: String?
@@ -203,6 +248,7 @@ public struct CustomCalendar: Codable, Identifiable {
     public var recurringReminderEnabled: Bool
     public var reminderHour: Int?
     public var reminderMinute: Int?
+    public var reminderWeekday: Int?
     public var reminderTimeZone: String? // Store TimeZone.identifier for proper timezone handling
     public var notificationPrivacyMode: NotificationPrivacyMode = .full // Privacy mode for notifications
     public var suppressWhenCompleted: Bool = true // Don't send notification if entry already completed
@@ -212,10 +258,12 @@ public struct CustomCalendar: Codable, Identifiable {
     public var entries: [String: CalendarEntry] // Date string -> Entry
 
     public init(
-        id: UUID = UUID(), name: String, color: String, trackingType: TrackingType,
+        id: UUID = UUID(), name: String, color: String, cadence: CalendarCadence = .daily,
+        trackingType: TrackingType,
         dailyTarget: Int = 1, entries: [String: CalendarEntry] = [:],
         isArchived: Bool = false,
         recurringReminderEnabled: Bool = false, reminderTime: Date? = nil, order: Int = 0,
+        reminderWeekday: Int? = nil,
         unit: UnitOfMeasure? = nil,
         defaultRecordValue: Int? = nil,
         currencySymbol: String? = nil,
@@ -229,6 +277,7 @@ public struct CustomCalendar: Codable, Identifiable {
         self.id = id
         self.name = name
         self.color = color
+        self.cadence = cadence
         self.trackingType = trackingType
         self.dailyTarget = dailyTarget
         self.unit = unit
@@ -237,6 +286,7 @@ public struct CustomCalendar: Codable, Identifiable {
         self.isArchived = isArchived
         self.recurringReminderEnabled = recurringReminderEnabled
         self.order = order
+        self.reminderWeekday = reminderWeekday
         self.reminderTimeZone = reminderTimeZone ?? TimeZone.current.identifier
         self.notificationPrivacyMode = notificationPrivacyMode
         self.suppressWhenCompleted = suppressWhenCompleted
@@ -256,10 +306,12 @@ public struct CustomCalendar: Codable, Identifiable {
 
     /// New initializer using hour and minute directly
     public init(
-        id: UUID = UUID(), name: String, color: String, trackingType: TrackingType,
+        id: UUID = UUID(), name: String, color: String, cadence: CalendarCadence = .daily,
+        trackingType: TrackingType,
         dailyTarget: Int = 1, entries: [String: CalendarEntry] = [:],
         isArchived: Bool = false,
         recurringReminderEnabled: Bool = false, reminderHour: Int? = nil, reminderMinute: Int? = nil,
+        reminderWeekday: Int? = nil,
         order: Int = 0,
         unit: UnitOfMeasure? = nil,
         defaultRecordValue: Int? = nil,
@@ -283,6 +335,7 @@ public struct CustomCalendar: Codable, Identifiable {
         self.id = id
         self.name = name
         self.color = color
+        self.cadence = cadence
         self.trackingType = trackingType
         self.dailyTarget = dailyTarget
         self.unit = unit
@@ -293,6 +346,7 @@ public struct CustomCalendar: Codable, Identifiable {
         self.order = order
         self.reminderHour = reminderHour
         self.reminderMinute = reminderMinute
+        self.reminderWeekday = reminderWeekday
         self.reminderTimeZone = reminderTimeZone ?? TimeZone.current.identifier
         self.notificationPrivacyMode = notificationPrivacyMode
         self.suppressWhenCompleted = suppressWhenCompleted
@@ -300,6 +354,100 @@ public struct CustomCalendar: Codable, Identifiable {
         self.streakProtectionEnabled = streakProtectionEnabled
         self.streakProtectionThreshold = streakProtectionThreshold
         self.entries = entries
+    }
+
+    public func bucketDate(for date: Date) -> Date {
+        switch cadence {
+        case .daily:
+            return LocalDayCalendar.startOfDay(for: date)
+        case .weekly:
+            return LocalDayCalendar.startOfWeek(for: date)
+        }
+    }
+
+    public func entryKey(for date: Date) -> String {
+        DayKeyFormatter.shared.string(from: bucketDate(for: date))
+    }
+
+    public func entry(for date: Date) -> CalendarEntry? {
+        entries[entryKey(for: date)]
+    }
+
+    private enum CodingKeys: String, CodingKey {
+        case id
+        case name
+        case color
+        case cadence
+        case trackingType
+        case dailyTarget
+        case unit
+        case currencySymbol
+        case defaultRecordValue
+        case order
+        case isArchived
+        case recurringReminderEnabled
+        case reminderHour
+        case reminderMinute
+        case reminderWeekday
+        case reminderTimeZone
+        case notificationPrivacyMode
+        case suppressWhenCompleted
+        case additionalReminderTimes
+        case streakProtectionEnabled
+        case streakProtectionThreshold
+        case entries
+    }
+
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        id = try container.decode(UUID.self, forKey: .id)
+        name = try container.decode(String.self, forKey: .name)
+        color = try container.decode(String.self, forKey: .color)
+        cadence = try container.decodeIfPresent(CalendarCadence.self, forKey: .cadence) ?? .daily
+        trackingType = try container.decode(TrackingType.self, forKey: .trackingType)
+        dailyTarget = try container.decode(Int.self, forKey: .dailyTarget)
+        unit = try container.decodeIfPresent(UnitOfMeasure.self, forKey: .unit)
+        currencySymbol = try container.decodeIfPresent(String.self, forKey: .currencySymbol)
+        defaultRecordValue = try container.decodeIfPresent(Int.self, forKey: .defaultRecordValue)
+        order = try container.decodeIfPresent(Int.self, forKey: .order) ?? 0
+        isArchived = try container.decodeIfPresent(Bool.self, forKey: .isArchived) ?? false
+        recurringReminderEnabled = try container.decodeIfPresent(Bool.self, forKey: .recurringReminderEnabled) ?? false
+        reminderHour = try container.decodeIfPresent(Int.self, forKey: .reminderHour)
+        reminderMinute = try container.decodeIfPresent(Int.self, forKey: .reminderMinute)
+        reminderWeekday = try container.decodeIfPresent(Int.self, forKey: .reminderWeekday)
+        reminderTimeZone = try container.decodeIfPresent(String.self, forKey: .reminderTimeZone) ?? TimeZone.current.identifier
+        notificationPrivacyMode = try container.decodeIfPresent(NotificationPrivacyMode.self, forKey: .notificationPrivacyMode) ?? .full
+        suppressWhenCompleted = try container.decodeIfPresent(Bool.self, forKey: .suppressWhenCompleted) ?? true
+        additionalReminderTimes = try container.decodeIfPresent([ReminderTime].self, forKey: .additionalReminderTimes) ?? []
+        streakProtectionEnabled = try container.decodeIfPresent(Bool.self, forKey: .streakProtectionEnabled) ?? true
+        streakProtectionThreshold = try container.decodeIfPresent(Int.self, forKey: .streakProtectionThreshold) ?? 5
+        entries = try container.decodeIfPresent([String: CalendarEntry].self, forKey: .entries) ?? [:]
+    }
+
+    public func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(id, forKey: .id)
+        try container.encode(name, forKey: .name)
+        try container.encode(color, forKey: .color)
+        try container.encode(cadence, forKey: .cadence)
+        try container.encode(trackingType, forKey: .trackingType)
+        try container.encode(dailyTarget, forKey: .dailyTarget)
+        try container.encodeIfPresent(unit, forKey: .unit)
+        try container.encodeIfPresent(currencySymbol, forKey: .currencySymbol)
+        try container.encodeIfPresent(defaultRecordValue, forKey: .defaultRecordValue)
+        try container.encode(order, forKey: .order)
+        try container.encode(isArchived, forKey: .isArchived)
+        try container.encode(recurringReminderEnabled, forKey: .recurringReminderEnabled)
+        try container.encodeIfPresent(reminderHour, forKey: .reminderHour)
+        try container.encodeIfPresent(reminderMinute, forKey: .reminderMinute)
+        try container.encodeIfPresent(reminderWeekday, forKey: .reminderWeekday)
+        try container.encodeIfPresent(reminderTimeZone, forKey: .reminderTimeZone)
+        try container.encode(notificationPrivacyMode, forKey: .notificationPrivacyMode)
+        try container.encode(suppressWhenCompleted, forKey: .suppressWhenCompleted)
+        try container.encode(additionalReminderTimes, forKey: .additionalReminderTimes)
+        try container.encode(streakProtectionEnabled, forKey: .streakProtectionEnabled)
+        try container.encode(streakProtectionThreshold, forKey: .streakProtectionThreshold)
+        try container.encode(entries, forKey: .entries)
     }
 }
 
@@ -439,7 +587,7 @@ public struct DayValuation: Codable, Identifiable, Equatable {
 
     public init(date: Date = Date(), mood: DayMood, note: String? = nil) {
         let canonicalDate = LocalDayCalendar.startOfDay(for: date)
-        id = DayKeyFormatter.shared.string(from: canonicalDate)
+            id = DayKeyFormatter.shared.string(from: canonicalDate)
         self.mood = mood
         timestamp = canonicalDate
         self.note = note
@@ -660,9 +808,10 @@ public final class CustomCalendarStore: ObservableObject {
     public func addEntry(calendarId: UUID, entry: CalendarEntry) {
         do {
             let context = makeContext()
-            guard fetchCalendarEntity(id: calendarId, in: context) != nil else { return }
-            let canonicalDate = LocalDayCalendar.startOfDay(for: entry.date)
-            let dayKey = formatDate(date: canonicalDate)
+            guard let calendarEntity = fetchCalendarEntity(id: calendarId, in: context) else { return }
+            let cadence = CalendarCadence(rawValue: calendarEntity.cadenceRawValue) ?? .daily
+            let canonicalDate = canonicalEntryDate(for: entry.date, cadence: cadence)
+            let dayKey = formatDate(date: canonicalDate, cadence: cadence)
             let compositeKey = CalendarEntryEntity.makeCompositeKey(calendarId: calendarId, dayKey: dayKey)
 
             if let entryEntity = fetchEntry(compositeKey: compositeKey, in: context) {
@@ -694,7 +843,8 @@ public final class CustomCalendarStore: ObservableObject {
 
     public func getEntry(calendarId: UUID, date: Date) -> CalendarEntry? {
         let context = makeContext()
-        let dayKey = formatDate(date: date)
+        let cadence = resolveCadence(calendarId: calendarId, in: context)
+        let dayKey = formatDate(date: date, cadence: cadence)
         let compositeKey = CalendarEntryEntity.makeCompositeKey(calendarId: calendarId, dayKey: dayKey)
         return fetchEntry(compositeKey: compositeKey, in: context)?.toCalendarEntry()
     }
@@ -717,7 +867,8 @@ public final class CustomCalendarStore: ObservableObject {
     public func deleteEntry(calendarId: UUID, date: Date) {
         do {
             let context = makeContext()
-            let dayKey = formatDate(date: date)
+            let cadence = resolveCadence(calendarId: calendarId, in: context)
+            let dayKey = formatDate(date: date, cadence: cadence)
             let compositeKey = CalendarEntryEntity.makeCompositeKey(calendarId: calendarId, dayKey: dayKey)
             guard let target = fetchEntry(compositeKey: compositeKey, in: context) else { return }
             context.delete(target)
@@ -796,8 +947,31 @@ public final class CustomCalendarStore: ObservableObject {
         return context
     }
 
-    private func formatDate(date: Date) -> String {
-        DayKeyFormatter.shared.string(from: LocalDayCalendar.startOfDay(for: date))
+    private func resolveCadence(calendarId: UUID, in context: ModelContext) -> CalendarCadence {
+        if let loaded = calendars.first(where: { $0.id == calendarId }) {
+            return loaded.cadence
+        }
+
+        if let entity = fetchCalendarEntity(id: calendarId, in: context),
+           let cadence = CalendarCadence(rawValue: entity.cadenceRawValue)
+        {
+            return cadence
+        }
+
+        return .daily
+    }
+
+    private func canonicalEntryDate(for date: Date, cadence: CalendarCadence) -> Date {
+        switch cadence {
+        case .daily:
+            return LocalDayCalendar.startOfDay(for: date)
+        case .weekly:
+            return LocalDayCalendar.startOfWeek(for: date)
+        }
+    }
+
+    private func formatDate(date: Date, cadence: CalendarCadence) -> String {
+        DayKeyFormatter.shared.string(from: canonicalEntryDate(for: date, cadence: cadence))
     }
 
     private static let dataVersionKey = "CustomCalendarStore.dataVersion"

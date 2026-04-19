@@ -37,7 +37,7 @@ struct AllCalendarsRecapView: View {
         calendars: [CustomCalendar],
         year: Int,
         todayLocal: Date,
-        todayKeyDate: Date?
+        currentPeriodReferenceDate: Date?
     ) -> StatsBundle {
         var cal = Calendar(identifier: .gregorian)
         cal.locale = Locale(identifier: "en_US_POSIX")
@@ -62,11 +62,11 @@ struct AllCalendarsRecapView: View {
         let activeDays = allTimeSuccessByDay.values.filter { $0 }.count
         let (longestStreak, currentStreak) = computeStreaks(cal: cal, allTimeSuccessByDay)
 
-        let todayKeyCount: Int? = {
-            guard let keyDate = todayKeyDate else { return nil }
-            let key = dayKey(for: cal.startOfDay(for: keyDate))
+        let currentPeriodCount: Int? = {
+            guard let keyDate = currentPeriodReferenceDate else { return nil }
+            let normalizedDate = cal.startOfDay(for: keyDate)
             return calendars.reduce(0) { partial, c in
-                let e = entry(for: c.id, dayKey: key, entriesByCalendar: entriesByCalendar)
+                let e = entry(for: c, date: normalizedDate, entriesByCalendar: entriesByCalendar)
                 return partial + (e?.count ?? 0)
             }
         }()
@@ -99,14 +99,14 @@ struct AllCalendarsRecapView: View {
 
         return StatsBundle(
             basic: basic,
-            completionRate30d: cr30,
+            completionRateTrailingLongWindow: cr30,
             bestWeekday: bestWD?.day,
             weekdayRates: weekdayRates,
             monthlyRates: monthlyRates,
-            rolling7d: avg7,
-            rolling30d: avg30,
+            averageProgressTrailingShortWindow: avg7,
+            averageProgressTrailingLongWindow: avg30,
             volatilityStd: volatility,
-            todaysCount: todayKeyCount
+            currentPeriodCount: currentPeriodCount
         )
     }
 
@@ -116,7 +116,7 @@ struct AllCalendarsRecapView: View {
         let daySeed = Calendar.current.startOfDay(for: Date())
         let statsSignature = makeCacheKey(year: selectedYear, daySeed: daySeed, dataVersion: dataVersion)
         let statsTaskId = "\(statsSignature.identifier)|\(statsRefreshToken.uuidString)"
-        let todayKeyDate = getYearDatesArray(for: selectedYear).first { Calendar.current.isDate($0, inSameDayAs: Date()) }
+        let currentPeriodReferenceDate = getYearDatesArray(for: selectedYear).first { Calendar.current.isDate($0, inSameDayAs: Date()) }
 
         ScrollView {
             VStack(spacing: 10) {
@@ -159,15 +159,15 @@ struct AllCalendarsRecapView: View {
                     CalendarStatisticsView(
                         stats: bundle.basic,
                         accentColor: Color("qs-emerald"),
-                        todaysCount: bundle.todaysCount ?? 0,
+                        currentPeriodCount: bundle.currentPeriodCount,
                         unit: nil,
                         currencySymbol: nil,
-                        completionRateLast30d: bundle.completionRate30d,
+                        completionRateTrailingLongWindow: bundle.completionRateTrailingLongWindow,
                         bestWeekday: bundle.bestWeekday,
                         weekdayRates: bundle.weekdayRates,
                         monthlyRates: bundle.monthlyRates,
-                        rolling7d: bundle.rolling7d,
-                        rolling30d: bundle.rolling30d,
+                        averageProgressTrailingShortWindow: bundle.averageProgressTrailingShortWindow,
+                        averageProgressTrailingLongWindow: bundle.averageProgressTrailingLongWindow,
                         volatilityStdDev: bundle.volatilityStd,
                         isPremium: isPremium(customerInfo: customerInfo),
                         onUpgrade: { isPaywallPresented = true }
@@ -264,7 +264,7 @@ struct AllCalendarsRecapView: View {
                     calendars: calendarsSnapshot,
                     year: selectedYear,
                     todayLocal: Date(),
-                    todayKeyDate: todayKeyDate
+                    currentPeriodReferenceDate: currentPeriodReferenceDate
                 )
             }.value
             if token == statsRefreshToken {
