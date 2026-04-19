@@ -7,8 +7,8 @@ struct YearCardShareView: View {
     let year: Int
     let dates: [Date]
     let stats: CalendarStats
-    let completionRate30d: Double
-    let todaysCount: Int
+    let completionRateTrailingLongWindow: Double
+    let currentPeriodCount: Int
     let trackingType: TrackingType
 
     private var shareData: ShareCardData {
@@ -17,11 +17,11 @@ struct YearCardShareView: View {
             year: year,
             dates: dates,
             stats: stats,
-            completionRate30d: completionRate30d,
-            rolling7d: 0,
-            rolling30d: 0,
+            completionRateTrailingLongWindow: completionRateTrailingLongWindow,
+            averageProgressTrailingShortWindow: 0,
+            averageProgressTrailingLongWindow: 0,
             bestWeekday: nil,
-            todaysCount: todaysCount,
+            currentPeriodCount: currentPeriodCount,
             trackingType: trackingType
         )
     }
@@ -80,7 +80,7 @@ struct YearCardShareView: View {
             HStack(spacing: 12) {
                 ShareCompactStatTile(
                     title: shareData.currentPeriodTitle,
-                    value: "\(todaysCount)",
+                    value: "\(currentPeriodCount)",
                     accentColor: Color(calendar.color)
                 )
                 ShareCompactStatTile(
@@ -109,7 +109,7 @@ struct YearCardShareView: View {
                 )
                 ShareCompactStatTile(
                     title: shareData.completionWindowTitle,
-                    value: sharePercent(completionRate30d),
+                    value: sharePercent(completionRateTrailingLongWindow),
                     accentColor: Color(calendar.color)
                 )
             }

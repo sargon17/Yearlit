@@ -5,7 +5,7 @@ func computeCalendarStatsBundle(
     calendar: CustomCalendar,
     year: Int,
     todayLocal: Date,
-    todaysReferenceDate: Date?
+    currentPeriodReferenceDate: Date?
 ) -> StatsBundle {
     let cal = LocalDayCalendar.calendar
     let basic = computeBasicCalendarStats(for: calendar, today: todayLocal)
@@ -82,18 +82,18 @@ func computeCalendarStatsBundle(
         )
     }
 
-    let todaysCount = todaysReferenceDate.map { entryOn($0)?.count ?? 0 }
+    let currentPeriodCount = currentPeriodReferenceDate.map { entryOn($0)?.count ?? 0 }
 
     return StatsBundle(
         basic: basic,
-        completionRate30d: rollingStats.cr30,
+        completionRateTrailingLongWindow: rollingStats.cr30,
         bestWeekday: bestWeekday,
         weekdayRates: weekdayRates,
         monthlyRates: monthly,
-        rolling7d: rollingStats.avg7,
-        rolling30d: rollingStats.avg30,
+        averageProgressTrailingShortWindow: rollingStats.avg7,
+        averageProgressTrailingLongWindow: rollingStats.avg30,
         volatilityStd: volatility,
-        todaysCount: todaysCount
+        currentPeriodCount: currentPeriodCount
     )
 }
 

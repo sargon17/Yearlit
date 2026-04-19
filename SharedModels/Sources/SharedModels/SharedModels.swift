@@ -236,6 +236,9 @@ public struct CustomCalendar: Codable, Identifiable {
     public var color: String // Store as hex or named color
     public var cadence: CalendarCadence
     public var trackingType: TrackingType
+    // Legacy persisted name kept to avoid risky data migration.
+    // Semantically this is the target for the calendar cadence period
+    // (daily for daily calendars, weekly for weekly calendars).
     public var dailyTarget: Int
     public var unit: UnitOfMeasure?
     public var currencySymbol: String?

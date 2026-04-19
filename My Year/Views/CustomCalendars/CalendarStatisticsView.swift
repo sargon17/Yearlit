@@ -5,6 +5,8 @@ import SwiftfulRouting
 import SwiftUI
 
 struct CalendarStats {
+    // Legacy in-memory name. For weekly calendars this represents active weeks.
+    // Kept as-is to avoid broad churn for a UI-only semantic improvement.
     let activeDays: Int
     let totalCount: Int
     let maxCount: Int
@@ -15,16 +17,16 @@ struct CalendarStats {
 struct CalendarStatisticsView: View {
     let stats: CalendarStats
     let accentColor: Color
-    let todaysCount: Int
+    let currentPeriodCount: Int?
     let unit: UnitOfMeasure?
     let currencySymbol: String?
     // New advanced metrics
-    let completionRateLast30d: Double
+    let completionRateTrailingLongWindow: Double
     let bestWeekday: Int?
     let weekdayRates: [Int: Double]
     let monthlyRates: [Int: Double]
-    let rolling7d: Double
-    let rolling30d: Double
+    let averageProgressTrailingShortWindow: Double
+    let averageProgressTrailingLongWindow: Double
     let volatilityStdDev: Double
     let isPremium: Bool
     let onUpgrade: () -> Void
@@ -100,12 +102,14 @@ struct CalendarStatisticsView: View {
             VStack(spacing: 12) {
                 sectionHeader(LocalizedStringKey(entriesLabel))
                 HStack {
-                    CompactStatTile(
-                        title: currentPeriodTitle,
-                        value: "\(todaysCount)",
-                        accentColor: accentColor
-                    )
-                    .layoutPriority(1)
+                    if let currentPeriodCount {
+                        CompactStatTile(
+                            title: currentPeriodTitle,
+                            value: "\(currentPeriodCount)",
+                            accentColor: accentColor
+                        )
+                        .layoutPriority(1)
+                    }
                     CompactStatTile(
                         title: "Total",
                         value: "\(stats.totalCount)",
@@ -172,7 +176,7 @@ struct CalendarStatisticsView: View {
                 VStack(spacing: 8) {
                     labeledValueRow(
                         title: completionRateTitle,
-                        value: percent(completionRateLast30d),
+                        value: percent(completionRateTrailingLongWindow),
                         accentColor: accentColor,
                         isLocked: !isPremium
                     )
@@ -268,7 +272,7 @@ struct CalendarStatisticsView: View {
                 HStack {
                     CompactStatTile(
                         title: shortTrendTitle,
-                        value: "\(percent(rolling7d))",
+                        value: "\(percent(averageProgressTrailingShortWindow))",
                         accentColor: accentColor,
                         size: .small,
                         isLocked: !isPremium
@@ -276,7 +280,7 @@ struct CalendarStatisticsView: View {
                     .layoutPriority(1)
                     CompactStatTile(
                         title: longTrendTitle,
-                        value: "\(percent(rolling30d))",
+                        value: "\(percent(averageProgressTrailingLongWindow))",
                         accentColor: accentColor,
                         size: .small,
                         isLocked: !isPremium

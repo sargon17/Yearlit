@@ -105,17 +105,17 @@ struct PerformanceShareView: View {
                 HStack(spacing: 12) {
                     ShareCompactStatTile(
                         title: data.completionWindowTitle,
-                        value: sharePercent(data.completionRate30d),
+                        value: sharePercent(data.completionRateTrailingLongWindow),
                         accentColor: data.accentColor
                     )
                     ShareCompactStatTile(
                         title: data.shortTrendTitle,
-                        value: sharePercent(data.rolling7d),
+                        value: sharePercent(data.averageProgressTrailingShortWindow),
                         accentColor: data.accentColor
                     )
                     ShareCompactStatTile(
                         title: data.averageWindowTitle,
-                        value: sharePercent(data.rolling30d),
+                        value: sharePercent(data.averageProgressTrailingLongWindow),
                         accentColor: data.accentColor
                     )
                 }

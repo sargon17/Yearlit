@@ -184,14 +184,14 @@ private func generateDynamicContent(
         ]
         body = messages.randomElement() ?? messages[0]
 
-    } else if stats.weeklyCompletionRate > 0.7 {
+    } else if stats.currentPeriodProgress > 0.7 {
         // Good current-period progress
-        let weekPercent = stats.weeklyCompletionRate.formatted(.percent.precision(.fractionLength(0)))
+        let progressPercent = stats.currentPeriodProgress.formatted(.percent.precision(.fractionLength(0)))
         body = String(
             format: calendar.cadence == .weekly
                 ? String(localized: "You're at %@ this week! Keep pushing 💪")
                 : String(localized: "You're at %@ today! Keep pushing 💪"),
-            weekPercent
+            progressPercent
         )
 
     } else {
@@ -227,12 +227,12 @@ private func calculateStreakStats(
     let completedPreviousPeriod = calendar.entry(for: previousDate).map {
         isEntrySuccess(entry: $0, calendar: calendar)
     } ?? false
-    let weeklyCompletionRate = normalizedProgress(for: calendar, entry: calendar.entry(for: today))
+    let currentPeriodProgress = normalizedProgress(for: calendar, entry: calendar.entry(for: today))
 
     return StreakStats(
         currentStreak: currentStreak,
         completedPreviousPeriod: completedPreviousPeriod,
-        weeklyCompletionRate: weeklyCompletionRate
+        currentPeriodProgress: currentPeriodProgress
     )
 }
 
@@ -258,7 +258,7 @@ func isEntryFulfilledForNotification(_ entry: CalendarEntry, calendar: CustomCal
 private struct StreakStats {
     let currentStreak: Int
     let completedPreviousPeriod: Bool
-    let weeklyCompletionRate: Double
+    let currentPeriodProgress: Double
 }
 
 // MARK: - Request ID Utilities

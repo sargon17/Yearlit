@@ -169,16 +169,16 @@ struct CalendarShareSheet: View {
         statsBundle?.basic ?? computeFallbackStats(for: calendar)
     }
 
-    private var resolvedCompletionRate: Double {
-        statsBundle?.completionRate30d ?? 0
+    private var resolvedCompletionRateTrailingLongWindow: Double {
+        statsBundle?.completionRateTrailingLongWindow ?? 0
     }
 
-    private var resolvedRolling7d: Double {
-        statsBundle?.rolling7d ?? 0
+    private var resolvedAverageProgressTrailingShortWindow: Double {
+        statsBundle?.averageProgressTrailingShortWindow ?? 0
     }
 
-    private var resolvedRolling30d: Double {
-        statsBundle?.rolling30d ?? 0
+    private var resolvedAverageProgressTrailingLongWindow: Double {
+        statsBundle?.averageProgressTrailingLongWindow ?? 0
     }
 
     private var resolvedBestWeekday: Int? {
@@ -201,11 +201,11 @@ struct CalendarShareSheet: View {
             year: year,
             dates: dates,
             stats: resolvedStats,
-            completionRate30d: resolvedCompletionRate,
-            rolling7d: resolvedRolling7d,
-            rolling30d: resolvedRolling30d,
+            completionRateTrailingLongWindow: resolvedCompletionRateTrailingLongWindow,
+            averageProgressTrailingShortWindow: resolvedAverageProgressTrailingShortWindow,
+            averageProgressTrailingLongWindow: resolvedAverageProgressTrailingLongWindow,
             bestWeekday: resolvedBestWeekday,
-            todaysCount: resolvedTodaysCount,
+            currentPeriodCount: resolvedCurrentPeriodCount,
             trackingType: calendar.trackingType
         )
     }
@@ -280,8 +280,8 @@ struct CalendarShareSheet: View {
                         year: year,
                         dates: dates,
                         stats: resolvedStats,
-                        completionRate30d: resolvedCompletionRate,
-                        todaysCount: resolvedTodaysCount,
+                        completionRateTrailingLongWindow: resolvedCompletionRateTrailingLongWindow,
+                        currentPeriodCount: resolvedCurrentPeriodCount,
                         trackingType: calendar.trackingType
                     )
                 )
@@ -348,7 +348,7 @@ struct CalendarShareSheet: View {
         )
     }
 
-    private var resolvedTodaysCount: Int {
+    private var resolvedCurrentPeriodCount: Int {
         let currentYear = Calendar.current.component(.year, from: Date())
         guard year == currentYear else { return 0 }
         let today = Calendar.current.startOfDay(for: Date())

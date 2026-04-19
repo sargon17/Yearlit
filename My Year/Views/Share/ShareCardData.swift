@@ -6,11 +6,11 @@ struct ShareCardData {
     let year: Int
     let dates: [Date]
     let stats: CalendarStats
-    let completionRate30d: Double
-    let rolling7d: Double
-    let rolling30d: Double
+    let completionRateTrailingLongWindow: Double
+    let averageProgressTrailingShortWindow: Double
+    let averageProgressTrailingLongWindow: Double
     let bestWeekday: Int?
-    let todaysCount: Int
+    let currentPeriodCount: Int
     let trackingType: TrackingType
 
     var accentColor: Color {

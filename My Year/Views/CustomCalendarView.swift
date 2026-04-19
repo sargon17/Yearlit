@@ -57,7 +57,7 @@ struct CustomCalendarView: View {
             : yearDates
     }
 
-    private var todayKeyDate: Date? {
+    private var currentPeriodReferenceDate: Date? {
         yearDates.first { Calendar.current.isDate($0, inSameDayAs: Date()) }
     }
 
@@ -154,7 +154,7 @@ struct CustomCalendarView: View {
     }
 
     private func handleQuickAdd() {
-        let entryDate = todayKeyDate ?? Date()
+        let entryDate = currentPeriodReferenceDate ?? Date()
         quickEntry(
             calendar: activeCalendar,
             date: entryDate,
@@ -238,7 +238,7 @@ struct CustomCalendarView: View {
         let statsTaskId =
             "\(calendar.id.uuidString)|\(valuationStore.selectedYear)|\(dataVersion)|\(statsRefreshToken.uuidString)"
         let resolvedCalendar = activeCalendar
-        let resolvedTodayKeyDate = todayKeyDate
+        let resolvedCurrentPeriodReferenceDate = currentPeriodReferenceDate
 
         ScrollView {
             VStack(spacing: 10) {
@@ -362,25 +362,23 @@ struct CustomCalendarView: View {
                 )
                 .frame(height: UIScreen.main.bounds.height * 0.55)
 
-                // Calculate today's count
-                let todaysLogCount: Int = {
-                    guard let keyDate = resolvedTodayKeyDate else { return 0 }
-                    return entry(for: resolvedCalendar, date: keyDate)?.count ?? 0
-                }()
+                let currentPeriodLogCount: Int? = resolvedCurrentPeriodReferenceDate.map {
+                    entry(for: resolvedCalendar, date: $0)?.count ?? 0
+                }
 
                 if let bundle = statsBundle {
                     CalendarStatisticsView(
                         stats: bundle.basic,
                         accentColor: Color(resolvedCalendar.color),
-                        todaysCount: todaysLogCount,
+                        currentPeriodCount: currentPeriodLogCount,
                         unit: resolvedCalendar.unit,
                         currencySymbol: resolvedCalendar.currencySymbol,
-                        completionRateLast30d: bundle.completionRate30d,
+                        completionRateTrailingLongWindow: bundle.completionRateTrailingLongWindow,
                         bestWeekday: bundle.bestWeekday,
                         weekdayRates: bundle.weekdayRates,
                         monthlyRates: bundle.monthlyRates,
-                        rolling7d: bundle.rolling7d,
-                        rolling30d: bundle.rolling30d,
+                        averageProgressTrailingShortWindow: bundle.averageProgressTrailingShortWindow,
+                        averageProgressTrailingLongWindow: bundle.averageProgressTrailingLongWindow,
                         volatilityStdDev: bundle.volatilityStd,
                         isPremium: isPremium(customerInfo: customerInfo),
                         onUpgrade: { isPaywallPresented = true },
@@ -514,7 +512,7 @@ struct CustomCalendarView: View {
                     calendar: resolvedCalendar,
                     year: valuationStore.selectedYear,
                     todayLocal: Date(),
-                    todaysReferenceDate: resolvedTodayKeyDate
+                    currentPeriodReferenceDate: resolvedCurrentPeriodReferenceDate
                 )
             }.value
             if token == statsRefreshToken {

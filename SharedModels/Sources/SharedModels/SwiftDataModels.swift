@@ -9,6 +9,8 @@ public final class HabitCalendarEntity {
     public var color: String = ""
     public var cadenceRawValue: String = CalendarCadence.daily.rawValue
     public var trackingTypeRawValue: String = TrackingType.binary.rawValue
+    // Legacy persisted name kept to avoid risky data migration.
+    // Semantically this is the target for the calendar cadence period.
     public var dailyTarget: Int = 1
     public var unitRawValue: String?
     public var defaultRecordValue: Int?
