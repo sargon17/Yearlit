@@ -79,7 +79,8 @@ struct GridView: View {
         let schemeKey = colorScheme == .dark ? "dark" : "light"
         let daySeedKey = dayKey(for: LocalDayCalendar.startOfDay(for: Date()))
         let timeZoneKey = TimeZone.autoupdatingCurrent.identifier
-        return "\(calendar.id.uuidString)|\(year)|v\(store.dataVersion)|\(calendar.cadence.rawValue)|\(schemeKey)|\(daySeedKey)|\(timeZoneKey)"
+        let entriesFingerprint = calendarEntriesFingerprint(calendar)
+        return "\(calendar.id.uuidString)|\(year)|v\(store.dataVersion)|\(entriesFingerprint)|\(calendar.cadence.rawValue)|\(schemeKey)|\(daySeedKey)|\(timeZoneKey)"
     }
 
     private var today: Date {

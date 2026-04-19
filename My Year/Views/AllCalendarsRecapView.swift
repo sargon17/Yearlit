@@ -29,7 +29,8 @@ struct AllCalendarsRecapView: View {
 
     private func makeCacheKey(year: Int, daySeed: Date, dataVersion: Int) -> CacheKey {
         let daySeedStr = Self.daySeedFormatter.string(from: daySeed)
-        let identifier = "overall|\(year)|\(daySeedStr)|v\(dataVersion)"
+        let calendarsFingerprint = calendarsEntriesFingerprint(store.calendars)
+        let identifier = "overall|\(year)|\(daySeedStr)|v\(dataVersion)|\(calendarsFingerprint)"
         return CacheKey(scope: .overviewStatsBundle, identifier: identifier)
     }
 
@@ -37,9 +38,10 @@ struct AllCalendarsRecapView: View {
         let selectedYear = valuationStore.selectedYear
         let dataVersion = store.dataVersion
         let daySeed = Calendar.current.startOfDay(for: Date())
+        let yearDates = getYearDatesArray(for: selectedYear)
         let statsSignature = makeCacheKey(year: selectedYear, daySeed: daySeed, dataVersion: dataVersion)
         let statsTaskId = "\(statsSignature.identifier)|\(statsRefreshToken.uuidString)"
-        let currentPeriodReferenceDate = getYearDatesArray(for: selectedYear).first { Calendar.current.isDate($0, inSameDayAs: Date()) }
+        let currentPeriodReferenceDate = yearDates.first { Calendar.current.isDate($0, inSameDayAs: Date()) }
 
         ScrollView {
             VStack(spacing: 10) {
@@ -73,7 +75,7 @@ struct AllCalendarsRecapView: View {
                 OverallGridView(
                     accentColor: Color("qs-emerald"),
                     store: store,
-                    dates: getYearDatesArray(for: selectedYear),
+                    dates: yearDates,
                     year: selectedYear
                 )
                 .frame(height: UIScreen.main.bounds.height * 0.55)
@@ -215,7 +217,7 @@ func computeOverallStatsBundle(
     var cal = Calendar(identifier: .gregorian)
     cal.locale = Locale(identifier: "en_US_POSIX")
     cal.timeZone = .autoupdatingCurrent
-    let entriesByCalendar = Dictionary(uniqueKeysWithValues: calendars.map { ($0.id, $0.entries) })
+    let entriesByCalendarByBucket = buildEntriesByCalendarByBucket(calendars: calendars)
     let q75ByCalendar = counterPercentile75ByCalendar(calendars: calendars)
     let (totalCount, perDayTotal) = aggregateCounts(cal: cal, calendars: calendars)
     let maxCount = perDayTotal.values.max() ?? 0
@@ -225,20 +227,23 @@ func computeOverallStatsBundle(
         year: year,
         todayLocal: todayLocal,
         calendars: calendars,
-        entriesByCalendar: entriesByCalendar,
+        entriesByCalendarByBucket: entriesByCalendarByBucket,
         q75ByCalendar: q75ByCalendar
     )
 
-    let allTimeSuccessByDay = buildAllTimeSuccessMap(
+    let allTimeSuccessDays = buildAllTimeSuccessDays(
         cal: cal,
         todayLocal: todayLocal,
         calendars: calendars
     )
-    let activeDays = allTimeSuccessByDay.values.filter { $0 }.count
-    let (longestStreak, currentStreak) = computeStreaks(cal: cal, allTimeSuccessByDay)
+    let activeDays = allTimeSuccessDays.count
+    let (longestStreak, currentStreak) = computeStreaks(cal: cal, successDays: allTimeSuccessDays, today: todayLocal)
 
     let currentPeriodCount = currentPeriodReferenceDate.map { referenceDate in
-        perDayTotal[cal.startOfDay(for: referenceDate)] ?? 0
+        calendars.reduce(0) { partial, calendar in
+            let bucketDate = calendar.bucketDate(for: referenceDate)
+            return partial + (entriesByCalendarByBucket[calendar.id]?[bucketDate]?.count ?? 0)
+        }
     }
 
     let (cr30, avg7, avg30) = computeRollingStats(
