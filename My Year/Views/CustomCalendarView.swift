@@ -62,7 +62,7 @@ struct CustomCalendarView: View {
     }
 
     private var activeCalendar: CustomCalendar {
-        store.calendars.first(where: { $0.id == calendar.id }) ?? calendar
+        store.snapshot.calendar(id: calendar.id) ?? calendar
     }
 
     @State private var showingEditSheet: Bool = false
@@ -234,7 +234,8 @@ struct CustomCalendarView: View {
     }
 
     var body: some View {
-        let dataVersion = store.dataVersion
+        let snapshot = store.snapshot
+        let dataVersion = snapshot.dataVersion
         let statsTaskId =
             "\(calendar.id.uuidString)|\(valuationStore.selectedYear)|\(dataVersion)|\(statsRefreshToken.uuidString)"
         let resolvedCalendar = activeCalendar

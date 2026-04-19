@@ -611,6 +611,18 @@ public struct CustomCalendarStoreSnapshot {
         self.isLoading = isLoading
         self.dataVersion = dataVersion
     }
+
+    public var activeCalendars: [CustomCalendar] {
+        calendars.filter { !$0.isArchived }
+    }
+
+    public var archivedCalendars: [CustomCalendar] {
+        calendars.filter { $0.isArchived }
+    }
+
+    public func calendar(id: UUID) -> CustomCalendar? {
+        calendars.first(where: { $0.id == id })
+    }
 }
 
 @available(iOS 17.0, macOS 14.0, *)
@@ -663,8 +675,11 @@ public final class CustomCalendarStore: ObservableObject {
         loadCalendars(showLoadingIndicator: true, targetVersion: initialVersion, runMigration: true)
     }
 
+    @available(*, deprecated, message: "Use snapshot.calendars instead")
     public var calendars: [CustomCalendar] { snapshot.calendars }
+    @available(*, deprecated, message: "Use snapshot.isLoading instead")
     public var isLoading: Bool { snapshot.isLoading }
+    @available(*, deprecated, message: "Use snapshot.dataVersion instead")
     public var dataVersion: Int { snapshot.dataVersion }
 
     public func loadCalendars(showLoadingIndicator: Bool = true) {

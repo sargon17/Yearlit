@@ -17,6 +17,8 @@ struct OverallGridView: View {
     }
 
     var body: some View {
+        let snapshot = store.snapshot
+
         GeometryReader { geometry in
             let dotSize: CGFloat = 10
             let padding: CGFloat = 20
@@ -37,7 +39,7 @@ struct OverallGridView: View {
                 0,
                 (availableHeight - (dotSize * CGFloat(rows))) / CGFloat(max(1, rows - 1))
             )
-            let dataVersion = store.dataVersion
+            let dataVersion = snapshot.dataVersion
             let sig = cacheSignature(dataVersion: dataVersion, year: year)
             VStack(spacing: verticalSpacing) {
                 ForEach(0 ..< rows, id: \.self) { row in
@@ -59,7 +61,6 @@ struct OverallGridView: View {
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .padding(.horizontal)
             .task(id: sig) {
-                let snapshot = await MainActor.run { store.snapshot }
                 if snapshot.isLoading { return }
                 guard snapshot.dataVersion == dataVersion else { return }
                 if let derived = await OverviewDerivedSnapshotService.shared.snapshot(

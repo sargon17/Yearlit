@@ -63,9 +63,10 @@ class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCenterDele
     ) {
         Task { @MainActor in
             let userInfo = notification.request.content.userInfo
+            let snapshot = CustomCalendarStore.shared.snapshot
             if let calendarIdString = userInfo["calendarId"] as? String,
                let calendarId = UUID(uuidString: calendarIdString),
-               let calendar = CustomCalendarStore.shared.snapshot.calendars.first(where: { $0.id == calendarId }),
+               let calendar = snapshot.calendar(id: calendarId),
                calendar.suppressWhenCompleted,
                shouldSuppressNotification(for: calendar, store: CustomCalendarStore.shared)
             {

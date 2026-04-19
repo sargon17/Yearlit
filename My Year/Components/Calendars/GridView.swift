@@ -76,10 +76,11 @@ struct GridView: View {
     func updateData() {}
 
     private var cacheSignature: String {
+        let snapshot = store.snapshot
         let schemeKey = colorScheme == .dark ? "dark" : "light"
         let daySeedKey = dayKey(for: LocalDayCalendar.startOfDay(for: Date()))
         let timeZoneKey = TimeZone.autoupdatingCurrent.identifier
-        return "\(calendar.id.uuidString)|\(year)|v\(store.dataVersion)|\(calendar.cadence.rawValue)|\(schemeKey)|\(daySeedKey)|\(timeZoneKey)"
+        return "\(calendar.id.uuidString)|\(year)|v\(snapshot.dataVersion)|\(calendar.cadence.rawValue)|\(schemeKey)|\(daySeedKey)|\(timeZoneKey)"
     }
 
     private var today: Date {

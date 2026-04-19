@@ -134,10 +134,11 @@ extension CalendarsOverviewsItem {
     }
 
     private var latestSlotsCacheIdentifier: String {
+        let snapshot = store.snapshot
         let daySeedKey = dayKey(for: todayStart)
         let schemeKey = colorScheme == .dark ? "dark" : "light"
         let timeZoneKey = TimeZone.autoupdatingCurrent.identifier
-        return "\(calendar.id.uuidString)|\(store.dataVersion)|\(calendar.cadence.rawValue)|\(daySeedKey)|\(latestSlotsCount)|\(schemeKey)|\(timeZoneKey)"
+        return "\(calendar.id.uuidString)|\(snapshot.dataVersion)|\(calendar.cadence.rawValue)|\(daySeedKey)|\(latestSlotsCount)|\(schemeKey)|\(timeZoneKey)"
     }
 
     private func buildLatestSlotColors() -> [Color] {

@@ -88,7 +88,7 @@ struct CreateCalendarView: View {
     }
 
     func userCanCreateCalendar() -> Bool {
-        return customerInfo?.entitlements["premium"]?.isActive ?? false || store.calendars.count < 3
+        return customerInfo?.entitlements["premium"]?.isActive ?? false || store.snapshot.calendars.count < 3
     }
 
     func createCalendar() {
