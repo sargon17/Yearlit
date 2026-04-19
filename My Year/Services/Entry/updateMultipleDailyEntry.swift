@@ -1,6 +1,7 @@
 import SharedModels
 import SwiftUI
 
+@MainActor
 func updateMultipleDailyEntry(
     calendar: CustomCalendar,
     date: Date,

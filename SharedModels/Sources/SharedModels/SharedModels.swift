@@ -614,6 +614,7 @@ public struct CustomCalendarStoreSnapshot {
 }
 
 @available(iOS 17.0, macOS 14.0, *)
+@MainActor
 public final class CustomCalendarStore: ObservableObject {
     public static let shared = CustomCalendarStore()
 
@@ -950,7 +951,7 @@ public final class CustomCalendarStore: ObservableObject {
         Self.makeContext(container: container)
     }
 
-    private static func makeContext(container: ModelContainer) -> ModelContext {
+    nonisolated private static func makeContext(container: ModelContainer) -> ModelContext {
         let context = ModelContext(container)
         context.autosaveEnabled = false
         return context
@@ -1003,13 +1004,13 @@ public final class CustomCalendarStore: ObservableObject {
         )
     }
 
-    public static func fetchCalendarsSnapshot(
+    nonisolated public static func fetchCalendarsSnapshot(
         container: ModelContainer = SwiftDataManager.container
     ) -> [CustomCalendar] {
         (try? fetchCalendars(container: container)) ?? []
     }
 
-    public static func normalizedCalendarOrder(_ calendars: [CustomCalendar]) -> [CustomCalendar] {
+    nonisolated public static func normalizedCalendarOrder(_ calendars: [CustomCalendar]) -> [CustomCalendar] {
         let activeCalendars = calendars
             .filter { !$0.isArchived }
             .sorted(by: calendarOrderSort)
@@ -1024,7 +1025,7 @@ public final class CustomCalendarStore: ObservableObject {
         }
     }
 
-    public static func reorderedActiveCalendars(
+    nonisolated public static func reorderedActiveCalendars(
         _ calendars: [CustomCalendar],
         fromOffsets indices: IndexSet,
         toOffset destination: Int
@@ -1048,11 +1049,11 @@ public final class CustomCalendarStore: ObservableObject {
         return assigningContiguousOrder(to: reorderedActiveCalendars + archivedCalendars)
     }
 
-    private static func sortCalendars(_ calendars: [CustomCalendar]) -> [CustomCalendar] {
+    nonisolated private static func sortCalendars(_ calendars: [CustomCalendar]) -> [CustomCalendar] {
         normalizedCalendarOrder(calendars)
     }
 
-    private static func assigningContiguousOrder(to calendars: [CustomCalendar]) -> [CustomCalendar] {
+    nonisolated private static func assigningContiguousOrder(to calendars: [CustomCalendar]) -> [CustomCalendar] {
         calendars.enumerated().map { index, calendar in
             var orderedCalendar = calendar
             orderedCalendar.order = index
@@ -1060,7 +1061,7 @@ public final class CustomCalendarStore: ObservableObject {
         }
     }
 
-    private static func calendarOrderSort(_ lhs: CustomCalendar, _ rhs: CustomCalendar) -> Bool {
+    nonisolated private static func calendarOrderSort(_ lhs: CustomCalendar, _ rhs: CustomCalendar) -> Bool {
         if lhs.order == rhs.order {
             return lhs.id.uuidString < rhs.id.uuidString
         }
@@ -1094,7 +1095,7 @@ public final class CustomCalendarStore: ObservableObject {
         return latestReloadToken
     }
 
-    private static func fetchCalendars(container: ModelContainer) throws -> [CustomCalendar] {
+    nonisolated private static func fetchCalendars(container: ModelContainer) throws -> [CustomCalendar] {
         let context = makeContext(container: container)
         let calendarsDescriptor = FetchDescriptor<HabitCalendarEntity>(
             sortBy: [SortDescriptor(\HabitCalendarEntity.order)]

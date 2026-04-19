@@ -1,6 +1,7 @@
 import SharedModels
 import SwiftUI
 
+@MainActor
 func updateCounterEntry(
     calendarId: UUID,
     date: Date,

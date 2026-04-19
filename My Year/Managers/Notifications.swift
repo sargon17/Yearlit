@@ -352,6 +352,7 @@ private func removeAllPendingStreakProtectionNotifications(completion: @escaping
 /// - Parameters:
 ///   - calendar: The calendar to protect
 ///   - store: Calendar store for streak calculation
+@MainActor
 public func scheduleStreakProtectionReminder(
     for calendar: CustomCalendar,
     store: CustomCalendarStore
@@ -459,8 +460,9 @@ public func scheduleStreakProtectionReminder(
 /// Call on app launch / app active to re-evaluate daily streak risk.
 public func refreshStreakProtectionReminders(store: CustomCalendarStore) {
     removeAllPendingStreakProtectionNotifications {
-        DispatchQueue.main.async {
-            for calendar in store.calendars where !calendar.isArchived {
+        Task { @MainActor in
+            let calendars = store.snapshot.calendars
+            for calendar in calendars where !calendar.isArchived {
                 scheduleStreakProtectionReminder(for: calendar, store: store)
             }
         }
@@ -744,7 +746,9 @@ public func cancelNotifications(for calendar: CustomCalendar) {
 /// - Parameter store: The calendar store to check against
 public func checkForNotificationsOfNonExistingCalendars(store: CustomCalendarStore) async {
     let requests = await UNUserNotificationCenter.current().pendingNotificationRequests()
-    let calendarIds = Set(store.calendars.map { $0.id.uuidString })
+    let calendarIds = await MainActor.run {
+        Set(store.snapshot.calendars.map { $0.id.uuidString })
+    }
 
     var removedCount = 0
     for request in requests {
@@ -800,15 +804,17 @@ public func validateReminderTime(_ time: Date) -> Date {
 /// - Parameters:
 ///   - response: The notification response
 ///   - store: The calendar store to perform actions on
+@MainActor
 public func handleNotificationAction(
     _ response: UNNotificationResponse,
     store: CustomCalendarStore
 ) {
     let userInfo = response.notification.request.content.userInfo
+    let calendars = store.snapshot.calendars
 
     guard let calendarIdString = userInfo["calendarId"] as? String,
           let calendarId = UUID(uuidString: calendarIdString),
-          let calendar = store.calendars.first(where: { $0.id == calendarId })
+          let calendar = calendars.first(where: { $0.id == calendarId })
     else {
         print("❌ Invalid calendar ID in notification action")
         return
@@ -832,6 +838,7 @@ public func handleNotificationAction(
 }
 
 /// Quick log handler - logs an entry for today
+@MainActor
 private func handleQuickLog(for calendar: CustomCalendar, store: CustomCalendarStore) {
     let today = Date()
 
@@ -933,6 +940,7 @@ private func handleSnooze(for calendar: CustomCalendar) {
 ///   - calendar: The calendar to check
 ///   - store: The calendar store
 /// - Returns: True if notification should be suppressed
+@MainActor
 public func shouldSuppressNotification(for calendar: CustomCalendar, store: CustomCalendarStore) -> Bool {
     let today = Date()
 

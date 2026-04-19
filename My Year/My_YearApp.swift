@@ -34,8 +34,6 @@ class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCenterDele
         didReceive response: UNNotificationResponse,
         withCompletionHandler completionHandler: @escaping () -> Void
     ) {
-        let store = CustomCalendarStore.shared
-
         // Handle default tap action (user tapped notification) - open calendar
         if response.actionIdentifier == UNNotificationDefaultActionIdentifier {
             let userInfo = response.notification.request.content.userInfo
@@ -49,7 +47,9 @@ class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCenterDele
             }
         } else {
             // Handle action buttons (Log Now, Snooze)
-            handleNotificationAction(response, store: store)
+            Task { @MainActor in
+                handleNotificationAction(response, store: CustomCalendarStore.shared)
+            }
         }
 
         completionHandler()
@@ -61,22 +61,21 @@ class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCenterDele
         willPresent notification: UNNotification,
         withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void
     ) {
-        // Check if notification should be suppressed
-        let userInfo = notification.request.content.userInfo
-        if let calendarIdString = userInfo["calendarId"] as? String,
-           let calendarId = UUID(uuidString: calendarIdString),
-           let calendar = CustomCalendarStore.shared.calendars.first(where: { $0.id == calendarId }),
-           calendar.suppressWhenCompleted,
-           shouldSuppressNotification(for: calendar, store: CustomCalendarStore.shared)
-        {
-            // Suppress notification - entry already completed
-            print("🔕 Suppressed notification for \(calendar.name) - already completed today")
-            completionHandler([])
-            return
-        }
+        Task { @MainActor in
+            let userInfo = notification.request.content.userInfo
+            if let calendarIdString = userInfo["calendarId"] as? String,
+               let calendarId = UUID(uuidString: calendarIdString),
+               let calendar = CustomCalendarStore.shared.snapshot.calendars.first(where: { $0.id == calendarId }),
+               calendar.suppressWhenCompleted,
+               shouldSuppressNotification(for: calendar, store: CustomCalendarStore.shared)
+            {
+                print("🔕 Suppressed notification for \(calendar.name) - already completed today")
+                completionHandler([])
+                return
+            }
 
-        // Show notification
-        completionHandler([.banner, .sound, .badge])
+            completionHandler([.banner, .sound, .badge])
+        }
     }
 }
 

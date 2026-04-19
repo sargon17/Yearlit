@@ -42,18 +42,17 @@ extension HabitsWidgetControl {
         }
 
         func currentValue(configuration: HabitConfiguration) async throws -> Value {
-            let store = CustomCalendarStore.shared
-            store.loadCalendars()
+            let calendars = CustomCalendarStore.fetchCalendarsSnapshot()
 
             guard
-                let calendar = store.calendars.first(where: { $0.id.uuidString == configuration.calendarId })
+                let calendar = calendars.first(where: { $0.id.uuidString == configuration.calendarId })
             else {
                 return Value(isCompleted: false, calendarId: configuration.calendarId)
             }
 
             let valStore = ValuationStore.shared
             let today = valStore.dateForDay(valStore.currentDayNumber - 1)
-            let isCompleted = store.getEntry(calendarId: calendar.id, date: today)?.completed ?? false
+            let isCompleted = calendar.entry(for: today)?.completed ?? false
 
             return Value(isCompleted: isCompleted, calendarId: configuration.calendarId)
         }
