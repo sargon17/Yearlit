@@ -614,6 +614,20 @@ public struct CustomCalendarStoreSnapshot {
 }
 
 @available(iOS 17.0, macOS 14.0, *)
+public struct CustomCalendarStoreDependencies {
+    public let fetchCalendars: @Sendable (ModelContainer) throws -> [CustomCalendar]
+    public let runMigration: @Sendable (ModelContainer) -> Void
+
+    public init(
+        fetchCalendars: @escaping @Sendable (ModelContainer) throws -> [CustomCalendar],
+        runMigration: @escaping @Sendable (ModelContainer) -> Void
+    ) {
+        self.fetchCalendars = fetchCalendars
+        self.runMigration = runMigration
+    }
+}
+
+@available(iOS 17.0, macOS 14.0, *)
 @MainActor
 public final class CustomCalendarStore: ObservableObject {
     public static let shared = CustomCalendarStore()
@@ -630,16 +644,19 @@ public final class CustomCalendarStore: ObservableObject {
 
     public init(
         container: ModelContainer = SwiftDataManager.container,
-        fetchCalendarsLoader: (@Sendable (ModelContainer) throws -> [CustomCalendar])? = nil,
-        migrationRunner: (@Sendable (ModelContainer) -> Void)? = nil
+        dependencies: CustomCalendarStoreDependencies? = nil
     ) {
+        let dependencies = dependencies ?? CustomCalendarStoreDependencies(
+            fetchCalendars: { container in
+                try Self.fetchCalendars(container: container)
+            },
+            runMigration: { container in
+                LegacyDataMigrator.migrateIfNeeded(container: container)
+            }
+        )
         self.container = container
-        self.fetchCalendarsLoader = fetchCalendarsLoader ?? { container in
-            try Self.fetchCalendars(container: container)
-        }
-        self.migrationRunner = migrationRunner ?? { container in
-            LegacyDataMigrator.migrateIfNeeded(container: container)
-        }
+        self.fetchCalendarsLoader = dependencies.fetchCalendars
+        self.migrationRunner = dependencies.runMigration
         let initialVersion = Self.loadDataVersion()
         latestPersistedDataVersion = initialVersion
         snapshot = CustomCalendarStoreSnapshot(dataVersion: initialVersion)

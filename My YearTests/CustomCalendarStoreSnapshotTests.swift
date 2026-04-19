@@ -96,8 +96,10 @@ struct CustomCalendarStoreSnapshotTests {
 
         return CustomCalendarStore(
             container: container,
-            fetchCalendarsLoader: fetchCalendarsLoader,
-            migrationRunner: { _ in }
+            dependencies: CustomCalendarStoreDependencies(
+                fetchCalendars: fetchCalendarsLoader,
+                runMigration: { _ in }
+            )
         )
     }
 

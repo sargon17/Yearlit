@@ -1,6 +1,24 @@
 import SharedModels
 import SwiftUI
 
+struct OverviewDerivedSnapshotServiceDependencies {
+    let cacheStore: CacheStore
+    let compute: @Sendable ([CustomCalendar], Int, [Date], Date, Date?) -> OverviewDerivedSnapshot
+
+    static let live = OverviewDerivedSnapshotServiceDependencies(
+        cacheStore: .shared,
+        compute: { calendars, year, dates, todayLocal, currentPeriodReferenceDate in
+            computeOverviewDerivedSnapshot(
+                calendars: calendars,
+                year: year,
+                dates: dates,
+                todayLocal: todayLocal,
+                currentPeriodReferenceDate: currentPeriodReferenceDate
+            )
+        }
+    )
+}
+
 struct OverviewDerivedSnapshot: Codable {
     let statsBundleSnapshot: StatsBundleSnapshot
     let zByDay: [Double]
@@ -115,7 +133,12 @@ func computeOverviewDerivedSnapshot(
 
 actor OverviewDerivedSnapshotService {
     static let shared = OverviewDerivedSnapshotService()
+    private let dependencies: OverviewDerivedSnapshotServiceDependencies
     private var inFlight: [CacheKey: Task<OverviewDerivedSnapshot?, Never>] = [:]
+
+    init(dependencies: OverviewDerivedSnapshotServiceDependencies = .live) {
+        self.dependencies = dependencies
+    }
 
     func snapshot(
         storeSnapshot: CustomCalendarStoreSnapshot,
@@ -125,12 +148,12 @@ actor OverviewDerivedSnapshotService {
         let input = makeOverviewDerivedInput(year: year, dataVersion: storeSnapshot.dataVersion, today: today)
         let cacheKey = makeOverviewDerivedCacheKey(input)
 
-        if let cached: OverviewDerivedSnapshot = CacheStore.shared.get(cacheKey) {
+        if let cached: OverviewDerivedSnapshot = dependencies.cacheStore.get(cacheKey) {
             return cached
         }
 
-        if let cached: OverviewDerivedSnapshot = CacheStore.shared.loadDisk(cacheKey) {
-            CacheStore.shared.set(cacheKey, value: cached)
+        if let cached: OverviewDerivedSnapshot = dependencies.cacheStore.loadDisk(cacheKey) {
+            dependencies.cacheStore.set(cacheKey, value: cached)
             return cached
         }
 
@@ -143,14 +166,9 @@ actor OverviewDerivedSnapshotService {
         let dates = getYearDatesArray(for: year)
         let currentPeriodReferenceDate = dates.first { Calendar.current.isDate($0, inSameDayAs: today) }
 
+        let compute = dependencies.compute
         let task = Task.detached(priority: .userInitiated) { () -> OverviewDerivedSnapshot? in
-            computeOverviewDerivedSnapshot(
-                calendars: calendars,
-                year: year,
-                dates: dates,
-                todayLocal: today,
-                currentPeriodReferenceDate: currentPeriodReferenceDate
-            )
+            compute(calendars, year, dates, today, currentPeriodReferenceDate)
         }
 
         inFlight[cacheKey] = task
@@ -158,8 +176,8 @@ actor OverviewDerivedSnapshotService {
         inFlight[cacheKey] = nil
 
         if let derived {
-            CacheStore.shared.set(cacheKey, value: derived)
-            CacheStore.shared.saveDisk(cacheKey, value: derived)
+            dependencies.cacheStore.set(cacheKey, value: derived)
+            dependencies.cacheStore.saveDisk(cacheKey, value: derived)
         }
         return derived
     }
