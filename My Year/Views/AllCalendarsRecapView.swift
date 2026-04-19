@@ -14,109 +14,23 @@ struct AllCalendarsRecapView: View {
     @State private var customerInfo: CustomerInfo?
     @State private var isPaywallPresented: Bool = false
     @State private var statsBundle: StatsBundle? = nil
-    @State private var cachedStatsBundle: StatsBundle? = nil
-    @State private var didUseDiskStatsCache: Bool = false
     @State private var showingYearPicker: Bool = false
     @State private var tempSelectedYear: Int = Calendar.current.component(.year, from: Date())
     @State private var statsRefreshToken = UUID()
     @State private var lastObservedDataVersion: Int = 0
 
-    private static let daySeedFormatter = ISO8601DateFormatter()
     private let availableYears: [Int] = {
         let currentYear: Int = Calendar.current.component(.year, from: Date())
         return Array((currentYear - 10) ... currentYear).reversed()
     }()
 
-    private func makeCacheKey(year: Int, daySeed: Date, dataVersion: Int) -> CacheKey {
-        let daySeedStr = Self.daySeedFormatter.string(from: daySeed)
-        let identifier = "overall|\(year)|\(daySeedStr)|v\(dataVersion)"
-        return CacheKey(scope: .overviewStatsBundle, identifier: identifier)
-    }
-
-    private func computeOverallStats(
-        calendars: [CustomCalendar],
-        year: Int,
-        todayLocal: Date,
-        currentPeriodReferenceDate: Date?
-    ) -> StatsBundle {
-        var cal = Calendar(identifier: .gregorian)
-        cal.locale = Locale(identifier: "en_US_POSIX")
-        cal.timeZone = .autoupdatingCurrent
-        let entriesByCalendar = Dictionary(uniqueKeysWithValues: calendars.map { ($0.id, $0.entries) })
-        let (totalCount, perDayTotal) = aggregateCounts(cal: cal, calendars: calendars)
-        let maxCount = perDayTotal.values.max() ?? 0
-
-        let (anySuccessByDay, dayMeanZ) = buildDailyMaps(
-            cal: cal,
-            year: year,
-            todayLocal: todayLocal,
-            calendars: calendars,
-            entriesByCalendar: entriesByCalendar
-        )
-
-        let allTimeSuccessByDay = buildAllTimeSuccessMap(
-            cal: cal,
-            todayLocal: todayLocal,
-            calendars: calendars
-        )
-        let activeDays = allTimeSuccessByDay.values.filter { $0 }.count
-        let (longestStreak, currentStreak) = computeStreaks(cal: cal, allTimeSuccessByDay)
-
-        let currentPeriodCount: Int? = {
-            guard let keyDate = currentPeriodReferenceDate else { return nil }
-            let normalizedDate = cal.startOfDay(for: keyDate)
-            return calendars.reduce(0) { partial, c in
-                let e = entry(for: c, date: normalizedDate, entriesByCalendar: entriesByCalendar)
-                return partial + (e?.count ?? 0)
-            }
-        }()
-
-        let (cr30, avg7, avg30) = computeRollingStats(
-            cal: cal,
-            todayLocal: todayLocal,
-            calendars: calendars,
-            anySuccessByDay: anySuccessByDay,
-            entriesByCalendar: entriesByCalendar
-        )
-
-        let (weekdayRates, bestWD) = computeWeekdayRates(cal: cal, dayMeanZ: dayMeanZ)
-
-        let monthlyRates = computeMonthlyRates(
-            cal: cal, year: year, todayLocal: todayLocal, dayMeanZ: dayMeanZ
-        )
-
-        let volatility = computeWeeklyVolatility(
-            cal: cal, todayLocal: todayLocal, anySuccessByDay: anySuccessByDay
-        )
-
-        let basic = CalendarStats(
-            activeDays: activeDays,
-            totalCount: totalCount,
-            maxCount: maxCount,
-            longestStreak: longestStreak,
-            currentStreak: currentStreak
-        )
-
-        return StatsBundle(
-            basic: basic,
-            completionRateTrailingLongWindow: cr30,
-            bestWeekday: bestWD?.day,
-            weekdayRates: weekdayRates,
-            monthlyRates: monthlyRates,
-            averageProgressTrailingShortWindow: avg7,
-            averageProgressTrailingLongWindow: avg30,
-            volatilityStd: volatility,
-            currentPeriodCount: currentPeriodCount
-        )
-    }
-
     var body: some View {
+        let snapshot = store.snapshot
         let selectedYear = valuationStore.selectedYear
-        let dataVersion = store.dataVersion
-        let daySeed = Calendar.current.startOfDay(for: Date())
-        let statsSignature = makeCacheKey(year: selectedYear, daySeed: daySeed, dataVersion: dataVersion)
-        let statsTaskId = "\(statsSignature.identifier)|\(statsRefreshToken.uuidString)"
-        let currentPeriodReferenceDate = getYearDatesArray(for: selectedYear).first { Calendar.current.isDate($0, inSameDayAs: Date()) }
+        let dataVersion = snapshot.dataVersion
+        let today = Date()
+        let daySeedKey = dayKey(for: LocalDayCalendar.startOfDay(for: today))
+        let statsTaskId = "\(selectedYear)|\(dataVersion)|\(daySeedKey)|\(statsRefreshToken.uuidString)"
 
         ScrollView {
             VStack(spacing: 10) {
@@ -150,12 +64,11 @@ struct AllCalendarsRecapView: View {
                 OverallGridView(
                     accentColor: Color("qs-emerald"),
                     store: store,
-                    dates: getYearDatesArray(for: selectedYear),
                     year: selectedYear
                 )
                 .frame(height: UIScreen.main.bounds.height * 0.55)
 
-                if let bundle = statsBundle ?? cachedStatsBundle {
+                if let bundle = statsBundle {
                     CalendarStatisticsView(
                         stats: bundle.basic,
                         accentColor: Color("qs-emerald"),
@@ -221,77 +134,34 @@ struct AllCalendarsRecapView: View {
             Purchases.shared.getCustomerInfo { info, _ in
                 self.customerInfo = info
             }
-            if lastObservedDataVersion != store.dataVersion {
-                lastObservedDataVersion = store.dataVersion
+            if lastObservedDataVersion != snapshot.dataVersion {
+                lastObservedDataVersion = snapshot.dataVersion
                 statsRefreshToken = UUID()
             }
         }
-        .onChange(of: statsSignature) { _, _ in
-            didUseDiskStatsCache = false
-        }
-        .onChange(of: store.dataVersion) { _, _ in
-            lastObservedDataVersion = store.dataVersion
-            didUseDiskStatsCache = false
-            cachedStatsBundle = nil
+        .onChange(of: snapshot.dataVersion) { _, newValue in
+            lastObservedDataVersion = newValue
+            statsBundle = nil
             statsRefreshToken = UUID()
         }
-        .onChange(of: store.isLoading) { _, isLoading in
+        .onChange(of: snapshot.isLoading) { _, isLoading in
             if !isLoading {
-                didUseDiskStatsCache = false
-                cachedStatsBundle = nil
+                statsBundle = nil
                 statsRefreshToken = UUID()
             }
-        }
-        .onReceive(store.$calendars) { _ in
-            CacheStore.shared.removeDisk(statsSignature)
-            didUseDiskStatsCache = false
-            cachedStatsBundle = nil
-            statsRefreshToken = UUID()
         }
         .task(id: statsTaskId) {
             let token = statsRefreshToken
-            if didUseDiskStatsCache { return }
-            if loadStatsBundleFromDisk(cacheKey: statsSignature) != nil {
-                didUseDiskStatsCache = true
-                return
-            }
-            if store.isLoading { return }
-            let calendarsSnapshot = await MainActor.run { store.calendars }
-            let currentVersion = await MainActor.run { store.dataVersion }
-            guard currentVersion == dataVersion else { return }
-            let bundle = await Task.detached(priority: .userInitiated) {
-                computeOverallStats(
-                    calendars: calendarsSnapshot,
-                    year: selectedYear,
-                    todayLocal: Date(),
-                    currentPeriodReferenceDate: currentPeriodReferenceDate
-                )
-            }.value
-            if token == statsRefreshToken {
-                statsBundle = bundle
-                saveStatsBundleToDisk(bundle, cacheKey: statsSignature)
+            let currentSnapshot = await MainActor.run { store.snapshot }
+            guard currentSnapshot.dataVersion == dataVersion else { return }
+            if let derived = await OverviewDerivedSnapshotService.shared.snapshot(
+                storeSnapshot: currentSnapshot,
+                year: selectedYear,
+                today: today
+            ), token == statsRefreshToken {
+                statsBundle = derived.statsBundle
             }
         }
-        .task(id: statsSignature) {
-            if cachedStatsBundle == nil {
-                if let cached = loadStatsBundleFromDisk(cacheKey: statsSignature) {
-                    cachedStatsBundle = cached
-                    didUseDiskStatsCache = true
-                }
-            }
-        }
-    }
-}
-
-private extension AllCalendarsRecapView {
-    func loadStatsBundleFromDisk(cacheKey: CacheKey) -> StatsBundle? {
-        guard let snapshot: StatsBundleSnapshot = CacheStore.shared.loadDisk(cacheKey) else { return nil }
-        return snapshot.toBundle()
-    }
-
-    func saveStatsBundleToDisk(_ bundle: StatsBundle, cacheKey: CacheKey) {
-        let snapshot = StatsBundleSnapshot(bundle: bundle)
-        CacheStore.shared.saveDisk(cacheKey, value: snapshot)
     }
 }
 

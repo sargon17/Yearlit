@@ -35,7 +35,7 @@ struct NotificationSuppressionTests {
         #expect(isEntryFulfilledForNotification(aboveTarget, calendar: calendar))
     }
 
-    @Test func missingEntryDoesNotSuppress() {
+    @MainActor @Test func missingEntryDoesNotSuppress() {
         let store = CustomCalendarStore.shared
         let calendar = makeCalendar(name: "Suppression Missing Entry", trackingType: .binary, dailyTarget: 1)
 

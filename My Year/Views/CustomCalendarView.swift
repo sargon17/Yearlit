@@ -62,7 +62,7 @@ struct CustomCalendarView: View {
     }
 
     private var activeCalendar: CustomCalendar {
-        store.calendars.first(where: { $0.id == calendar.id }) ?? calendar
+        store.snapshot.calendar(id: calendar.id) ?? calendar
     }
 
     @State private var showingEditSheet: Bool = false
@@ -234,9 +234,11 @@ struct CustomCalendarView: View {
     }
 
     var body: some View {
-        let dataVersion = store.dataVersion
+        let snapshot = store.snapshot
+        let dataVersion = snapshot.dataVersion
+        let selectedYear = valuationStore.selectedYear
         let statsTaskId =
-            "\(calendar.id.uuidString)|\(valuationStore.selectedYear)|\(dataVersion)|\(statsRefreshToken.uuidString)"
+            "\(calendar.id.uuidString)|\(selectedYear)|\(dataVersion)|\(statsRefreshToken.uuidString)"
         let resolvedCalendar = activeCalendar
         let resolvedCurrentPeriodReferenceDate = currentPeriodReferenceDate
 
@@ -488,13 +490,13 @@ struct CustomCalendarView: View {
             Purchases.shared.getCustomerInfo { info, _ in
                 self.customerInfo = info
             }
-            if lastObservedDataVersion != store.dataVersion {
-                lastObservedDataVersion = store.dataVersion
+            if lastObservedDataVersion != store.snapshot.dataVersion {
+                lastObservedDataVersion = store.snapshot.dataVersion
                 statsRefreshToken = UUID()
             }
         }
-        .onChange(of: store.dataVersion) { _, _ in
-            lastObservedDataVersion = store.dataVersion
+        .onChange(of: store.snapshot.dataVersion) { _, newValue in
+            lastObservedDataVersion = newValue
             statsRefreshToken = UUID()
             if isEntryEditSheetPresented {
                 scheduleMilestoneCheck()
@@ -502,15 +504,12 @@ struct CustomCalendarView: View {
                 evaluateMilestonesIfNeeded(calendarId: calendar.id)
             }
         }
-        .onReceive(store.$calendars) { _ in
-            statsRefreshToken = UUID()
-        }
         .task(id: statsTaskId) {
             let token = statsRefreshToken
             let bundle = await Task.detached(priority: .userInitiated) {
                 computeCalendarStatsBundle(
                     calendar: resolvedCalendar,
-                    year: valuationStore.selectedYear,
+                    year: selectedYear,
                     todayLocal: Date(),
                     currentPeriodReferenceDate: resolvedCurrentPeriodReferenceDate
                 )

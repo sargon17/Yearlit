@@ -482,7 +482,7 @@ struct HabitQuickAddIntent: AppIntent, SetValueIntent {
     }
 
     func perform() async throws -> some IntentResult {
-        let store = CustomCalendarStore.shared
+        let store = await MainActor.run { CustomCalendarStore.shared }
 
         let calendars = CustomCalendarStore.fetchCalendarsSnapshot()
         guard let calendar = calendars.first(where: { $0.id.uuidString == calendarId }) else {
@@ -492,8 +492,11 @@ struct HabitQuickAddIntent: AppIntent, SetValueIntent {
         let today = Date()
         var newEntry: CalendarEntry
         let addValue = calendar.defaultRecordValue ?? 1
+        let existingEntry = await MainActor.run {
+            store.getEntry(calendarId: calendar.id, date: today)
+        }
 
-        if let existingEntry = store.getEntry(calendarId: calendar.id, date: today) {
+        if let existingEntry {
             if calendar.trackingType == .counter || calendar.trackingType == .multipleDaily {
                 newEntry = CalendarEntry(
                     date: today,
@@ -524,16 +527,14 @@ struct HabitQuickAddIntent: AppIntent, SetValueIntent {
             }
         }
 
-        do {
-            try store.addEntry(calendarId: calendar.id, entry: newEntry)
+        await MainActor.run {
+            store.addEntry(calendarId: calendar.id, entry: newEntry)
             // Only reload the HabitsWidget
             WidgetCenter.shared.reloadTimelines(ofKind: "HabitsWidget")
 
             let impactFeedbackgenerator = UIImpactFeedbackGenerator(style: .medium)
             impactFeedbackgenerator.prepare()
             impactFeedbackgenerator.impactOccurred()
-        } catch {
-            return .result()
         }
 
         return .result()

@@ -22,29 +22,21 @@ struct ContentView: View {
     @Environment(\.scenePhase) private var scenePhase
 
     var body: some View {
+        let snapshot = store.snapshot
+
         AppRouter()
             .onAppear {
                 Purchases.shared.getCustomerInfo { customerInfo, _ in
                     self.customerInfo = customerInfo
                 }
+            }
+            .onReceive(store.$snapshot) { snapshot in
                 whatsNewManager.evaluateIfNeeded(
-                    hasCalendars: !store.calendars.isEmpty,
-                    isLoading: store.isLoading
+                    hasCalendars: !snapshot.calendars.isEmpty,
+                    isLoading: snapshot.isLoading
                 )
             }
-            .onReceive(store.$calendars) { calendars in
-                whatsNewManager.evaluateIfNeeded(
-                    hasCalendars: !calendars.isEmpty,
-                    isLoading: store.isLoading
-                )
-            }
-            .onReceive(store.$isLoading) { isLoading in
-                whatsNewManager.evaluateIfNeeded(
-                    hasCalendars: !store.calendars.isEmpty,
-                    isLoading: isLoading
-                )
-            }
-            .onChange(of: store.dataVersion) { _, newVersion in
+            .onChange(of: snapshot.dataVersion) { _, newVersion in
                 // Debounce cleanup to avoid excessive IPC calls
                 cleanupTask?.cancel()
                 cleanupTask = Task {

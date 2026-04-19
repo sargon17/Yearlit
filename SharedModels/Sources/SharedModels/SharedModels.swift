@@ -601,67 +601,123 @@ public struct DayValuation: Codable, Identifiable, Equatable {
 // MARK: - Custom Calendar Store
 
 @available(iOS 17.0, macOS 14.0, *)
+public struct CustomCalendarStoreSnapshot {
+    public let calendars: [CustomCalendar]
+    public let isLoading: Bool
+    public let dataVersion: Int
+
+    public init(calendars: [CustomCalendar] = [], isLoading: Bool = false, dataVersion: Int = 0) {
+        self.calendars = calendars
+        self.isLoading = isLoading
+        self.dataVersion = dataVersion
+    }
+
+    public var activeCalendars: [CustomCalendar] {
+        calendars.filter { !$0.isArchived }
+    }
+
+    public var archivedCalendars: [CustomCalendar] {
+        calendars.filter { $0.isArchived }
+    }
+
+    public func calendar(id: UUID) -> CustomCalendar? {
+        calendars.first(where: { $0.id == id })
+    }
+}
+
+@available(iOS 17.0, macOS 14.0, *)
+public struct CustomCalendarStoreDependencies {
+    public let fetchCalendars: @Sendable (ModelContainer) throws -> [CustomCalendar]
+    public let runMigration: @Sendable (ModelContainer) -> Void
+
+    public init(
+        fetchCalendars: @escaping @Sendable (ModelContainer) throws -> [CustomCalendar],
+        runMigration: @escaping @Sendable (ModelContainer) -> Void
+    ) {
+        self.fetchCalendars = fetchCalendars
+        self.runMigration = runMigration
+    }
+}
+
+@available(iOS 17.0, macOS 14.0, *)
+@MainActor
 public final class CustomCalendarStore: ObservableObject {
     public static let shared = CustomCalendarStore()
 
-    @Published public private(set) var calendars: [CustomCalendar] = []
-    @Published public private(set) var isLoading: Bool = false
-    @Published public private(set) var dataVersion: Int = 0
+    @Published public private(set) var snapshot: CustomCalendarStoreSnapshot
 
     private let container: ModelContainer
+    private let fetchCalendarsLoader: @Sendable (ModelContainer) throws -> [CustomCalendar]
+    private let migrationRunner: @Sendable (ModelContainer) -> Void
+    private let reloadLock = NSLock()
+    private let versionLock = NSLock()
+    private var latestReloadToken = UUID()
+    private var latestPersistedDataVersion: Int
 
-    public init(container: ModelContainer = SwiftDataManager.container) {
-        self.container = container
-        dataVersion = Self.loadDataVersion()
-
-        isLoading = true
-        let container = container
-        Task.detached(priority: .userInitiated) { [weak self] in
-            LegacyDataMigrator.migrateIfNeeded(container: container)
-            do {
-                let calendars = try Self.fetchCalendars(container: container)
-                await MainActor.run {
-                    guard let self else { return }
-                    self.calendars = calendars
-                    self.isLoading = false
-                }
-            } catch {
-                NSLog("Failed to load calendars from SwiftData: \(error)")
-                await MainActor.run {
-                    guard let self else { return }
-                    self.calendars = []
-                    self.isLoading = false
-                }
+    public init(
+        container: ModelContainer = SwiftDataManager.container,
+        dependencies: CustomCalendarStoreDependencies? = nil
+    ) {
+        let dependencies = dependencies ?? CustomCalendarStoreDependencies(
+            fetchCalendars: { container in
+                try Self.fetchCalendars(container: container)
+            },
+            runMigration: { container in
+                LegacyDataMigrator.migrateIfNeeded(container: container)
             }
-        }
+        )
+        self.container = container
+        self.fetchCalendarsLoader = dependencies.fetchCalendars
+        self.migrationRunner = dependencies.runMigration
+        let initialVersion = Self.loadDataVersion()
+        latestPersistedDataVersion = initialVersion
+        snapshot = CustomCalendarStoreSnapshot(dataVersion: initialVersion)
+        loadCalendars(showLoadingIndicator: true, targetVersion: initialVersion, runMigration: true)
     }
 
+    @available(*, deprecated, message: "Use snapshot.calendars instead")
+    public var calendars: [CustomCalendar] { snapshot.calendars }
+    @available(*, deprecated, message: "Use snapshot.isLoading instead")
+    public var isLoading: Bool { snapshot.isLoading }
+    @available(*, deprecated, message: "Use snapshot.dataVersion instead")
+    public var dataVersion: Int { snapshot.dataVersion }
+
     public func loadCalendars(showLoadingIndicator: Bool = true) {
+        loadCalendars(showLoadingIndicator: showLoadingIndicator, targetVersion: currentPersistedDataVersion())
+    }
+
+    private func loadCalendars(showLoadingIndicator: Bool, targetVersion: Int, runMigration: Bool = false) {
+        let token = UUID()
+        updateLatestReloadToken(token)
+
         if showLoadingIndicator {
             Task { @MainActor in
-                self.isLoading = true
+                guard token == self.currentReloadToken() else { return }
+                self.publishSnapshot(isLoading: true)
             }
         }
 
         let container = container
+        let fetchCalendarsLoader = fetchCalendarsLoader
+        let migrationRunner = migrationRunner
         Task.detached(priority: .userInitiated) { [weak self] in
             do {
-                let calendars = try Self.fetchCalendars(container: container)
+                if runMigration {
+                    migrationRunner(container)
+                }
+
+                let calendars = try fetchCalendarsLoader(container)
                 await MainActor.run {
                     guard let self else { return }
-                    self.calendars = calendars
-                    if showLoadingIndicator {
-                        self.isLoading = false
-                    }
+                    guard token == self.currentReloadToken() else { return }
+                    self.publishSnapshot(calendars: calendars, isLoading: false, dataVersion: targetVersion)
                 }
             } catch {
                 NSLog("Failed to load calendars from SwiftData: \(error)")
                 await MainActor.run {
                     guard let self else { return }
-                    self.calendars = []
-                    if showLoadingIndicator {
-                        self.isLoading = false
-                    }
+                    guard token == self.currentReloadToken() else { return }
+                    self.publishSnapshot(isLoading: false)
                 }
             }
         }
@@ -691,11 +747,11 @@ public final class CustomCalendarStore: ObservableObject {
             }
 
             try persistChanges(in: context)
-            bumpDataVersion()
+            let nextVersion = reserveNextDataVersion()
+            loadCalendars(showLoadingIndicator: false, targetVersion: nextVersion)
         } catch {
             NSLog("Failed to add calendar: \(error)")
         }
-        loadCalendars(showLoadingIndicator: false)
     }
 
     public func updateCalendar(_ calendar: CustomCalendar) {
@@ -744,8 +800,8 @@ public final class CustomCalendarStore: ObservableObject {
 
             try persistNormalizedCalendarOrder(in: context)
             try persistChanges(in: context)
-            bumpDataVersion()
-            loadCalendars(showLoadingIndicator: false)
+            let nextVersion = reserveNextDataVersion()
+            loadCalendars(showLoadingIndicator: false, targetVersion: nextVersion)
         } catch {
             NSLog("Failed to update calendar: \(error)")
         }
@@ -764,14 +820,14 @@ public final class CustomCalendarStore: ObservableObject {
                 context.delete(entity)
             }
             try persistChanges(in: context)
-            bumpDataVersion()
-            loadCalendars(showLoadingIndicator: false)
+            let nextVersion = reserveNextDataVersion()
+            loadCalendars(showLoadingIndicator: false, targetVersion: nextVersion)
         } catch {
             NSLog("Failed to delete calendar: \(error)")
         }
     }
 
-    public func moveCalendar(fromOffsets indices: IndexSet, toOffset destination: Int) {
+    @MainActor public func moveCalendar(fromOffsets indices: IndexSet, toOffset destination: Int) {
         var reordered = Self.normalizedCalendarOrder(calendars)
         reordered.move(fromOffsets: indices, toOffset: destination)
         reordered = Self.assigningContiguousOrder(to: reordered)
@@ -780,13 +836,13 @@ public final class CustomCalendarStore: ObservableObject {
             let context = makeContext()
             persistCalendarOrder(reordered, in: context)
             try persistChanges(in: context)
-            calendars = reordered
+            publishSnapshot(calendars: reordered)
         } catch {
             NSLog("Failed to move calendars: \(error)")
         }
     }
 
-    public func moveActiveCalendars(fromOffsets indices: IndexSet, toOffset destination: Int) {
+    @MainActor public func moveActiveCalendars(fromOffsets indices: IndexSet, toOffset destination: Int) {
         let reordered = Self.reorderedActiveCalendars(
             calendars,
             fromOffsets: indices,
@@ -797,7 +853,7 @@ public final class CustomCalendarStore: ObservableObject {
             let context = makeContext()
             persistCalendarOrder(reordered, in: context)
             try persistChanges(in: context)
-            calendars = reordered
+            publishSnapshot(calendars: reordered)
         } catch {
             NSLog("Failed to move active calendars: \(error)")
         }
@@ -834,8 +890,8 @@ public final class CustomCalendarStore: ObservableObject {
             }
 
             try persistChanges(in: context)
-            bumpDataVersion()
-            loadCalendars(showLoadingIndicator: false)
+            let nextVersion = reserveNextDataVersion()
+            loadCalendars(showLoadingIndicator: false, targetVersion: nextVersion)
         } catch {
             NSLog("Failed to add entry: \(error)")
         }
@@ -857,8 +913,8 @@ public final class CustomCalendarStore: ObservableObject {
                 context.delete(entry)
             }
             try persistChanges(in: context)
-            bumpDataVersion()
-            loadCalendars(showLoadingIndicator: false)
+            let nextVersion = reserveNextDataVersion()
+            loadCalendars(showLoadingIndicator: false, targetVersion: nextVersion)
         } catch {
             NSLog("Failed to clear entries: \(error)")
         }
@@ -873,8 +929,8 @@ public final class CustomCalendarStore: ObservableObject {
             guard let target = fetchEntry(compositeKey: compositeKey, in: context) else { return }
             context.delete(target)
             try persistChanges(in: context)
-            bumpDataVersion()
-            loadCalendars(showLoadingIndicator: false)
+            let nextVersion = reserveNextDataVersion()
+            loadCalendars(showLoadingIndicator: false, targetVersion: nextVersion)
         } catch {
             NSLog("Failed to delete entry: \(error)")
         }
@@ -941,7 +997,7 @@ public final class CustomCalendarStore: ObservableObject {
         Self.makeContext(container: container)
     }
 
-    private static func makeContext(container: ModelContainer) -> ModelContext {
+    nonisolated private static func makeContext(container: ModelContainer) -> ModelContext {
         let context = ModelContext(container)
         context.autosaveEnabled = false
         return context
@@ -975,18 +1031,32 @@ public final class CustomCalendarStore: ObservableObject {
     }
 
     private static let dataVersionKey = "CustomCalendarStore.dataVersion"
+    private static let sharedDefaults = UserDefaults(suiteName: LegacyPersistenceKeys.appGroupId) ?? .standard
 
     private static func loadDataVersion() -> Int {
-        UserDefaults.standard.integer(forKey: dataVersionKey)
+        sharedDefaults.integer(forKey: dataVersionKey)
     }
 
-    public static func fetchCalendarsSnapshot(
+    @MainActor
+    private func publishSnapshot(
+        calendars: [CustomCalendar]? = nil,
+        isLoading: Bool? = nil,
+        dataVersion: Int? = nil
+    ) {
+        snapshot = CustomCalendarStoreSnapshot(
+            calendars: calendars ?? snapshot.calendars,
+            isLoading: isLoading ?? snapshot.isLoading,
+            dataVersion: dataVersion ?? snapshot.dataVersion
+        )
+    }
+
+    nonisolated public static func fetchCalendarsSnapshot(
         container: ModelContainer = SwiftDataManager.container
     ) -> [CustomCalendar] {
         (try? fetchCalendars(container: container)) ?? []
     }
 
-    public static func normalizedCalendarOrder(_ calendars: [CustomCalendar]) -> [CustomCalendar] {
+    nonisolated public static func normalizedCalendarOrder(_ calendars: [CustomCalendar]) -> [CustomCalendar] {
         let activeCalendars = calendars
             .filter { !$0.isArchived }
             .sorted(by: calendarOrderSort)
@@ -1001,7 +1071,7 @@ public final class CustomCalendarStore: ObservableObject {
         }
     }
 
-    public static func reorderedActiveCalendars(
+    nonisolated public static func reorderedActiveCalendars(
         _ calendars: [CustomCalendar],
         fromOffsets indices: IndexSet,
         toOffset destination: Int
@@ -1025,11 +1095,11 @@ public final class CustomCalendarStore: ObservableObject {
         return assigningContiguousOrder(to: reorderedActiveCalendars + archivedCalendars)
     }
 
-    private static func sortCalendars(_ calendars: [CustomCalendar]) -> [CustomCalendar] {
+    nonisolated private static func sortCalendars(_ calendars: [CustomCalendar]) -> [CustomCalendar] {
         normalizedCalendarOrder(calendars)
     }
 
-    private static func assigningContiguousOrder(to calendars: [CustomCalendar]) -> [CustomCalendar] {
+    nonisolated private static func assigningContiguousOrder(to calendars: [CustomCalendar]) -> [CustomCalendar] {
         calendars.enumerated().map { index, calendar in
             var orderedCalendar = calendar
             orderedCalendar.order = index
@@ -1037,19 +1107,41 @@ public final class CustomCalendarStore: ObservableObject {
         }
     }
 
-    private static func calendarOrderSort(_ lhs: CustomCalendar, _ rhs: CustomCalendar) -> Bool {
+    nonisolated private static func calendarOrderSort(_ lhs: CustomCalendar, _ rhs: CustomCalendar) -> Bool {
         if lhs.order == rhs.order {
             return lhs.id.uuidString < rhs.id.uuidString
         }
         return lhs.order < rhs.order
     }
 
-    private func bumpDataVersion() {
-        dataVersion &+= 1
-        UserDefaults.standard.set(dataVersion, forKey: Self.dataVersionKey)
+    private func reserveNextDataVersion() -> Int {
+        versionLock.lock()
+        defer { versionLock.unlock() }
+
+        latestPersistedDataVersion &+= 1
+        Self.sharedDefaults.set(latestPersistedDataVersion, forKey: Self.dataVersionKey)
+        return latestPersistedDataVersion
     }
 
-    private static func fetchCalendars(container: ModelContainer) throws -> [CustomCalendar] {
+    private func currentPersistedDataVersion() -> Int {
+        versionLock.lock()
+        defer { versionLock.unlock() }
+        return latestPersistedDataVersion
+    }
+
+    private func updateLatestReloadToken(_ token: UUID) {
+        reloadLock.lock()
+        latestReloadToken = token
+        reloadLock.unlock()
+    }
+
+    private func currentReloadToken() -> UUID {
+        reloadLock.lock()
+        defer { reloadLock.unlock() }
+        return latestReloadToken
+    }
+
+    nonisolated private static func fetchCalendars(container: ModelContainer) throws -> [CustomCalendar] {
         let context = makeContext(container: container)
         let calendarsDescriptor = FetchDescriptor<HabitCalendarEntity>(
             sortBy: [SortDescriptor(\HabitCalendarEntity.order)]

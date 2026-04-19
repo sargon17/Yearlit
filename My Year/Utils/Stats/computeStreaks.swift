@@ -2,38 +2,38 @@ import SharedModels
 import SwiftUI
 
 func computeStreaks(cal: Calendar, _ anySuccessByDay: [Date: Bool]) -> (longest: Int, current: Int) {
-    guard !anySuccessByDay.isEmpty else { return (0, 0) }
+    let successDays = Set(anySuccessByDay.compactMap { day, didSucceed in
+        didSucceed ? cal.startOfDay(for: day) : nil
+    })
+    return computeStreaks(cal: cal, successDays: successDays, today: Date())
+}
 
-    // Normalize keys to start-of-day to avoid TZ/time-component drift.
-    var norm: [Date: Bool] = [:]
-    for (d, v) in anySuccessByDay {
-        norm[cal.startOfDay(for: d)] = v
-    }
-    let days = norm.keys.sorted()
+func computeStreaks(cal: Calendar, successDays: Set<Date>, today: Date = Date()) -> (longest: Int, current: Int) {
+    guard !successDays.isEmpty else { return (0, 0) }
 
-    // Longest requires consecutive days.
+    let normalizedSuccessDays = Set(successDays.map { cal.startOfDay(for: $0) })
+    let sortedDays = normalizedSuccessDays.sorted()
+
     var longest = 0
-    var temp = 0
-    var prev: Date?
-    for day in days {
-        if let p = prev,
-           let expected = cal.date(byAdding: .day, value: 1, to: p),
+    var streak = 0
+    var previous: Date?
+
+    for day in sortedDays {
+        if let previous,
+           let expected = cal.date(byAdding: .day, value: 1, to: previous),
            !cal.isDate(day, inSameDayAs: expected)
         {
-            temp = 0
+            streak = 0
         }
-        if norm[day] == true {
-            temp += 1
-            longest = max(longest, temp)
-        } else {
-            temp = 0
-        }
-        prev = day
+
+        streak += 1
+        longest = max(longest, streak)
+        previous = day
     }
 
     let current = WidgetStreak.currentStreak(
-        successByDay: norm,
-        today: Date(),
+        successByDay: Dictionary(uniqueKeysWithValues: normalizedSuccessDays.map { ($0, true) }),
+        today: today,
         calendarSystem: cal,
         allowTodayMissing: true
     ).streak

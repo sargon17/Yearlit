@@ -97,7 +97,7 @@ struct HabitStackEditorView: View {
 
                     HabitStackStepsSection(
                         steps: $steps,
-                        calendars: calendarStore.calendars,
+                        calendars: calendarStore.snapshot.activeCalendars,
                         accentColor: accentColor,
                         addStep: addStep,
                         moveStep: moveStep,

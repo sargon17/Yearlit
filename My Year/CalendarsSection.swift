@@ -20,6 +20,8 @@ struct CalendarsSection: View {
     @State private var pendingCalendarId: String?
 
     var body: some View {
+        let snapshot = store.snapshot
+
         VStack(spacing: 0) {
             // custom toolbar
             HStack {
@@ -62,7 +64,7 @@ struct CalendarsSection: View {
                         }
 
                         // Custom Calendars
-                        let activeCalendars = store.calendars.filter { !$0.isArchived }
+                        let activeCalendars = snapshot.activeCalendars
                         // Use stable IDs to keep paging aligned when filtering.
                         ForEach(activeCalendars, id: \.id) { calendar in
                             CustomCalendarView(calendar: calendar)
@@ -132,7 +134,7 @@ struct CalendarsSection: View {
             .onOpenURL { url in
                 handleCalendarDeepLink(url)
             }
-            .onReceive(store.$calendars) { _ in
+            .onReceive(store.$snapshot) { _ in
                 if let pendingCalendarId {
                     scrollToCalendarIfAvailable(pendingCalendarId)
                 }
@@ -203,7 +205,7 @@ struct CalendarsSection: View {
     }
 
     private func scrollToCalendarIfAvailable(_ id: String) {
-        guard store.calendars.contains(where: { $0.id.uuidString == id && !$0.isArchived }) else { return }
+        guard store.snapshot.activeCalendars.contains(where: { $0.id.uuidString == id }) else { return }
         pendingCalendarId = nil
         position.scrollTo(id: id)
     }

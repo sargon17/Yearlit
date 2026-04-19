@@ -1,6 +1,7 @@
 import SharedModels
 import SwiftUI
 
+@MainActor
 func quickEntry(
     calendar: CustomCalendar,
     date: Date,

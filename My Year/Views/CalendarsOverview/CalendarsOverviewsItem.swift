@@ -18,7 +18,6 @@ struct CalendarsOverviewsItem: View {
 
     private let latestSlotsCount = 56
     private let rowsCount = 4
-    private let today = Date()
     private var localCalendar: Calendar {
         var calendar = Calendar(identifier: .gregorian)
         calendar.locale = Locale(identifier: "en_US_POSIX")
@@ -28,6 +27,10 @@ struct CalendarsOverviewsItem: View {
 
     private var todayStart: Date {
         localCalendar.startOfDay(for: today)
+    }
+
+    private var today: Date {
+        Date()
     }
 
     var latestSlots: [Date] {
@@ -117,23 +120,38 @@ extension CalendarsOverviewsItem {
     }
 
     private var latestSlotColors: [Color] {
-        let daySeedKey = dayKey(for: todayStart)
-        let cacheKey = CacheKey(
-            scope: .overviewSlots,
-            identifier: "\(calendar.id.uuidString)|\(store.dataVersion)|\(daySeedKey)|\(latestSlotsCount)|\(colorScheme)"
-        )
+        let cachePrefix = "\(calendar.id.uuidString)|"
+        CacheStore.shared.removeMatching(scope: .overviewSlots) { identifier in
+            identifier.hasPrefix(cachePrefix) && identifier != latestSlotsCacheIdentifier
+        }
+
+        let cacheKey = CacheKey(scope: .overviewSlots, identifier: latestSlotsCacheIdentifier)
         if let cached: [Color] = CacheStore.shared.get(cacheKey) { return cached }
 
-        let entries = calendar.entries
+        let colors = buildLatestSlotColors()
+        CacheStore.shared.set(cacheKey, value: colors)
+        return colors
+    }
+
+    private var latestSlotsCacheIdentifier: String {
+        let snapshot = store.snapshot
+        let daySeedKey = dayKey(for: todayStart)
+        let schemeKey = colorScheme == .dark ? "dark" : "light"
+        let timeZoneKey = TimeZone.autoupdatingCurrent.identifier
+        return "\(calendar.id.uuidString)|\(snapshot.dataVersion)|\(calendar.cadence.rawValue)|\(daySeedKey)|\(latestSlotsCount)|\(schemeKey)|\(timeZoneKey)"
+    }
+
+    private func buildLatestSlotColors() -> [Color] {
         let inactiveColor = inactiveDayColor()
         let activeColor = activeDayColor()
         let maxCount = calendar.trackingType == .counter ? getMaxCount(calendar: calendar) : 1
 
-        let colors = latestSlots.map { day -> Color in
+        return latestSlots.map { day -> Color in
             let bucketDate = calendar.bucketDate(for: day)
             let todayBucket = calendar.bucketDate(for: todayStart)
             if bucketDate > todayBucket { return inactiveColor }
             guard let entry = calendar.entry(for: day) else { return activeColor }
+
             switch calendar.trackingType {
             case .binary:
                 return entry.completed ? Color(calendar.color) : activeColor
@@ -141,21 +159,16 @@ extension CalendarsOverviewsItem {
                 if entry.count > 0 {
                     let ratio = max(0.1, Double(entry.count) / Double(max(maxCount, 1)))
                     return GarnishColor.blend(.surfaceMuted, with: Color(calendar.color), ratio: ratio)
-                } else {
-                    return activeColor
                 }
+                return activeColor
             case .multipleDaily:
                 if entry.count > 0 {
                     let opacity = min(1, max(0.2, Double(entry.count) / Double(calendar.dailyTarget)))
                     return Color(calendar.color).opacity(opacity)
-                } else {
-                    return activeColor
                 }
+                return activeColor
             }
         }
-
-        CacheStore.shared.set(cacheKey, value: colors)
-        return colors
     }
 }
 

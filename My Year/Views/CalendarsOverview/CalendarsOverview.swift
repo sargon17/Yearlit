@@ -16,14 +16,7 @@ struct CalendarsOverview: View {
     @Environment(\.router) private var router
 
     var body: some View {
-        let activeCalendars = store.calendars
-            .filter { !$0.isArchived }
-            .sorted { lhs, rhs in
-                if lhs.order == rhs.order {
-                    return lhs.id.uuidString < rhs.id.uuidString
-                }
-                return lhs.order < rhs.order
-            }
+        let activeCalendars = store.snapshot.activeCalendars
 
         List {
             Section {
