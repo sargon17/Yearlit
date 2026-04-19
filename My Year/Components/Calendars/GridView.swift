@@ -10,7 +10,6 @@ struct GridView: View {
     let year: Int
 
     @Environment(\.colorScheme) var colorScheme
-    let today: Date = Date().date
     @State var mappedDays: [(date: Date, color: Color)] = []
 
     var body: some View {
@@ -19,17 +18,18 @@ struct GridView: View {
             let dotSize: CGFloat = 10
             let padding: CGFloat = 20
 
-            let availableWidth = geometry.size.width - (padding * 2)
-            let availableHeight = geometry.size.height - (padding * 2)
+            let availableWidth = max(0, geometry.size.width - (padding * 2))
+            let availableHeight = max(1, geometry.size.height - (padding * 2))
 
-            let aspectRatio = availableWidth / availableHeight
+            let aspectRatio = max(0.001, availableWidth / availableHeight)
             let targetColumns = Int(sqrt(Double(dates.count) * aspectRatio))
             let columns = max(min(targetColumns, dates.count), 1)
             let rows = max(Int(ceil(Double(dates.count) / Double(columns))), 1)
 
             let horizontalSpacing =
-                (availableWidth - (dotSize * CGFloat(columns))) / CGFloat(columns - 1)
-            let verticalSpacing = (availableHeight - (dotSize * CGFloat(rows))) / CGFloat(rows - 1)
+                max(0, (availableWidth - (dotSize * CGFloat(columns))) / CGFloat(max(1, columns - 1)))
+            let verticalSpacing =
+                max(0, (availableHeight - (dotSize * CGFloat(rows))) / CGFloat(max(1, rows - 1)))
             let hitSize = dotSize + max(0, min(horizontalSpacing, verticalSpacing))
 
             VStack(spacing: verticalSpacing) {
@@ -54,41 +54,38 @@ struct GridView: View {
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .padding(.horizontal)
-            .task(
-                id: "\(calendar.entries.values.reduce(0) { $0 + $1.count })-\(colorScheme)-\(year)"
-            ) {
-                let maxCount = getMaxCount(calendar: calendar)
-                let entriesSignature = calendar.entries.values.reduce(0) { $0 + $1.count }
-                let cacheKey = CacheKey(
-                    scope: .calendarGridMappedDays,
-                    identifier: "\(calendar.name)-\(year)-\(colorScheme)-\(entriesSignature)"
-                )
+            .task(id: cacheSignature) {
+                let cachePrefix = "\(calendar.id.uuidString)|\(year)|"
+                let cacheKey = CacheKey(scope: .calendarGridMappedDays, identifier: cacheSignature)
+                CacheStore.shared.removeMatching(scope: .calendarGridMappedDays) { identifier in
+                    identifier.hasPrefix(cachePrefix) && identifier != cacheSignature
+                }
+
                 if let cachedMappedDays: [(date: Date, color: Color)] = CacheStore.shared.get(cacheKey) {
-                    // print("🟢 Hitting Cache")
                     mappedDays = cachedMappedDays
                 } else {
-                    // print("🔴 Missing Cache")
-                    CacheStore.shared.removeMatching(scope: .calendarGridMappedDays) { identifier in
-                        identifier.contains(calendar.name)
-                    }
+                    let maxCount = getMaxCount(calendar: calendar)
                     mappedDays = dates.map {
                         (date: $0, color: colorForDay($0, calendar: calendar, today: today, maxCount: maxCount))
                     }
                     CacheStore.shared.set(cacheKey, value: mappedDays)
                 }
             }
-            .onChange(of: calendar.entries.values.reduce(0) { $0 + $1.count }) { oldVal, _ in
-                // * removing old cache for entries count as the value could have changed with the same count, the cache retunred the old cached values
-                let cacheKey = CacheKey(
-                    scope: .calendarGridMappedDays,
-                    identifier: "\(calendar.name)-\(year)-\(colorScheme)-\(oldVal)"
-                )
-                CacheStore.shared.remove(cacheKey)
-            }
         }
     }
 
     func updateData() {}
+
+    private var cacheSignature: String {
+        let schemeKey = colorScheme == .dark ? "dark" : "light"
+        let daySeedKey = dayKey(for: LocalDayCalendar.startOfDay(for: Date()))
+        let timeZoneKey = TimeZone.autoupdatingCurrent.identifier
+        return "\(calendar.id.uuidString)|\(year)|v\(store.dataVersion)|\(schemeKey)|\(daySeedKey)|\(timeZoneKey)"
+    }
+
+    private var today: Date {
+        Date().date
+    }
 }
 
 private struct TappableGridDot: View {

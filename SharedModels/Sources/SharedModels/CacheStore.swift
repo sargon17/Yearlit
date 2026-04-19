@@ -22,7 +22,7 @@ public struct CacheKey: Hashable, Codable {
 public final class CacheStore {
     public static let shared = CacheStore()
 
-    private let queue = DispatchQueue(label: "CacheStore.memory", attributes: .concurrent)
+    private let lock = NSLock()
     private var memory: [CacheKey: Any] = [:]
     private let defaults: UserDefaults
 
@@ -31,28 +31,37 @@ public final class CacheStore {
     }
 
     public func get<T>(_ key: CacheKey) -> T? {
-        queue.sync { memory[key] as? T }
+        lock.lock()
+        defer { lock.unlock() }
+        return memory[key] as? T
     }
 
     public func set<T>(_ key: CacheKey, value: T) {
-        queue.async(flags: .barrier) { self.memory[key] = value }
+        lock.lock()
+        memory[key] = value
+        lock.unlock()
     }
 
     public func remove(_ key: CacheKey) {
-        queue.async(flags: .barrier) { self.memory.removeValue(forKey: key) }
+        lock.lock()
+        memory.removeValue(forKey: key)
+        lock.unlock()
     }
 
     public func removeMatching(scope: CacheScope, where predicate: @escaping (String) -> Bool) {
-        queue.async(flags: .barrier) {
-            let keysToRemove = self.memory.keys.filter { $0.scope == scope && predicate($0.identifier) }
+        lock.lock()
+        defer { lock.unlock() }
+
+            let keysToRemove = memory.keys.filter { $0.scope == scope && predicate($0.identifier) }
             for key in keysToRemove {
-                self.memory.removeValue(forKey: key)
+                memory.removeValue(forKey: key)
             }
-        }
     }
 
     public func clearMemory() {
-        queue.async(flags: .barrier) { self.memory.removeAll() }
+        lock.lock()
+        memory.removeAll()
+        lock.unlock()
     }
 
     public func loadDisk<T: Codable>(_ key: CacheKey, as _: T.Type = T.self) -> T? {
