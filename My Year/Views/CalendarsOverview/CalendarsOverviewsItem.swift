@@ -34,9 +34,11 @@ struct CalendarsOverviewsItem: View {
     }
 
     var latestSlots: [Date] {
-        let start = localCalendar.date(byAdding: .day, value: -(latestSlotsCount - 1), to: todayStart) ?? todayStart
+        let component: Calendar.Component = calendar.cadence == .weekly ? .weekOfYear : .day
+        let anchor = calendar.cadence == .weekly ? LocalDayCalendar.startOfWeek(for: todayStart) : todayStart
+        let start = localCalendar.date(byAdding: component, value: -(latestSlotsCount - 1), to: anchor) ?? anchor
         return (0 ..< latestSlotsCount).compactMap { offset in
-            localCalendar.date(byAdding: .day, value: offset, to: start)
+            localCalendar.date(byAdding: component, value: offset, to: start)
         }
     }
 
@@ -135,19 +137,20 @@ extension CalendarsOverviewsItem {
         let daySeedKey = dayKey(for: todayStart)
         let schemeKey = colorScheme == .dark ? "dark" : "light"
         let timeZoneKey = TimeZone.autoupdatingCurrent.identifier
-        return "\(calendar.id.uuidString)|\(store.dataVersion)|\(daySeedKey)|\(latestSlotsCount)|\(schemeKey)|\(timeZoneKey)"
+        return "\(calendar.id.uuidString)|\(store.dataVersion)|\(calendar.cadence.rawValue)|\(daySeedKey)|\(latestSlotsCount)|\(schemeKey)|\(timeZoneKey)"
     }
 
     private func buildLatestSlotColors() -> [Color] {
-        let entries = calendar.entries
         let inactiveColor = inactiveDayColor()
         let activeColor = activeDayColor()
         let maxCount = calendar.trackingType == .counter ? getMaxCount(calendar: calendar) : 1
 
         return latestSlots.map { day -> Color in
-            if day > todayStart { return inactiveColor }
-            let key = dayKey(for: day)
-            guard let entry = entries[key] else { return activeColor }
+            let bucketDate = calendar.bucketDate(for: day)
+            let todayBucket = calendar.bucketDate(for: todayStart)
+            if bucketDate > todayBucket { return inactiveColor }
+            guard let entry = calendar.entry(for: day) else { return activeColor }
+
             switch calendar.trackingType {
             case .binary:
                 return entry.completed ? Color(calendar.color) : activeColor

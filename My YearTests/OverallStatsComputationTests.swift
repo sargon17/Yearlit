@@ -33,14 +33,14 @@ struct OverallStatsComputationTests {
             calendars: [calendar],
             year: 2026,
             todayLocal: today,
-            todayKeyDate: today
+            currentPeriodReferenceDate: today
         )
 
-        #expect(bundle.todaysCount == 6)
+        #expect(bundle.currentPeriodCount == 6)
         #expect(bundle.basic.totalCount == 12)
-        #expect(bundle.rolling30d > 0)
-        #expect(bundle.rolling7d > 0)
-        #expect(bundle.completionRate30d > 0)
+        #expect(bundle.averageProgressTrailingLongWindow > 0)
+        #expect(bundle.averageProgressTrailingShortWindow > 0)
+        #expect(bundle.completionRateTrailingLongWindow > 0)
     }
 
     private func makeCalendar(

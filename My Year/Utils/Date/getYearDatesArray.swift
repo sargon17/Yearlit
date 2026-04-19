@@ -1,4 +1,5 @@
 import Foundation
+import SharedModels
 import SwiftDate
 
 private enum YearDatesCache {
@@ -49,4 +50,25 @@ public func getYearDatesArray(for year: Int) -> [Date] {
     YearDatesCache.lock.unlock()
 
     return dates
+}
+
+public func getYearWeekDatesArray(for year: Int) -> [Date] {
+    let calendar = LocalDayCalendar.calendar
+    guard let startDate = calendar.date(from: DateComponents(year: year, month: 1, day: 1)),
+          let endDate = calendar.date(from: DateComponents(year: year, month: 12, day: 31))
+    else {
+        return []
+    }
+
+    var weeks: [Date] = []
+    var cursor = LocalDayCalendar.startOfWeek(for: startDate)
+    let lastWeek = LocalDayCalendar.startOfWeek(for: endDate)
+
+    while cursor <= lastWeek {
+        weeks.append(cursor)
+        guard let next = calendar.date(byAdding: .weekOfYear, value: 1, to: cursor) else { break }
+        cursor = next
+    }
+
+    return weeks
 }

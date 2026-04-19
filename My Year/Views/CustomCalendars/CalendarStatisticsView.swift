@@ -5,6 +5,8 @@ import SwiftfulRouting
 import SwiftUI
 
 struct CalendarStats {
+    // Legacy in-memory name. For weekly calendars this represents active weeks.
+    // Kept as-is to avoid broad churn for a UI-only semantic improvement.
     let activeDays: Int
     let totalCount: Int
     let maxCount: Int
@@ -15,19 +17,20 @@ struct CalendarStats {
 struct CalendarStatisticsView: View {
     let stats: CalendarStats
     let accentColor: Color
-    let todaysCount: Int
+    let currentPeriodCount: Int?
     let unit: UnitOfMeasure?
     let currencySymbol: String?
     // New advanced metrics
-    let completionRateLast30d: Double
+    let completionRateTrailingLongWindow: Double
     let bestWeekday: Int?
     let weekdayRates: [Int: Double]
     let monthlyRates: [Int: Double]
-    let rolling7d: Double
-    let rolling30d: Double
+    let averageProgressTrailingShortWindow: Double
+    let averageProgressTrailingLongWindow: Double
     let volatilityStdDev: Double
     let isPremium: Bool
     let onUpgrade: () -> Void
+    var cadence: CalendarCadence = .daily
     var trackingType: TrackingType = .binary
     var onTapCurrentStreak: (() -> Void)? = nil
     var onTapActiveDays: (() -> Void)? = nil
@@ -44,6 +47,30 @@ struct CalendarStatisticsView: View {
         } else {
             return "Times"
         }
+    }
+
+    var currentPeriodTitle: LocalizedStringKey {
+        cadence == .weekly ? "This Week" : "Today"
+    }
+
+    var completionRateTitle: LocalizedStringKey {
+        cadence == .weekly ? "Completion Rate (12w)" : "Completion Rate (30d)"
+    }
+
+    var bestPeriodTitle: LocalizedStringKey {
+        cadence == .weekly ? "Best Week" : "Best Day"
+    }
+
+    var activePeriodsTitle: LocalizedStringKey {
+        cadence == .weekly ? "Active Weeks" : "Active Days"
+    }
+
+    var shortTrendTitle: LocalizedStringKey {
+        cadence == .weekly ? "4w" : "7d"
+    }
+
+    var longTrendTitle: LocalizedStringKey {
+        cadence == .weekly ? "12w" : "30d"
     }
 
     var body: some View {
@@ -75,12 +102,14 @@ struct CalendarStatisticsView: View {
             VStack(spacing: 12) {
                 sectionHeader(LocalizedStringKey(entriesLabel))
                 HStack {
-                    CompactStatTile(
-                        title: "Today",
-                        value: "\(todaysCount)",
-                        accentColor: accentColor
-                    )
-                    .layoutPriority(1)
+                    if let currentPeriodCount {
+                        CompactStatTile(
+                            title: currentPeriodTitle,
+                            value: "\(currentPeriodCount)",
+                            accentColor: accentColor
+                        )
+                        .layoutPriority(1)
+                    }
                     CompactStatTile(
                         title: "Total",
                         value: "\(stats.totalCount)",
@@ -89,7 +118,7 @@ struct CalendarStatisticsView: View {
                     .layoutPriority(1)
                     if trackingType != .binary {
                         CompactStatTile(
-                            title: "Best Day",
+                            title: bestPeriodTitle,
                             value: "\(stats.maxCount)",
                             accentColor: accentColor
                         )
@@ -124,7 +153,7 @@ struct CalendarStatisticsView: View {
                     .layoutPriority(1)
 
                     CompactStatTile(
-                        title: "Active Days",
+                        title: activePeriodsTitle,
                         value: "\(stats.activeDays)",
                         accentColor: accentColor,
                         onTap: onTapActiveDays
@@ -146,8 +175,8 @@ struct CalendarStatisticsView: View {
                     .padding(.top)
                 VStack(spacing: 8) {
                     labeledValueRow(
-                        title: "Completion Rate (30d)",
-                        value: percent(completionRateLast30d),
+                        title: completionRateTitle,
+                        value: percent(completionRateTrailingLongWindow),
                         accentColor: accentColor,
                         isLocked: !isPremium
                     )
@@ -185,19 +214,40 @@ struct CalendarStatisticsView: View {
                 }
             }
 
-            VStack {
+            if cadence == .daily {
+                VStack {
                 // Section: Patterns
-                sectionHeader("Patterns", premium: !isPremium)
+                    sectionHeader("Patterns", premium: !isPremium)
                     .padding(.horizontal)
                     .padding(.top)
-                VStack(spacing: 8) {
-                    labeledValueRow(
-                        title: "Best Weekday",
-                        value: bestWeekday.map { weekdayName($0) } ?? "—",
+                    VStack(spacing: 8) {
+                        labeledValueRow(
+                            title: "Best Weekday",
+                            value: bestWeekday.map { weekdayName($0) } ?? "—",
+                            accentColor: accentColor,
+                            isLocked: !isPremium
+                        )
+                        .padding(.horizontal)
+                        .onTapGesture {
+                            guard !isPremium else { return }
+
+                            router.showScreen(.sheet) { _ in
+                                PaywallView()
+                            }
+
+                            Task {
+                                await hapticFeedback()
+                            }
+                        }
+                    }
+
+                    weekdayRibbon(
+                        rates: weekdayRates,
                         accentColor: accentColor,
                         isLocked: !isPremium
                     )
-                    .padding(.horizontal)
+                    .frame(maxWidth: .greatestFiniteMagnitude)
+                    .overlay(bottomDivider)
                     .onTapGesture {
                         guard !isPremium else { return }
 
@@ -210,27 +260,8 @@ struct CalendarStatisticsView: View {
                         }
                     }
                 }
-
-                weekdayRibbon(
-                    rates: weekdayRates,
-                    accentColor: accentColor,
-                    isLocked: !isPremium
-                )
-                .frame(maxWidth: .greatestFiniteMagnitude)
-                .overlay(bottomDivider)
-                .onTapGesture {
-                    guard !isPremium else { return }
-
-                    router.showScreen(.sheet) { _ in
-                        PaywallView()
-                    }
-
-                    Task {
-                        await hapticFeedback()
-                    }
-                }
+                .clipped()
             }
-            .clipped()
 
             // Section: Trends (Premium)
             sectionHeader("Trends", premium: !isPremium)
@@ -240,16 +271,16 @@ struct CalendarStatisticsView: View {
             VStack(spacing: 16) {
                 HStack {
                     CompactStatTile(
-                        title: "7d",
-                        value: "\(percent(rolling7d))",
+                        title: shortTrendTitle,
+                        value: "\(percent(averageProgressTrailingShortWindow))",
                         accentColor: accentColor,
                         size: .small,
                         isLocked: !isPremium
                     )
                     .layoutPriority(1)
                     CompactStatTile(
-                        title: "30d",
-                        value: "\(percent(rolling30d))",
+                        title: longTrendTitle,
+                        value: "\(percent(averageProgressTrailingLongWindow))",
                         accentColor: accentColor,
                         size: .small,
                         isLocked: !isPremium

@@ -18,7 +18,7 @@ func updateCounterEntry(
             completed: isCompleted
         )
     } else {
-        newEntry = defaultEntry(date: date, trackingType: .counter)
+        newEntry = CalendarEntry(date: date, count: addValue, completed: addValue > 0)
     }
 
     calendarStore.addEntry(calendarId: calendarId, entry: newEntry)

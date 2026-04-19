@@ -20,7 +20,11 @@ func updateMultipleDailyEntry(
             completed: isCompleted
         )
     } else {
-        newEntry = defaultEntry(date: date, trackingType: .multipleDaily)
+        newEntry = CalendarEntry(
+            date: date,
+            count: addValue,
+            completed: addValue >= calendar.dailyTarget
+        )
     }
 
     calendarStore.addEntry(calendarId: calendarId, entry: newEntry)

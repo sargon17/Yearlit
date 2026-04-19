@@ -39,7 +39,7 @@ struct AllCalendarsRecapView: View {
         let daySeed = Calendar.current.startOfDay(for: Date())
         let statsSignature = makeCacheKey(year: selectedYear, daySeed: daySeed, dataVersion: dataVersion)
         let statsTaskId = "\(statsSignature.identifier)|\(statsRefreshToken.uuidString)"
-        let todayKeyDate = getYearDatesArray(for: selectedYear).first { Calendar.current.isDate($0, inSameDayAs: Date()) }
+        let currentPeriodReferenceDate = getYearDatesArray(for: selectedYear).first { Calendar.current.isDate($0, inSameDayAs: Date()) }
 
         ScrollView {
             VStack(spacing: 10) {
@@ -82,15 +82,15 @@ struct AllCalendarsRecapView: View {
                     CalendarStatisticsView(
                         stats: bundle.basic,
                         accentColor: Color("qs-emerald"),
-                        todaysCount: bundle.todaysCount ?? 0,
+                        currentPeriodCount: bundle.currentPeriodCount,
                         unit: nil,
                         currencySymbol: nil,
-                        completionRateLast30d: bundle.completionRate30d,
+                        completionRateTrailingLongWindow: bundle.completionRateTrailingLongWindow,
                         bestWeekday: bundle.bestWeekday,
                         weekdayRates: bundle.weekdayRates,
                         monthlyRates: bundle.monthlyRates,
-                        rolling7d: bundle.rolling7d,
-                        rolling30d: bundle.rolling30d,
+                        averageProgressTrailingShortWindow: bundle.averageProgressTrailingShortWindow,
+                        averageProgressTrailingLongWindow: bundle.averageProgressTrailingLongWindow,
                         volatilityStdDev: bundle.volatilityStd,
                         isPremium: isPremium(customerInfo: customerInfo),
                         onUpgrade: { isPaywallPresented = true }
@@ -187,7 +187,7 @@ struct AllCalendarsRecapView: View {
                     calendars: calendarsSnapshot,
                     year: selectedYear,
                     todayLocal: Date(),
-                    todayKeyDate: todayKeyDate
+                    currentPeriodReferenceDate: currentPeriodReferenceDate
                 )
             }.value
             if token == statsRefreshToken {
@@ -210,7 +210,7 @@ func computeOverallStatsBundle(
     calendars: [CustomCalendar],
     year: Int,
     todayLocal: Date,
-    todayKeyDate: Date?
+    currentPeriodReferenceDate: Date?
 ) -> StatsBundle {
     var cal = Calendar(identifier: .gregorian)
     cal.locale = Locale(identifier: "en_US_POSIX")
@@ -237,8 +237,8 @@ func computeOverallStatsBundle(
     let activeDays = allTimeSuccessByDay.values.filter { $0 }.count
     let (longestStreak, currentStreak) = computeStreaks(cal: cal, allTimeSuccessByDay)
 
-    let todayKeyCount = todayKeyDate.map { keyDate in
-        perDayTotal[cal.startOfDay(for: keyDate)] ?? 0
+    let currentPeriodCount = currentPeriodReferenceDate.map { referenceDate in
+        perDayTotal[cal.startOfDay(for: referenceDate)] ?? 0
     }
 
     let (cr30, avg7, avg30) = computeRollingStats(
@@ -268,14 +268,14 @@ func computeOverallStatsBundle(
 
     return StatsBundle(
         basic: basic,
-        completionRate30d: cr30,
+        completionRateTrailingLongWindow: cr30,
         bestWeekday: bestWD?.day,
         weekdayRates: weekdayRates,
         monthlyRates: monthlyRates,
-        rolling7d: avg7,
-        rolling30d: avg30,
+        averageProgressTrailingShortWindow: avg7,
+        averageProgressTrailingLongWindow: avg30,
         volatilityStd: volatility,
-        todaysCount: todayKeyCount
+        currentPeriodCount: currentPeriodCount
     )
 }
 

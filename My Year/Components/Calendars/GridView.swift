@@ -13,7 +13,6 @@ struct GridView: View {
     @State var mappedDays: [(date: Date, color: Color)] = []
 
     var body: some View {
-        // Calendar grid
         GeometryReader { geometry in
             let dotSize: CGFloat = 10
             let padding: CGFloat = 20
@@ -80,7 +79,7 @@ struct GridView: View {
         let schemeKey = colorScheme == .dark ? "dark" : "light"
         let daySeedKey = dayKey(for: LocalDayCalendar.startOfDay(for: Date()))
         let timeZoneKey = TimeZone.autoupdatingCurrent.identifier
-        return "\(calendar.id.uuidString)|\(year)|v\(store.dataVersion)|\(schemeKey)|\(daySeedKey)|\(timeZoneKey)"
+        return "\(calendar.id.uuidString)|\(year)|v\(store.dataVersion)|\(calendar.cadence.rawValue)|\(schemeKey)|\(daySeedKey)|\(timeZoneKey)"
     }
 
     private var today: Date {

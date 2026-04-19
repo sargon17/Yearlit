@@ -4,6 +4,7 @@ import SwiftfulRouting
 import SwiftUI
 
 struct ExistingStreakSheet: View {
+    let cadence: CalendarCadence
     let trackingType: TrackingType
     let dailyTarget: Int
     let defaultDailyValue: Int
@@ -24,6 +25,7 @@ struct ExistingStreakSheet: View {
     @Environment(\.colorScheme) private var colorScheme
 
     init(
+        cadence: CalendarCadence,
         trackingType: TrackingType,
         dailyTarget: Int,
         defaultDailyValue: Int,
@@ -31,6 +33,7 @@ struct ExistingStreakSheet: View {
         accentColor: Color,
         onApply: @escaping ([String: CalendarEntry]) -> Void
     ) {
+        self.cadence = cadence
         self.trackingType = trackingType
         self.dailyTarget = dailyTarget
         self.defaultDailyValue = max(1, defaultDailyValue)
@@ -80,7 +83,7 @@ struct ExistingStreakSheet: View {
                 }
 
                 if trackingType == .counter {
-                    CustomSection(label: "Daily Value") {
+                    CustomSection(label: cadence == .daily ? "Daily Value" : "Weekly Value") {
                         HStack {
                             Text("Value")
                                 .labelStyle(type: .secondary)
@@ -133,7 +136,9 @@ struct ExistingStreakSheet: View {
                     router.dismissScreen()
                 }
             } message: {
-                Text("This will overwrite \(pendingOverwriteCount) days within a \(pendingTotalDays)-day range.")
+                Text(
+                    "This will overwrite \(pendingOverwriteCount) \(cadence == .daily ? "days" : "weeks") within a \(pendingTotalDays)-\(cadence == .daily ? "day" : "week") range."
+                )
             }
         }
     }
@@ -161,6 +166,7 @@ struct ExistingStreakSheet: View {
         let result = buildExistingStreakEntries(
             startDate: startDay,
             endDate: endDay,
+            cadence: cadence,
             trackingType: trackingType,
             dailyTarget: dailyTarget,
             dailyValue: trackingType == .counter ? dailyValue : dailyTarget,

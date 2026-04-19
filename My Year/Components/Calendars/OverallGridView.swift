@@ -91,11 +91,10 @@ struct OverallGridView: View {
 
                         let shades: [(Date, Double)] = datesArray.map { day in
                             if day > todayLocal { return (day, 0.0) }
-                            let key = dayKey(for: day)
                             var zSum: Double = 0
                             var denom: Double = 0
                             for cal in calendars {
-                                let entry = entriesByCalendar[cal.id]?[key]
+                                let entry = entry(for: cal, date: day, entriesByCalendar: entriesByCalendar)
                                 zSum += normalizedProgress(for: cal, entry: entry, q75: pct75[cal.id])
                                 denom += 1
                             }
