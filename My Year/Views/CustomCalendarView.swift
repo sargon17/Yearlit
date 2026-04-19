@@ -236,8 +236,9 @@ struct CustomCalendarView: View {
     var body: some View {
         let snapshot = store.snapshot
         let dataVersion = snapshot.dataVersion
+        let selectedYear = valuationStore.selectedYear
         let statsTaskId =
-            "\(calendar.id.uuidString)|\(valuationStore.selectedYear)|\(dataVersion)|\(statsRefreshToken.uuidString)"
+            "\(calendar.id.uuidString)|\(selectedYear)|\(dataVersion)|\(statsRefreshToken.uuidString)"
         let resolvedCalendar = activeCalendar
         let resolvedCurrentPeriodReferenceDate = currentPeriodReferenceDate
 
@@ -508,7 +509,7 @@ struct CustomCalendarView: View {
             let bundle = await Task.detached(priority: .userInitiated) {
                 computeCalendarStatsBundle(
                     calendar: resolvedCalendar,
-                    year: valuationStore.selectedYear,
+                    year: selectedYear,
                     todayLocal: Date(),
                     currentPeriodReferenceDate: resolvedCurrentPeriodReferenceDate
                 )

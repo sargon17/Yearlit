@@ -1,4 +1,4 @@
-import SharedModels
+@preconcurrency import SharedModels
 import UserNotifications
 
 // MARK: - Notification Action Identifiers
@@ -445,13 +445,14 @@ public func scheduleStreakProtectionReminder(
         content: content,
         trigger: trigger
     )
+    let calendarName = resolvedCalendar.name
+    let streakUnit = resolvedCalendar.cadence == .weekly ? "week" : "day"
 
     UNUserNotificationCenter.current().add(request) { error in
         if let error = error {
             print("❌ Failed to schedule streak protection: \(error)")
         } else {
-            let streakUnit = resolvedCalendar.cadence == .weekly ? "week" : "day"
-            print("🛡️ Scheduled streak protection for \(resolvedCalendar.name) at 9 PM (\(streakAtRisk)-\(streakUnit) streak)")
+            print("🛡️ Scheduled streak protection for \(calendarName) at 9 PM (\(streakAtRisk)-\(streakUnit) streak)")
         }
     }
 }
@@ -533,7 +534,9 @@ public func scheduleNotifications(
                     } else if granted {
                         // Schedule streak protection if store available
                         if let store = store {
-                            scheduleStreakProtectionReminder(for: calendar, store: store)
+                            Task { @MainActor in
+                                scheduleStreakProtectionReminder(for: calendar, store: store)
+                            }
                         }
 
                         _scheduleAllReminders(
@@ -550,7 +553,9 @@ public func scheduleNotifications(
             case .authorized, .provisional:
                 // Schedule streak protection if store available
                 if let store = store {
-                    scheduleStreakProtectionReminder(for: calendar, store: store)
+                    Task { @MainActor in
+                        scheduleStreakProtectionReminder(for: calendar, store: store)
+                    }
                 }
 
                 _scheduleAllReminders(
