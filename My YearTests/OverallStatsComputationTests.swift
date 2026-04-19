@@ -28,19 +28,29 @@ struct OverallStatsComputationTests {
             makeEntry(year: 2026, month: 1, day: 3, count: 6, completed: true),
         ])
         let today = makeDate(year: 2026, month: 1, day: 3)
+        let dates = [
+            makeDate(year: 2026, month: 1, day: 1),
+            makeDate(year: 2026, month: 1, day: 2),
+            makeDate(year: 2026, month: 1, day: 3),
+            makeDate(year: 2026, month: 1, day: 4),
+        ]
 
-        let bundle = computeOverallStatsBundle(
+        let derived = computeOverviewDerivedSnapshot(
             calendars: [calendar],
             year: 2026,
+            dates: dates,
             todayLocal: today,
             currentPeriodReferenceDate: today
         )
+        let bundle = derived.statsBundle
 
         #expect(bundle.currentPeriodCount == 6)
         #expect(bundle.basic.totalCount == 12)
         #expect(bundle.averageProgressTrailingLongWindow > 0)
         #expect(bundle.averageProgressTrailingShortWindow > 0)
         #expect(bundle.completionRateTrailingLongWindow > 0)
+        #expect(derived.zByDay.count == dates.count)
+        #expect(derived.zByDay[3] == 0)
     }
 
     @Test func computeStreaksHandlesSparseSuccessDays() {
@@ -114,12 +124,13 @@ struct OverallStatsComputationTests {
             cadence: .weekly
         )
 
-        let bundle = computeOverallStatsBundle(
+        let bundle = computeOverviewDerivedSnapshot(
             calendars: [weeklyCalendar],
             year: 2026,
+            dates: getYearDatesArray(for: 2026),
             todayLocal: makeDate(year: 2026, month: 1, day: 8),
             currentPeriodReferenceDate: makeDate(year: 2026, month: 1, day: 8)
-        )
+        ).statsBundle
 
         #expect(bundle.currentPeriodCount == 4)
     }

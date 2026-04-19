@@ -1,6 +1,7 @@
 import Foundation
 
 public enum CacheScope: String, Codable {
+    case overviewDerivedSnapshot
     case overviewGridZByDay
     case overviewGridMappedDays
     case overviewStatsBundle

@@ -621,13 +621,25 @@ public final class CustomCalendarStore: ObservableObject {
     @Published public private(set) var snapshot: CustomCalendarStoreSnapshot
 
     private let container: ModelContainer
+    private let fetchCalendarsLoader: @Sendable (ModelContainer) throws -> [CustomCalendar]
+    private let migrationRunner: @Sendable (ModelContainer) -> Void
     private let reloadLock = NSLock()
     private let versionLock = NSLock()
     private var latestReloadToken = UUID()
     private var latestPersistedDataVersion: Int
 
-    public init(container: ModelContainer = SwiftDataManager.container) {
+    public init(
+        container: ModelContainer = SwiftDataManager.container,
+        fetchCalendarsLoader: (@Sendable (ModelContainer) throws -> [CustomCalendar])? = nil,
+        migrationRunner: (@Sendable (ModelContainer) -> Void)? = nil
+    ) {
         self.container = container
+        self.fetchCalendarsLoader = fetchCalendarsLoader ?? { container in
+            try Self.fetchCalendars(container: container)
+        }
+        self.migrationRunner = migrationRunner ?? { container in
+            LegacyDataMigrator.migrateIfNeeded(container: container)
+        }
         let initialVersion = Self.loadDataVersion()
         latestPersistedDataVersion = initialVersion
         snapshot = CustomCalendarStoreSnapshot(dataVersion: initialVersion)
@@ -654,13 +666,15 @@ public final class CustomCalendarStore: ObservableObject {
         }
 
         let container = container
+        let fetchCalendarsLoader = fetchCalendarsLoader
+        let migrationRunner = migrationRunner
         Task.detached(priority: .userInitiated) { [weak self] in
             do {
                 if runMigration {
-                    LegacyDataMigrator.migrateIfNeeded(container: container)
+                    migrationRunner(container)
                 }
 
-                let calendars = try Self.fetchCalendars(container: container)
+                let calendars = try fetchCalendarsLoader(container)
                 await MainActor.run {
                     guard let self else { return }
                     guard token == self.currentReloadToken() else { return }
