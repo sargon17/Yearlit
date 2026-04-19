@@ -137,8 +137,7 @@ extension CalendarsOverviewsItem {
         let daySeedKey = dayKey(for: todayStart)
         let schemeKey = colorScheme == .dark ? "dark" : "light"
         let timeZoneKey = TimeZone.autoupdatingCurrent.identifier
-        let entriesFingerprint = calendarEntriesFingerprint(calendar)
-        return "\(calendar.id.uuidString)|\(store.dataVersion)|\(entriesFingerprint)|\(calendar.cadence.rawValue)|\(daySeedKey)|\(latestSlotsCount)|\(schemeKey)|\(timeZoneKey)"
+        return "\(calendar.id.uuidString)|\(store.dataVersion)|\(calendar.cadence.rawValue)|\(daySeedKey)|\(latestSlotsCount)|\(schemeKey)|\(timeZoneKey)"
     }
 
     private func buildLatestSlotColors() -> [Color] {

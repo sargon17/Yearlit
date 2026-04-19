@@ -124,50 +124,7 @@ struct OverallStatsComputationTests {
         #expect(bundle.currentPeriodCount == 4)
     }
 
-    @Test func calendarEntriesFingerprintChangesWhenEntryMovesWithSameCount() {
-        let firstCalendar = makeCalendar(
-            name: "Counter",
-            trackingType: .counter,
-            entries: [
-                makeEntry(year: 2026, month: 1, day: 1, count: 1, completed: true)
-            ]
-        )
-        let secondCalendar = makeCalendar(
-            id: firstCalendar.id,
-            name: "Counter",
-            trackingType: .counter,
-            entries: [
-                makeEntry(year: 2026, month: 1, day: 2, count: 1, completed: true)
-            ]
-        )
-
-        #expect(calendarEntriesFingerprint(firstCalendar) != calendarEntriesFingerprint(secondCalendar))
-    }
-
-    @Test func calendarEntriesFingerprintChangesWhenDailyTargetChanges() {
-        let firstCalendar = makeCalendar(
-            name: "Multiple",
-            trackingType: .multipleDaily,
-            entries: [
-                makeEntry(year: 2026, month: 1, day: 1, count: 1, completed: true)
-            ],
-            dailyTarget: 1
-        )
-        let secondCalendar = makeCalendar(
-            id: firstCalendar.id,
-            name: "Multiple",
-            trackingType: .multipleDaily,
-            entries: [
-                makeEntry(year: 2026, month: 1, day: 1, count: 1, completed: true)
-            ],
-            dailyTarget: 2
-        )
-
-        #expect(calendarEntriesFingerprint(firstCalendar) != calendarEntriesFingerprint(secondCalendar))
-    }
-
     private func makeCalendar(
-        id: UUID = UUID(),
         name: String,
         trackingType: TrackingType,
         entries: [CalendarEntry],
@@ -175,7 +132,6 @@ struct OverallStatsComputationTests {
         cadence: CalendarCadence = .daily
     ) -> CustomCalendar {
         CustomCalendar(
-            id: id,
             name: name,
             color: "qs-emerald",
             cadence: cadence,

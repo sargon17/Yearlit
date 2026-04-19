@@ -29,8 +29,7 @@ struct AllCalendarsRecapView: View {
 
     private func makeCacheKey(year: Int, daySeed: Date, dataVersion: Int) -> CacheKey {
         let daySeedStr = Self.daySeedFormatter.string(from: daySeed)
-        let calendarsFingerprint = calendarsEntriesFingerprint(store.calendars)
-        let identifier = "overall|\(year)|\(daySeedStr)|v\(dataVersion)|\(calendarsFingerprint)"
+        let identifier = "overall|\(year)|\(daySeedStr)|v\(dataVersion)"
         return CacheKey(scope: .overviewStatsBundle, identifier: identifier)
     }
 

@@ -36,14 +36,13 @@ struct OverallGridView: View {
                 (availableHeight - (dotSize * CGFloat(rows))) / CGFloat(max(1, rows - 1))
             )
             let dataVersion = store.dataVersion
-            let calendarsFingerprint = calendarsEntriesFingerprint(store.calendars)
-            let sig = cacheSignature(dataVersion: dataVersion, year: year, calendarsFingerprint: calendarsFingerprint)
+            let sig = cacheSignature(dataVersion: dataVersion, year: year)
             let daySeedKey = dayKey(for: Calendar.current.startOfDay(for: today))
             let timeZoneKey = TimeZone.autoupdatingCurrent.identifier
             let cacheKey = CacheKey(scope: .overviewGridMappedDays, identifier: sig)
             let diskKey = CacheKey(
                 scope: .overviewGridZByDay,
-                identifier: "v2|\(year)|\(daySeedKey)|\(timeZoneKey)|v\(dataVersion)|\(calendarsFingerprint)"
+                identifier: "v2|\(year)|\(daySeedKey)|\(timeZoneKey)|v\(dataVersion)"
             )
             VStack(spacing: verticalSpacing) {
                 ForEach(0 ..< rows, id: \.self) { row in
@@ -127,11 +126,11 @@ struct OverallGridView: View {
         }
     }
 
-    private func cacheSignature(dataVersion: Int, year: Int, calendarsFingerprint: String) -> String {
+    private func cacheSignature(dataVersion: Int, year: Int) -> String {
         let schemeKey = colorScheme == .dark ? "dark" : "light"
         let daySeedKey = dayKey(for: LocalDayCalendar.startOfDay(for: today))
         let timeZoneKey = TimeZone.autoupdatingCurrent.identifier
-        return "overall-grid|v2|\(year)|\(dataVersion)|\(calendarsFingerprint)|\(schemeKey)|\(daySeedKey)|\(timeZoneKey)"
+        return "overall-grid|v2|\(year)|\(dataVersion)|\(schemeKey)|\(daySeedKey)|\(timeZoneKey)"
     }
 
     private func mappedDays(from zByDay: [Double]) -> [(date: Date, color: Color)] {
