@@ -153,87 +153,6 @@ struct CustomCalendarView: View {
         }
     }
 
-    private func getStats(for calendar: CustomCalendar) -> CalendarStats {
-        let activeDays = calendar.entries.values.filter { entry in
-            switch calendar.trackingType {
-            case .binary:
-                return entry.completed
-            case .counter, .multipleDaily:
-                return entry.count > 0
-            }
-        }.count
-
-        let totalCount = calendar.entries.values.reduce(0) { $0 + $1.count }
-        let maxCount = calendar.entries.values.map { $0.count }.max() ?? 0
-
-        let localCalendar = LocalDayCalendar.calendar
-        let longestStreak = WidgetStreak.longestStreak(calendar: calendar, calendarSystem: localCalendar)
-        let currentStreak = WidgetStreak.currentStreak(calendar: calendar, today: today, calendarSystem: localCalendar).streak
-
-        return CalendarStats(
-            activeDays: activeDays, totalCount: totalCount, maxCount: maxCount,
-            longestStreak: longestStreak, currentStreak: currentStreak
-        )
-    }
-
-    private func computeStatsBundle(
-        calendar: CustomCalendar,
-        year: Int,
-        todayLocal: Date,
-        todayKeyDate: Date?
-    ) -> StatsBundle {
-        let cal = Calendar.current
-        // Riusa: getStats() già esistente per basic
-        let basic = getStats(for: calendar)
-
-        /// Adattatori leggeri
-        func entryOn(_ date: Date) -> CalendarEntry? {
-            entry(for: calendar, date: date)
-        }
-        func isSuccessOn(_ date: Date) -> Bool {
-            isEntrySuccess(entryOn(date), calendar: calendar)
-        }
-        func zOn(_ date: Date) -> Double {
-            normalizedProgress(for: calendar, entry: entryOn(date))
-        }
-
-        let (cr30, avg7, avg30) = computeRollingStatsSingle(
-            cal: cal, todayLocal: todayLocal, zOn: zOn, isSuccessOn: isSuccessOn
-        )
-
-        // Nuovo: weekday rates per singolo calendario + best day (normalizzati a max=1)
-        let (weekdayRates, bestWD) = computeWeekdayRatesSingle(
-            cal: cal, year: year, todayLocal: todayLocal,
-            trackingType: calendar.trackingType, zOn: zOn, isSuccessOn: isSuccessOn,
-            normalizeToMax: true
-        )
-
-        // Nuovo: breakdown mensile (CR binaria sul mese)
-        let monthly = computeMonthlyBinaryRates(
-            cal: cal, year: year, todayLocal: todayLocal, isSuccessOn: isSuccessOn
-        )
-
-        // Riusa schema: volatilità settimanale su CR (12 settimane)
-        let volatility = computeWeeklyVolatilityFromSuccess(
-            cal: cal, todayLocal: todayLocal, isSuccessOn: isSuccessOn
-        )
-
-        // Today's count for this calendar (optional)
-        let todaysCount: Int? = todayKeyDate.map { entry(for: calendar, date: $0)?.count ?? 0 }
-
-        return StatsBundle(
-            basic: basic,
-            completionRate30d: cr30,
-            bestWeekday: bestWD?.day,
-            weekdayRates: weekdayRates,
-            monthlyRates: monthly,
-            rolling7d: avg7,
-            rolling30d: avg30,
-            volatilityStd: volatility,
-            todaysCount: todaysCount
-        )
-    }
-
     private func handleQuickAdd() {
         let entryDate = todayKeyDate ?? Date()
         quickEntry(
@@ -591,11 +510,11 @@ struct CustomCalendarView: View {
         .task(id: statsTaskId) {
             let token = statsRefreshToken
             let bundle = await Task.detached(priority: .userInitiated) {
-                computeStatsBundle(
+                computeCalendarStatsBundle(
                     calendar: resolvedCalendar,
                     year: valuationStore.selectedYear,
                     todayLocal: Date(),
-                    todayKeyDate: resolvedTodayKeyDate
+                    todaysReferenceDate: resolvedTodayKeyDate
                 )
             }.value
             if token == statsRefreshToken {

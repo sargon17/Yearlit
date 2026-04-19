@@ -51,12 +51,24 @@ struct CalendarStatisticsView: View {
         cadence == .weekly ? "This Week" : "Today"
     }
 
+    var completionRateTitle: LocalizedStringKey {
+        cadence == .weekly ? "Completion Rate (12w)" : "Completion Rate (30d)"
+    }
+
     var bestPeriodTitle: LocalizedStringKey {
         cadence == .weekly ? "Best Week" : "Best Day"
     }
 
     var activePeriodsTitle: LocalizedStringKey {
         cadence == .weekly ? "Active Weeks" : "Active Days"
+    }
+
+    var shortTrendTitle: LocalizedStringKey {
+        cadence == .weekly ? "4w" : "7d"
+    }
+
+    var longTrendTitle: LocalizedStringKey {
+        cadence == .weekly ? "12w" : "30d"
     }
 
     var body: some View {
@@ -159,7 +171,7 @@ struct CalendarStatisticsView: View {
                     .padding(.top)
                 VStack(spacing: 8) {
                     labeledValueRow(
-                        title: "Completion Rate (30d)",
+                        title: completionRateTitle,
                         value: percent(completionRateLast30d),
                         accentColor: accentColor,
                         isLocked: !isPremium
@@ -198,19 +210,40 @@ struct CalendarStatisticsView: View {
                 }
             }
 
-            VStack {
+            if cadence == .daily {
+                VStack {
                 // Section: Patterns
-                sectionHeader("Patterns", premium: !isPremium)
+                    sectionHeader("Patterns", premium: !isPremium)
                     .padding(.horizontal)
                     .padding(.top)
-                VStack(spacing: 8) {
-                    labeledValueRow(
-                        title: "Best Weekday",
-                        value: bestWeekday.map { weekdayName($0) } ?? "—",
+                    VStack(spacing: 8) {
+                        labeledValueRow(
+                            title: "Best Weekday",
+                            value: bestWeekday.map { weekdayName($0) } ?? "—",
+                            accentColor: accentColor,
+                            isLocked: !isPremium
+                        )
+                        .padding(.horizontal)
+                        .onTapGesture {
+                            guard !isPremium else { return }
+
+                            router.showScreen(.sheet) { _ in
+                                PaywallView()
+                            }
+
+                            Task {
+                                await hapticFeedback()
+                            }
+                        }
+                    }
+
+                    weekdayRibbon(
+                        rates: weekdayRates,
                         accentColor: accentColor,
                         isLocked: !isPremium
                     )
-                    .padding(.horizontal)
+                    .frame(maxWidth: .greatestFiniteMagnitude)
+                    .overlay(bottomDivider)
                     .onTapGesture {
                         guard !isPremium else { return }
 
@@ -223,27 +256,8 @@ struct CalendarStatisticsView: View {
                         }
                     }
                 }
-
-                weekdayRibbon(
-                    rates: weekdayRates,
-                    accentColor: accentColor,
-                    isLocked: !isPremium
-                )
-                .frame(maxWidth: .greatestFiniteMagnitude)
-                .overlay(bottomDivider)
-                .onTapGesture {
-                    guard !isPremium else { return }
-
-                    router.showScreen(.sheet) { _ in
-                        PaywallView()
-                    }
-
-                    Task {
-                        await hapticFeedback()
-                    }
-                }
+                .clipped()
             }
-            .clipped()
 
             // Section: Trends (Premium)
             sectionHeader("Trends", premium: !isPremium)
@@ -253,7 +267,7 @@ struct CalendarStatisticsView: View {
             VStack(spacing: 16) {
                 HStack {
                     CompactStatTile(
-                        title: "7d",
+                        title: shortTrendTitle,
                         value: "\(percent(rolling7d))",
                         accentColor: accentColor,
                         size: .small,
@@ -261,7 +275,7 @@ struct CalendarStatisticsView: View {
                     )
                     .layoutPriority(1)
                     CompactStatTile(
-                        title: "30d",
+                        title: longTrendTitle,
                         value: "\(percent(rolling30d))",
                         accentColor: accentColor,
                         size: .small,
