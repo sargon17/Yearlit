@@ -55,13 +55,13 @@ struct GridView: View {
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .padding(.horizontal)
             .task(
-                id: "\(calendar.entries.values.reduce(0) { $0 + $1.count })-\(colorScheme)-\(year)"
+                id: "\(calendar.entries.values.reduce(0) { $0 + $1.count })-\(colorScheme)-\(year)-\(dates.count)-\(calendar.cadence.rawValue)"
             ) {
                 let maxCount = getMaxCount(calendar: calendar)
                 let entriesSignature = calendar.entries.values.reduce(0) { $0 + $1.count }
                 let cacheKey = CacheKey(
                     scope: .calendarGridMappedDays,
-                    identifier: "\(calendar.name)-\(year)-\(colorScheme)-\(entriesSignature)"
+                    identifier: "\(calendar.name)-\(year)-\(colorScheme)-\(entriesSignature)-\(dates.count)-\(calendar.cadence.rawValue)"
                 )
                 if let cachedMappedDays: [(date: Date, color: Color)] = CacheStore.shared.get(cacheKey) {
                     // print("🟢 Hitting Cache")

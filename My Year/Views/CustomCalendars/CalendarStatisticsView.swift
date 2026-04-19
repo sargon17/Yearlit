@@ -28,6 +28,7 @@ struct CalendarStatisticsView: View {
     let volatilityStdDev: Double
     let isPremium: Bool
     let onUpgrade: () -> Void
+    var cadence: CalendarCadence = .daily
     var trackingType: TrackingType = .binary
     var onTapCurrentStreak: (() -> Void)? = nil
     var onTapActiveDays: (() -> Void)? = nil
@@ -44,6 +45,18 @@ struct CalendarStatisticsView: View {
         } else {
             return "Times"
         }
+    }
+
+    var currentPeriodTitle: LocalizedStringKey {
+        cadence == .weekly ? "This Week" : "Today"
+    }
+
+    var bestPeriodTitle: LocalizedStringKey {
+        cadence == .weekly ? "Best Week" : "Best Day"
+    }
+
+    var activePeriodsTitle: LocalizedStringKey {
+        cadence == .weekly ? "Active Weeks" : "Active Days"
     }
 
     var body: some View {
@@ -76,7 +89,7 @@ struct CalendarStatisticsView: View {
                 sectionHeader(LocalizedStringKey(entriesLabel))
                 HStack {
                     CompactStatTile(
-                        title: "Today",
+                        title: currentPeriodTitle,
                         value: "\(todaysCount)",
                         accentColor: accentColor
                     )
@@ -89,7 +102,7 @@ struct CalendarStatisticsView: View {
                     .layoutPriority(1)
                     if trackingType != .binary {
                         CompactStatTile(
-                            title: "Best Day",
+                            title: bestPeriodTitle,
                             value: "\(stats.maxCount)",
                             accentColor: accentColor
                         )
@@ -124,7 +137,7 @@ struct CalendarStatisticsView: View {
                     .layoutPriority(1)
 
                     CompactStatTile(
-                        title: "Active Days",
+                        title: activePeriodsTitle,
                         value: "\(stats.activeDays)",
                         accentColor: accentColor,
                         onTap: onTapActiveDays

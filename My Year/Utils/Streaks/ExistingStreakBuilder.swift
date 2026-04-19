@@ -10,6 +10,7 @@ struct ExistingStreakBuildResult {
 func buildExistingStreakEntries(
     startDate: Date,
     endDate: Date,
+    cadence: CalendarCadence,
     trackingType: TrackingType,
     dailyTarget: Int,
     dailyValue: Int,
@@ -18,16 +19,18 @@ func buildExistingStreakEntries(
     var calendar = Calendar(identifier: .gregorian)
     calendar.locale = Locale(identifier: "en_US_POSIX")
     calendar.timeZone = .autoupdatingCurrent
-    let startDay = calendar.startOfDay(for: startDate)
-    let endDay = calendar.startOfDay(for: endDate)
+    let startBucket = cadence == .weekly ? LocalDayCalendar.startOfWeek(for: startDate) : calendar.startOfDay(for: startDate)
+    let endBucket = cadence == .weekly ? LocalDayCalendar.startOfWeek(for: endDate) : calendar.startOfDay(for: endDate)
 
     var entries: [String: CalendarEntry] = [:]
     var overwriteCount = 0
     var totalDays = 0
 
-    var cursor = startDay
-    while cursor <= endDay {
-        let key = dayKey(for: cursor)
+    var cursor = startBucket
+    while cursor <= endBucket {
+        let key = cadence == .weekly
+            ? DayKeyFormatter.shared.string(from: LocalDayCalendar.startOfWeek(for: cursor))
+            : dayKey(for: cursor)
         if existingEntries[key] != nil {
             overwriteCount += 1
         }
@@ -46,7 +49,8 @@ func buildExistingStreakEntries(
         }
         entries[key] = CalendarEntry(date: cursor, count: count, completed: completed)
         totalDays += 1
-        guard let next = calendar.date(byAdding: .day, value: 1, to: cursor) else { break }
+        let component: Calendar.Component = cadence == .weekly ? .weekOfYear : .day
+        guard let next = calendar.date(byAdding: component, value: 1, to: cursor) else { break }
         cursor = next
     }
 

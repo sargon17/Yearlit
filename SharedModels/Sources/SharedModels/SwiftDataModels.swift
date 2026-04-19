@@ -7,6 +7,7 @@ public final class HabitCalendarEntity {
     public var id: UUID = UUID()
     public var name: String = ""
     public var color: String = ""
+    public var cadenceRawValue: String = CalendarCadence.daily.rawValue
     public var trackingTypeRawValue: String = TrackingType.binary.rawValue
     public var dailyTarget: Int = 1
     public var unitRawValue: String?
@@ -28,6 +29,7 @@ public final class HabitCalendarEntity {
         id: UUID = UUID(),
         name: String,
         color: String,
+        cadenceRawValue: String = CalendarCadence.daily.rawValue,
         trackingTypeRawValue: String,
         dailyTarget: Int,
         unitRawValue: String? = nil,
@@ -48,6 +50,7 @@ public final class HabitCalendarEntity {
         self.id = id
         self.name = name
         self.color = color
+        self.cadenceRawValue = cadenceRawValue
         self.trackingTypeRawValue = trackingTypeRawValue
         self.dailyTarget = dailyTarget
         self.unitRawValue = unitRawValue
@@ -202,6 +205,7 @@ extension HabitCalendarEntity {
     }
 
     func toCustomCalendar(entries: [String: CalendarEntry]) -> CustomCalendar {
+        let cadence = CalendarCadence(rawValue: cadenceRawValue) ?? .daily
         let tracking = TrackingType(rawValue: trackingTypeRawValue) ?? .binary
         let unit = unitRawValue.flatMap(UnitOfMeasure.init(rawValue:))
         let privacyMode = NotificationPrivacyMode(rawValue: notificationPrivacyModeRawValue) ?? .full
@@ -211,6 +215,7 @@ extension HabitCalendarEntity {
             id: id,
             name: name,
             color: color,
+            cadence: cadence,
             trackingType: tracking,
             dailyTarget: dailyTarget,
             entries: entries,
@@ -236,6 +241,7 @@ extension HabitCalendarEntity {
             id: id,
             name: name,
             color: color,
+            cadence: cadence,
             trackingType: tracking,
             dailyTarget: dailyTarget,
             entries: entries,
@@ -258,6 +264,7 @@ extension HabitCalendarEntity {
     func apply(from model: CustomCalendar) {
         name = model.name
         color = model.color
+        cadenceRawValue = model.cadence.rawValue
         trackingTypeRawValue = model.trackingType.rawValue
         dailyTarget = model.dailyTarget
         unitRawValue = model.unit?.rawValue
@@ -281,6 +288,7 @@ extension HabitCalendarEntity {
             id: model.id,
             name: model.name,
             color: model.color,
+            cadenceRawValue: model.cadence.rawValue,
             trackingTypeRawValue: model.trackingType.rawValue,
             dailyTarget: model.dailyTarget,
             unitRawValue: model.unit?.rawValue,

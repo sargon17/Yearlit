@@ -8,9 +8,8 @@ func computeTodayKeyCount(
     entriesByCalendar: [UUID: [String: CalendarEntry]]
 ) -> Int {
     let todayStart = cal.startOfDay(for: todayLocal)
-    let key = dayKey(for: todayStart)
     return calendars.reduce(0) { partial, c in
-        let e = entry(for: c.id, dayKey: key, entriesByCalendar: entriesByCalendar)
+        let e = entry(for: c, date: todayStart, entriesByCalendar: entriesByCalendar)
         return partial + (e?.count ?? 0)
     }
 }

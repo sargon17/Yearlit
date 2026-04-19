@@ -202,47 +202,14 @@ private func calculateStreakStats(
     for calendar: CustomCalendar,
     store _: CustomCalendarStore
 ) -> StreakStats {
-    var currentStreak = 0
-    var weeklyCompleted = 0
-
     let dayCalendar = LocalDayCalendar.calendar
-    let dateFormatter = DayKeyFormatter.shared
     let today = LocalDayCalendar.startOfDay(for: Date())
-
-    // Current streak: consecutive fulfilled days from today backwards.
-    var streakDate = today
-    for _ in 0 ..< 365 {
-        let dayKey = dateFormatter.string(from: streakDate)
-        guard let entry = calendar.entries[dayKey],
-              isEntrySuccess(entry: entry, calendar: calendar)
-        else {
-            break
-        }
-
-        currentStreak += 1
-        streakDate = dayCalendar.date(byAdding: .day, value: -1, to: streakDate) ?? streakDate
-    }
-
-    // Yesterday success.
+    let currentStreak = WidgetStreak.currentStreak(calendar: calendar, today: today, calendarSystem: dayCalendar).streak
     let yesterday = dayCalendar.date(byAdding: .day, value: -1, to: today) ?? today
-    let yesterdayKey = dateFormatter.string(from: yesterday)
-    let completedYesterday = calendar.entries[yesterdayKey].map {
+    let completedYesterday = calendar.entry(for: yesterday).map {
         isEntrySuccess(entry: $0, calendar: calendar)
     } ?? false
-
-    // Weekly completion over last 7 days.
-    var weeklyDate = today
-    for _ in 0 ..< 7 {
-        let dayKey = dateFormatter.string(from: weeklyDate)
-        if let entry = calendar.entries[dayKey],
-           isEntrySuccess(entry: entry, calendar: calendar)
-        {
-            weeklyCompleted += 1
-        }
-        weeklyDate = dayCalendar.date(byAdding: .day, value: -1, to: weeklyDate) ?? weeklyDate
-    }
-
-    let weeklyCompletionRate = Double(weeklyCompleted) / 7.0
+    let weeklyCompletionRate = normalizedProgress(for: calendar, entry: calendar.entry(for: today))
 
     return StreakStats(
         currentStreak: currentStreak,
@@ -391,9 +358,11 @@ public func scheduleStreakProtectionReminder(
     // Urgent, streak-focused copy
     switch resolvedCalendar.notificationPrivacyMode {
     case .full:
+        let streakUnit = resolvedCalendar.cadence == .weekly ? "week" : "day"
         content.title = String(
-            format: String(localized: "🔥 Don't break your %lld-day streak!"),
-            streakAtRisk
+            format: String(localized: "🔥 Don't break your %lld-%@ streak!"),
+            streakAtRisk,
+            streakUnit
         )
         content.body = String(
             format: String(localized: "Quick! Log %@ before midnight"),
@@ -457,27 +426,17 @@ public func refreshStreakProtectionReminders(store: CustomCalendarStore) {
 
 /// Calculates consecutive fulfilled days ending at yesterday.
 private func calculateStreakEndingYesterday(for calendar: CustomCalendar) -> Int {
-    let formatter = DayKeyFormatter.shared
     let dayCalendar = LocalDayCalendar.calendar
-    guard let startDate = dayCalendar.date(byAdding: .day, value: -1, to: LocalDayCalendar.startOfDay(for: Date())) else {
+    guard let yesterday = dayCalendar.date(byAdding: .day, value: -1, to: LocalDayCalendar.startOfDay(for: Date())) else {
         return 0
     }
 
-    var streak = 0
-    var checkDate = startDate
-
-    for _ in 0 ..< 365 {
-        let dayKey = formatter.string(from: checkDate)
-        guard let entry = calendar.entries[dayKey],
-              isEntrySuccess(entry: entry, calendar: calendar)
-        else {
-            break
-        }
-        streak += 1
-        checkDate = dayCalendar.date(byAdding: .day, value: -1, to: checkDate) ?? checkDate
-    }
-
-    return streak
+    return WidgetStreak.currentStreak(
+        calendar: calendar,
+        today: yesterday,
+        calendarSystem: dayCalendar,
+        allowTodayMissing: false
+    ).streak
 }
 
 // MARK: - Notification Scheduling
@@ -832,11 +791,12 @@ private func handleQuickLog(for calendar: CustomCalendar, store: CustomCalendarS
 
     case .counter:
         let defaultValue = calendar.defaultRecordValue ?? 1
-        entry = CalendarEntry(date: today, count: defaultValue, completed: false)
+        entry = CalendarEntry(date: today, count: defaultValue, completed: defaultValue > 0)
 
     case .multipleDaily:
+        let addValue = calendar.defaultRecordValue ?? 1
         let currentCount = store.getEntry(calendarId: calendar.id, date: today)?.count ?? 0
-        let newCount = currentCount + 1
+        let newCount = currentCount + addValue
         let completed = newCount >= calendar.dailyTarget
         entry = CalendarEntry(date: today, count: newCount, completed: completed)
     }

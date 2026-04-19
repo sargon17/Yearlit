@@ -31,9 +31,11 @@ struct CalendarsOverviewsItem: View {
     }
 
     var latestSlots: [Date] {
-        let start = localCalendar.date(byAdding: .day, value: -(latestSlotsCount - 1), to: todayStart) ?? todayStart
+        let component: Calendar.Component = calendar.cadence == .weekly ? .weekOfYear : .day
+        let anchor = calendar.cadence == .weekly ? LocalDayCalendar.startOfWeek(for: todayStart) : todayStart
+        let start = localCalendar.date(byAdding: component, value: -(latestSlotsCount - 1), to: anchor) ?? anchor
         return (0 ..< latestSlotsCount).compactMap { offset in
-            localCalendar.date(byAdding: .day, value: offset, to: start)
+            localCalendar.date(byAdding: component, value: offset, to: start)
         }
     }
 
@@ -128,9 +130,10 @@ extension CalendarsOverviewsItem {
         let maxCount = calendar.trackingType == .counter ? getMaxCount(calendar: calendar) : 1
 
         let colors = latestSlots.map { day -> Color in
-            if day > todayStart { return inactiveColor }
-            let key = dayKey(for: day)
-            guard let entry = entries[key] else { return activeColor }
+            let bucketDate = calendar.bucketDate(for: day)
+            let todayBucket = calendar.bucketDate(for: todayStart)
+            if bucketDate > todayBucket { return inactiveColor }
+            guard let entry = calendar.entry(for: day) else { return activeColor }
             switch calendar.trackingType {
             case .binary:
                 return entry.completed ? Color(calendar.color) : activeColor

@@ -87,7 +87,7 @@ struct StreakMilestoneCardView: View {
                 .font(.system(size: 12, design: .monospaced))
                 .foregroundColor(secondaryTextColor)
             if kind == .streak, currentStreak > milestone {
-                Text("Now at \(currentStreak) days")
+                Text("Now at \(currentStreak) \(calendar.cadence == .weekly ? "weeks" : "days")")
                     .font(.system(size: 12, design: .monospaced))
                     .foregroundColor(secondaryTextColor)
             }
@@ -313,7 +313,7 @@ private struct MilestoneGridView: View {
         if date.isInFuture {
             return foregroundColor.opacity(0.12)
         }
-        let entry = calendar.entries[dayKey(for: date)]
+        let entry = entry(for: calendar, date: date)
         switch calendar.trackingType {
         case .binary:
             return entry?.completed == true ? foregroundColor : foregroundColor.opacity(0.25)

@@ -334,15 +334,9 @@ struct CalendarShareSheet: View {
         let totalCount = calendar.entries.values.reduce(0) { $0 + $1.count }
         let maxCount = calendar.entries.values.map { $0.count }.max() ?? 0
 
-        var localCalendar = Calendar(identifier: .gregorian)
-        localCalendar.locale = Locale(identifier: "en_US_POSIX")
-        localCalendar.timeZone = .autoupdatingCurrent
-        let allTimeSuccessByDay = buildAllTimeSuccessMap(
-            cal: localCalendar,
-            todayLocal: Date(),
-            calendars: [calendar]
-        )
-        let (longestStreak, currentStreak) = computeStreaks(cal: localCalendar, allTimeSuccessByDay)
+        let localCalendar = LocalDayCalendar.calendar
+        let longestStreak = WidgetStreak.longestStreak(calendar: calendar, calendarSystem: localCalendar)
+        let currentStreak = WidgetStreak.currentStreak(calendar: calendar, today: Date(), calendarSystem: localCalendar).streak
 
         return CalendarStats(
             activeDays: activeDays,
@@ -357,6 +351,6 @@ struct CalendarShareSheet: View {
         let currentYear = Calendar.current.component(.year, from: Date())
         guard year == currentYear else { return 0 }
         let today = Calendar.current.startOfDay(for: Date())
-        return calendar.entries[dayKey(for: today)]?.count ?? 0
+        return entry(for: calendar, date: today)?.count ?? 0
     }
 }

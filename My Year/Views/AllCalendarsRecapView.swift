@@ -64,9 +64,9 @@ struct AllCalendarsRecapView: View {
 
         let todayKeyCount: Int? = {
             guard let keyDate = todayKeyDate else { return nil }
-            let key = dayKey(for: cal.startOfDay(for: keyDate))
+            let normalizedDate = cal.startOfDay(for: keyDate)
             return calendars.reduce(0) { partial, c in
-                let e = entry(for: c.id, dayKey: key, entriesByCalendar: entriesByCalendar)
+                let e = entry(for: c, date: normalizedDate, entriesByCalendar: entriesByCalendar)
                 return partial + (e?.count ?? 0)
             }
         }()

@@ -12,6 +12,7 @@ struct CreateCalendarView: View {
     @ObservedObject private var store = CustomCalendarStore.shared
     @State private var name = ""
     @State private var selectedColor = "qs-amber"
+    @State private var cadence: CalendarCadence = .daily
     @State private var trackingType: TrackingType = .binary
     @State private var dailyTarget = 2
     @State private var recurringReminderEnabled: Bool = false
@@ -71,11 +72,17 @@ struct CreateCalendarView: View {
     private var trackingTypeDescription: LocalizedStringKey {
         switch trackingType {
         case .binary:
-            return "Track a simple yes/no each day. Great for habits you either complete or skip."
+            return cadence == .daily
+                ? "Track a simple yes/no each day. Great for habits you either complete or skip."
+                : "Track a simple yes/no each week. Great for goals you either hit or miss across the week."
         case .counter:
-            return "Log a numeric value per day, like pages read or minutes practiced."
+            return cadence == .daily
+                ? "Log a numeric value per day, like pages read or minutes practiced."
+                : "Log a numeric value per week, like workouts done or kilometers covered."
         case .multipleDaily:
-            return "Check in multiple times per day toward a daily target."
+            return cadence == .daily
+                ? "Check in multiple times per day toward a daily target."
+                : "Check in multiple times across the week toward a weekly target."
         }
     }
 
@@ -89,6 +96,7 @@ struct CreateCalendarView: View {
         let calendar = CustomCalendar(
             name: name,
             color: selectedColor,
+            cadence: cadence,
             trackingType: trackingType,
             dailyTarget: dailyTarget,
             entries: existingStreakEntries,
@@ -136,6 +144,24 @@ struct CreateCalendarView: View {
                     .focused($isNameFocused)
                 }
 
+                CustomSection(label: "Cadence") {
+                    VStack(spacing: 12) {
+                        Picker("Cadence", selection: $cadence) {
+                            ForEach(CalendarCadence.allCases, id: \.self) { cadence in
+                                Text(cadence.title).tag(cadence)
+                            }
+                        }
+                        .pickerStyle(.segmented)
+
+                        Text(cadence.detailDescription)
+                            .font(.footnote)
+                            .foregroundStyle(.textTertiary)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                    }
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 12)
+                }
+
                 TrackingPicker(trackingType: $trackingType, color: Color(selectedColor))
 
                 ZStack(alignment: .leading) {
@@ -155,7 +181,7 @@ struct CreateCalendarView: View {
                         VStack(spacing: 2) {
                             if trackingType == .multipleDaily {
                                 HStack {
-                                    Text("Daily Target")
+                                    Text(cadence.targetTitle)
                                         .labelStyle(type: .secondary)
 
                                     Spacer()
@@ -272,6 +298,7 @@ struct CreateCalendarView: View {
                         Button(action: {
                             router.showScreen(.sheet) { _ in
                                 ExistingStreakSheet(
+                                    cadence: cadence,
                                     trackingType: trackingType,
                                     dailyTarget: dailyTarget,
                                     defaultDailyValue: defaultRecordValue,
