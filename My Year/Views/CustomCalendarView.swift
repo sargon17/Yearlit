@@ -488,22 +488,19 @@ struct CustomCalendarView: View {
             Purchases.shared.getCustomerInfo { info, _ in
                 self.customerInfo = info
             }
-            if lastObservedDataVersion != store.dataVersion {
-                lastObservedDataVersion = store.dataVersion
+            if lastObservedDataVersion != store.snapshot.dataVersion {
+                lastObservedDataVersion = store.snapshot.dataVersion
                 statsRefreshToken = UUID()
             }
         }
-        .onChange(of: store.dataVersion) { _, _ in
-            lastObservedDataVersion = store.dataVersion
+        .onChange(of: store.snapshot.dataVersion) { _, newValue in
+            lastObservedDataVersion = newValue
             statsRefreshToken = UUID()
             if isEntryEditSheetPresented {
                 scheduleMilestoneCheck()
             } else {
                 evaluateMilestonesIfNeeded(calendarId: calendar.id)
             }
-        }
-        .onReceive(store.$calendars) { _ in
-            statsRefreshToken = UUID()
         }
         .task(id: statsTaskId) {
             let token = statsRefreshToken

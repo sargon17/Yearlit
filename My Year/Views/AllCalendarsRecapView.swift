@@ -34,8 +34,9 @@ struct AllCalendarsRecapView: View {
     }
 
     var body: some View {
+        let snapshot = store.snapshot
         let selectedYear = valuationStore.selectedYear
-        let dataVersion = store.dataVersion
+        let dataVersion = snapshot.dataVersion
         let daySeed = Calendar.current.startOfDay(for: Date())
         let yearDates = getYearDatesArray(for: selectedYear)
         let statsSignature = makeCacheKey(year: selectedYear, daySeed: daySeed, dataVersion: dataVersion)
@@ -145,32 +146,26 @@ struct AllCalendarsRecapView: View {
             Purchases.shared.getCustomerInfo { info, _ in
                 self.customerInfo = info
             }
-            if lastObservedDataVersion != store.dataVersion {
-                lastObservedDataVersion = store.dataVersion
+            if lastObservedDataVersion != snapshot.dataVersion {
+                lastObservedDataVersion = snapshot.dataVersion
                 statsRefreshToken = UUID()
             }
         }
         .onChange(of: statsSignature) { _, _ in
             didUseDiskStatsCache = false
         }
-        .onChange(of: store.dataVersion) { _, _ in
-            lastObservedDataVersion = store.dataVersion
+        .onChange(of: snapshot.dataVersion) { _, newValue in
+            lastObservedDataVersion = newValue
             didUseDiskStatsCache = false
             cachedStatsBundle = nil
             statsRefreshToken = UUID()
         }
-        .onChange(of: store.isLoading) { _, isLoading in
+        .onChange(of: snapshot.isLoading) { _, isLoading in
             if !isLoading {
                 didUseDiskStatsCache = false
                 cachedStatsBundle = nil
                 statsRefreshToken = UUID()
             }
-        }
-        .onReceive(store.$calendars) { _ in
-            CacheStore.shared.removeDisk(statsSignature)
-            didUseDiskStatsCache = false
-            cachedStatsBundle = nil
-            statsRefreshToken = UUID()
         }
         .task(id: statsTaskId) {
             let token = statsRefreshToken
@@ -179,9 +174,10 @@ struct AllCalendarsRecapView: View {
                 didUseDiskStatsCache = true
                 return
             }
-            if store.isLoading { return }
-            let calendarsSnapshot = await MainActor.run { store.calendars }
-            let currentVersion = await MainActor.run { store.dataVersion }
+            let currentSnapshot = await MainActor.run { store.snapshot }
+            if currentSnapshot.isLoading { return }
+            let calendarsSnapshot = currentSnapshot.calendars
+            let currentVersion = currentSnapshot.dataVersion
             guard currentVersion == dataVersion else { return }
             let bundle = await Task(priority: .userInitiated) {
                 computeOverallStatsBundle(

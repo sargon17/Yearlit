@@ -132,7 +132,7 @@ struct CalendarsSection: View {
             .onOpenURL { url in
                 handleCalendarDeepLink(url)
             }
-            .onReceive(store.$calendars) { _ in
+            .onReceive(store.$snapshot) { _ in
                 if let pendingCalendarId {
                     scrollToCalendarIfAvailable(pendingCalendarId)
                 }

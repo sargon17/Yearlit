@@ -67,19 +67,19 @@ struct OverallGridView: View {
                 didUseDiskGridCache = false
             }
             .task(id: sig) {
+                let snapshot = await MainActor.run { store.snapshot }
                 if didUseDiskGridCache { return }
                 if let zByDay: [Double] = CacheStore.shared.loadDisk(diskKey), zByDay.count == dates.count {
                     didUseDiskGridCache = true
                     mappedDays = mappedDays(from: zByDay)
                     return
                 }
-                if store.isLoading { return }
-                guard store.dataVersion == dataVersion else { return }
+                if snapshot.isLoading { return }
+                guard snapshot.dataVersion == dataVersion else { return }
                 if let cached: [(date: Date, color: Color)] = CacheStore.shared.get(cacheKey) {
                     await MainActor.run { mappedDays = cached }
                 } else {
-                    // Snapshot minimal values we’ll need across threads
-                    let calendars = store.calendars
+                    let calendars = snapshot.calendars
                     let datesArray = Array(dates)
                     let todayLocal = today
                     let accent = accentColor
