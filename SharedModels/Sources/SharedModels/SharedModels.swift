@@ -895,6 +895,73 @@ public final class CustomCalendarStore: ObservableObject {
         }
     }
 
+    public func quickLogEntry(calendarId: UUID, date: Date = Date()) {
+        do {
+            let context = makeContext()
+            guard let calendarEntity = fetchCalendarEntity(id: calendarId, in: context) else { return }
+
+            let cadence = CalendarCadence(rawValue: calendarEntity.cadenceRawValue) ?? .daily
+            let trackingType = TrackingType(rawValue: calendarEntity.trackingTypeRawValue) ?? .binary
+            let defaultRecordValue = max(1, calendarEntity.defaultRecordValue ?? 1)
+            let dailyTarget = max(1, calendarEntity.dailyTarget)
+            let canonicalDate = canonicalEntryDate(for: date, cadence: cadence)
+            let dayKey = formatDate(date: canonicalDate, cadence: cadence)
+            let compositeKey = CalendarEntryEntity.makeCompositeKey(calendarId: calendarId, dayKey: dayKey)
+            let existingEntry = fetchEntry(compositeKey: compositeKey, in: context)
+
+            switch trackingType {
+            case .binary:
+                if let existingEntry {
+                    context.delete(existingEntry)
+                } else {
+                    let entryEntity = CalendarEntryEntity(
+                        compositeKey: compositeKey,
+                        calendarId: calendarId,
+                        dayKey: dayKey,
+                        date: canonicalDate,
+                        count: 1,
+                        completed: true
+                    )
+                    context.insert(entryEntity)
+                }
+            case .counter:
+                let newCount = (existingEntry?.count ?? 0) + defaultRecordValue
+                let normalizedEntry = CalendarEntry(
+                    date: canonicalDate,
+                    count: newCount,
+                    completed: newCount > 0
+                )
+                upsertEntry(
+                    normalizedEntry,
+                    calendarId: calendarId,
+                    dayKey: dayKey,
+                    compositeKey: compositeKey,
+                    existingEntry: existingEntry,
+                    context: context
+                )
+            case .multipleDaily:
+                let newCount = (existingEntry?.count ?? 0) + defaultRecordValue
+                let normalizedEntry = CalendarEntry(
+                    date: canonicalDate,
+                    count: newCount,
+                    completed: newCount >= dailyTarget
+                )
+                upsertEntry(
+                    normalizedEntry,
+                    calendarId: calendarId,
+                    dayKey: dayKey,
+                    compositeKey: compositeKey,
+                    existingEntry: existingEntry,
+                    context: context
+                )
+            }
+
+            try finishHabitMutationReloadingCalendars(in: context)
+        } catch {
+            NSLog("Failed to quick log entry: \(error)")
+        }
+    }
+
     public func getEntry(calendarId: UUID, date: Date) -> CalendarEntry? {
         let context = makeContext()
         let cadence = resolveCadence(calendarId: calendarId, in: context)
@@ -984,6 +1051,29 @@ public final class CustomCalendarStore: ObservableObject {
     private func persistChanges(in context: ModelContext) throws {
         if context.hasChanges {
             try context.save()
+        }
+    }
+
+    private func upsertEntry(
+        _ entry: CalendarEntry,
+        calendarId: UUID,
+        dayKey: String,
+        compositeKey: String,
+        existingEntry: CalendarEntryEntity?,
+        context: ModelContext
+    ) {
+        if let existingEntry {
+            existingEntry.apply(from: entry, calendarId: calendarId, overrideDayKey: dayKey)
+        } else {
+            let entryEntity = CalendarEntryEntity(
+                compositeKey: compositeKey,
+                calendarId: calendarId,
+                dayKey: dayKey,
+                date: entry.date,
+                count: entry.count,
+                completed: entry.completed
+            )
+            context.insert(entryEntity)
         }
     }
 

@@ -5,23 +5,22 @@ import WidgetKit
 
 struct SimpleEntry: TimelineEntry {
     let date: Date
-    let valuations: [String: DayValuation]
 }
 
 struct Provider: TimelineProvider {
     typealias Entry = SimpleEntry
 
     func placeholder(in _: Context) -> SimpleEntry {
-        return SimpleEntry(date: Date(), valuations: [:])
+        return SimpleEntry(date: Date())
     }
 
     func getSnapshot(in _: Context, completion: @escaping (SimpleEntry) -> Void) {
-        let entry = SimpleEntry(date: Date(), valuations: ValuationStore.fetchValuationsSnapshot())
+        let entry = SimpleEntry(date: Date())
         completion(entry)
     }
 
     func getTimeline(in _: Context, completion: @escaping (Timeline<Entry>) -> Void) {
-        let entry = SimpleEntry(date: Date(), valuations: ValuationStore.fetchValuationsSnapshot())
+        let entry = SimpleEntry(date: Date())
 
         // Update at midnight
         let calendar = Calendar.current
@@ -35,21 +34,20 @@ struct Provider: TimelineProvider {
 struct HorizontalYearGrid: View {
     let dotSize: CGFloat
     let family: WidgetFamily
-    let valuations: [String: DayValuation]
-    let store = ValuationStore.shared
+    let referenceDate: Date
     let backgroundColor: Color
     let textPrimaryColor: Color
     let inactiveRatio: Double
 
     init(
         family: WidgetFamily,
-        valuations: [String: DayValuation],
+        referenceDate: Date,
         backgroundColor: Color,
         textPrimaryColor: Color,
         inactiveRatio: Double
     ) {
         self.family = family
-        self.valuations = valuations
+        self.referenceDate = referenceDate
         self.backgroundColor = backgroundColor
         self.textPrimaryColor = textPrimaryColor
         self.inactiveRatio = inactiveRatio
@@ -64,18 +62,13 @@ struct HorizontalYearGrid: View {
     }
 
     private func colorForDay(_ day: Int) -> Color {
-        let dayDate = store.dateForDay(day)
+        let todayIndex = currentDayNumber - 1
 
-        let formatter = DateFormatter()
-        formatter.dateFormat = "yyyy-MM-dd"
-        let key = formatter.string(from: dayDate)
-        let todayKey = formatter.string(from: Date())
-
-        if day >= store.currentDayNumber {
+        if day > todayIndex {
             return inactiveDayColor(base: backgroundColor, overlay: textPrimaryColor, ratio: inactiveRatio)
         }
 
-        if key == todayKey {
+        if day == todayIndex {
             return Color("qs-orange")
         }
 
@@ -86,7 +79,7 @@ struct HorizontalYearGrid: View {
         VStack {
             HStack(spacing: 6) {
                 if family == .systemLarge || family == .systemMedium {
-                    Text(Calendar.current.component(.year, from: Date()).description)
+                    Text(LocalDayCalendar.calendar.component(.year, from: referenceDate).description)
                         .font(.system(size: 12, design: .monospaced))
                         .foregroundColor(Color("text-primary"))
                         .fontWeight(.heavy)
@@ -96,7 +89,7 @@ struct HorizontalYearGrid: View {
                         .foregroundColor(Color("text-tertiary"))
                 }
 
-                let percent = Double(store.currentDayNumber) / Double(store.numberOfDaysInYear)
+                let percent = Double(currentDayNumber) / Double(numberOfDaysInYear)
                 Text(String(format: "%.1f%%", percent * 100))
                     .font(.system(size: 9, design: .monospaced))
                     .foregroundColor(.textSecondary)
@@ -104,7 +97,7 @@ struct HorizontalYearGrid: View {
 
                 Spacer()
 
-                Text("\(store.numberOfDaysInYear - store.currentDayNumber)")
+                Text("\(numberOfDaysInYear - currentDayNumber)")
                     .font(.system(size: 9, design: .monospaced))
                     .foregroundColor(.qsOrange)
                     .fontWeight(.heavy)
@@ -122,7 +115,7 @@ struct HorizontalYearGrid: View {
 
             GeometryReader { geometry in
                 let padding: CGFloat = 0
-                let totalDays = store.numberOfDaysInYear
+                let totalDays = numberOfDaysInYear
                 let availableWidth = geometry.size.width - (padding * 2)
                 let availableHeight = geometry.size.height - (padding * 2)
                 let layout = WidgetStyle.gridLayout(
@@ -137,7 +130,7 @@ struct HorizontalYearGrid: View {
                         HStack(spacing: layout.horizontalSpacing) {
                             ForEach(0 ..< layout.columns, id: \.self) { col in
                                 let day = row * layout.columns + col
-                                if day < store.numberOfDaysInYear {
+                                if day < numberOfDaysInYear {
                                     let color = colorForDay(day)
                                     WidgetGridDot(color: color, dotSize: dotSize)
                                 } else {
@@ -151,6 +144,35 @@ struct HorizontalYearGrid: View {
             }
         }
         .padding().background(backgroundColor)
+    }
+
+    private var selectedYear: Int {
+        LocalDayCalendar.calendar.component(.year, from: referenceDate)
+    }
+
+    private var currentDayNumber: Int {
+        let calendar = LocalDayCalendar.calendar
+        let today = calendar.startOfDay(for: referenceDate)
+
+        guard let startOfYear = calendar.date(from: DateComponents(year: selectedYear, month: 1, day: 1)) else {
+            return 0
+        }
+
+        let dayOffset = calendar.dateComponents([.day], from: startOfYear, to: today).day ?? 0
+        return dayOffset + 1
+    }
+
+    private var numberOfDaysInYear: Int {
+        let calendar = LocalDayCalendar.calendar
+        let startOfYear = DateComponents(year: selectedYear, month: 1, day: 1)
+        let endOfYear = DateComponents(year: selectedYear, month: 12, day: 31)
+        guard let startDate = calendar.date(from: startOfYear),
+              let endDate = calendar.date(from: endOfYear)
+        else {
+            return 365
+        }
+
+        return (calendar.dateComponents([.day], from: startDate, to: endDate).day ?? 364) + 1
     }
 }
 
@@ -166,23 +188,13 @@ struct YearWidgetEntryView: View {
 
         HorizontalYearGrid(
             family: family,
-            valuations: entry.valuations,
+            referenceDate: entry.date,
             backgroundColor: backgroundColor,
             textPrimaryColor: primaryTextColor,
             inactiveRatio: inactiveRatio
         )
         .containerBackground(backgroundColor, for: .widget)
         .widgetAccentable(false)
-    }
-}
-
-struct DebugIntent: AppIntent {
-    static var title: LocalizedStringResource = "Clear All Valuations"
-
-    func perform() async throws -> some IntentResult {
-        let store = ValuationStore.shared
-        store.clearAllValuations()
-        return .result()
     }
 }
 

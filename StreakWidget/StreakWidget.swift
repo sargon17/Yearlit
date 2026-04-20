@@ -60,7 +60,7 @@ struct Provider: AppIntentTimelineProvider {
     private func resolvedCalendar(for configuration: ConfigurationAppIntent) -> CustomCalendar? {
         let calendars = CustomCalendarStore.fetchCalendarsSnapshot()
         if let selectedId = configuration.selectedCalendar?.id {
-            return calendars.first(where: { $0.id.uuidString == selectedId }) ?? calendars.first
+            return calendars.first(where: { $0.id.uuidString == selectedId })
         }
         return calendars.first
     }
@@ -83,9 +83,8 @@ struct StreakWidgetEntryView: View {
         let primaryTextColor = WidgetStyle.textPrimaryColor(for: colorScheme)
         let accentColor = Color(entry.calendar?.color ?? "qs-orange")
         let calendarName = entry.calendar?.name ?? String(localized: "Habit")
-        let streakData = entry.calendar.map { WidgetStreak.currentStreak(calendar: $0) }
-        let streakValue = streakData?.streak ?? entry.streak
-        let isAtRisk = streakData?.isAtRisk ?? entry.isAtRisk
+        let streakValue = entry.streak
+        let isAtRisk = entry.isAtRisk
         let destinationURL = entry.calendar.map { calendar in
             URL(string: "my-year://calendar/\(calendar.id.uuidString)")
         } ?? nil

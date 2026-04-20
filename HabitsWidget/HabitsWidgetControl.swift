@@ -50,9 +50,7 @@ extension HabitsWidgetControl {
                 return Value(isCompleted: false, calendarId: configuration.calendarId)
             }
 
-            let valStore = ValuationStore.shared
-            let today = valStore.dateForDay(valStore.currentDayNumber - 1)
-            let isCompleted = calendar.entry(for: today)?.completed ?? false
+            let isCompleted = calendar.entry(for: Date())?.completed ?? false
 
             return Value(isCompleted: isCompleted, calendarId: configuration.calendarId)
         }
