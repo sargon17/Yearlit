@@ -2,44 +2,44 @@ import RevenueCat
 import SwiftUI
 
 struct SettingsView: View {
-  @State private var customerInfo: CustomerInfo?
+    @State private var customerInfo: CustomerInfo?
 
-  var body: some View {
-    VStack(spacing: 0) {
-      Form {
-        SubscriptionStatusSection(customerInfo: customerInfo)
+    var body: some View {
+        VStack(spacing: 0) {
+            Form {
+                SubscriptionStatusSection(customerInfo: customerInfo)
 
-        About()
+                About()
 
-        PoliciesSection()
+                PoliciesSection()
 
-        Features()
+                Features()
 
-        Contacts()
+                Contacts()
 
-        DevSupportSection(customerInfo: customerInfo)
+                DevSupportSection(customerInfo: customerInfo)
 
-        DevCredits()
-          .padding(.top, 8)
-          .frame(maxWidth: .infinity, alignment: .center)
-          .listRowBackground(Color.clear)
-          .listRowInsets(EdgeInsets())
-      }
-      .scrollContentBackground(.hidden)
-      .font(.system(size: 12, design: .monospaced))
-      .foregroundColor(Color("text-secondary"))
+                DevCredits()
+                    .padding(.top, 8)
+                    .frame(maxWidth: .infinity, alignment: .center)
+                    .listRowBackground(Color.clear)
+                    .listRowInsets(EdgeInsets())
+            }
+            .scrollContentBackground(.hidden)
+            .font(.system(size: 12, design: .monospaced))
+            .foregroundColor(Color("text-secondary"))
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+        .surfaceBackground(Color("surface-muted"), ignoresSafeArea: true)
+        .navigationTitle("Settings")
+        .onAppear {
+            Purchases.shared.getCustomerInfo { info, _ in
+                customerInfo = info
+            }
+        }
     }
-    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
-    .surfaceBackground(Color("surface-muted"), ignoresSafeArea: true)
-    .navigationTitle("Settings")
-    .onAppear {
-      Purchases.shared.getCustomerInfo { info, _ in
-        customerInfo = info
-      }
-    }
-  }
 }
 
 #Preview {
-  SettingsView()
+    SettingsView()
 }

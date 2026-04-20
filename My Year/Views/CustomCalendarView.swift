@@ -214,7 +214,7 @@ struct CustomCalendarView: View {
                 milestone: showedUpMilestone,
                 currentStreak: currentStreak,
                 kind: .showedUp,
-                    dates: gridDates
+                dates: gridDates
             )
         }
     }

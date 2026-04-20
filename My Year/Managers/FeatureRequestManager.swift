@@ -224,7 +224,8 @@ final class FeatureRequestManager: ObservableObject {
     }
 
     let clientId = user.id.uuidString
-    let endpoint = "\(apiBaseURL)/project/\(projectID)/request/\(requestId)/comment/\(comment.id)?clientId=\(clientId)"
+    let endpoint =
+      "\(apiBaseURL)/project/\(projectID)/request/\(requestId)/comment/\(comment.id)?clientId=\(clientId)"
 
     do {
       try await HTTP.delete(endpoint: endpoint, headers: authHeaders)
@@ -297,6 +298,34 @@ final class FeatureRequestManager: ObservableObject {
     )
     storedRequests.requests[index] = updatedRequest
     requests = storedRequests
+  }
+
+}
+
+extension FeatureRequestManager {
+  func deleteRequest(id requestId: String) async {
+    guard let currentRequests = requests,
+          currentRequests.requests.contains(where: { $0.id == requestId }) else {
+      return
+    }
+    guard let apiBaseURL, let projectID else {
+      logError("Missing configuration for request deletion")
+      return
+    }
+
+    let clientId = user.id.uuidString
+    let endpoint =
+      "\(apiBaseURL)/project/\(projectID)/request/\(requestId)?clientId=\(clientId)"
+
+    do {
+      try await HTTP.delete(endpoint: endpoint, headers: authHeaders)
+      var updated = currentRequests
+      updated.requests.removeAll { $0.id == requestId }
+      requests = updated
+      viewerUpvotes.remove(requestId)
+    } catch {
+      logError("Failed to delete request", error: error)
+    }
   }
 
   func createRequest(

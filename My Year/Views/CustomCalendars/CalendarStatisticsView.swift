@@ -216,10 +216,10 @@ struct CalendarStatisticsView: View {
 
             if cadence == .daily {
                 VStack {
-                // Section: Patterns
+                    // Section: Patterns
                     sectionHeader("Patterns", premium: !isPremium)
-                    .padding(.horizontal)
-                    .padding(.top)
+                        .padding(.horizontal)
+                        .padding(.top)
                     VStack(spacing: 8) {
                         labeledValueRow(
                             title: "Best Weekday",

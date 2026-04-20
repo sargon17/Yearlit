@@ -22,8 +22,8 @@ extension HTTP {
         let (_, res) = try await URLSession.shared.data(for: request)
 
         guard let response = res as? HTTPURLResponse,
-              (200 ... 299).contains(response.statusCode) else
-        {
+              (200 ... 299).contains(response.statusCode)
+        else {
             throw POSTError.error2
         }
     }

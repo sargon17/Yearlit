@@ -23,8 +23,8 @@ extension HTTP {
         }
 
         guard let response = res as? HTTPURLResponse,
-              (200 ... 299).contains(response.statusCode) else
-        {
+              (200 ... 299).contains(response.statusCode)
+        else {
             throw GetError.error2
         }
 

@@ -82,7 +82,7 @@ struct OverallStatsComputationTests {
                     day: 5,
                     count: 1,
                     completed: true
-                )
+                ),
             ]
         )
 
