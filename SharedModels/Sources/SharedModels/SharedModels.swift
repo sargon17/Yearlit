@@ -587,7 +587,7 @@ public struct DayValuation: Codable, Identifiable, Equatable {
 
     public init(date: Date = Date(), mood: DayMood, note: String? = nil) {
         let canonicalDate = LocalDayCalendar.startOfDay(for: date)
-            id = DayKeyFormatter.shared.string(from: canonicalDate)
+        id = DayKeyFormatter.shared.string(from: canonicalDate)
         self.mood = mood
         timestamp = canonicalDate
         self.note = note
@@ -667,8 +667,8 @@ public final class CustomCalendarStore: ObservableObject {
             }
         )
         self.container = container
-        self.fetchCalendarsLoader = dependencies.fetchCalendars
-        self.migrationRunner = dependencies.runMigration
+        fetchCalendarsLoader = dependencies.fetchCalendars
+        migrationRunner = dependencies.runMigration
         let initialVersion = Self.loadDataVersion()
         latestPersistedDataVersion = initialVersion
         snapshot = CustomCalendarStoreSnapshot(dataVersion: initialVersion)
@@ -676,11 +676,19 @@ public final class CustomCalendarStore: ObservableObject {
     }
 
     @available(*, deprecated, message: "Use snapshot.calendars instead")
-    public var calendars: [CustomCalendar] { snapshot.calendars }
+    public var calendars: [CustomCalendar] {
+        snapshot.calendars
+    }
+
     @available(*, deprecated, message: "Use snapshot.isLoading instead")
-    public var isLoading: Bool { snapshot.isLoading }
+    public var isLoading: Bool {
+        snapshot.isLoading
+    }
+
     @available(*, deprecated, message: "Use snapshot.dataVersion instead")
-    public var dataVersion: Int { snapshot.dataVersion }
+    public var dataVersion: Int {
+        snapshot.dataVersion
+    }
 
     public func loadCalendars(showLoadingIndicator: Bool = true) {
         loadCalendars(showLoadingIndicator: showLoadingIndicator, targetVersion: currentPersistedDataVersion())
@@ -997,7 +1005,7 @@ public final class CustomCalendarStore: ObservableObject {
         Self.makeContext(container: container)
     }
 
-    nonisolated private static func makeContext(container: ModelContainer) -> ModelContext {
+    private nonisolated static func makeContext(container: ModelContainer) -> ModelContext {
         let context = ModelContext(container)
         context.autosaveEnabled = false
         return context
@@ -1050,13 +1058,13 @@ public final class CustomCalendarStore: ObservableObject {
         )
     }
 
-    nonisolated public static func fetchCalendarsSnapshot(
+    public nonisolated static func fetchCalendarsSnapshot(
         container: ModelContainer = SwiftDataManager.container
     ) -> [CustomCalendar] {
         (try? fetchCalendars(container: container)) ?? []
     }
 
-    nonisolated public static func normalizedCalendarOrder(_ calendars: [CustomCalendar]) -> [CustomCalendar] {
+    public nonisolated static func normalizedCalendarOrder(_ calendars: [CustomCalendar]) -> [CustomCalendar] {
         let activeCalendars = calendars
             .filter { !$0.isArchived }
             .sorted(by: calendarOrderSort)
@@ -1071,7 +1079,7 @@ public final class CustomCalendarStore: ObservableObject {
         }
     }
 
-    nonisolated public static func reorderedActiveCalendars(
+    public nonisolated static func reorderedActiveCalendars(
         _ calendars: [CustomCalendar],
         fromOffsets indices: IndexSet,
         toOffset destination: Int
@@ -1095,11 +1103,11 @@ public final class CustomCalendarStore: ObservableObject {
         return assigningContiguousOrder(to: reorderedActiveCalendars + archivedCalendars)
     }
 
-    nonisolated private static func sortCalendars(_ calendars: [CustomCalendar]) -> [CustomCalendar] {
+    private nonisolated static func sortCalendars(_ calendars: [CustomCalendar]) -> [CustomCalendar] {
         normalizedCalendarOrder(calendars)
     }
 
-    nonisolated private static func assigningContiguousOrder(to calendars: [CustomCalendar]) -> [CustomCalendar] {
+    private nonisolated static func assigningContiguousOrder(to calendars: [CustomCalendar]) -> [CustomCalendar] {
         calendars.enumerated().map { index, calendar in
             var orderedCalendar = calendar
             orderedCalendar.order = index
@@ -1107,7 +1115,7 @@ public final class CustomCalendarStore: ObservableObject {
         }
     }
 
-    nonisolated private static func calendarOrderSort(_ lhs: CustomCalendar, _ rhs: CustomCalendar) -> Bool {
+    private nonisolated static func calendarOrderSort(_ lhs: CustomCalendar, _ rhs: CustomCalendar) -> Bool {
         if lhs.order == rhs.order {
             return lhs.id.uuidString < rhs.id.uuidString
         }
@@ -1141,7 +1149,7 @@ public final class CustomCalendarStore: ObservableObject {
         return latestReloadToken
     }
 
-    nonisolated private static func fetchCalendars(container: ModelContainer) throws -> [CustomCalendar] {
+    private nonisolated static func fetchCalendars(container: ModelContainer) throws -> [CustomCalendar] {
         let context = makeContext(container: container)
         let calendarsDescriptor = FetchDescriptor<HabitCalendarEntity>(
             sortBy: [SortDescriptor(\HabitCalendarEntity.order)]

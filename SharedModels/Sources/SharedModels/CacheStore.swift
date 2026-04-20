@@ -53,10 +53,10 @@ public final class CacheStore {
         lock.lock()
         defer { lock.unlock() }
 
-            let keysToRemove = memory.keys.filter { $0.scope == scope && predicate($0.identifier) }
-            for key in keysToRemove {
-                memory.removeValue(forKey: key)
-            }
+        let keysToRemove = memory.keys.filter { $0.scope == scope && predicate($0.identifier) }
+        for key in keysToRemove {
+            memory.removeValue(forKey: key)
+        }
     }
 
     public func clearMemory() {

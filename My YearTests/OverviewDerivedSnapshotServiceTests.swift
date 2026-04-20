@@ -125,7 +125,7 @@ struct OverviewDerivedSnapshotServiceTests {
                     date: makeDate(year: 2026, month: 1, day: 3),
                     count: 3,
                     completed: true
-                )
+                ),
             ]
         )
     }

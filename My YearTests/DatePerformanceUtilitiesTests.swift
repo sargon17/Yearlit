@@ -3,8 +3,8 @@ import Foundation
 import Testing
 
 struct DatePerformanceUtilitiesTests {
-    @Test func dayKeyIsStableUnderConcurrentAccess() async {
-        let date = Calendar(identifier: .gregorian).date(from: DateComponents(year: 2026, month: 4, day: 19))!
+    @Test func dayKeyIsStableUnderConcurrentAccess() async throws {
+        let date = try #require(Calendar(identifier: .gregorian).date(from: DateComponents(year: 2026, month: 4, day: 19)))
         let expected = dayKey(for: date)
 
         let results = await withTaskGroup(of: String.self, returning: [String].self) { group in

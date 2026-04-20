@@ -79,12 +79,12 @@ struct NotificationSettingsDraftSheet: View {
                     Button("Done") {
                         additionalReminderTimes =
                             (cadence == .daily && trackingType == .multipleDaily && isPremiumUser)
-                            ? NotificationSettingsHelpers.sanitizedAdditionalReminderTimes(
-                                additionalReminderTimes,
-                                cadence: cadence,
-                                trackingType: trackingType
-                            )
-                            : []
+                                ? NotificationSettingsHelpers.sanitizedAdditionalReminderTimes(
+                                    additionalReminderTimes,
+                                    cadence: cadence,
+                                    trackingType: trackingType
+                                )
+                                : []
                         dismiss()
                     }
                 }
