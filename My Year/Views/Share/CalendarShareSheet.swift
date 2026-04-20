@@ -36,7 +36,7 @@ enum CalendarShareTemplate: String, CaseIterable, Identifiable {
         case .streakFocus:
             return "Streaks + grid strip"
         case .performance:
-            return "Trends and best day"
+            return "Trends and progress"
         }
     }
 
@@ -169,16 +169,16 @@ struct CalendarShareSheet: View {
         statsBundle?.basic ?? computeFallbackStats(for: calendar)
     }
 
-    private var resolvedCompletionRate: Double {
-        statsBundle?.completionRate30d ?? 0
+    private var resolvedCompletionRateTrailingLongWindow: Double {
+        statsBundle?.completionRateTrailingLongWindow ?? 0
     }
 
-    private var resolvedRolling7d: Double {
-        statsBundle?.rolling7d ?? 0
+    private var resolvedAverageProgressTrailingShortWindow: Double {
+        statsBundle?.averageProgressTrailingShortWindow ?? 0
     }
 
-    private var resolvedRolling30d: Double {
-        statsBundle?.rolling30d ?? 0
+    private var resolvedAverageProgressTrailingLongWindow: Double {
+        statsBundle?.averageProgressTrailingLongWindow ?? 0
     }
 
     private var resolvedBestWeekday: Int? {
@@ -187,7 +187,8 @@ struct CalendarShareSheet: View {
 
     private var shareMessage: String {
         let calendarName = calendar.name.capitalized
-        return "Here's my \(calendarName) progress!\n\ntracked using yearlit by @tymofyeyev "
+        let period = calendar.cadence == .weekly ? "weekly" : "daily"
+        return "Here's my \(period) \(calendarName) progress!\n\ntracked using yearlit by @tymofyeyev "
     }
 
     private var effectiveTemplate: CalendarShareTemplate {
@@ -200,11 +201,11 @@ struct CalendarShareSheet: View {
             year: year,
             dates: dates,
             stats: resolvedStats,
-            completionRate30d: resolvedCompletionRate,
-            rolling7d: resolvedRolling7d,
-            rolling30d: resolvedRolling30d,
+            completionRateTrailingLongWindow: resolvedCompletionRateTrailingLongWindow,
+            averageProgressTrailingShortWindow: resolvedAverageProgressTrailingShortWindow,
+            averageProgressTrailingLongWindow: resolvedAverageProgressTrailingLongWindow,
             bestWeekday: resolvedBestWeekday,
-            todaysCount: resolvedTodaysCount,
+            currentPeriodCount: resolvedCurrentPeriodCount,
             trackingType: calendar.trackingType
         )
     }
@@ -279,8 +280,8 @@ struct CalendarShareSheet: View {
                         year: year,
                         dates: dates,
                         stats: resolvedStats,
-                        completionRate30d: resolvedCompletionRate,
-                        todaysCount: resolvedTodaysCount,
+                        completionRateTrailingLongWindow: resolvedCompletionRateTrailingLongWindow,
+                        currentPeriodCount: resolvedCurrentPeriodCount,
                         trackingType: calendar.trackingType
                     )
                 )
@@ -334,15 +335,9 @@ struct CalendarShareSheet: View {
         let totalCount = calendar.entries.values.reduce(0) { $0 + $1.count }
         let maxCount = calendar.entries.values.map { $0.count }.max() ?? 0
 
-        var localCalendar = Calendar(identifier: .gregorian)
-        localCalendar.locale = Locale(identifier: "en_US_POSIX")
-        localCalendar.timeZone = .autoupdatingCurrent
-        let allTimeSuccessByDay = buildAllTimeSuccessMap(
-            cal: localCalendar,
-            todayLocal: Date(),
-            calendars: [calendar]
-        )
-        let (longestStreak, currentStreak) = computeStreaks(cal: localCalendar, allTimeSuccessByDay)
+        let localCalendar = LocalDayCalendar.calendar
+        let longestStreak = WidgetStreak.longestStreak(calendar: calendar, calendarSystem: localCalendar)
+        let currentStreak = WidgetStreak.currentStreak(calendar: calendar, today: Date(), calendarSystem: localCalendar).streak
 
         return CalendarStats(
             activeDays: activeDays,
@@ -353,10 +348,10 @@ struct CalendarShareSheet: View {
         )
     }
 
-    private var resolvedTodaysCount: Int {
+    private var resolvedCurrentPeriodCount: Int {
         let currentYear = Calendar.current.component(.year, from: Date())
         guard year == currentYear else { return 0 }
         let today = Calendar.current.startOfDay(for: Date())
-        return calendar.entries[dayKey(for: today)]?.count ?? 0
+        return entry(for: calendar, date: today)?.count ?? 0
     }
 }

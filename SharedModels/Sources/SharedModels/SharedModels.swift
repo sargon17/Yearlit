@@ -189,11 +189,56 @@ public enum NotificationPrivacyMode: String, Codable, CaseIterable {
     }
 }
 
+public enum CalendarCadence: String, Codable, CaseIterable {
+    case daily
+    case weekly
+
+    public var title: String {
+        switch self {
+        case .daily:
+            return String(localized: "Daily")
+        case .weekly:
+            return String(localized: "Weekly")
+        }
+    }
+
+    public var targetTitle: String {
+        switch self {
+        case .daily:
+            return String(localized: "Daily Target")
+        case .weekly:
+            return String(localized: "Weekly Target")
+        }
+    }
+
+    public var periodTitle: String {
+        switch self {
+        case .daily:
+            return String(localized: "day")
+        case .weekly:
+            return String(localized: "week")
+        }
+    }
+
+    public var detailDescription: String {
+        switch self {
+        case .daily:
+            return String(localized: "Track progress one day at a time.")
+        case .weekly:
+            return String(localized: "Track progress across each week, with one dot per week in the year view.")
+        }
+    }
+}
+
 public struct CustomCalendar: Codable, Identifiable {
     public let id: UUID
     public var name: String
     public var color: String // Store as hex or named color
+    public var cadence: CalendarCadence
     public var trackingType: TrackingType
+    // Legacy persisted name kept to avoid risky data migration.
+    // Semantically this is the target for the calendar cadence period
+    // (daily for daily calendars, weekly for weekly calendars).
     public var dailyTarget: Int
     public var unit: UnitOfMeasure?
     public var currencySymbol: String?
@@ -203,6 +248,7 @@ public struct CustomCalendar: Codable, Identifiable {
     public var recurringReminderEnabled: Bool
     public var reminderHour: Int?
     public var reminderMinute: Int?
+    public var reminderWeekday: Int?
     public var reminderTimeZone: String? // Store TimeZone.identifier for proper timezone handling
     public var notificationPrivacyMode: NotificationPrivacyMode = .full // Privacy mode for notifications
     public var suppressWhenCompleted: Bool = true // Don't send notification if entry already completed
@@ -212,10 +258,12 @@ public struct CustomCalendar: Codable, Identifiable {
     public var entries: [String: CalendarEntry] // Date string -> Entry
 
     public init(
-        id: UUID = UUID(), name: String, color: String, trackingType: TrackingType,
+        id: UUID = UUID(), name: String, color: String, cadence: CalendarCadence = .daily,
+        trackingType: TrackingType,
         dailyTarget: Int = 1, entries: [String: CalendarEntry] = [:],
         isArchived: Bool = false,
         recurringReminderEnabled: Bool = false, reminderTime: Date? = nil, order: Int = 0,
+        reminderWeekday: Int? = nil,
         unit: UnitOfMeasure? = nil,
         defaultRecordValue: Int? = nil,
         currencySymbol: String? = nil,
@@ -229,6 +277,7 @@ public struct CustomCalendar: Codable, Identifiable {
         self.id = id
         self.name = name
         self.color = color
+        self.cadence = cadence
         self.trackingType = trackingType
         self.dailyTarget = dailyTarget
         self.unit = unit
@@ -237,6 +286,7 @@ public struct CustomCalendar: Codable, Identifiable {
         self.isArchived = isArchived
         self.recurringReminderEnabled = recurringReminderEnabled
         self.order = order
+        self.reminderWeekday = reminderWeekday
         self.reminderTimeZone = reminderTimeZone ?? TimeZone.current.identifier
         self.notificationPrivacyMode = notificationPrivacyMode
         self.suppressWhenCompleted = suppressWhenCompleted
@@ -256,10 +306,12 @@ public struct CustomCalendar: Codable, Identifiable {
 
     /// New initializer using hour and minute directly
     public init(
-        id: UUID = UUID(), name: String, color: String, trackingType: TrackingType,
+        id: UUID = UUID(), name: String, color: String, cadence: CalendarCadence = .daily,
+        trackingType: TrackingType,
         dailyTarget: Int = 1, entries: [String: CalendarEntry] = [:],
         isArchived: Bool = false,
         recurringReminderEnabled: Bool = false, reminderHour: Int? = nil, reminderMinute: Int? = nil,
+        reminderWeekday: Int? = nil,
         order: Int = 0,
         unit: UnitOfMeasure? = nil,
         defaultRecordValue: Int? = nil,
@@ -283,6 +335,7 @@ public struct CustomCalendar: Codable, Identifiable {
         self.id = id
         self.name = name
         self.color = color
+        self.cadence = cadence
         self.trackingType = trackingType
         self.dailyTarget = dailyTarget
         self.unit = unit
@@ -293,6 +346,7 @@ public struct CustomCalendar: Codable, Identifiable {
         self.order = order
         self.reminderHour = reminderHour
         self.reminderMinute = reminderMinute
+        self.reminderWeekday = reminderWeekday
         self.reminderTimeZone = reminderTimeZone ?? TimeZone.current.identifier
         self.notificationPrivacyMode = notificationPrivacyMode
         self.suppressWhenCompleted = suppressWhenCompleted
@@ -300,6 +354,100 @@ public struct CustomCalendar: Codable, Identifiable {
         self.streakProtectionEnabled = streakProtectionEnabled
         self.streakProtectionThreshold = streakProtectionThreshold
         self.entries = entries
+    }
+
+    public func bucketDate(for date: Date) -> Date {
+        switch cadence {
+        case .daily:
+            return LocalDayCalendar.startOfDay(for: date)
+        case .weekly:
+            return LocalDayCalendar.startOfWeek(for: date)
+        }
+    }
+
+    public func entryKey(for date: Date) -> String {
+        DayKeyFormatter.shared.string(from: bucketDate(for: date))
+    }
+
+    public func entry(for date: Date) -> CalendarEntry? {
+        entries[entryKey(for: date)]
+    }
+
+    private enum CodingKeys: String, CodingKey {
+        case id
+        case name
+        case color
+        case cadence
+        case trackingType
+        case dailyTarget
+        case unit
+        case currencySymbol
+        case defaultRecordValue
+        case order
+        case isArchived
+        case recurringReminderEnabled
+        case reminderHour
+        case reminderMinute
+        case reminderWeekday
+        case reminderTimeZone
+        case notificationPrivacyMode
+        case suppressWhenCompleted
+        case additionalReminderTimes
+        case streakProtectionEnabled
+        case streakProtectionThreshold
+        case entries
+    }
+
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        id = try container.decode(UUID.self, forKey: .id)
+        name = try container.decode(String.self, forKey: .name)
+        color = try container.decode(String.self, forKey: .color)
+        cadence = try container.decodeIfPresent(CalendarCadence.self, forKey: .cadence) ?? .daily
+        trackingType = try container.decode(TrackingType.self, forKey: .trackingType)
+        dailyTarget = try container.decode(Int.self, forKey: .dailyTarget)
+        unit = try container.decodeIfPresent(UnitOfMeasure.self, forKey: .unit)
+        currencySymbol = try container.decodeIfPresent(String.self, forKey: .currencySymbol)
+        defaultRecordValue = try container.decodeIfPresent(Int.self, forKey: .defaultRecordValue)
+        order = try container.decodeIfPresent(Int.self, forKey: .order) ?? 0
+        isArchived = try container.decodeIfPresent(Bool.self, forKey: .isArchived) ?? false
+        recurringReminderEnabled = try container.decodeIfPresent(Bool.self, forKey: .recurringReminderEnabled) ?? false
+        reminderHour = try container.decodeIfPresent(Int.self, forKey: .reminderHour)
+        reminderMinute = try container.decodeIfPresent(Int.self, forKey: .reminderMinute)
+        reminderWeekday = try container.decodeIfPresent(Int.self, forKey: .reminderWeekday)
+        reminderTimeZone = try container.decodeIfPresent(String.self, forKey: .reminderTimeZone) ?? TimeZone.current.identifier
+        notificationPrivacyMode = try container.decodeIfPresent(NotificationPrivacyMode.self, forKey: .notificationPrivacyMode) ?? .full
+        suppressWhenCompleted = try container.decodeIfPresent(Bool.self, forKey: .suppressWhenCompleted) ?? true
+        additionalReminderTimes = try container.decodeIfPresent([ReminderTime].self, forKey: .additionalReminderTimes) ?? []
+        streakProtectionEnabled = try container.decodeIfPresent(Bool.self, forKey: .streakProtectionEnabled) ?? true
+        streakProtectionThreshold = try container.decodeIfPresent(Int.self, forKey: .streakProtectionThreshold) ?? 5
+        entries = try container.decodeIfPresent([String: CalendarEntry].self, forKey: .entries) ?? [:]
+    }
+
+    public func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(id, forKey: .id)
+        try container.encode(name, forKey: .name)
+        try container.encode(color, forKey: .color)
+        try container.encode(cadence, forKey: .cadence)
+        try container.encode(trackingType, forKey: .trackingType)
+        try container.encode(dailyTarget, forKey: .dailyTarget)
+        try container.encodeIfPresent(unit, forKey: .unit)
+        try container.encodeIfPresent(currencySymbol, forKey: .currencySymbol)
+        try container.encodeIfPresent(defaultRecordValue, forKey: .defaultRecordValue)
+        try container.encode(order, forKey: .order)
+        try container.encode(isArchived, forKey: .isArchived)
+        try container.encode(recurringReminderEnabled, forKey: .recurringReminderEnabled)
+        try container.encodeIfPresent(reminderHour, forKey: .reminderHour)
+        try container.encodeIfPresent(reminderMinute, forKey: .reminderMinute)
+        try container.encodeIfPresent(reminderWeekday, forKey: .reminderWeekday)
+        try container.encodeIfPresent(reminderTimeZone, forKey: .reminderTimeZone)
+        try container.encode(notificationPrivacyMode, forKey: .notificationPrivacyMode)
+        try container.encode(suppressWhenCompleted, forKey: .suppressWhenCompleted)
+        try container.encode(additionalReminderTimes, forKey: .additionalReminderTimes)
+        try container.encode(streakProtectionEnabled, forKey: .streakProtectionEnabled)
+        try container.encode(streakProtectionThreshold, forKey: .streakProtectionThreshold)
+        try container.encode(entries, forKey: .entries)
     }
 }
 
@@ -453,67 +601,131 @@ public struct DayValuation: Codable, Identifiable, Equatable {
 // MARK: - Custom Calendar Store
 
 @available(iOS 17.0, macOS 14.0, *)
+public struct CustomCalendarStoreSnapshot {
+    public let calendars: [CustomCalendar]
+    public let isLoading: Bool
+    public let dataVersion: Int
+
+    public init(calendars: [CustomCalendar] = [], isLoading: Bool = false, dataVersion: Int = 0) {
+        self.calendars = calendars
+        self.isLoading = isLoading
+        self.dataVersion = dataVersion
+    }
+
+    public var activeCalendars: [CustomCalendar] {
+        calendars.filter { !$0.isArchived }
+    }
+
+    public var archivedCalendars: [CustomCalendar] {
+        calendars.filter { $0.isArchived }
+    }
+
+    public func calendar(id: UUID) -> CustomCalendar? {
+        calendars.first(where: { $0.id == id })
+    }
+}
+
+@available(iOS 17.0, macOS 14.0, *)
+public struct CustomCalendarStoreDependencies {
+    public let fetchCalendars: @Sendable (ModelContainer) throws -> [CustomCalendar]
+    public let runMigration: @Sendable (ModelContainer) -> Void
+
+    public init(
+        fetchCalendars: @escaping @Sendable (ModelContainer) throws -> [CustomCalendar],
+        runMigration: @escaping @Sendable (ModelContainer) -> Void
+    ) {
+        self.fetchCalendars = fetchCalendars
+        self.runMigration = runMigration
+    }
+}
+
+@available(iOS 17.0, macOS 14.0, *)
+@MainActor
 public final class CustomCalendarStore: ObservableObject {
     public static let shared = CustomCalendarStore()
 
-    @Published public private(set) var calendars: [CustomCalendar] = []
-    @Published public private(set) var isLoading: Bool = false
-    @Published public private(set) var dataVersion: Int = 0
+    @Published public private(set) var snapshot: CustomCalendarStoreSnapshot
 
     private let container: ModelContainer
+    private let fetchCalendarsLoader: @Sendable (ModelContainer) throws -> [CustomCalendar]
+    private let migrationRunner: @Sendable (ModelContainer) -> Void
+    private let reloadLock = NSLock()
+    private let versionLock = NSLock()
+    private var latestReloadToken = UUID()
+    private var latestPersistedDataVersion: Int
 
-    public init(container: ModelContainer = SwiftDataManager.container) {
-        self.container = container
-        dataVersion = Self.loadDataVersion()
-
-        isLoading = true
-        let container = container
-        Task.detached(priority: .userInitiated) { [weak self] in
-            LegacyDataMigrator.migrateIfNeeded(container: container)
-            do {
-                let calendars = try Self.fetchCalendars(container: container)
-                await MainActor.run {
-                    guard let self else { return }
-                    self.calendars = calendars
-                    self.isLoading = false
-                }
-            } catch {
-                NSLog("Failed to load calendars from SwiftData: \(error)")
-                await MainActor.run {
-                    guard let self else { return }
-                    self.calendars = []
-                    self.isLoading = false
-                }
+    public init(
+        container: ModelContainer = SwiftDataManager.container,
+        dependencies: CustomCalendarStoreDependencies? = nil
+    ) {
+        let dependencies = dependencies ?? CustomCalendarStoreDependencies(
+            fetchCalendars: { container in
+                try Self.fetchCalendars(container: container)
+            },
+            runMigration: { container in
+                LegacyDataMigrator.migrateIfNeeded(container: container)
             }
-        }
+        )
+        self.container = container
+        fetchCalendarsLoader = dependencies.fetchCalendars
+        migrationRunner = dependencies.runMigration
+        let initialVersion = Self.loadDataVersion()
+        latestPersistedDataVersion = initialVersion
+        snapshot = CustomCalendarStoreSnapshot(dataVersion: initialVersion)
+        loadCalendars(showLoadingIndicator: true, targetVersion: initialVersion, runMigration: true)
+    }
+
+    @available(*, deprecated, message: "Use snapshot.calendars instead")
+    public var calendars: [CustomCalendar] {
+        snapshot.calendars
+    }
+
+    @available(*, deprecated, message: "Use snapshot.isLoading instead")
+    public var isLoading: Bool {
+        snapshot.isLoading
+    }
+
+    @available(*, deprecated, message: "Use snapshot.dataVersion instead")
+    public var dataVersion: Int {
+        snapshot.dataVersion
     }
 
     public func loadCalendars(showLoadingIndicator: Bool = true) {
+        loadCalendars(showLoadingIndicator: showLoadingIndicator, targetVersion: currentPersistedDataVersion())
+    }
+
+    private func loadCalendars(showLoadingIndicator: Bool, targetVersion: Int, runMigration: Bool = false) {
+        let token = UUID()
+        updateLatestReloadToken(token)
+
         if showLoadingIndicator {
             Task { @MainActor in
-                self.isLoading = true
+                guard token == self.currentReloadToken() else { return }
+                self.publishSnapshot(isLoading: true)
             }
         }
 
         let container = container
+        let fetchCalendarsLoader = fetchCalendarsLoader
+        let migrationRunner = migrationRunner
         Task.detached(priority: .userInitiated) { [weak self] in
             do {
-                let calendars = try Self.fetchCalendars(container: container)
+                if runMigration {
+                    migrationRunner(container)
+                }
+
+                let calendars = try fetchCalendarsLoader(container)
                 await MainActor.run {
                     guard let self else { return }
-                    self.calendars = calendars
-                    if showLoadingIndicator {
-                        self.isLoading = false
-                    }
+                    guard token == self.currentReloadToken() else { return }
+                    self.publishSnapshot(calendars: calendars, isLoading: false, dataVersion: targetVersion)
                 }
             } catch {
                 NSLog("Failed to load calendars from SwiftData: \(error)")
                 await MainActor.run {
                     guard let self else { return }
-                    self.calendars = []
-                    if showLoadingIndicator {
-                        self.isLoading = false
-                    }
+                    guard token == self.currentReloadToken() else { return }
+                    self.publishSnapshot(isLoading: false)
                 }
             }
         }
@@ -542,12 +754,10 @@ public final class CustomCalendarStore: ObservableObject {
                 context.insert(entryEntity)
             }
 
-            try persistChanges(in: context)
-            bumpDataVersion()
+            try finishHabitMutationReloadingCalendars(in: context)
         } catch {
             NSLog("Failed to add calendar: \(error)")
         }
-        loadCalendars(showLoadingIndicator: false)
     }
 
     public func updateCalendar(_ calendar: CustomCalendar) {
@@ -595,9 +805,7 @@ public final class CustomCalendarStore: ObservableObject {
             }
 
             try persistNormalizedCalendarOrder(in: context)
-            try persistChanges(in: context)
-            bumpDataVersion()
-            loadCalendars(showLoadingIndicator: false)
+            try finishHabitMutationReloadingCalendars(in: context)
         } catch {
             NSLog("Failed to update calendar: \(error)")
         }
@@ -615,15 +823,13 @@ public final class CustomCalendarStore: ObservableObject {
             for entity in entities {
                 context.delete(entity)
             }
-            try persistChanges(in: context)
-            bumpDataVersion()
-            loadCalendars(showLoadingIndicator: false)
+            try finishHabitMutationReloadingCalendars(in: context)
         } catch {
             NSLog("Failed to delete calendar: \(error)")
         }
     }
 
-    public func moveCalendar(fromOffsets indices: IndexSet, toOffset destination: Int) {
+    @MainActor public func moveCalendar(fromOffsets indices: IndexSet, toOffset destination: Int) {
         var reordered = Self.normalizedCalendarOrder(calendars)
         reordered.move(fromOffsets: indices, toOffset: destination)
         reordered = Self.assigningContiguousOrder(to: reordered)
@@ -631,14 +837,13 @@ public final class CustomCalendarStore: ObservableObject {
         do {
             let context = makeContext()
             persistCalendarOrder(reordered, in: context)
-            try persistChanges(in: context)
-            calendars = reordered
+            try finishHabitMutationPublishingSnapshot(reordered, in: context)
         } catch {
             NSLog("Failed to move calendars: \(error)")
         }
     }
 
-    public func moveActiveCalendars(fromOffsets indices: IndexSet, toOffset destination: Int) {
+    @MainActor public func moveActiveCalendars(fromOffsets indices: IndexSet, toOffset destination: Int) {
         let reordered = Self.reorderedActiveCalendars(
             calendars,
             fromOffsets: indices,
@@ -648,8 +853,7 @@ public final class CustomCalendarStore: ObservableObject {
         do {
             let context = makeContext()
             persistCalendarOrder(reordered, in: context)
-            try persistChanges(in: context)
-            calendars = reordered
+            try finishHabitMutationPublishingSnapshot(reordered, in: context)
         } catch {
             NSLog("Failed to move active calendars: \(error)")
         }
@@ -660,9 +864,10 @@ public final class CustomCalendarStore: ObservableObject {
     public func addEntry(calendarId: UUID, entry: CalendarEntry) {
         do {
             let context = makeContext()
-            guard fetchCalendarEntity(id: calendarId, in: context) != nil else { return }
-            let canonicalDate = LocalDayCalendar.startOfDay(for: entry.date)
-            let dayKey = formatDate(date: canonicalDate)
+            guard let calendarEntity = fetchCalendarEntity(id: calendarId, in: context) else { return }
+            let cadence = CalendarCadence(rawValue: calendarEntity.cadenceRawValue) ?? .daily
+            let canonicalDate = canonicalEntryDate(for: entry.date, cadence: cadence)
+            let dayKey = formatDate(date: canonicalDate, cadence: cadence)
             let compositeKey = CalendarEntryEntity.makeCompositeKey(calendarId: calendarId, dayKey: dayKey)
 
             if let entryEntity = fetchEntry(compositeKey: compositeKey, in: context) {
@@ -684,17 +889,83 @@ public final class CustomCalendarStore: ObservableObject {
                 context.insert(entryEntity)
             }
 
-            try persistChanges(in: context)
-            bumpDataVersion()
-            loadCalendars(showLoadingIndicator: false)
+            try finishHabitMutationReloadingCalendars(in: context)
         } catch {
             NSLog("Failed to add entry: \(error)")
         }
     }
 
+    public func quickLogEntry(calendarId: UUID, date: Date = Date()) {
+        do {
+            let context = makeContext()
+            guard let calendarEntity = fetchCalendarEntity(id: calendarId, in: context) else { return }
+
+            let cadence = CalendarCadence(rawValue: calendarEntity.cadenceRawValue) ?? .daily
+            let trackingType = TrackingType(rawValue: calendarEntity.trackingTypeRawValue) ?? .binary
+            let defaultRecordValue = max(1, calendarEntity.defaultRecordValue ?? 1)
+            let dailyTarget = max(1, calendarEntity.dailyTarget)
+            let canonicalDate = canonicalEntryDate(for: date, cadence: cadence)
+            let dayKey = formatDate(date: canonicalDate, cadence: cadence)
+            let compositeKey = CalendarEntryEntity.makeCompositeKey(calendarId: calendarId, dayKey: dayKey)
+            let existingEntry = fetchEntry(compositeKey: compositeKey, in: context)
+
+            switch trackingType {
+            case .binary:
+                if let existingEntry {
+                    context.delete(existingEntry)
+                } else {
+                    let entryEntity = CalendarEntryEntity(
+                        compositeKey: compositeKey,
+                        calendarId: calendarId,
+                        dayKey: dayKey,
+                        date: canonicalDate,
+                        count: 1,
+                        completed: true
+                    )
+                    context.insert(entryEntity)
+                }
+            case .counter:
+                let newCount = (existingEntry?.count ?? 0) + defaultRecordValue
+                let normalizedEntry = CalendarEntry(
+                    date: canonicalDate,
+                    count: newCount,
+                    completed: newCount > 0
+                )
+                upsertEntry(
+                    normalizedEntry,
+                    calendarId: calendarId,
+                    dayKey: dayKey,
+                    compositeKey: compositeKey,
+                    existingEntry: existingEntry,
+                    context: context
+                )
+            case .multipleDaily:
+                let newCount = (existingEntry?.count ?? 0) + defaultRecordValue
+                let normalizedEntry = CalendarEntry(
+                    date: canonicalDate,
+                    count: newCount,
+                    completed: newCount >= dailyTarget
+                )
+                upsertEntry(
+                    normalizedEntry,
+                    calendarId: calendarId,
+                    dayKey: dayKey,
+                    compositeKey: compositeKey,
+                    existingEntry: existingEntry,
+                    context: context
+                )
+            }
+
+            try finishHabitMutationReloadingCalendars(in: context)
+        } catch {
+            NSLog("Failed to quick log entry: \(error)")
+        }
+    }
+
     public func getEntry(calendarId: UUID, date: Date) -> CalendarEntry? {
         let context = makeContext()
-        let dayKey = formatDate(date: date)
+        let cadence = resolveCadence(calendarId: calendarId, in: context)
+        let dayKey = formatDate(date: date, cadence: cadence)
         let compositeKey = CalendarEntryEntity.makeCompositeKey(calendarId: calendarId, dayKey: dayKey)
         return fetchEntry(compositeKey: compositeKey, in: context)?.toCalendarEntry()
     }
@@ -706,9 +977,7 @@ public final class CustomCalendarStore: ObservableObject {
             for entry in entries {
                 context.delete(entry)
             }
-            try persistChanges(in: context)
-            bumpDataVersion()
-            loadCalendars(showLoadingIndicator: false)
+            try finishHabitMutationReloadingCalendars(in: context)
         } catch {
             NSLog("Failed to clear entries: \(error)")
         }
@@ -717,13 +986,12 @@ public final class CustomCalendarStore: ObservableObject {
     public func deleteEntry(calendarId: UUID, date: Date) {
         do {
             let context = makeContext()
-            let dayKey = formatDate(date: date)
+            let cadence = resolveCadence(calendarId: calendarId, in: context)
+            let dayKey = formatDate(date: date, cadence: cadence)
             let compositeKey = CalendarEntryEntity.makeCompositeKey(calendarId: calendarId, dayKey: dayKey)
             guard let target = fetchEntry(compositeKey: compositeKey, in: context) else { return }
             context.delete(target)
-            try persistChanges(in: context)
-            bumpDataVersion()
-            loadCalendars(showLoadingIndicator: false)
+            try finishHabitMutationReloadingCalendars(in: context)
         } catch {
             NSLog("Failed to delete entry: \(error)")
         }
@@ -786,33 +1054,106 @@ public final class CustomCalendarStore: ObservableObject {
         }
     }
 
+    private func upsertEntry(
+        _ entry: CalendarEntry,
+        calendarId: UUID,
+        dayKey: String,
+        compositeKey: String,
+        existingEntry: CalendarEntryEntity?,
+        context: ModelContext
+    ) {
+        if let existingEntry {
+            existingEntry.apply(from: entry, calendarId: calendarId, overrideDayKey: dayKey)
+        } else {
+            let entryEntity = CalendarEntryEntity(
+                compositeKey: compositeKey,
+                calendarId: calendarId,
+                dayKey: dayKey,
+                date: entry.date,
+                count: entry.count,
+                completed: entry.completed
+            )
+            context.insert(entryEntity)
+        }
+    }
+
+    private func finishHabitMutationReloadingCalendars(in context: ModelContext) throws {
+        try persistChanges(in: context)
+        let nextVersion = reserveNextDataVersion()
+        loadCalendars(showLoadingIndicator: false, targetVersion: nextVersion)
+        WidgetReload.scheduleHabitWidgetsReload()
+    }
+
+    private func finishHabitMutationPublishingSnapshot(_ calendars: [CustomCalendar], in context: ModelContext) throws {
+        try persistChanges(in: context)
+        publishSnapshot(calendars: calendars)
+        WidgetReload.scheduleHabitWidgetsReload()
+    }
+
     private func makeContext() -> ModelContext {
         Self.makeContext(container: container)
     }
 
-    private static func makeContext(container: ModelContainer) -> ModelContext {
+    private nonisolated static func makeContext(container: ModelContainer) -> ModelContext {
         let context = ModelContext(container)
         context.autosaveEnabled = false
         return context
     }
 
-    private func formatDate(date: Date) -> String {
-        DayKeyFormatter.shared.string(from: LocalDayCalendar.startOfDay(for: date))
+    private func resolveCadence(calendarId: UUID, in context: ModelContext) -> CalendarCadence {
+        if let loaded = calendars.first(where: { $0.id == calendarId }) {
+            return loaded.cadence
+        }
+
+        if let entity = fetchCalendarEntity(id: calendarId, in: context),
+           let cadence = CalendarCadence(rawValue: entity.cadenceRawValue)
+        {
+            return cadence
+        }
+
+        return .daily
+    }
+
+    private func canonicalEntryDate(for date: Date, cadence: CalendarCadence) -> Date {
+        switch cadence {
+        case .daily:
+            return LocalDayCalendar.startOfDay(for: date)
+        case .weekly:
+            return LocalDayCalendar.startOfWeek(for: date)
+        }
+    }
+
+    private func formatDate(date: Date, cadence: CalendarCadence) -> String {
+        DayKeyFormatter.shared.string(from: canonicalEntryDate(for: date, cadence: cadence))
     }
 
     private static let dataVersionKey = "CustomCalendarStore.dataVersion"
+    private static let sharedDefaults = UserDefaults(suiteName: LegacyPersistenceKeys.appGroupId) ?? .standard
 
     private static func loadDataVersion() -> Int {
-        UserDefaults.standard.integer(forKey: dataVersionKey)
+        sharedDefaults.integer(forKey: dataVersionKey)
     }
 
-    public static func fetchCalendarsSnapshot(
+    @MainActor
+    private func publishSnapshot(
+        calendars: [CustomCalendar]? = nil,
+        isLoading: Bool? = nil,
+        dataVersion: Int? = nil
+    ) {
+        snapshot = CustomCalendarStoreSnapshot(
+            calendars: calendars ?? snapshot.calendars,
+            isLoading: isLoading ?? snapshot.isLoading,
+            dataVersion: dataVersion ?? snapshot.dataVersion
+        )
+    }
+
+    public nonisolated static func fetchCalendarsSnapshot(
         container: ModelContainer = SwiftDataManager.container
     ) -> [CustomCalendar] {
         (try? fetchCalendars(container: container)) ?? []
     }
 
-    public static func normalizedCalendarOrder(_ calendars: [CustomCalendar]) -> [CustomCalendar] {
+    public nonisolated static func normalizedCalendarOrder(_ calendars: [CustomCalendar]) -> [CustomCalendar] {
         let activeCalendars = calendars
             .filter { !$0.isArchived }
             .sorted(by: calendarOrderSort)
@@ -827,7 +1168,7 @@ public final class CustomCalendarStore: ObservableObject {
         }
     }
 
-    public static func reorderedActiveCalendars(
+    public nonisolated static func reorderedActiveCalendars(
         _ calendars: [CustomCalendar],
         fromOffsets indices: IndexSet,
         toOffset destination: Int
@@ -851,11 +1192,11 @@ public final class CustomCalendarStore: ObservableObject {
         return assigningContiguousOrder(to: reorderedActiveCalendars + archivedCalendars)
     }
 
-    private static func sortCalendars(_ calendars: [CustomCalendar]) -> [CustomCalendar] {
+    private nonisolated static func sortCalendars(_ calendars: [CustomCalendar]) -> [CustomCalendar] {
         normalizedCalendarOrder(calendars)
     }
 
-    private static func assigningContiguousOrder(to calendars: [CustomCalendar]) -> [CustomCalendar] {
+    private nonisolated static func assigningContiguousOrder(to calendars: [CustomCalendar]) -> [CustomCalendar] {
         calendars.enumerated().map { index, calendar in
             var orderedCalendar = calendar
             orderedCalendar.order = index
@@ -863,19 +1204,41 @@ public final class CustomCalendarStore: ObservableObject {
         }
     }
 
-    private static func calendarOrderSort(_ lhs: CustomCalendar, _ rhs: CustomCalendar) -> Bool {
+    private nonisolated static func calendarOrderSort(_ lhs: CustomCalendar, _ rhs: CustomCalendar) -> Bool {
         if lhs.order == rhs.order {
             return lhs.id.uuidString < rhs.id.uuidString
         }
         return lhs.order < rhs.order
     }
 
-    private func bumpDataVersion() {
-        dataVersion &+= 1
-        UserDefaults.standard.set(dataVersion, forKey: Self.dataVersionKey)
+    private func reserveNextDataVersion() -> Int {
+        versionLock.lock()
+        defer { versionLock.unlock() }
+
+        latestPersistedDataVersion &+= 1
+        Self.sharedDefaults.set(latestPersistedDataVersion, forKey: Self.dataVersionKey)
+        return latestPersistedDataVersion
     }
 
-    private static func fetchCalendars(container: ModelContainer) throws -> [CustomCalendar] {
+    private func currentPersistedDataVersion() -> Int {
+        versionLock.lock()
+        defer { versionLock.unlock() }
+        return latestPersistedDataVersion
+    }
+
+    private func updateLatestReloadToken(_ token: UUID) {
+        reloadLock.lock()
+        latestReloadToken = token
+        reloadLock.unlock()
+    }
+
+    private func currentReloadToken() -> UUID {
+        reloadLock.lock()
+        defer { reloadLock.unlock() }
+        return latestReloadToken
+    }
+
+    private nonisolated static func fetchCalendars(container: ModelContainer) throws -> [CustomCalendar] {
         let context = makeContext(container: container)
         let calendarsDescriptor = FetchDescriptor<HabitCalendarEntity>(
             sortBy: [SortDescriptor(\HabitCalendarEntity.order)]
@@ -1024,6 +1387,12 @@ public final class ValuationStore: ObservableObject {
         }
     }
 
+    public nonisolated static func fetchValuationsSnapshot(
+        container: ModelContainer = SwiftDataManager.container
+    ) -> [String: DayValuation] {
+        (try? fetchValuations(container: container)) ?? [:]
+    }
+
     public func getValuation(for date: Date) -> DayValuation? {
         let canonicalDate = LocalDayCalendar.startOfDay(for: date)
         let key = DayKeyFormatter.shared.string(from: canonicalDate)
@@ -1053,15 +1422,9 @@ public final class ValuationStore: ObservableObject {
                 context.insert(entity)
             }
 
-            try persistChanges(in: context)
-
             var newValuations = valuations
             newValuations[valuation.id] = valuation
-            valuations = newValuations
-
-            #if os(iOS)
-                WidgetReload.scheduleAllTimelinesReload()
-            #endif
+            try finishValuationMutation(in: context, valuations: newValuations)
         } catch {
             NSLog("Failed to set valuation: \(error)")
         }
@@ -1075,12 +1438,7 @@ public final class ValuationStore: ObservableObject {
             for entity in entities {
                 context.delete(entity)
             }
-            try persistChanges(in: context)
-            valuations = [:]
-
-            #if os(iOS)
-                WidgetReload.scheduleAllTimelinesReload()
-            #endif
+            try finishValuationMutation(in: context, valuations: [:])
         } catch {
             NSLog("Failed to clear valuations: \(error)")
         }
@@ -1097,6 +1455,15 @@ public final class ValuationStore: ObservableObject {
         if context.hasChanges {
             try context.save()
         }
+    }
+
+    private func finishValuationMutation(in context: ModelContext, valuations: [String: DayValuation]) throws {
+        try persistChanges(in: context)
+        self.valuations = valuations
+
+        #if os(iOS)
+            WidgetReload.scheduleYearWidgetReload()
+        #endif
     }
 
     private func makeContext() -> ModelContext {

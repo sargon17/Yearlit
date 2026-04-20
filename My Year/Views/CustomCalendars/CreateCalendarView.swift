@@ -12,10 +12,12 @@ struct CreateCalendarView: View {
     @ObservedObject private var store = CustomCalendarStore.shared
     @State private var name = ""
     @State private var selectedColor = "qs-amber"
+    @State private var cadence: CalendarCadence = .daily
     @State private var trackingType: TrackingType = .binary
     @State private var dailyTarget = 2
     @State private var recurringReminderEnabled: Bool = false
     @State private var reminderTime: Date = .init()
+    @State private var reminderWeekday: Int = Calendar.current.component(.weekday, from: Date())
     @State private var selectedUnit: UnitOfMeasure = .none
     @State private var defaultRecordValue: Int = 1
     @State private var isPaywallPresented = false
@@ -71,16 +73,22 @@ struct CreateCalendarView: View {
     private var trackingTypeDescription: LocalizedStringKey {
         switch trackingType {
         case .binary:
-            return "Track a simple yes/no each day. Great for habits you either complete or skip."
+            return cadence == .daily
+                ? "Track a simple yes/no each day. Great for habits you either complete or skip."
+                : "Track a simple yes/no each week. Great for goals you either hit or miss across the week."
         case .counter:
-            return "Log a numeric value per day, like pages read or minutes practiced."
+            return cadence == .daily
+                ? "Log a numeric value per day, like pages read or minutes practiced."
+                : "Log a numeric value per week, like workouts done or kilometers covered."
         case .multipleDaily:
-            return "Check in multiple times per day toward a daily target."
+            return cadence == .daily
+                ? "Check in multiple times per day toward a daily target."
+                : "Check in multiple times across the week toward a weekly target."
         }
     }
 
     func userCanCreateCalendar() -> Bool {
-        return customerInfo?.entitlements["premium"]?.isActive ?? false || store.calendars.count < 3
+        return customerInfo?.entitlements["premium"]?.isActive ?? false || store.snapshot.calendars.count < 3
     }
 
     func createCalendar() {
@@ -89,12 +97,14 @@ struct CreateCalendarView: View {
         let calendar = CustomCalendar(
             name: name,
             color: selectedColor,
+            cadence: cadence,
             trackingType: trackingType,
             dailyTarget: dailyTarget,
             entries: existingStreakEntries,
             isArchived: false,
             recurringReminderEnabled: recurringReminderEnabled,
             reminderTime: recurringReminderEnabled ? reminderTime : nil,
+            reminderWeekday: recurringReminderEnabled && cadence == .weekly ? reminderWeekday : nil,
             unit: (trackingType == .counter || trackingType == .multipleDaily) ? selectedUnit : nil,
             defaultRecordValue: (trackingType == .counter || trackingType == .multipleDaily)
                 ? defaultRecordValue : nil,
@@ -136,6 +146,24 @@ struct CreateCalendarView: View {
                     .focused($isNameFocused)
                 }
 
+                CustomSection(label: "Cadence") {
+                    VStack(spacing: 12) {
+                        Picker("Cadence", selection: $cadence) {
+                            ForEach(CalendarCadence.allCases, id: \.self) { cadence in
+                                Text(cadence.title).tag(cadence)
+                            }
+                        }
+                        .pickerStyle(.segmented)
+
+                        Text(cadence.detailDescription)
+                            .font(.footnote)
+                            .foregroundStyle(.textTertiary)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                    }
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 12)
+                }
+
                 TrackingPicker(trackingType: $trackingType, color: Color(selectedColor))
 
                 ZStack(alignment: .leading) {
@@ -155,7 +183,7 @@ struct CreateCalendarView: View {
                         VStack(spacing: 2) {
                             if trackingType == .multipleDaily {
                                 HStack {
-                                    Text("Daily Target")
+                                    Text(cadence.targetTitle)
                                         .labelStyle(type: .secondary)
 
                                     Spacer()
@@ -238,9 +266,12 @@ struct CreateCalendarView: View {
                                     Text("Notification settings")
                                         .labelStyle(type: .secondary)
                                     Text(
-                                        recurringReminderEnabled
-                                            ? "On • tap to customize privacy, suppression, and more."
-                                            : "Off • set a daily reminder and privacy level."
+                                        NotificationSettingsHelpers.reminderSummary(
+                                            isEnabled: recurringReminderEnabled,
+                                            cadence: cadence,
+                                            reminderTime: reminderTime,
+                                            reminderWeekday: reminderWeekday
+                                        )
                                     )
                                     .font(.caption)
                                     .foregroundStyle(.textTertiary)
@@ -262,7 +293,7 @@ struct CreateCalendarView: View {
                 CustomSection(label: "Already active streak?") {
                     VStack(spacing: 8) {
                         if !existingStreakEntries.isEmpty {
-                            Text("Backfilling \(existingStreakEntries.count) days.")
+                            Text("Backfilling \(existingStreakEntries.count) \(cadence == .weekly ? "weeks" : "days").")
                                 .font(.footnote)
                                 .foregroundStyle(.textTertiary)
                                 .frame(maxWidth: .infinity, alignment: .leading)
@@ -272,6 +303,7 @@ struct CreateCalendarView: View {
                         Button(action: {
                             router.showScreen(.sheet) { _ in
                                 ExistingStreakSheet(
+                                    cadence: cadence,
                                     trackingType: trackingType,
                                     dailyTarget: dailyTarget,
                                     defaultDailyValue: defaultRecordValue,
@@ -380,9 +412,8 @@ struct CreateCalendarView: View {
         .onAppear {
             isNameFocused = true
             Purchases.shared.getCustomerInfo { info, error in
-                // swiftlint:disable:next identifier_name
-                if let e = error {
-                    print("Error fetching customer info: \(e.localizedDescription)")
+                if let error {
+                    print("Error fetching customer info: \(error.localizedDescription)")
                     return
                 }
                 self.customerInfo = info
@@ -391,6 +422,7 @@ struct CreateCalendarView: View {
         .sheet(isPresented: $showingNotificationSettings) {
             NotificationSettingsDraftSheet(
                 calendarName: name,
+                cadence: cadence,
                 trackingType: trackingType,
                 accentColor: Color(selectedColor),
                 customerInfo: customerInfo,
@@ -400,7 +432,8 @@ struct CreateCalendarView: View {
                 suppressWhenCompleted: $suppressWhenCompleted,
                 additionalReminderTimes: $additionalReminderTimes,
                 streakProtectionEnabled: $streakProtectionEnabled,
-                streakProtectionThreshold: $streakProtectionThreshold
+                streakProtectionThreshold: $streakProtectionThreshold,
+                reminderWeekday: $reminderWeekday
             )
         }
         .onChange(of: trackingType) { _, _ in

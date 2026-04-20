@@ -5,16 +5,17 @@ import SwiftUI
 func colorForDay(
     _ day: Date,
     calendar: CustomCalendar,
-    today _: Date,
+    today: Date,
     maxCount: Int
 ) -> Color {
-    guard !day.isInFuture else {
+    let comparisonDate = calendar.bucketDate(for: today)
+    let bucketDate = calendar.bucketDate(for: day)
+
+    guard bucketDate <= comparisonDate else {
         return inactiveDayColor()
     }
 
-    let dateKey: String = dayKey(for: day)
-
-    if let entry: CalendarEntry = calendar.entries[dateKey] {
+    if let entry: CalendarEntry = calendar.entry(for: day) {
         switch calendar.trackingType {
         case .binary:
             return entry.completed ? Color(calendar.color) : activeDayColor()

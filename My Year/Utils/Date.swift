@@ -1,4 +1,5 @@
 import Foundation
+import SharedModels
 
 /// Checks if a given date is the same as today.
 ///
@@ -22,18 +23,7 @@ public func isToday(date: Date) -> Bool {
 /// Output: "2024-01-15"
 /// ```
 public func customDateFormatter(date: Date) -> String {
-    DayKeyFormatterLocal.shared.string(from: date)
-}
-
-private enum DayKeyFormatterLocal {
-    static let shared: DateFormatter = {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "yyyy-MM-dd"
-        formatter.calendar = Calendar(identifier: .gregorian)
-        formatter.locale = Locale(identifier: "en_US_POSIX")
-        formatter.timeZone = .autoupdatingCurrent
-        return formatter
-    }()
+    DayKeyFormatter.shared.string(from: date)
 }
 
 public let dateFormatterLong: DateFormatter = {

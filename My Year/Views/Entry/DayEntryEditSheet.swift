@@ -36,7 +36,6 @@ struct DayEntryEditSheet: View {
     private func saveEntry() {
         let newEntry = CalendarEntry(date: date, count: entryCount, completed: entryCompleted)
         store.addEntry(calendarId: calendar.id, entry: newEntry)
-        WidgetReload.scheduleAllTimelinesReload()
         onSave?()
         dismiss()
     }
@@ -56,7 +55,7 @@ struct DayEntryEditSheet: View {
         .padding()
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         .surfaceBackground(Color("surface-muted"), ignoresSafeArea: true)
-        .navigationTitle(dateFormatterLong.string(from: date))
+        .navigationTitle(navigationTitle)
         .navigationBarTitleDisplayMode(.large)
         .onDisappear {
             onDismiss?()
@@ -69,5 +68,15 @@ struct DayEntryEditSheet: View {
                 Button("Save") { saveEntry() }
             }
         }
+    }
+
+    private var navigationTitle: String {
+        if calendar.cadence == .weekly {
+            let weekStart = LocalDayCalendar.startOfWeek(for: date)
+            let weekEnd = Calendar.current.date(byAdding: .day, value: 6, to: weekStart) ?? weekStart
+            return "\(dateFormatterLong.string(from: weekStart)) – \(dateFormatterLong.string(from: weekEnd))"
+        }
+
+        return dateFormatterLong.string(from: date)
     }
 }

@@ -26,38 +26,38 @@ struct CalendarStatsSnapshot: Codable {
 
 struct StatsBundleSnapshot: Codable {
     let basic: CalendarStatsSnapshot
-    let completionRate30d: Double
+    let completionRateTrailingLongWindow: Double
     let bestWeekday: Int?
     let weekdayRates: [Int: Double]
     let monthlyRates: [Int: Double]
-    let rolling7d: Double
-    let rolling30d: Double
+    let averageProgressTrailingShortWindow: Double
+    let averageProgressTrailingLongWindow: Double
     let volatilityStd: Double
-    let todaysCount: Int?
+    let currentPeriodCount: Int?
 
     init(bundle: StatsBundle) {
         basic = CalendarStatsSnapshot(stats: bundle.basic)
-        completionRate30d = bundle.completionRate30d
+        completionRateTrailingLongWindow = bundle.completionRateTrailingLongWindow
         bestWeekday = bundle.bestWeekday
         weekdayRates = bundle.weekdayRates
         monthlyRates = bundle.monthlyRates
-        rolling7d = bundle.rolling7d
-        rolling30d = bundle.rolling30d
+        averageProgressTrailingShortWindow = bundle.averageProgressTrailingShortWindow
+        averageProgressTrailingLongWindow = bundle.averageProgressTrailingLongWindow
         volatilityStd = bundle.volatilityStd
-        todaysCount = bundle.todaysCount
+        currentPeriodCount = bundle.currentPeriodCount
     }
 
     func toBundle() -> StatsBundle {
         StatsBundle(
             basic: basic.toStats(),
-            completionRate30d: completionRate30d,
+            completionRateTrailingLongWindow: completionRateTrailingLongWindow,
             bestWeekday: bestWeekday,
             weekdayRates: weekdayRates,
             monthlyRates: monthlyRates,
-            rolling7d: rolling7d,
-            rolling30d: rolling30d,
+            averageProgressTrailingShortWindow: averageProgressTrailingShortWindow,
+            averageProgressTrailingLongWindow: averageProgressTrailingLongWindow,
             volatilityStd: volatilityStd,
-            todaysCount: todaysCount
+            currentPeriodCount: currentPeriodCount
         )
     }
 }

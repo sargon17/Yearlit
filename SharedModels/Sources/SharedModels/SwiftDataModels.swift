@@ -7,7 +7,10 @@ public final class HabitCalendarEntity {
     public var id: UUID = UUID()
     public var name: String = ""
     public var color: String = ""
+    public var cadenceRawValue: String = CalendarCadence.daily.rawValue
     public var trackingTypeRawValue: String = TrackingType.binary.rawValue
+    // Legacy persisted name kept to avoid risky data migration.
+    // Semantically this is the target for the calendar cadence period.
     public var dailyTarget: Int = 1
     public var unitRawValue: String?
     public var defaultRecordValue: Int?
@@ -16,6 +19,7 @@ public final class HabitCalendarEntity {
     public var recurringReminderEnabled: Bool = false
     public var reminderHour: Int?
     public var reminderMinute: Int?
+    public var reminderWeekday: Int?
     public var reminderTimeZone: String?
     public var notificationPrivacyModeRawValue: String = NotificationPrivacyMode.full.rawValue
     public var suppressWhenCompleted: Bool = true
@@ -28,6 +32,7 @@ public final class HabitCalendarEntity {
         id: UUID = UUID(),
         name: String,
         color: String,
+        cadenceRawValue: String = CalendarCadence.daily.rawValue,
         trackingTypeRawValue: String,
         dailyTarget: Int,
         unitRawValue: String? = nil,
@@ -37,6 +42,7 @@ public final class HabitCalendarEntity {
         recurringReminderEnabled: Bool = false,
         reminderHour: Int? = nil,
         reminderMinute: Int? = nil,
+        reminderWeekday: Int? = nil,
         reminderTimeZone: String? = nil,
         notificationPrivacyModeRawValue: String = NotificationPrivacyMode.full.rawValue,
         suppressWhenCompleted: Bool = true,
@@ -48,6 +54,7 @@ public final class HabitCalendarEntity {
         self.id = id
         self.name = name
         self.color = color
+        self.cadenceRawValue = cadenceRawValue
         self.trackingTypeRawValue = trackingTypeRawValue
         self.dailyTarget = dailyTarget
         self.unitRawValue = unitRawValue
@@ -57,6 +64,7 @@ public final class HabitCalendarEntity {
         self.recurringReminderEnabled = recurringReminderEnabled
         self.reminderHour = reminderHour
         self.reminderMinute = reminderMinute
+        self.reminderWeekday = reminderWeekday
         self.reminderTimeZone = reminderTimeZone
         self.notificationPrivacyModeRawValue = notificationPrivacyModeRawValue
         self.suppressWhenCompleted = suppressWhenCompleted
@@ -202,6 +210,7 @@ extension HabitCalendarEntity {
     }
 
     func toCustomCalendar(entries: [String: CalendarEntry]) -> CustomCalendar {
+        let cadence = CalendarCadence(rawValue: cadenceRawValue) ?? .daily
         let tracking = TrackingType(rawValue: trackingTypeRawValue) ?? .binary
         let unit = unitRawValue.flatMap(UnitOfMeasure.init(rawValue:))
         let privacyMode = NotificationPrivacyMode(rawValue: notificationPrivacyModeRawValue) ?? .full
@@ -211,6 +220,7 @@ extension HabitCalendarEntity {
             id: id,
             name: name,
             color: color,
+            cadence: cadence,
             trackingType: tracking,
             dailyTarget: dailyTarget,
             entries: entries,
@@ -218,6 +228,7 @@ extension HabitCalendarEntity {
             recurringReminderEnabled: recurringReminderEnabled,
             reminderHour: reminderHour,
             reminderMinute: reminderMinute,
+            reminderWeekday: reminderWeekday,
             order: order,
             unit: unit,
             defaultRecordValue: defaultRecordValue,
@@ -236,6 +247,7 @@ extension HabitCalendarEntity {
             id: id,
             name: name,
             color: color,
+            cadence: cadence,
             trackingType: tracking,
             dailyTarget: dailyTarget,
             entries: entries,
@@ -243,6 +255,7 @@ extension HabitCalendarEntity {
             recurringReminderEnabled: recurringReminderEnabled,
             reminderTime: nil,
             order: order,
+            reminderWeekday: reminderWeekday,
             unit: unit,
             defaultRecordValue: defaultRecordValue,
             currencySymbol: currencySymbol,
@@ -258,6 +271,7 @@ extension HabitCalendarEntity {
     func apply(from model: CustomCalendar) {
         name = model.name
         color = model.color
+        cadenceRawValue = model.cadence.rawValue
         trackingTypeRawValue = model.trackingType.rawValue
         dailyTarget = model.dailyTarget
         unitRawValue = model.unit?.rawValue
@@ -267,6 +281,7 @@ extension HabitCalendarEntity {
         recurringReminderEnabled = model.recurringReminderEnabled
         reminderHour = model.reminderHour
         reminderMinute = model.reminderMinute
+        reminderWeekday = model.reminderWeekday
         reminderTimeZone = model.reminderTimeZone
         notificationPrivacyModeRawValue = model.notificationPrivacyMode.rawValue
         suppressWhenCompleted = model.suppressWhenCompleted
@@ -281,6 +296,7 @@ extension HabitCalendarEntity {
             id: model.id,
             name: model.name,
             color: model.color,
+            cadenceRawValue: model.cadence.rawValue,
             trackingTypeRawValue: model.trackingType.rawValue,
             dailyTarget: model.dailyTarget,
             unitRawValue: model.unit?.rawValue,
@@ -290,6 +306,7 @@ extension HabitCalendarEntity {
             recurringReminderEnabled: model.recurringReminderEnabled,
             reminderHour: model.reminderHour,
             reminderMinute: model.reminderMinute,
+            reminderWeekday: model.reminderWeekday,
             reminderTimeZone: model.reminderTimeZone,
             notificationPrivacyModeRawValue: model.notificationPrivacyMode.rawValue,
             suppressWhenCompleted: model.suppressWhenCompleted,

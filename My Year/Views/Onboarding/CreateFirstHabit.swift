@@ -23,6 +23,7 @@ struct CreateFirstHabit: View {
     @State private var additionalReminderTimes: [ReminderTime] = []
     @State private var streakProtectionEnabled: Bool = true
     @State private var streakProtectionThreshold: Int = 5
+    @State private var reminderWeekday: Int = Calendar.current.component(.weekday, from: Date())
 
     var disabled: Bool {
         return name.count > 2 ? false : true
@@ -37,6 +38,7 @@ struct CreateFirstHabit: View {
             isArchived: false,
             recurringReminderEnabled: recurringReminderEnabled,
             reminderTime: recurringReminderEnabled ? reminderTime : nil,
+            reminderWeekday: nil,
             unit: UnitOfMeasure.none,
             defaultRecordValue: 1,
             currencySymbol: nil,
@@ -126,6 +128,7 @@ struct CreateFirstHabit: View {
         .sheet(isPresented: $showingNotificationSettings) {
             NotificationSettingsDraftSheet(
                 calendarName: name,
+                cadence: .daily,
                 trackingType: .binary,
                 accentColor: .brand,
                 customerInfo: nil,
@@ -135,7 +138,8 @@ struct CreateFirstHabit: View {
                 suppressWhenCompleted: $suppressWhenCompleted,
                 additionalReminderTimes: $additionalReminderTimes,
                 streakProtectionEnabled: $streakProtectionEnabled,
-                streakProtectionThreshold: $streakProtectionThreshold
+                streakProtectionThreshold: $streakProtectionThreshold,
+                reminderWeekday: $reminderWeekday
             )
         }
     }

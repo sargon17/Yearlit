@@ -29,7 +29,10 @@ struct FeatureRequestDetailView: View {
         Button {
           handleUpvote()
         } label: {
-          Label("\(request.resolvedUpvoteCount)", systemImage: isUpvoted ? "hand.thumbsup.fill" : "hand.thumbsup")
+          Label(
+            "\(request.resolvedUpvoteCount)",
+            systemImage: isUpvoted ? "hand.thumbsup.fill" : "hand.thumbsup"
+          )
         }
         .buttonStyle(.borderless)
         .disabled(

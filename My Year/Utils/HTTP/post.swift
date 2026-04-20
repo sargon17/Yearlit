@@ -1,7 +1,7 @@
 import SwiftUI
 
 extension HTTP {
-    public static func post(endpoint: String, data: Codable) async throws {
+    public static func post(endpoint: String, headers: [String: String] = [:], data: Codable) async throws {
         guard let url = URL(string: endpoint) else {
             throw POSTError.error1
         }
@@ -11,6 +11,9 @@ extension HTTP {
         request.httpMethod = "POST"
 
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        headers.forEach { key, value in
+            request.setValue(value, forHTTPHeaderField: key)
+        }
 
         let jsonData = try JSONEncoder().encode(data)
 
@@ -19,8 +22,8 @@ extension HTTP {
         let (_, res) = try await URLSession.shared.data(for: request)
 
         guard let response = res as? HTTPURLResponse,
-              (200 ... 299).contains(response.statusCode) else
-        {
+              (200 ... 299).contains(response.statusCode)
+        else {
             throw POSTError.error2
         }
     }

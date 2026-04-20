@@ -8,14 +8,7 @@ struct ArchivedCalendarsSheet: View {
     @Environment(\.router) private var router
 
     private var archivedCalendars: [CustomCalendar] {
-        store.calendars
-            .filter { $0.isArchived }
-            .sorted { lhs, rhs in
-                if lhs.order == rhs.order {
-                    return lhs.id.uuidString < rhs.id.uuidString
-                }
-                return lhs.order < rhs.order
-            }
+        store.snapshot.archivedCalendars
     }
 
     var body: some View {

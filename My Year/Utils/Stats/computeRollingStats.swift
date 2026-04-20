@@ -4,9 +4,8 @@ import SwiftUI
 func computeRollingStats(
     cal: Calendar,
     todayLocal: Date,
-    calendars: [CustomCalendar],
     anySuccessByDay: [Date: Bool],
-    entriesByCalendar: [UUID: [String: CalendarEntry]]
+    dayMeanZ: [Date: Double]
 ) -> (cr30: Double, avg7: Double, avg30: Double) {
     let d30 = lastNDates(cal: cal, todayLocal: todayLocal, n: 30)
     var succ30 = 0
@@ -14,18 +13,9 @@ func computeRollingStats(
     var zSum30 = 0.0
 
     for (i, d) in d30.enumerated() {
-        let key = dayKey(for: d)
         if anySuccessByDay[d] == true { succ30 += 1 }
 
-        var zAccum = 0.0
-        var zCount = 0.0
-        for c in calendars {
-            if let e = entry(for: c.id, dayKey: key, entriesByCalendar: entriesByCalendar) {
-                zAccum += normalizedProgress(for: c, entry: e)
-                zCount += 1
-            }
-        }
-        let meanZ = zCount > 0 ? zAccum / zCount : 0
+        let meanZ = dayMeanZ[d] ?? 0
         zSum30 += meanZ
         if i >= d30.count - 7 { zSum7 += meanZ }
     }

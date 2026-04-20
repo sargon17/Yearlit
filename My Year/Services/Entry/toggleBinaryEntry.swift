@@ -5,6 +5,7 @@ import SwiftUI
 // If the entry exists, delete it.
 // Return the new entry.
 
+@MainActor
 func toggleBinaryEntry(
     calendarId: UUID,
     date: Date,

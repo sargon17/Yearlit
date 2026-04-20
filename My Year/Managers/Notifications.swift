@@ -1,4 +1,4 @@
-import SharedModels
+@preconcurrency import SharedModels
 import UserNotifications
 
 // MARK: - Notification Action Identifiers
@@ -112,6 +112,8 @@ private func generateDynamicContent(
     store: CustomCalendarStore
 ) -> (title: String, body: String) {
     let stats = calculateStreakStats(for: calendar, store: store)
+    let cadencePeriod = calendar.cadence == .weekly ? "week" : "day"
+    let currentPeriodLabel = calendar.cadence == .weekly ? "this week" : "today"
 
     // Base title
     let titleFormat = NSLocalizedString(
@@ -128,16 +130,20 @@ private func generateDynamicContent(
         // Long streak - emphasize maintenance
         let messages = [
             String(
-                format: String(localized: "🔥 You're on a %lld-day streak! Keep it alive!"),
-                stats.currentStreak
+                format: String(localized: "🔥 You're on a %lld-%@ streak! Keep it alive!"),
+                stats.currentStreak,
+                cadencePeriod
             ),
             String(
-                format: String(localized: "💪 %lld days strong! Don't break it now!"),
-                stats.currentStreak
+                format: String(localized: "💪 %lld %@ strong! Don't break it now!"),
+                stats.currentStreak,
+                cadencePeriod
             ),
             String(
-                format: String(localized: "✨ Amazing! %lld days in a row. One more today!"),
-                stats.currentStreak
+                format: String(localized: "✨ Amazing! %lld %@ in a row. One more %@!"),
+                stats.currentStreak,
+                cadencePeriod,
+                currentPeriodLabel
             ),
         ]
         body = messages.randomElement() ?? messages[0]
@@ -146,11 +152,13 @@ private func generateDynamicContent(
         // Building momentum
         let messages = [
             String(
-                format: String(localized: "%lld days down! You're building momentum 🚀"),
-                stats.currentStreak
+                format: String(localized: "%lld %@ down! You're building momentum 🚀"),
+                stats.currentStreak,
+                cadencePeriod
             ),
             String(
-                format: String(localized: "Day %lld of your streak! Keep going 💪"),
+                format: String(localized: "%@ %lld of your streak! Keep going 💪"),
+                String(cadencePeriod.prefix(1)).uppercased() + cadencePeriod.dropFirst(),
                 stats.currentStreak
             ),
             String(
@@ -161,21 +169,29 @@ private func generateDynamicContent(
         ]
         body = messages.randomElement() ?? messages[0]
 
-    } else if stats.completedYesterday {
-        // Did it yesterday, encourage continuation
+    } else if stats.completedPreviousPeriod {
+        // Did it in the previous period, encourage continuation
         let messages = [
-            String(localized: "Great job yesterday! Let's keep it going today 🎯"),
-            String(localized: "You did it yesterday, you can do it today! 💚"),
-            String(localized: "Yesterday ✅ Today? Let's go! 🔥"),
+            calendar.cadence == .weekly
+                ? String(localized: "Great job last week! Let's keep it going this week 🎯")
+                : String(localized: "Great job yesterday! Let's keep it going today 🎯"),
+            calendar.cadence == .weekly
+                ? String(localized: "You did it last week, you can do it this week! 💚")
+                : String(localized: "You did it yesterday, you can do it today! 💚"),
+            calendar.cadence == .weekly
+                ? String(localized: "Last week ✅ This week? Let's go! 🔥")
+                : String(localized: "Yesterday ✅ Today? Let's go! 🔥"),
         ]
         body = messages.randomElement() ?? messages[0]
 
-    } else if stats.weeklyCompletionRate > 0.7 {
-        // Good weekly progress
-        let weekPercent = stats.weeklyCompletionRate.formatted(.percent.precision(.fractionLength(0)))
+    } else if stats.currentPeriodProgress > 0.7 {
+        // Good current-period progress
+        let progressPercent = stats.currentPeriodProgress.formatted(.percent.precision(.fractionLength(0)))
         body = String(
-            format: String(localized: "You're at %@ this week! Keep pushing 💪"),
-            weekPercent
+            format: calendar.cadence == .weekly
+                ? String(localized: "You're at %@ this week! Keep pushing 💪")
+                : String(localized: "You're at %@ today! Keep pushing 💪"),
+            progressPercent
         )
 
     } else {
@@ -185,7 +201,9 @@ private func generateDynamicContent(
                 format: String(localized: "Time to build your habit! (Target: %lld)"),
                 calendar.dailyTarget
             ),
-            String(localized: "Every day counts! Log your progress today 📊"),
+            calendar.cadence == .weekly
+                ? String(localized: "This week counts! Log your progress 📊")
+                : String(localized: "Every day counts! Log your progress today 📊"),
             String(
                 format: String(localized: "Small steps, big results. Let's track %@! 🎯"),
                 calendar.name
@@ -202,52 +220,19 @@ private func calculateStreakStats(
     for calendar: CustomCalendar,
     store _: CustomCalendarStore
 ) -> StreakStats {
-    var currentStreak = 0
-    var weeklyCompleted = 0
-
     let dayCalendar = LocalDayCalendar.calendar
-    let dateFormatter = DayKeyFormatter.shared
     let today = LocalDayCalendar.startOfDay(for: Date())
-
-    // Current streak: consecutive fulfilled days from today backwards.
-    var streakDate = today
-    for _ in 0 ..< 365 {
-        let dayKey = dateFormatter.string(from: streakDate)
-        guard let entry = calendar.entries[dayKey],
-              isEntrySuccess(entry: entry, calendar: calendar)
-        else {
-            break
-        }
-
-        currentStreak += 1
-        streakDate = dayCalendar.date(byAdding: .day, value: -1, to: streakDate) ?? streakDate
-    }
-
-    // Yesterday success.
-    let yesterday = dayCalendar.date(byAdding: .day, value: -1, to: today) ?? today
-    let yesterdayKey = dateFormatter.string(from: yesterday)
-    let completedYesterday = calendar.entries[yesterdayKey].map {
+    let currentStreak = WidgetStreak.currentStreak(calendar: calendar, today: today, calendarSystem: dayCalendar).streak
+    let previousDate = previousCadenceDate(for: calendar, relativeTo: today)
+    let completedPreviousPeriod = calendar.entry(for: previousDate).map {
         isEntrySuccess(entry: $0, calendar: calendar)
     } ?? false
-
-    // Weekly completion over last 7 days.
-    var weeklyDate = today
-    for _ in 0 ..< 7 {
-        let dayKey = dateFormatter.string(from: weeklyDate)
-        if let entry = calendar.entries[dayKey],
-           isEntrySuccess(entry: entry, calendar: calendar)
-        {
-            weeklyCompleted += 1
-        }
-        weeklyDate = dayCalendar.date(byAdding: .day, value: -1, to: weeklyDate) ?? weeklyDate
-    }
-
-    let weeklyCompletionRate = Double(weeklyCompleted) / 7.0
+    let currentPeriodProgress = normalizedProgress(for: calendar, entry: calendar.entry(for: today))
 
     return StreakStats(
         currentStreak: currentStreak,
-        completedYesterday: completedYesterday,
-        weeklyCompletionRate: weeklyCompletionRate
+        completedPreviousPeriod: completedPreviousPeriod,
+        currentPeriodProgress: currentPeriodProgress
     )
 }
 
@@ -272,8 +257,8 @@ func isEntryFulfilledForNotification(_ entry: CalendarEntry, calendar: CustomCal
 /// Streak statistics for notification content
 private struct StreakStats {
     let currentStreak: Int
-    let completedYesterday: Bool
-    let weeklyCompletionRate: Double
+    let completedPreviousPeriod: Bool
+    let currentPeriodProgress: Double
 }
 
 // MARK: - Request ID Utilities
@@ -307,6 +292,28 @@ private func deriveCalendarId(from request: UNNotificationRequest) -> UUID? {
 }
 
 private let streakProtectionIdentifierSuffix = "-streak-protection"
+
+private func previousCadenceDate(for calendar: CustomCalendar, relativeTo date: Date) -> Date {
+    let localCalendar = LocalDayCalendar.calendar
+    switch calendar.cadence {
+    case .daily:
+        return localCalendar.date(byAdding: .day, value: -1, to: date) ?? date
+    case .weekly:
+        let currentWeek = LocalDayCalendar.startOfWeek(for: date)
+        return localCalendar.date(byAdding: .weekOfYear, value: -1, to: currentWeek) ?? currentWeek
+    }
+}
+
+private func streakProtectionReferenceDate(for calendar: CustomCalendar, now: Date) -> Date {
+    switch calendar.cadence {
+    case .daily:
+        return now
+    case .weekly:
+        let localCalendar = LocalDayCalendar.calendar
+        let weekStart = LocalDayCalendar.startOfWeek(for: now)
+        return localCalendar.date(byAdding: .day, value: 6, to: weekStart) ?? LocalDayCalendar.startOfDay(for: now)
+    }
+}
 
 private func removePendingNotifications(for calendarId: UUID, completion: @escaping () -> Void) {
     UNUserNotificationCenter.current().getPendingNotificationRequests { requests in
@@ -345,6 +352,7 @@ private func removeAllPendingStreakProtectionNotifications(completion: @escaping
 /// - Parameters:
 ///   - calendar: The calendar to protect
 ///   - store: Calendar store for streak calculation
+@MainActor
 public func scheduleStreakProtectionReminder(
     for calendar: CustomCalendar,
     store: CustomCalendarStore
@@ -358,25 +366,26 @@ public func scheduleStreakProtectionReminder(
         return
     }
 
-    // If today is already fulfilled, there is no streak risk.
-    if let todayEntry = store.getEntry(calendarId: resolvedCalendar.id, date: Date()),
+    let now = Date()
+    let protectionDate = streakProtectionReferenceDate(for: resolvedCalendar, now: now)
+
+    // If current period is already fulfilled, there is no streak risk.
+    if let todayEntry = store.getEntry(calendarId: resolvedCalendar.id, date: protectionDate),
        isEntryFulfilledForNotification(todayEntry, calendar: resolvedCalendar)
     {
         return
     }
 
-    // Calculate streak ending yesterday (the one at risk if today is missed).
-    let streakAtRisk = calculateStreakEndingYesterday(for: resolvedCalendar)
+    // Calculate streak ending previous period (the one at risk if the current period is missed).
+    let streakAtRisk = calculateStreakEndingPreviousPeriod(for: resolvedCalendar, now: now)
 
     // Only protect significant streaks.
     guard streakAtRisk >= resolvedCalendar.streakProtectionThreshold else {
         return
     }
 
-    // Schedule notification for 9 PM today
-    let now = Date()
     let calendar_swift = Calendar.current
-    guard let ninePM = calendar_swift.date(bySettingHour: 21, minute: 0, second: 0, of: now) else {
+    guard let ninePM = calendar_swift.date(bySettingHour: 21, minute: 0, second: 0, of: protectionDate) else {
         return
     }
 
@@ -391,18 +400,21 @@ public func scheduleStreakProtectionReminder(
     // Urgent, streak-focused copy
     switch resolvedCalendar.notificationPrivacyMode {
     case .full:
+        let streakUnit = resolvedCalendar.cadence == .weekly ? "week" : "day"
         content.title = String(
-            format: String(localized: "🔥 Don't break your %lld-day streak!"),
-            streakAtRisk
+            format: String(localized: "🔥 Don't break your %lld-%@ streak!"),
+            streakAtRisk,
+            streakUnit
         )
-        content.body = String(
-            format: String(localized: "Quick! Log %@ before midnight"),
-            resolvedCalendar.name
-        )
+        content.body = resolvedCalendar.cadence == .weekly
+            ? String(format: String(localized: "Last chance to complete %@ this week"), resolvedCalendar.name)
+            : String(format: String(localized: "Quick! Log %@ before midnight"), resolvedCalendar.name)
 
     case .generic:
         content.title = String(localized: "🔥 Streak at risk!")
-        content.body = String(localized: "Don't forget to log your habit today")
+        content.body = resolvedCalendar.cadence == .weekly
+            ? String(localized: "Don't forget to log your habit this week")
+            : String(localized: "Don't forget to log your habit today")
 
     case .hidden:
         content.badge = NSNumber(value: 1)
@@ -433,12 +445,14 @@ public func scheduleStreakProtectionReminder(
         content: content,
         trigger: trigger
     )
+    let calendarName = resolvedCalendar.name
+    let streakUnit = resolvedCalendar.cadence == .weekly ? "week" : "day"
 
     UNUserNotificationCenter.current().add(request) { error in
         if let error = error {
             print("❌ Failed to schedule streak protection: \(error)")
         } else {
-            print("🛡️ Scheduled streak protection for \(resolvedCalendar.name) at 9 PM (\(streakAtRisk)-day streak)")
+            print("🛡️ Scheduled streak protection for \(calendarName) at 9 PM (\(streakAtRisk)-\(streakUnit) streak)")
         }
     }
 }
@@ -447,37 +461,26 @@ public func scheduleStreakProtectionReminder(
 /// Call on app launch / app active to re-evaluate daily streak risk.
 public func refreshStreakProtectionReminders(store: CustomCalendarStore) {
     removeAllPendingStreakProtectionNotifications {
-        DispatchQueue.main.async {
-            for calendar in store.calendars where !calendar.isArchived {
+        Task { @MainActor in
+            let calendars = store.snapshot.calendars
+            for calendar in calendars where !calendar.isArchived {
                 scheduleStreakProtectionReminder(for: calendar, store: store)
             }
         }
     }
 }
 
-/// Calculates consecutive fulfilled days ending at yesterday.
-private func calculateStreakEndingYesterday(for calendar: CustomCalendar) -> Int {
-    let formatter = DayKeyFormatter.shared
+/// Calculates consecutive fulfilled periods ending at the previous period.
+private func calculateStreakEndingPreviousPeriod(for calendar: CustomCalendar, now: Date) -> Int {
     let dayCalendar = LocalDayCalendar.calendar
-    guard let startDate = dayCalendar.date(byAdding: .day, value: -1, to: LocalDayCalendar.startOfDay(for: Date())) else {
-        return 0
-    }
+    let previousDate = previousCadenceDate(for: calendar, relativeTo: LocalDayCalendar.startOfDay(for: now))
 
-    var streak = 0
-    var checkDate = startDate
-
-    for _ in 0 ..< 365 {
-        let dayKey = formatter.string(from: checkDate)
-        guard let entry = calendar.entries[dayKey],
-              isEntrySuccess(entry: entry, calendar: calendar)
-        else {
-            break
-        }
-        streak += 1
-        checkDate = dayCalendar.date(byAdding: .day, value: -1, to: checkDate) ?? checkDate
-    }
-
-    return streak
+    return WidgetStreak.currentStreak(
+        calendar: calendar,
+        today: previousDate,
+        calendarSystem: dayCalendar,
+        allowTodayMissing: false
+    ).streak
 }
 
 // MARK: - Notification Scheduling
@@ -506,8 +509,10 @@ public func scheduleNotifications(
         if let hour = calendar.reminderHour, let minute = calendar.reminderMinute {
             allReminderTimes.append((hour, minute, true))
         }
-        for reminderTime in calendar.additionalReminderTimes {
-            allReminderTimes.append((reminderTime.hour, reminderTime.minute, false))
+        if calendar.cadence == .daily {
+            for reminderTime in calendar.additionalReminderTimes {
+                allReminderTimes.append((reminderTime.hour, reminderTime.minute, false))
+            }
         }
 
         // If no reminder times configured, nothing to schedule
@@ -529,7 +534,9 @@ public func scheduleNotifications(
                     } else if granted {
                         // Schedule streak protection if store available
                         if let store = store {
-                            scheduleStreakProtectionReminder(for: calendar, store: store)
+                            Task { @MainActor in
+                                scheduleStreakProtectionReminder(for: calendar, store: store)
+                            }
                         }
 
                         _scheduleAllReminders(
@@ -546,7 +553,9 @@ public func scheduleNotifications(
             case .authorized, .provisional:
                 // Schedule streak protection if store available
                 if let store = store {
-                    scheduleStreakProtectionReminder(for: calendar, store: store)
+                    Task { @MainActor in
+                        scheduleStreakProtectionReminder(for: calendar, store: store)
+                    }
                 }
 
                 _scheduleAllReminders(
@@ -624,6 +633,7 @@ private func _scheduleNotificationInternal(
     completion: @escaping (Result<Void, NotificationError>) -> Void
 ) {
     let content = UNMutableNotificationContent()
+    let targetPeriodText = calendar.cadence == .weekly ? "this week" : "today"
 
     // Apply privacy mode settings with dynamic content
     switch calendar.notificationPrivacyMode {
@@ -647,7 +657,9 @@ private func _scheduleNotificationInternal(
                 value: "Don't forget to track %@ today! (Target: %d)",
                 comment: "Notification body with habit name and target"
             )
-            content.body = String(format: bodyFormat, calendar.name, calendar.dailyTarget)
+            content.body = calendar.cadence == .weekly
+                ? String(format: String(localized: "Don't forget to track %@ this week! (Target: %d)"), calendar.name, calendar.dailyTarget)
+                : String(format: bodyFormat, calendar.name, calendar.dailyTarget)
         }
 
     case .generic:
@@ -662,6 +674,9 @@ private func _scheduleNotificationInternal(
             value: "Time to log your daily habit",
             comment: "Generic notification body"
         )
+        if calendar.cadence == .weekly {
+            content.body = String(localized: "Time to log your habit this week")
+        }
 
     case .hidden:
         // No text, just badge and sound
@@ -685,6 +700,9 @@ private func _scheduleNotificationInternal(
     var components = DateComponents()
     components.hour = hour
     components.minute = minute
+    if calendar.cadence == .weekly {
+        components.weekday = calendar.reminderWeekday ?? Calendar.current.component(.weekday, from: Date())
+    }
 
     // Use stored timezone if available, otherwise current
     if let timeZoneIdentifier = calendar.reminderTimeZone,
@@ -711,7 +729,7 @@ private func _scheduleNotificationInternal(
             print("❌ Failed to schedule notification for \(calendar.name): \(error)")
             completion(.failure(.schedulingFailed(error)))
         } else {
-            print("✅ Scheduled notification for \(calendar.name) at \(hour):\(String(format: "%02d", minute))")
+            print("✅ Scheduled notification for \(calendar.name) \(targetPeriodText) at \(hour):\(String(format: "%02d", minute))")
             completion(.success(()))
         }
     }
@@ -733,7 +751,9 @@ public func cancelNotifications(for calendar: CustomCalendar) {
 /// - Parameter store: The calendar store to check against
 public func checkForNotificationsOfNonExistingCalendars(store: CustomCalendarStore) async {
     let requests = await UNUserNotificationCenter.current().pendingNotificationRequests()
-    let calendarIds = Set(store.calendars.map { $0.id.uuidString })
+    let calendarIds = await MainActor.run {
+        Set(store.snapshot.calendars.map { $0.id.uuidString })
+    }
 
     var removedCount = 0
     for request in requests {
@@ -789,15 +809,17 @@ public func validateReminderTime(_ time: Date) -> Date {
 /// - Parameters:
 ///   - response: The notification response
 ///   - store: The calendar store to perform actions on
+@MainActor
 public func handleNotificationAction(
     _ response: UNNotificationResponse,
     store: CustomCalendarStore
 ) {
     let userInfo = response.notification.request.content.userInfo
+    let calendars = store.snapshot.calendars
 
     guard let calendarIdString = userInfo["calendarId"] as? String,
           let calendarId = UUID(uuidString: calendarIdString),
-          let calendar = store.calendars.first(where: { $0.id == calendarId })
+          let calendar = calendars.first(where: { $0.id == calendarId })
     else {
         print("❌ Invalid calendar ID in notification action")
         return
@@ -821,6 +843,7 @@ public func handleNotificationAction(
 }
 
 /// Quick log handler - logs an entry for today
+@MainActor
 private func handleQuickLog(for calendar: CustomCalendar, store: CustomCalendarStore) {
     let today = Date()
 
@@ -832,11 +855,12 @@ private func handleQuickLog(for calendar: CustomCalendar, store: CustomCalendarS
 
     case .counter:
         let defaultValue = calendar.defaultRecordValue ?? 1
-        entry = CalendarEntry(date: today, count: defaultValue, completed: false)
+        entry = CalendarEntry(date: today, count: defaultValue, completed: defaultValue > 0)
 
     case .multipleDaily:
+        let addValue = calendar.defaultRecordValue ?? 1
         let currentCount = store.getEntry(calendarId: calendar.id, date: today)?.count ?? 0
-        let newCount = currentCount + 1
+        let newCount = currentCount + addValue
         let completed = newCount >= calendar.dailyTarget
         entry = CalendarEntry(date: today, count: newCount, completed: completed)
     }
@@ -860,11 +884,13 @@ private func handleSnooze(for calendar: CustomCalendar) {
             comment: "Snoozed notification title with habit name"
         )
         content.title = String(format: titleFormat, calendar.name)
-        content.body = NSLocalizedString(
-            "notification.snooze.body.full",
-            value: "Don't forget to log your habit!",
-            comment: "Snoozed notification body"
-        )
+        content.body = calendar.cadence == .weekly
+            ? String(localized: "Don't forget to log your habit this week!")
+            : NSLocalizedString(
+                "notification.snooze.body.full",
+                value: "Don't forget to log your habit!",
+                comment: "Snoozed notification body"
+            )
 
     case .generic:
         // Show generic message for privacy
@@ -878,6 +904,9 @@ private func handleSnooze(for calendar: CustomCalendar) {
             value: "Time to log your daily habit",
             comment: "Generic notification body"
         )
+        if calendar.cadence == .weekly {
+            content.body = String(localized: "Time to log your habit this week")
+        }
 
     case .hidden:
         content.badge = NSNumber(value: 1)
@@ -916,6 +945,7 @@ private func handleSnooze(for calendar: CustomCalendar) {
 ///   - calendar: The calendar to check
 ///   - store: The calendar store
 /// - Returns: True if notification should be suppressed
+@MainActor
 public func shouldSuppressNotification(for calendar: CustomCalendar, store: CustomCalendarStore) -> Bool {
     let today = Date()
 

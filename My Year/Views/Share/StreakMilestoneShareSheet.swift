@@ -133,11 +133,12 @@ struct StreakMilestoneShareSheet: View {
 
     private var shareMessage: String {
         let calendarName = calendar.name.capitalized
+        let unit = calendar.cadence == .weekly ? "weeks" : "days"
         switch kind {
         case .streak:
-            return "I just hit \(milestone) days in a row on \(calendarName)!\n\ntracked using yearlit by @tymofyeyev "
+            return "I just hit \(milestone) \(unit) in a row on \(calendarName)!\n\ntracked using yearlit by @tymofyeyev "
         case .showedUp:
-            return "I just showed up \(milestone) days on \(calendarName)!\n\ntracked using yearlit by @tymofyeyev "
+            return "I just showed up \(milestone) \(unit) on \(calendarName)!\n\ntracked using yearlit by @tymofyeyev "
         }
     }
 

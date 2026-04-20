@@ -14,5 +14,6 @@
 	],
 	"workspace": "/Users/g.cattorini/code/My Year/My Year.xcodeproj/project.xcworkspace",
 	"build_root": "/Users/g.cattorini/Library/Developer/Xcode/DerivedData/My_Year-bztjubftzxfcwyfytpxhtemcjudi",
-	"kind": "xcode"
+	"kind": "xcode",
+	"scheme": "My Year"
 }

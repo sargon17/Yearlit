@@ -35,7 +35,7 @@ struct FeatureRequestForm: View {
                     }
                 } label: {
                     Label("Send request", systemImage: "paperplane")
-                }.disabled(text.count < 2)
+                }.disabled(text.trimmingCharacters(in: .whitespacesAndNewlines).count < FeatureRequestRules.minimumTitleLength)
             }
         }.navigationTitle("New Request")
     }
