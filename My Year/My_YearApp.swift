@@ -89,7 +89,7 @@ struct My_YearApp: App {
     @StateObject private var onboarding = OnboardingManager()
     @StateObject private var whatsNewManager = WhatsNewManager()
     @StateObject private var featureRequest = FeatureRequestManager(
-        appID: "jd76a32gr7hqyp30trwnds7c5x7rfdxq"
+        config: AppConfig.wishConfiguration
     )
 
     #if DEBUG

@@ -3,6 +3,7 @@ import SwiftUI
 
 struct Contacts: View {
     @Environment(\.router) private var router
+    @EnvironmentObject private var featureRequestManager: FeatureRequestManager
 
     var body: some View {
         Section(header: Text("Contacts")) {
@@ -29,12 +30,14 @@ struct Contacts: View {
             } label: {
                 Label("Message on Telegram", systemImage: "paperplane")
             }
-            Button {
-                router.showScreen(.push) { _ in
-                    FeatureRequestsList()
+            if featureRequestManager.isConfigured {
+                Button {
+                    router.showScreen(.push) { _ in
+                        FeatureRequestsList()
+                    }
+                } label: {
+                    Label("Request a Feature", systemImage: "flask")
                 }
-            } label: {
-                Label("Request a Feature", systemImage: "flask")
             }
         }
     }
