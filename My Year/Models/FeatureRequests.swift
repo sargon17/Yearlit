@@ -1,5 +1,9 @@
 import Foundation
 
+enum FeatureRequestRules {
+  static let minimumTitleLength = 4
+}
+
 struct WishAppUser: Codable, Equatable {
     let id: UUID
 
