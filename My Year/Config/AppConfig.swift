@@ -36,7 +36,7 @@ enum AppConfig {
     }
 
     let normalizedBaseURL = baseURL.hasSuffix("/") ? String(baseURL.dropLast()) : baseURL
-    let normalizedProjectID = projectID.hasPrefix("projects:") ? projectID : "projects:\(projectID)"
+    let normalizedProjectID = projectID.replacingOccurrences(of: "projects:", with: "")
 
     return WishConfiguration(
       baseURL: normalizedBaseURL,
