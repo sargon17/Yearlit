@@ -444,7 +444,7 @@ struct HabitsWidgetEntryView: View {
 }
 
 struct HabitsWidget: Widget {
-    let kind: String = "HabitsWidget"
+    let kind: String = WidgetKinds.habits
 
     var body: some WidgetConfiguration {
         return AppIntentConfiguration(
@@ -529,8 +529,6 @@ struct HabitQuickAddIntent: AppIntent, SetValueIntent {
 
         await MainActor.run {
             store.addEntry(calendarId: calendar.id, entry: newEntry)
-            // Only reload the HabitsWidget
-            WidgetCenter.shared.reloadTimelines(ofKind: "HabitsWidget")
 
             let impactFeedbackgenerator = UIImpactFeedbackGenerator(style: .medium)
             impactFeedbackgenerator.prepare()

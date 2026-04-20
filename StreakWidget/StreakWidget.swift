@@ -142,7 +142,7 @@ struct StreakWidgetEntryView: View {
 }
 
 struct StreakWidget: Widget {
-    let kind: String = "StreakWidget"
+    let kind: String = WidgetKinds.streak
 
     var body: some WidgetConfiguration {
         AppIntentConfiguration(kind: kind, intent: ConfigurationAppIntent.self, provider: Provider()) { entry in

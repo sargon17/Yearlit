@@ -10,27 +10,18 @@ struct SimpleEntry: TimelineEntry {
 
 struct Provider: TimelineProvider {
     typealias Entry = SimpleEntry
-    let store = ValuationStore.shared
 
     func placeholder(in _: Context) -> SimpleEntry {
         return SimpleEntry(date: Date(), valuations: [:])
     }
 
     func getSnapshot(in _: Context, completion: @escaping (SimpleEntry) -> Void) {
-        print("Widget: Getting snapshot")
-        store.loadValuations()
-        let entry = SimpleEntry(date: Date(), valuations: store.valuations)
-        print("Widget snapshot valuations: \(entry.valuations.count)")
+        let entry = SimpleEntry(date: Date(), valuations: ValuationStore.fetchValuationsSnapshot())
         completion(entry)
     }
 
     func getTimeline(in _: Context, completion: @escaping (Timeline<Entry>) -> Void) {
-        print("Widget: Getting timeline")
-        store.loadValuations()
-
-        // Create a single entry with current data
-        let entry = SimpleEntry(date: Date(), valuations: store.valuations)
-        print("Widget timeline valuations: \(entry.valuations.count)")
+        let entry = SimpleEntry(date: Date(), valuations: ValuationStore.fetchValuationsSnapshot())
 
         // Update at midnight
         let calendar = Calendar.current
@@ -196,7 +187,7 @@ struct DebugIntent: AppIntent {
 }
 
 struct YearWidget: Widget {
-    let kind: String = "YearWidget"
+    let kind: String = WidgetKinds.year
 
     var body: some WidgetConfiguration {
         StaticConfiguration(kind: kind, provider: Provider()) { entry in
