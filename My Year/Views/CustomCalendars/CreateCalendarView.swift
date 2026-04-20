@@ -412,9 +412,8 @@ struct CreateCalendarView: View {
         .onAppear {
             isNameFocused = true
             Purchases.shared.getCustomerInfo { info, error in
-                // swiftlint:disable:next identifier_name
-                if let e = error {
-                    print("Error fetching customer info: \(e.localizedDescription)")
+                if let error {
+                    print("Error fetching customer info: \(error.localizedDescription)")
                     return
                 }
                 self.customerInfo = info

@@ -166,7 +166,8 @@ final class FeatureRequestManager: ObservableObject {
     guard isCurrentUser(id: comment.authorClientId) else { return false }
 
     let clientId = user.id.uuidString
-    let endpoint = "\(baseURL)project/\(appID)/request/\(requestId)/comment/\(comment.id)?clientId=\(clientId)"
+    let endpoint =
+      "\(baseURL)project/\(appID)/request/\(requestId)/comment/\(comment.id)?clientId=\(clientId)"
 
     do {
       try await HTTP.delete(endpoint: endpoint)
@@ -177,12 +178,14 @@ final class FeatureRequestManager: ObservableObject {
   }
 
   func deleteRequest(id requestId: String) async {
-    guard let currentRequests = requests, currentRequests.requests.contains(where: { $0.id == requestId }) else {
+    guard let currentRequests = requests,
+          currentRequests.requests.contains(where: { $0.id == requestId }) else {
       return
     }
 
     let clientId = user.id.uuidString
-    let endpoint = "\(baseURL)project/\(appID)/request/\(requestId)?clientId=\(clientId)"
+    let endpoint =
+      "\(baseURL)project/\(appID)/request/\(requestId)?clientId=\(clientId)"
 
     do {
       try await HTTP.delete(endpoint: endpoint)
