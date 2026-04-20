@@ -161,7 +161,6 @@ struct CustomCalendarView: View {
             calendarStore: store
         )
 
-        WidgetReload.scheduleAllTimelinesReload()
         checkIfReachedThreeDays(activeCalendar)
         scheduleMilestoneCheck()
 
@@ -441,7 +440,6 @@ struct CustomCalendarView: View {
         .scrollIndicators(.hidden)
         .refreshable {
             store.loadCalendars()
-            WidgetReload.scheduleAllTimelinesReload()
         }
         .sheet(isPresented: $showingYearPicker) {
             NavigationStack {

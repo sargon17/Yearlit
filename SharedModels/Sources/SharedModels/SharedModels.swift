@@ -754,9 +754,7 @@ public final class CustomCalendarStore: ObservableObject {
                 context.insert(entryEntity)
             }
 
-            try persistChanges(in: context)
-            let nextVersion = reserveNextDataVersion()
-            loadCalendars(showLoadingIndicator: false, targetVersion: nextVersion)
+            try finishHabitMutationReloadingCalendars(in: context)
         } catch {
             NSLog("Failed to add calendar: \(error)")
         }
@@ -807,9 +805,7 @@ public final class CustomCalendarStore: ObservableObject {
             }
 
             try persistNormalizedCalendarOrder(in: context)
-            try persistChanges(in: context)
-            let nextVersion = reserveNextDataVersion()
-            loadCalendars(showLoadingIndicator: false, targetVersion: nextVersion)
+            try finishHabitMutationReloadingCalendars(in: context)
         } catch {
             NSLog("Failed to update calendar: \(error)")
         }
@@ -827,9 +823,7 @@ public final class CustomCalendarStore: ObservableObject {
             for entity in entities {
                 context.delete(entity)
             }
-            try persistChanges(in: context)
-            let nextVersion = reserveNextDataVersion()
-            loadCalendars(showLoadingIndicator: false, targetVersion: nextVersion)
+            try finishHabitMutationReloadingCalendars(in: context)
         } catch {
             NSLog("Failed to delete calendar: \(error)")
         }
@@ -843,8 +837,7 @@ public final class CustomCalendarStore: ObservableObject {
         do {
             let context = makeContext()
             persistCalendarOrder(reordered, in: context)
-            try persistChanges(in: context)
-            publishSnapshot(calendars: reordered)
+            try finishHabitMutationPublishingSnapshot(reordered, in: context)
         } catch {
             NSLog("Failed to move calendars: \(error)")
         }
@@ -860,8 +853,7 @@ public final class CustomCalendarStore: ObservableObject {
         do {
             let context = makeContext()
             persistCalendarOrder(reordered, in: context)
-            try persistChanges(in: context)
-            publishSnapshot(calendars: reordered)
+            try finishHabitMutationPublishingSnapshot(reordered, in: context)
         } catch {
             NSLog("Failed to move active calendars: \(error)")
         }
@@ -897,11 +889,76 @@ public final class CustomCalendarStore: ObservableObject {
                 context.insert(entryEntity)
             }
 
-            try persistChanges(in: context)
-            let nextVersion = reserveNextDataVersion()
-            loadCalendars(showLoadingIndicator: false, targetVersion: nextVersion)
+            try finishHabitMutationReloadingCalendars(in: context)
         } catch {
             NSLog("Failed to add entry: \(error)")
+        }
+    }
+
+    public func quickLogEntry(calendarId: UUID, date: Date = Date()) {
+        do {
+            let context = makeContext()
+            guard let calendarEntity = fetchCalendarEntity(id: calendarId, in: context) else { return }
+
+            let cadence = CalendarCadence(rawValue: calendarEntity.cadenceRawValue) ?? .daily
+            let trackingType = TrackingType(rawValue: calendarEntity.trackingTypeRawValue) ?? .binary
+            let defaultRecordValue = max(1, calendarEntity.defaultRecordValue ?? 1)
+            let dailyTarget = max(1, calendarEntity.dailyTarget)
+            let canonicalDate = canonicalEntryDate(for: date, cadence: cadence)
+            let dayKey = formatDate(date: canonicalDate, cadence: cadence)
+            let compositeKey = CalendarEntryEntity.makeCompositeKey(calendarId: calendarId, dayKey: dayKey)
+            let existingEntry = fetchEntry(compositeKey: compositeKey, in: context)
+
+            switch trackingType {
+            case .binary:
+                if let existingEntry {
+                    context.delete(existingEntry)
+                } else {
+                    let entryEntity = CalendarEntryEntity(
+                        compositeKey: compositeKey,
+                        calendarId: calendarId,
+                        dayKey: dayKey,
+                        date: canonicalDate,
+                        count: 1,
+                        completed: true
+                    )
+                    context.insert(entryEntity)
+                }
+            case .counter:
+                let newCount = (existingEntry?.count ?? 0) + defaultRecordValue
+                let normalizedEntry = CalendarEntry(
+                    date: canonicalDate,
+                    count: newCount,
+                    completed: newCount > 0
+                )
+                upsertEntry(
+                    normalizedEntry,
+                    calendarId: calendarId,
+                    dayKey: dayKey,
+                    compositeKey: compositeKey,
+                    existingEntry: existingEntry,
+                    context: context
+                )
+            case .multipleDaily:
+                let newCount = (existingEntry?.count ?? 0) + defaultRecordValue
+                let normalizedEntry = CalendarEntry(
+                    date: canonicalDate,
+                    count: newCount,
+                    completed: newCount >= dailyTarget
+                )
+                upsertEntry(
+                    normalizedEntry,
+                    calendarId: calendarId,
+                    dayKey: dayKey,
+                    compositeKey: compositeKey,
+                    existingEntry: existingEntry,
+                    context: context
+                )
+            }
+
+            try finishHabitMutationReloadingCalendars(in: context)
+        } catch {
+            NSLog("Failed to quick log entry: \(error)")
         }
     }
 
@@ -920,9 +977,7 @@ public final class CustomCalendarStore: ObservableObject {
             for entry in entries {
                 context.delete(entry)
             }
-            try persistChanges(in: context)
-            let nextVersion = reserveNextDataVersion()
-            loadCalendars(showLoadingIndicator: false, targetVersion: nextVersion)
+            try finishHabitMutationReloadingCalendars(in: context)
         } catch {
             NSLog("Failed to clear entries: \(error)")
         }
@@ -936,9 +991,7 @@ public final class CustomCalendarStore: ObservableObject {
             let compositeKey = CalendarEntryEntity.makeCompositeKey(calendarId: calendarId, dayKey: dayKey)
             guard let target = fetchEntry(compositeKey: compositeKey, in: context) else { return }
             context.delete(target)
-            try persistChanges(in: context)
-            let nextVersion = reserveNextDataVersion()
-            loadCalendars(showLoadingIndicator: false, targetVersion: nextVersion)
+            try finishHabitMutationReloadingCalendars(in: context)
         } catch {
             NSLog("Failed to delete entry: \(error)")
         }
@@ -999,6 +1052,42 @@ public final class CustomCalendarStore: ObservableObject {
         if context.hasChanges {
             try context.save()
         }
+    }
+
+    private func upsertEntry(
+        _ entry: CalendarEntry,
+        calendarId: UUID,
+        dayKey: String,
+        compositeKey: String,
+        existingEntry: CalendarEntryEntity?,
+        context: ModelContext
+    ) {
+        if let existingEntry {
+            existingEntry.apply(from: entry, calendarId: calendarId, overrideDayKey: dayKey)
+        } else {
+            let entryEntity = CalendarEntryEntity(
+                compositeKey: compositeKey,
+                calendarId: calendarId,
+                dayKey: dayKey,
+                date: entry.date,
+                count: entry.count,
+                completed: entry.completed
+            )
+            context.insert(entryEntity)
+        }
+    }
+
+    private func finishHabitMutationReloadingCalendars(in context: ModelContext) throws {
+        try persistChanges(in: context)
+        let nextVersion = reserveNextDataVersion()
+        loadCalendars(showLoadingIndicator: false, targetVersion: nextVersion)
+        WidgetReload.scheduleHabitWidgetsReload()
+    }
+
+    private func finishHabitMutationPublishingSnapshot(_ calendars: [CustomCalendar], in context: ModelContext) throws {
+        try persistChanges(in: context)
+        publishSnapshot(calendars: calendars)
+        WidgetReload.scheduleHabitWidgetsReload()
     }
 
     private func makeContext() -> ModelContext {
@@ -1298,6 +1387,12 @@ public final class ValuationStore: ObservableObject {
         }
     }
 
+    public nonisolated static func fetchValuationsSnapshot(
+        container: ModelContainer = SwiftDataManager.container
+    ) -> [String: DayValuation] {
+        (try? fetchValuations(container: container)) ?? [:]
+    }
+
     public func getValuation(for date: Date) -> DayValuation? {
         let canonicalDate = LocalDayCalendar.startOfDay(for: date)
         let key = DayKeyFormatter.shared.string(from: canonicalDate)
@@ -1327,15 +1422,9 @@ public final class ValuationStore: ObservableObject {
                 context.insert(entity)
             }
 
-            try persistChanges(in: context)
-
             var newValuations = valuations
             newValuations[valuation.id] = valuation
-            valuations = newValuations
-
-            #if os(iOS)
-                WidgetReload.scheduleAllTimelinesReload()
-            #endif
+            try finishValuationMutation(in: context, valuations: newValuations)
         } catch {
             NSLog("Failed to set valuation: \(error)")
         }
@@ -1349,12 +1438,7 @@ public final class ValuationStore: ObservableObject {
             for entity in entities {
                 context.delete(entity)
             }
-            try persistChanges(in: context)
-            valuations = [:]
-
-            #if os(iOS)
-                WidgetReload.scheduleAllTimelinesReload()
-            #endif
+            try finishValuationMutation(in: context, valuations: [:])
         } catch {
             NSLog("Failed to clear valuations: \(error)")
         }
@@ -1371,6 +1455,15 @@ public final class ValuationStore: ObservableObject {
         if context.hasChanges {
             try context.save()
         }
+    }
+
+    private func finishValuationMutation(in context: ModelContext, valuations: [String: DayValuation]) throws {
+        try persistChanges(in: context)
+        self.valuations = valuations
+
+        #if os(iOS)
+            WidgetReload.scheduleYearWidgetReload()
+        #endif
     }
 
     private func makeContext() -> ModelContext {

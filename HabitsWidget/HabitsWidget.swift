@@ -13,35 +13,23 @@ import WidgetKit
 
 struct Provider: AppIntentTimelineProvider {
     func placeholder(in _: Context) -> SimpleEntry {
-        SimpleEntry(
-            date: Date(),
-            configuration: ConfigurationAppIntent.defaultCalendar,
-            calendar: resolvedCalendar(for: ConfigurationAppIntent.defaultCalendar)
-        )
+        makeEntry(for: ConfigurationAppIntent.defaultCalendar, date: Date())
     }
 
     func snapshot(for configuration: ConfigurationAppIntent, in _: Context) async -> SimpleEntry {
-        SimpleEntry(
-            date: Date(),
-            configuration: configuration,
-            calendar: resolvedCalendar(for: configuration)
-        )
+        makeEntry(for: configuration, date: Date())
     }
 
     func timeline(for configuration: ConfigurationAppIntent, in _: Context) async -> Timeline<
         SimpleEntry
     > {
-        // Create a single entry with current data
-        let entry = SimpleEntry(
-            date: Date(),
-            configuration: configuration,
-            calendar: resolvedCalendar(for: configuration)
-        )
+        let currentDate = Date()
+        let entry = makeEntry(for: configuration, date: currentDate)
 
         // Update at midnight
         let calendar = Calendar.current
         let refreshDate: Date = calendar.startOfDay(
-            for: calendar.date(byAdding: .day, value: 1, to: Date()) ?? Date()
+            for: calendar.date(byAdding: .day, value: 1, to: currentDate) ?? currentDate
         )
 
         return Timeline(entries: [entry], policy: .after(refreshDate))
@@ -50,9 +38,24 @@ struct Provider: AppIntentTimelineProvider {
     private func resolvedCalendar(for configuration: ConfigurationAppIntent) -> CustomCalendar? {
         let calendars = CustomCalendarStore.fetchCalendarsSnapshot()
         if let selectedId = configuration.selectedCalendar?.id {
-            return calendars.first(where: { $0.id.uuidString == selectedId }) ?? calendars.first
+            return calendars.first(where: { $0.id.uuidString == selectedId })
         }
         return calendars.first
+    }
+
+    private func makeEntry(for configuration: ConfigurationAppIntent, date: Date) -> SimpleEntry {
+        let calendar = resolvedCalendar(for: configuration)
+        let streakData = calendar.map { WidgetStreak.currentStreak(calendar: $0) }
+        let todayEntry = calendar?.entry(for: date)
+
+        return SimpleEntry(
+            date: date,
+            configuration: configuration,
+            calendar: calendar,
+            currentStreak: streakData?.streak ?? 0,
+            todayCount: todayEntry?.count ?? 0,
+            isCurrentPeriodCompleted: todayEntry?.completed ?? false
+        )
     }
 }
 
@@ -60,28 +63,41 @@ struct SimpleEntry: TimelineEntry {
     let date: Date
     let configuration: ConfigurationAppIntent
     let calendar: CustomCalendar?
+    let currentStreak: Int
+    let todayCount: Int
+    let isCurrentPeriodCompleted: Bool
 }
 
 struct HorizontalCalendarGrid: View {
     let dotSize: CGFloat
     let family: WidgetFamily
-    let store = ValuationStore.shared
     let calendar: CustomCalendar?
+    let referenceDate: Date
+    let currentStreak: Int
+    let todayCount: Int
+    let isCurrentPeriodCompleted: Bool
     let backgroundColor: Color
     let textPrimaryColor: Color
     let inactiveRatio: Double
-    private let calendarStore = CustomCalendarStore.shared
     private let localCalendar = makeLocalCalendar()
 
     init(
         family: WidgetFamily,
         calendar: CustomCalendar?,
+        referenceDate: Date,
+        currentStreak: Int,
+        todayCount: Int,
+        isCurrentPeriodCompleted: Bool,
         backgroundColor: Color,
         textPrimaryColor: Color,
         inactiveRatio: Double
     ) {
         self.family = family
         self.calendar = calendar
+        self.referenceDate = referenceDate
+        self.currentStreak = currentStreak
+        self.todayCount = todayCount
+        self.isCurrentPeriodCompleted = isCurrentPeriodCompleted
         self.backgroundColor = backgroundColor
         self.textPrimaryColor = textPrimaryColor
         self.inactiveRatio = inactiveRatio
@@ -131,7 +147,6 @@ struct HorizontalCalendarGrid: View {
     }
 
     var body: some View {
-        let today = Date()
         VStack {
             HStack(spacing: 6) {
                 if let calendar = calendar {
@@ -146,28 +161,20 @@ struct HorizontalCalendarGrid: View {
                 Spacer()
 
                 if let calendar = calendar {
-                    let currentStreak = WidgetStreak.currentStreak(calendar: calendar).streak
-
                     HStack(spacing: 8) {
-                        let today = Date()
                         if calendar.trackingType != .binary && family != .systemSmall {
-                            if let todayEntry = calendar.entry(for: today) {
-                                TodaysCountView(count: todayEntry.count, cadence: calendar.cadence)
-                            } else {
-                                TodaysCountView(count: 0, cadence: calendar.cadence)
-                            }
+                            TodaysCountView(count: todayCount, cadence: calendar.cadence)
                         }
 
-                        if family != .systemSmall {
-                            if currentStreak > 0 {
-                                NumberOfDaysView(numberOfDays: currentStreak, cadence: calendar.cadence)
-                            }
+                        if family != .systemSmall, currentStreak > 0 {
+                            NumberOfDaysView(numberOfDays: currentStreak, cadence: calendar.cadence)
                         }
 
                         if #available(iOS 17.0, *) {
                             Button(intent: HabitQuickAddIntent(calendarId: calendar.id.uuidString)) {
                                 QuickAddButtonContent(
-                                    calendar: calendar, today: today
+                                    calendar: calendar,
+                                    isCurrentPeriodCompleted: isCurrentPeriodCompleted
                                 )
                             }
                             .buttonStyle(.plain)
@@ -176,7 +183,8 @@ struct HorizontalCalendarGrid: View {
                             // Fallback for iOS 16 and earlier - will open the app
                             Link(destination: URL(string: "my-year://quick-add/\(calendar.id.uuidString)")!) {
                                 QuickAddButtonContent(
-                                    calendar: calendar, today: today
+                                    calendar: calendar,
+                                    isCurrentPeriodCompleted: isCurrentPeriodCompleted
                                 )
                             }
                             .frame(width: 24, height: 24)
@@ -191,7 +199,7 @@ struct HorizontalCalendarGrid: View {
 
             GeometryReader { geometry in
                 let padding: CGFloat = 0
-                let dates = datesForFamily(today: today)
+                let dates = datesForFamily(today: referenceDate)
                 let totalDays = dates.count
                 let availableWidth = geometry.size.width - (padding * 2)
                 let availableHeight = geometry.size.height - (padding * 2)
@@ -209,7 +217,7 @@ struct HorizontalCalendarGrid: View {
                                 let day = row * layout.columns + col
                                 if day < totalDays {
                                     WidgetGridDot(
-                                        color: colorForDay(dates[day], today: today),
+                                        color: colorForDay(dates[day], today: referenceDate),
                                         dotSize: dotSize
                                     )
                                 } else {
@@ -242,11 +250,21 @@ struct HorizontalCalendarGrid: View {
         case .systemSmall:
             return recentDates(from: today, days: 35)
         case .systemMedium:
-            // return recentMonths(from: today, months: 6)
-            return (0 ..< store.numberOfDaysInYear).map { store.dateForDay($0) }
+            return yearDates(containing: today)
         default:
-            return (0 ..< store.numberOfDaysInYear).map { store.dateForDay($0) }
+            return yearDates(containing: today)
         }
+    }
+
+    private func yearDates(containing date: Date) -> [Date] {
+        let year = localCalendar.component(.year, from: date)
+        guard let start = localCalendar.date(from: DateComponents(year: year, month: 1, day: 1)),
+              let end = localCalendar.date(from: DateComponents(year: year, month: 12, day: 31))
+        else {
+            return []
+        }
+
+        return buildDates(from: start, to: end)
     }
 
     private func recentDates(from today: Date, days: Int) -> [Date] {
@@ -316,11 +334,9 @@ struct HorizontalCalendarGrid: View {
 
 struct QuickAddButtonContent: View {
     let calendar: CustomCalendar
-    let today: Date
-    let calendarStore = CustomCalendarStore.shared
+    let isCurrentPeriodCompleted: Bool
 
     var body: some View {
-        let isCompleted = calendarStore.getEntry(calendarId: calendar.id, date: today)?.completed == true
         ZStack {
             RoundedRectangle(cornerRadius: 3)
                 .fill(Color(calendar.color).opacity(0.1))
@@ -328,7 +344,7 @@ struct QuickAddButtonContent: View {
 
             Image(
                 systemName: calendar.trackingType == .binary
-                    && isCompleted
+                    && isCurrentPeriodCompleted
                     ? "minus" : "plus"
             )
             .font(.system(size: 16))
@@ -422,6 +438,10 @@ struct HabitsWidgetEntryView: View {
             HorizontalCalendarGrid(
                 family: family,
                 calendar: entry.calendar,
+                referenceDate: entry.date,
+                currentStreak: entry.currentStreak,
+                todayCount: entry.todayCount,
+                isCurrentPeriodCompleted: entry.isCurrentPeriodCompleted,
                 backgroundColor: backgroundColor,
                 textPrimaryColor: primaryTextColor,
                 inactiveRatio: inactiveRatio
@@ -432,19 +452,21 @@ struct HabitsWidgetEntryView: View {
             HorizontalCalendarGrid(
                 family: family,
                 calendar: entry.calendar,
+                referenceDate: entry.date,
+                currentStreak: entry.currentStreak,
+                todayCount: entry.todayCount,
+                isCurrentPeriodCompleted: entry.isCurrentPeriodCompleted,
                 backgroundColor: backgroundColor,
                 textPrimaryColor: primaryTextColor,
                 inactiveRatio: inactiveRatio
             )
-            .padding()
-            .background(backgroundColor)
             .widgetURL(destinationURL)
         }
     }
 }
 
 struct HabitsWidget: Widget {
-    let kind: String = "HabitsWidget"
+    let kind: String = WidgetKinds.habits
 
     var body: some WidgetConfiguration {
         return AppIntentConfiguration(
@@ -461,76 +483,30 @@ struct HabitsWidget: Widget {
     }
 }
 
-struct HabitQuickAddIntent: AppIntent, SetValueIntent {
-    static var title: LocalizedStringResource = "Quick Add Habit Entry"
+struct HabitQuickAddIntent: AppIntent {
+    static var title: LocalizedStringResource = "Quick Log Habit Entry"
     static var description = IntentDescription("Quickly add an entry to your habit tracker")
 
     @Parameter(title: "Calendar ID")
     var calendarId: String
 
-    @Parameter(title: "Value")
-    var value: Bool // Required by SetValueIntent
-
     init() {
         calendarId = ""
-        value = false
     }
 
     init(calendarId: String) {
         self.calendarId = calendarId
-        value = false
     }
 
     func perform() async throws -> some IntentResult {
         let store = await MainActor.run { CustomCalendarStore.shared }
 
-        let calendars = CustomCalendarStore.fetchCalendarsSnapshot()
-        guard let calendar = calendars.first(where: { $0.id.uuidString == calendarId }) else {
+        guard let calendarId = UUID(uuidString: calendarId) else {
             return .result()
         }
 
-        let today = Date()
-        var newEntry: CalendarEntry
-        let addValue = calendar.defaultRecordValue ?? 1
-        let existingEntry = await MainActor.run {
-            store.getEntry(calendarId: calendar.id, date: today)
-        }
-
-        if let existingEntry {
-            if calendar.trackingType == .counter || calendar.trackingType == .multipleDaily {
-                newEntry = CalendarEntry(
-                    date: today,
-                    count: existingEntry.count + addValue,
-                    completed: calendar.trackingType == .counter
-                        ? existingEntry.count + addValue > 0
-                        : existingEntry.count + addValue >= calendar.dailyTarget
-                )
-            } else {
-                newEntry = CalendarEntry(
-                    date: today,
-                    count: 1,
-                    completed: !existingEntry.completed
-                )
-            }
-        } else {
-            switch calendar.trackingType {
-            case .counter:
-                newEntry = CalendarEntry(date: today, count: addValue, completed: addValue > 0)
-            case .multipleDaily:
-                newEntry = CalendarEntry(
-                    date: today,
-                    count: addValue,
-                    completed: addValue >= calendar.dailyTarget
-                )
-            case .binary:
-                newEntry = CalendarEntry(date: today, count: 1, completed: true)
-            }
-        }
-
         await MainActor.run {
-            store.addEntry(calendarId: calendar.id, entry: newEntry)
-            // Only reload the HabitsWidget
-            WidgetCenter.shared.reloadTimelines(ofKind: "HabitsWidget")
+            store.quickLogEntry(calendarId: calendarId, date: Date())
 
             let impactFeedbackgenerator = UIImpactFeedbackGenerator(style: .medium)
             impactFeedbackgenerator.prepare()

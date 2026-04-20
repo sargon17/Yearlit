@@ -155,7 +155,6 @@ struct My_YearApp: App {
                     guard let calendar = calendars.first(where: { $0.id == calendarId }) else { return }
 
                     quickEntry(calendar: calendar, date: Date(), calendarStore: store)
-                    WidgetReload.scheduleAllTimelinesReload()
                 default:
                     break
                 }
