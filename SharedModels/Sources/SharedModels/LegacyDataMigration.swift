@@ -16,15 +16,14 @@ enum LegacyDataMigrator {
             return
         }
 
-        // Only migrate legacy data once, unless the SwiftData store is empty.
+        migrateIfNeeded(container: container, defaults: defaults)
+    }
+
+    static func migrateIfNeeded(container: ModelContainer, defaults: UserDefaults) {
+        // Only migrate legacy data once.
         let alreadyMigrated = defaults.bool(forKey: LegacyPersistenceKeys.migrationFlagKey)
 
-        let checkContext = ModelContext(container)
-        checkContext.autosaveEnabled = false
-        let calendarsCount = (try? checkContext.fetchCount(FetchDescriptor<HabitCalendarEntity>())) ?? 0
-        let valuationsCount = (try? checkContext.fetchCount(FetchDescriptor<DayValuationEntity>())) ?? 0
-
-        if !alreadyMigrated || (calendarsCount == 0 && valuationsCount == 0) {
+        if !alreadyMigrated {
             migrateLegacyData(defaults: defaults, container: container)
         }
 
