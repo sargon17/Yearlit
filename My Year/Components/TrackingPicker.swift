@@ -30,25 +30,17 @@ struct TrackingPicker: View {
                             await hapticFeedback(.rigid)
                         }
                     } label: {
-                        VStack {
-                            Image(systemName: type.icon)
-                                .font(.system(size: 16))
-                                .foregroundStyle(
-                                    trackingType == type
-                                        ? color
-                                        : .textSecondary
-                                )
-                            Text(trackingTypeLabel(for: type))
-                                .font(.system(size: 10, design: .monospaced))
-                                .foregroundStyle(
-                                    trackingType == type ? color : .textSecondary
-                                )
+                        PickerOptionTile(isSelected: trackingType == type, isEnabled: true) {
+                            PickerOptionContent(
+                                icon: type.icon,
+                                title: trackingTypeLabel(for: type),
+                                accentColor: color,
+                                isSelected: trackingType == type
+                            )
                         }
-                        .frame(maxWidth: .greatestFiniteMagnitude, maxHeight: .greatestFiniteMagnitude)
-                        .aspectRatio(2.5, contentMode: .fit)
                     }
-                    .padding()
-                    .sameLevelBorder()
+                    .buttonStyle(.plain)
+                    .accessibilityLabel(Text(trackingTypeLabel(for: type)))
                 }
             }
             .padding(.all, 2)

@@ -13,7 +13,7 @@ final class StreakMilestoneTracker {
     }
 
     func milestoneToCelebrate(calendarId: UUID, streak: Int) -> Int? {
-        guard let milestone = StreakMilestones.milestone(for: streak) else { return nil }
+        guard let milestone = StreakMilestones.latestMilestone(for: streak) else { return nil }
         let lastMilestone = lastCelebratedByCalendar[calendarId.uuidString] ?? 0
         guard milestone > lastMilestone else { return nil }
         return milestone

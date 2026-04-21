@@ -77,25 +77,6 @@ struct EditCalendarView: View {
         }
     }
 
-    private let colors = [
-        "mood-terrible",
-        "mood-bad",
-        "qs-amber",
-        "mood-neutral",
-        "qs-lime",
-        "mood-good",
-        "qs-emerald",
-        "qs-teal",
-        "qs-cyan",
-        "qs-sky",
-        "qs-blue",
-        "qs-indigo",
-        "mood-excellent",
-        "qs-fuchsia",
-        "qs-pink",
-        "qs-rose",
-    ]
-
     private var trackingTypeLabel: String {
         switch trackingType {
         case .binary:
@@ -139,17 +120,9 @@ struct EditCalendarView: View {
                     .focused($isNameFocused)
                 }
 
-                CustomSection(label: "Cadence") {
-                    HStack {
-                        Text("Type")
-                            .labelStyle(type: .secondary)
-                        Spacer()
-                        Text(cadence.title)
-                            .foregroundStyle(.textSecondary)
-                    }
-                    .padding(.horizontal)
-                    .padding(.vertical, 10)
-                }
+                CalendarColorPickerSection(selectedColor: $selectedColor)
+
+                CalendarCadencePicker(cadence: cadence, color: Color(selectedColor), isEditable: false) { _ in }
 
                 Text("Cadence can't be changed after creation.")
                     .font(.footnote)
@@ -249,36 +222,6 @@ struct EditCalendarView: View {
                         .padding(.all, 2)
                         .background(getVoidColor(colorScheme: colorScheme))
                     }
-                }
-
-                CustomSection(label: "Color") {
-                    ScrollView(.horizontal, showsIndicators: false) {
-                        HStack {
-                            ForEach(colors, id: \.self) { color in
-                                Circle()
-                                    .fill(Color(color))
-                                    .frame(width: 30, height: 30)
-                                    .overlay(
-                                        Circle()
-                                            .stroke(.white, lineWidth: selectedColor == color ? 2 : 0)
-                                    )
-                                    .onTapGesture {
-                                        withAnimation(.snappy) {
-                                            selectedColor = color
-                                        }
-                                        Task {
-                                            await hapticFeedback(.rigid)
-                                        }
-                                    }
-                            }
-                        }.padding(2)
-                            .padding(.horizontal, 10)
-                    }
-                    .padding(.vertical)
-                    .scrollClipDisabled(true)
-                    .sameLevelBorder(radius: 6, color: .black)
-                    .patternStyle()
-                    .cornerRadius(6)
                 }
 
                 CustomSection(label: "Notifications") {
@@ -488,7 +431,7 @@ struct EditCalendarView: View {
             entries: entries,
             isArchived: overrideArchived ?? isArchived,
             recurringReminderEnabled: recurringReminderEnabled,
-            reminderTime: recurringReminderEnabled ? validateReminderTime(reminderTime) : nil,
+            reminderTime: recurringReminderEnabled ? reminderTime : nil,
             order: calendar.order,
             reminderWeekday: recurringReminderEnabled && cadence == .weekly ? reminderWeekday : nil,
             unit: (trackingType == .counter || trackingType == .multipleDaily) ? selectedUnit : nil,

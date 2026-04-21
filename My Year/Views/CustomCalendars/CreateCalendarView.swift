@@ -6,6 +6,7 @@ import SwiftUI
 
 struct CreateCalendarView: View {
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.locale) private var locale
     let onCreate: (CustomCalendar) -> Void
 
     @State private var customerInfo: CustomerInfo?
@@ -39,25 +40,6 @@ struct CreateCalendarView: View {
     private var isPremiumUser: Bool {
         isPremium(customerInfo: customerInfo)
     }
-
-    private let colors = [
-        "mood-terrible",
-        "mood-bad",
-        "qs-amber",
-        "mood-neutral",
-        "qs-lime",
-        "mood-good",
-        "qs-emerald",
-        "qs-teal",
-        "qs-cyan",
-        "qs-sky",
-        "qs-blue",
-        "qs-indigo",
-        "mood-excellent",
-        "qs-fuchsia",
-        "qs-pink",
-        "qs-rose",
-    ]
 
     private var trackingTypeLabel: String {
         switch trackingType {
@@ -146,23 +128,22 @@ struct CreateCalendarView: View {
                     .focused($isNameFocused)
                 }
 
-                CustomSection(label: "Cadence") {
-                    VStack(spacing: 12) {
-                        Picker("Cadence", selection: $cadence) {
-                            ForEach(CalendarCadence.allCases, id: \.self) { cadence in
-                                Text(cadence.title).tag(cadence)
-                            }
-                        }
-                        .pickerStyle(.segmented)
+                CalendarColorPickerSection(selectedColor: $selectedColor)
 
-                        Text(cadence.detailDescription)
-                            .font(.footnote)
-                            .foregroundStyle(.textTertiary)
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                    }
-                    .padding(.horizontal, 8)
-                    .padding(.vertical, 12)
+                CalendarCadencePicker(cadence: cadence, color: Color(selectedColor), isEditable: true) { selectedCadence in
+                    cadence = selectedCadence
                 }
+
+                ZStack(alignment: .leading) {
+                    Text(cadence.detailDescription)
+                        .font(.footnote)
+                        .foregroundStyle(.textTertiary)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding(.horizontal, 8)
+                        .id(cadence)
+                        .transition(.blurReplace.combined(with: .scale(scale: 0.98)))
+                }
+                .animation(.snappy, value: cadence)
 
                 TrackingPicker(trackingType: $trackingType, color: Color(selectedColor))
 
@@ -174,7 +155,7 @@ struct CreateCalendarView: View {
                         .padding(.horizontal, 8)
                         .padding(.bottom, 12)
                         .id(trackingType)
-                        .transition(.blurReplace)
+                        .transition(.blurReplace.combined(with: .scale(scale: 0.98)))
                 }
                 .animation(.snappy, value: trackingType)
 
@@ -293,7 +274,7 @@ struct CreateCalendarView: View {
                 CustomSection(label: "Already active streak?") {
                     VStack(spacing: 8) {
                         if !existingStreakEntries.isEmpty {
-                            Text("Backfilling \(existingStreakEntries.count) \(cadence == .weekly ? "weeks" : "days").")
+                            Text(backfillSummary)
                                 .font(.footnote)
                                 .foregroundStyle(.textTertiary)
                                 .frame(maxWidth: .infinity, alignment: .leading)
@@ -330,36 +311,6 @@ struct CreateCalendarView: View {
                     .foregroundStyle(.textTertiary)
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .padding(.horizontal, 8)
-
-                CustomSection(label: "Color") {
-                    ScrollView(.horizontal, showsIndicators: false) {
-                        HStack {
-                            ForEach(colors, id: \.self) { color in
-                                Circle()
-                                    .fill(Color(color))
-                                    .frame(width: 30, height: 30)
-                                    .overlay(
-                                        Circle()
-                                            .stroke(.white, lineWidth: selectedColor == color ? 2 : 0)
-                                    )
-                                    .onTapGesture {
-                                        withAnimation(.snappy) {
-                                            selectedColor = color
-                                        }
-                                        Task {
-                                            await hapticFeedback(.rigid)
-                                        }
-                                    }
-                            }
-                        }.padding(2)
-                            .padding(.horizontal, 10)
-                    }
-                    .padding(.vertical)
-                    .scrollClipDisabled(true)
-                    .sameLevelBorder(radius: 6, color: .black)
-                    .patternStyle()
-                    .cornerRadius(6)
-                }
 
                 CustomSeparator()
                     .padding(.horizontal, -16)
@@ -447,5 +398,9 @@ struct CreateCalendarView: View {
                 existingStreakEntries = [:]
             }
         }
+    }
+
+    private var backfillSummary: String {
+        LocalizedCountText.backfilling(existingStreakEntries.count, cadence: cadence, locale: locale)
     }
 }

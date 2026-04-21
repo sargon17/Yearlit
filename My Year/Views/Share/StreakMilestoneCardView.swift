@@ -3,6 +3,7 @@ import SharedModels
 import SwiftUI
 
 struct StreakMilestoneCardView: View {
+    @Environment(\.locale) private var locale
     let calendar: CustomCalendar
     let milestone: Int
     let currentStreak: Int
@@ -87,11 +88,15 @@ struct StreakMilestoneCardView: View {
                 .font(.system(size: 12, design: .monospaced))
                 .foregroundColor(secondaryTextColor)
             if kind == .streak, currentStreak > milestone {
-                Text("Now at \(currentStreak) \(calendar.cadence == .weekly ? "weeks" : "days")")
+                Text(currentStreakSummary)
                     .font(.system(size: 12, design: .monospaced))
                     .foregroundColor(secondaryTextColor)
             }
         }
+    }
+
+    private var currentStreakSummary: String {
+        LocalizedCountText.currentStreak(currentStreak, cadence: calendar.cadence, locale: locale)
     }
 
     private var footer: some View {
@@ -306,6 +311,72 @@ struct StreakMilestoneCardView: View {
                     label: "\(unitPlural) showed up"
                 )
             }
+        case .showedUpMonth:
+            switch milestone {
+            case 3:
+                return MilestoneCopy(
+                    header: "Month in motion",
+                    kicker: "A clean start this month",
+                    label: "\(unitPlural) showed up this month"
+                )
+            case 5 ... 7:
+                return MilestoneCopy(
+                    header: "You are showing up",
+                    kicker: "This month has momentum",
+                    label: "\(unitPlural) showed up this month"
+                )
+            case 8 ... 14:
+                return MilestoneCopy(
+                    header: "Strong month",
+                    kicker: "You keep coming back",
+                    label: "\(unitPlural) showed up this month"
+                )
+            case 15 ... 21:
+                return MilestoneCopy(
+                    header: "Locked in",
+                    kicker: "Half the month and counting",
+                    label: "\(unitPlural) showed up this month"
+                )
+            default:
+                return MilestoneCopy(
+                    header: "Month owned",
+                    kicker: "This month has your name on it",
+                    label: "\(unitPlural) showed up this month"
+                )
+            }
+        case .showedUpYear:
+            switch milestone {
+            case 7:
+                return MilestoneCopy(
+                    header: "Year started right",
+                    kicker: "Seven days already banked",
+                    label: "\(unitPlural) showed up this year"
+                )
+            case 8 ... 30:
+                return MilestoneCopy(
+                    header: "Building the year",
+                    kicker: "A real base is forming",
+                    label: "\(unitPlural) showed up this year"
+                )
+            case 31 ... 90:
+                return MilestoneCopy(
+                    header: "This is lasting",
+                    kicker: "You keep stacking good days",
+                    label: "\(unitPlural) showed up this year"
+                )
+            case 91 ... 180:
+                return MilestoneCopy(
+                    header: "Half-year pace",
+                    kicker: "This is bigger than a phase",
+                    label: "\(unitPlural) showed up this year"
+                )
+            default:
+                return MilestoneCopy(
+                    header: "Year on lock",
+                    kicker: "You are writing the whole story",
+                    label: "\(unitPlural) showed up this year"
+                )
+            }
         }
     }
 }
@@ -313,6 +384,8 @@ struct StreakMilestoneCardView: View {
 enum MilestoneKind: String {
     case streak
     case showedUp
+    case showedUpMonth
+    case showedUpYear
 }
 
 private struct MilestoneDivider: View {

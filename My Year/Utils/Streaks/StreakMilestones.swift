@@ -21,4 +21,14 @@ enum StreakMilestones {
         }
         return baseMilestones.filter { $0 <= streak }.max()
     }
+
+    static func nextMilestone(after streak: Int) -> Int {
+        let nextBaseMilestone = baseMilestones.first { $0 > streak }
+        if let nextBaseMilestone {
+            return nextBaseMilestone
+        }
+
+        let nextDecade = max(40, ((streak / 10) + 1) * 10)
+        return nextDecade
+    }
 }

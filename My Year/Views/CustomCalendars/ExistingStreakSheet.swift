@@ -4,6 +4,7 @@ import SwiftfulRouting
 import SwiftUI
 
 struct ExistingStreakSheet: View {
+    @Environment(\.locale) private var locale
     let cadence: CalendarCadence
     let trackingType: TrackingType
     let dailyTarget: Int
@@ -136,11 +137,18 @@ struct ExistingStreakSheet: View {
                     router.dismissScreen()
                 }
             } message: {
-                Text(
-                    "This will overwrite \(pendingOverwriteCount) \(cadence == .daily ? "days" : "weeks") within a \(pendingTotalDays)-\(cadence == .daily ? "day" : "week") range."
-                )
+                Text(overwriteMessage)
             }
         }
+    }
+
+    private var overwriteMessage: String {
+        LocalizedCountText.overwriteSummary(
+            overwriteCount: pendingOverwriteCount,
+            totalRange: pendingTotalDays,
+            cadence: cadence,
+            locale: locale
+        )
     }
 
     private func handleApply() {

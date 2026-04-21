@@ -1,4 +1,7 @@
 import SwiftUI
+#if canImport(WidgetKit)
+    import WidgetKit
+#endif
 
 #if canImport(UIKit)
     import UIKit
@@ -7,6 +10,30 @@ import SwiftUI
 #endif
 
 public enum WidgetStyle {
+    public enum RenderingMode {
+        case fullColor
+        case reduced
+
+        public var isMonochrome: Bool {
+            self == .reduced
+        }
+
+        #if canImport(WidgetKit)
+            public init(_ widgetRenderingMode: WidgetRenderingMode) {
+                switch widgetRenderingMode {
+                case .fullColor:
+                    self = .fullColor
+                case .accented:
+                    self = .reduced
+                case .vibrant:
+                    self = .reduced
+                default:
+                    self = .reduced
+                }
+            }
+        #endif
+    }
+
     public struct GridLayout {
         public let columns: Int
         public let rows: Int
@@ -87,6 +114,55 @@ public enum WidgetStyle {
         blendedColor(base: surface, overlay: text, ratio: ratio)
     }
 
+    public static func monochromeAccentColor() -> Color {
+        Color.primary
+    }
+
+    public static func monochromePrimaryColor() -> Color {
+        Color.primary
+    }
+
+    public static func monochromeSecondaryColor() -> Color {
+        Color.secondary
+    }
+
+    public static func widgetBackgroundColor(
+        for colorScheme: ColorScheme,
+        renderingMode: RenderingMode
+    ) -> Color {
+        renderingMode.isMonochrome ? .clear : surfaceMutedColor(for: colorScheme)
+    }
+
+    public static func primaryTextColor(
+        for colorScheme: ColorScheme,
+        renderingMode: RenderingMode
+    ) -> Color {
+        renderingMode.isMonochrome ? monochromePrimaryColor() : textPrimaryColor(for: colorScheme)
+    }
+
+    public static func secondaryTextColor(
+        for colorScheme: ColorScheme,
+        renderingMode: RenderingMode
+    ) -> Color {
+        renderingMode.isMonochrome ? monochromeSecondaryColor() : Color("text-secondary")
+    }
+
+    public static func monochromePastDotColor() -> Color {
+        monochromePrimaryColor().opacity(0.55)
+    }
+
+    public static func monochromeFutureDotColor() -> Color {
+        monochromeSecondaryColor().opacity(0.22)
+    }
+
+    public static func separatorTopColor(renderingMode: RenderingMode) -> Color {
+        renderingMode.isMonochrome ? monochromeSecondaryColor().opacity(0.28) : Color("devider-top")
+    }
+
+    public static func separatorBottomColor(renderingMode: RenderingMode) -> Color {
+        renderingMode.isMonochrome ? monochromeSecondaryColor().opacity(0.12) : Color("devider-bottom")
+    }
+
     public static func surfaceMutedColor(for colorScheme: ColorScheme) -> Color {
         switch colorScheme {
         case .dark:
@@ -132,33 +208,40 @@ public enum WidgetStyle {
 public struct WidgetGridDot: View {
     public let color: Color
     public let dotSize: CGFloat
+    public let accentable: Bool
 
-    public init(color: Color, dotSize: CGFloat) {
+    public init(color: Color, dotSize: CGFloat, accentable: Bool = false) {
         self.color = color
         self.dotSize = dotSize
+        self.accentable = accentable
     }
 
     public var body: some View {
         RoundedRectangle(cornerRadius: 3)
             .fill(color)
             .frame(width: dotSize, height: dotSize)
-            .widgetAccentable(false)
+            .widgetAccentable(accentable)
     }
 }
 
 public struct WidgetSeparator: View {
-    public init() {}
+    public let renderingMode: WidgetStyle.RenderingMode
+
+    public init(renderingMode: WidgetStyle.RenderingMode = .fullColor) {
+        self.renderingMode = renderingMode
+    }
 
     public var body: some View {
         VStack(spacing: 0) {
             Rectangle()
-                .fill(Color("devider-top"))
+                .fill(WidgetStyle.separatorTopColor(renderingMode: renderingMode))
                 .frame(height: 1)
                 .frame(maxWidth: .infinity)
             Rectangle()
-                .fill(Color("devider-bottom"))
+                .fill(WidgetStyle.separatorBottomColor(renderingMode: renderingMode))
                 .frame(height: 1)
                 .frame(maxWidth: .infinity)
         }
+        .widgetAccentable(false)
     }
 }

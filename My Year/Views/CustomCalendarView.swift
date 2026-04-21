@@ -76,6 +76,7 @@ struct CustomCalendarView: View {
     @State private var lastObservedDataVersion: Int = 0
     @State private var pendingMilestoneCheck: Bool = false
     @State private var isEntryEditSheetPresented: Bool = false
+    @State private var isMilestoneDebugDialogPresented: Bool = false
 
     @Environment(\.router) private var router
 
@@ -176,9 +177,10 @@ struct CustomCalendarView: View {
     private func evaluateMilestonesIfNeeded(calendarId: UUID) {
         guard pendingMilestoneCheck else { return }
         pendingMilestoneCheck = false
-        let calendars = CustomCalendarStore.fetchCalendarsSnapshot()
-        guard let updatedCalendar = calendars.first(where: { $0.id == calendarId }) else { return }
+        let referenceDate = Date()
+        guard let updatedCalendar = store.snapshot.calendar(id: calendarId) else { return }
         let currentStreak = currentStreak(for: updatedCalendar)
+
         if let milestone = StreakMilestoneTracker.shared.milestoneToCelebrate(
             calendarId: calendarId,
             streak: currentStreak
@@ -196,24 +198,132 @@ struct CustomCalendarView: View {
             return
         }
 
-        let showedUpCount = showedUpCount(for: updatedCalendar)
+        if updatedCalendar.cadence == .daily {
+            for kind in [ShowedUpMilestoneKind.currentMonth, .currentYear] {
+                if celebrateShowedUpMilestoneIfNeeded(
+                    calendar: updatedCalendar,
+                    calendarId: calendarId,
+                    currentStreak: currentStreak,
+                    kind: kind,
+                    referenceDate: referenceDate
+                ) {
+                    return
+                }
+            }
+        }
+
+        _ = celebrateShowedUpMilestoneIfNeeded(
+            calendar: updatedCalendar,
+            calendarId: calendarId,
+            currentStreak: currentStreak,
+            kind: .allTime,
+            referenceDate: referenceDate
+        )
+    }
+
+    @discardableResult
+    private func celebrateShowedUpMilestoneIfNeeded(
+        calendar: CustomCalendar,
+        calendarId: UUID,
+        currentStreak: Int,
+        kind: ShowedUpMilestoneKind,
+        referenceDate: Date
+    ) -> Bool {
+        let periodKey = ShowedUpMilestones.periodKey(for: kind, today: referenceDate)
+        let showedUpCount = ShowedUpMilestones.showedUpCount(for: calendar, kind: kind, today: referenceDate)
+
         guard
-            let showedUpMilestone = ShowedUpMilestoneTracker.shared.milestoneToCelebrate(
+            let milestone = ShowedUpMilestoneTracker.shared.milestoneToCelebrate(
                 calendarId: calendarId,
-                showedUpCount: showedUpCount
+                showedUpCount: showedUpCount,
+                kind: kind,
+                periodKey: periodKey
             )
-        else { return }
+        else { return false }
+
         ShowedUpMilestoneTracker.shared.markCelebrated(
             calendarId: calendarId,
-            milestone: showedUpMilestone
+            milestone: milestone,
+            kind: kind,
+            periodKey: periodKey
         )
         router.showScreen(.sheet) { _ in
             StreakMilestoneShareSheet(
-                calendar: updatedCalendar,
-                milestone: showedUpMilestone,
+                calendar: calendar,
+                milestone: milestone,
                 currentStreak: currentStreak,
-                kind: .showedUp,
-                dates: gridDates
+                kind: milestoneKind(for: kind),
+                dates: milestoneDates(for: kind, referenceDate: referenceDate)
+            )
+        }
+        return true
+    }
+
+    private func milestoneKind(for kind: ShowedUpMilestoneKind) -> MilestoneKind {
+        switch kind {
+        case .allTime:
+            .showedUp
+        case .currentMonth:
+            .showedUpMonth
+        case .currentYear:
+            .showedUpYear
+        }
+    }
+
+    private func milestoneDates(for kind: ShowedUpMilestoneKind, referenceDate: Date) -> [Date] {
+        switch kind {
+        case .allTime:
+            return gridDates
+        case .currentMonth:
+            let referenceYear = LocalDayCalendar.calendar.component(.year, from: referenceDate)
+            return getYearDatesArray(for: referenceYear).filter {
+                LocalDayCalendar.calendar.isDate($0, equalTo: referenceDate, toGranularity: .month)
+            }
+        case .currentYear:
+            let referenceYear = LocalDayCalendar.calendar.component(.year, from: referenceDate)
+            return getYearDatesArray(for: referenceYear)
+        }
+    }
+
+    private func showDebugMilestonePreview(kind: MilestoneKind, calendar: CustomCalendar) {
+        let referenceDate = Date()
+        let milestone: Int?
+        let dates: [Date]
+
+        switch kind {
+        case .streak:
+            milestone = StreakMilestones.nextMilestone(after: currentStreak(for: calendar))
+            dates = gridDates
+        case .showedUp:
+            milestone = ShowedUpMilestones.nextMilestone(
+                after: ShowedUpMilestones.showedUpCount(for: calendar, kind: .allTime, today: referenceDate),
+                kind: .allTime
+            )
+            dates = milestoneDates(for: .allTime, referenceDate: referenceDate)
+        case .showedUpMonth:
+            milestone = ShowedUpMilestones.nextMilestone(
+                after: ShowedUpMilestones.showedUpCount(for: calendar, kind: .currentMonth, today: referenceDate),
+                kind: .currentMonth
+            )
+            dates = milestoneDates(for: .currentMonth, referenceDate: referenceDate)
+        case .showedUpYear:
+            milestone = ShowedUpMilestones.nextMilestone(
+                after: ShowedUpMilestones.showedUpCount(for: calendar, kind: .currentYear, today: referenceDate),
+                kind: .currentYear
+            )
+            dates = milestoneDates(for: .currentYear, referenceDate: referenceDate)
+        }
+
+        guard let milestone else { return }
+
+        router.showScreen(.sheet) { _ in
+            StreakMilestoneShareSheet(
+                calendar: calendar,
+                milestone: milestone,
+                currentStreak: currentStreak(for: calendar),
+                kind: kind,
+                dates: dates,
+                isPreview: true
             )
         }
     }
@@ -223,19 +333,14 @@ struct CustomCalendarView: View {
     }
 
     private func showedUpCount(for calendar: CustomCalendar) -> Int {
-        var localCalendar = Calendar(identifier: .gregorian)
-        localCalendar.locale = Locale(identifier: "en_US_POSIX")
-        localCalendar.timeZone = .autoupdatingCurrent
-        let today = localCalendar.startOfDay(for: Date())
-        return calendar.entries.values.filter { entry in
-            localCalendar.startOfDay(for: entry.date) <= today
-        }.count
+        ShowedUpMilestones.showedUpCount(for: calendar, kind: .allTime)
     }
 
     var body: some View {
         let snapshot = store.snapshot
         let dataVersion = snapshot.dataVersion
         let selectedYear = valuationStore.selectedYear
+        let isCurrentYearSelected = selectedYear == Calendar.current.component(.year, from: Date())
         let statsTaskId =
             "\(calendar.id.uuidString)|\(selectedYear)|\(dataVersion)|\(statsRefreshToken.uuidString)"
         let resolvedCalendar = activeCalendar
@@ -275,6 +380,12 @@ struct CustomCalendarView: View {
                                 if My_YearApp.isDebugMode && runtimeDebugEnabled {
                                     Button(action: fillRandomEntries) {
                                         Image(systemName: "wand.and.stars")
+                                            .foregroundColor(Color(resolvedCalendar.color))
+                                    }
+                                    .padding(.horizontal, 4)
+
+                                    Button(action: { isMilestoneDebugDialogPresented = true }) {
+                                        Image(systemName: "testtube.2")
                                             .foregroundColor(Color(resolvedCalendar.color))
                                     }
                                     .padding(.horizontal, 4)
@@ -477,6 +588,43 @@ struct CustomCalendarView: View {
         }
         .sheet(isPresented: $isPaywallPresented) {
             PaywallView()
+        }
+        .confirmationDialog(
+            "Preview milestone",
+            isPresented: $isMilestoneDebugDialogPresented,
+            titleVisibility: .visible
+        ) {
+            Button("Preview next streak milestone") {
+                showDebugMilestonePreview(kind: .streak, calendar: activeCalendar)
+            }
+            if isCurrentYearSelected,
+               activeCalendar.cadence == .daily,
+               ShowedUpMilestones.nextMilestone(
+                   after: ShowedUpMilestones.showedUpCount(for: activeCalendar, kind: .currentMonth),
+                   kind: .currentMonth
+               ) != nil
+            {
+                Button("Preview next showed up this month milestone") {
+                    showDebugMilestonePreview(kind: .showedUpMonth, calendar: activeCalendar)
+                }
+            }
+            if isCurrentYearSelected,
+               activeCalendar.cadence == .daily,
+               ShowedUpMilestones.nextMilestone(
+                   after: ShowedUpMilestones.showedUpCount(for: activeCalendar, kind: .currentYear),
+                   kind: .currentYear
+               ) != nil
+            {
+                Button("Preview next showed up this year milestone") {
+                    showDebugMilestonePreview(kind: .showedUpYear, calendar: activeCalendar)
+                }
+            }
+            Button("Preview next showed up all-time milestone") {
+                showDebugMilestonePreview(kind: .showedUp, calendar: activeCalendar)
+            }
+            Button("Cancel", role: .cancel) {}
+        } message: {
+            Text("Debug only. Opens the milestone sheet without changing tracker state.")
         }
         .alert(item: $calendarError) { error in
             Alert(

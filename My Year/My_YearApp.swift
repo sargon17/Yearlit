@@ -87,7 +87,6 @@ struct My_YearApp: App {
 
     // * Onboarding Manager
     @StateObject private var onboarding = OnboardingManager()
-    @StateObject private var whatsNewManager = WhatsNewManager()
     @StateObject private var featureRequest = FeatureRequestManager(
         config: AppConfig.wishConfiguration
     )
@@ -160,7 +159,6 @@ struct My_YearApp: App {
                 }
             }
             .environmentObject(onboarding)
-            .environmentObject(whatsNewManager)
             .environmentObject(featureRequest)
             .fullScreenCover(isPresented: .constant(!onboarding.hasSeenOnboarding)) {
                 OnboardingView {

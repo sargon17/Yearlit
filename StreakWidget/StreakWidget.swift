@@ -77,11 +77,14 @@ struct SimpleEntry: TimelineEntry {
 struct StreakWidgetEntryView: View {
     var entry: Provider.Entry
     @Environment(\.colorScheme) private var colorScheme
+    @Environment(\.widgetRenderingMode) private var widgetRenderingMode
 
     var body: some View {
-        let backgroundColor = WidgetStyle.surfaceMutedColor(for: colorScheme)
-        let primaryTextColor = WidgetStyle.textPrimaryColor(for: colorScheme)
-        let accentColor = Color(entry.calendar?.color ?? "qs-orange")
+        let renderingMode = WidgetStyle.RenderingMode(widgetRenderingMode)
+        let backgroundColor = WidgetStyle.widgetBackgroundColor(for: colorScheme, renderingMode: renderingMode)
+        let primaryTextColor = WidgetStyle.primaryTextColor(for: colorScheme, renderingMode: renderingMode)
+        let secondaryTextColor = WidgetStyle.secondaryTextColor(for: colorScheme, renderingMode: renderingMode)
+        let accentColor = renderingMode.isMonochrome ? WidgetStyle.monochromeAccentColor() : Color(entry.calendar?.color ?? "qs-orange")
         let calendarName = entry.calendar?.name ?? String(localized: "Habit")
         let streakValue = entry.streak
         let isAtRisk = entry.isAtRisk
@@ -105,16 +108,17 @@ struct StreakWidgetEntryView: View {
                             calendarName.lowercased()
                         )
                     )
-                    .foregroundColor(Color("qs-red"))
+                    .foregroundColor(renderingMode.isMonochrome ? .primary : Color("qs-red"))
+                    .widgetAccentable(renderingMode.isMonochrome)
                 } else {
                     Text(calendarName.lowercased())
-                        .foregroundColor(.textPrimary)
+                        .foregroundColor(renderingMode.isMonochrome ? .primary : .textPrimary)
                 }
             }
-            .foregroundColor(.textSecondary)
+            .foregroundColor(secondaryTextColor)
             .font(.system(size: 10, design: .monospaced))
 
-            WidgetSeparator()
+            WidgetSeparator(renderingMode: renderingMode)
                 .padding(.horizontal, -16)
                 .padding(.bottom, 4)
 
@@ -125,6 +129,7 @@ struct StreakWidgetEntryView: View {
                     .font(.system(size: 48, design: .monospaced))
                     .foregroundColor(accentColor)
                     .fontWeight(.heavy)
+                    .widgetAccentable(renderingMode.isMonochrome)
             } else {
                 Text("It's never late to start a new streak!")
                     .font(.system(size: 12, design: .monospaced))
@@ -134,7 +139,7 @@ struct StreakWidgetEntryView: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
         .padding()
         .containerBackground(backgroundColor, for: .widget)
-        .background(.surfaceMuted)
+        .background(backgroundColor)
         .widgetAccentable(false)
         .widgetURL(destinationURL)
     }

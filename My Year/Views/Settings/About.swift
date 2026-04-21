@@ -4,27 +4,12 @@ import SwiftUI
 
 struct About: View {
     @Environment(\.router) var router
-    @EnvironmentObject private var whatsNewManager: WhatsNewManager
 
     var body: some View {
         Section(header: Text("About")) {
             Button("My Note to You") {
                 router.showScreen(.fullScreenCover) { _ in
                     AboutThisProject()
-                }
-            }
-
-            let latestVersion = whatsNewManager.latestRelease()?.version
-            let whatsNewLabel = latestVersion == nil ? "What's New" : "What's New (\(latestVersion!))"
-            Button(whatsNewLabel) {
-                guard let release = whatsNewManager.latestRelease() else { return }
-                router.showScreen(.sheet) { _ in
-                    WhatsNewSheetView(release: release) {
-                        whatsNewManager.markSeen(release)
-                        router.dismissScreen()
-                    }
-                    .presentationDetents([.fraction(0.92)])
-                    .presentationDragIndicator(.visible)
                 }
             }
         }

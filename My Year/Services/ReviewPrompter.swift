@@ -43,7 +43,6 @@ final class ReviewPrompter {
 
     /// Call this whenever a “good” thing happens in your app.
     func record(_: PositiveEvent) {
-        print("setting record")
         state.totalEventCount += 1
         save()
     }
@@ -52,13 +51,19 @@ final class ReviewPrompter {
     /// This won’t show anything if rules aren’t met or the system refuses.
     func considerPrompt(from viewController: UIViewController? = nil, fallbackAppID: String? = nil) {
         guard shouldPromptNow() else { return }
-        actuallyPrompt(from: viewController, fallbackAppID: fallbackAppID)
+        isPromptInFlight = true
+        Task { @MainActor in
+            defer { self.isPromptInFlight = false }
+            actuallyPrompt(from: viewController, fallbackAppID: fallbackAppID)
+        }
     }
 
     // SwiftUI convenience.
     #if canImport(SwiftUI)
         func considerPromptSwiftUI(fallbackAppID: String? = nil) {
-            considerPrompt(from: topMostViewController(), fallbackAppID: fallbackAppID)
+            Task { @MainActor in
+                considerPrompt(from: topMostViewController(), fallbackAppID: fallbackAppID)
+            }
         }
     #endif
 
@@ -66,8 +71,11 @@ final class ReviewPrompter {
 
     private let storageKey = "review_prompter.state.v1"
     private var state = ReviewState()
+    private var isPromptInFlight = false
 
     private func shouldPromptNow() -> Bool {
+        guard !isPromptInFlight else { return false }
+
         // Enough positive signals?
         guard state.totalEventCount >= rules.minEvents else { return false }
 
@@ -90,31 +98,47 @@ final class ReviewPrompter {
         return true
     }
 
+    @MainActor
     private func actuallyPrompt(from viewController: UIViewController?, fallbackAppID: String?) {
-        // Try in‑app prompt (iOS 10.3+)
-        if #available(iOS 14.0, *) {
-            // Prefer the active scene so it can actually show.
-            if let scene = UIApplication.shared.connectedScenes
-                .compactMap({ $0 as? UIWindowScene })
-                .first(where: { $0.activationState == .foregroundActive })
-            {
+        if #available(iOS 14.0, *), let scene = reviewScene(from: viewController) {
+            if #available(iOS 18.0, *) {
+                AppStore.requestReview(in: scene)
+            } else {
                 SKStoreReviewController.requestReview(in: scene)
-                markPromptUsed()
-                return
             }
+            markPromptUsed()
+            return
         }
-        // iOS 10.3–13 or no active scene available
-        SKStoreReviewController.requestReview()
+
+        if #unavailable(iOS 14.0) {
+            SKStoreReviewController.requestReview()
+            markPromptUsed()
+            return
+        }
+
+        // No active scene means the in-app prompt cannot be shown reliably.
+        guard let appID = fallbackAppID else { return }
         markPromptUsed()
 
         // Optional: If you **really** want a guaranteed route to a review UI
         // (e.g., if you know Apple may ignore frequent requests),
         // you can deep‑link after a small delay. Use with care to avoid being pushy.
-        if let appID = fallbackAppID {
-            DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
-                self.openWriteReviewPage(appID: appID, from: viewController)
-            }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+            self.openWriteReviewPage(appID: appID, from: viewController)
         }
+    }
+
+    @available(iOS 14.0, *)
+    private func reviewScene(from viewController: UIViewController?) -> UIWindowScene? {
+        if let scene = viewController?.view.window?.windowScene,
+           scene.activationState == .foregroundActive
+        {
+            return scene
+        }
+
+        return UIApplication.shared.connectedScenes
+            .compactMap { $0 as? UIWindowScene }
+            .first(where: { $0.activationState == .foregroundActive })
     }
 
     private func markPromptUsed() {
@@ -156,21 +180,24 @@ final class ReviewPrompter {
 
 // MARK: - Tiny helper to safely find a top VC & present URLs
 
+@MainActor
 private func topMostViewController(
-    base: UIViewController? = UIApplication.shared.connectedScenes
+    base: UIViewController? = nil
+) -> UIViewController? {
+    let resolvedBase = base ?? UIApplication.shared.connectedScenes
         .compactMap { ($0 as? UIWindowScene)?.keyWindow }
         .first?.rootViewController
-) -> UIViewController? {
-    if let nav = base as? UINavigationController {
+
+    if let nav = resolvedBase as? UINavigationController {
         return topMostViewController(base: nav.visibleViewController)
     }
-    if let tab = base as? UITabBarController, let selected = tab.selectedViewController {
+    if let tab = resolvedBase as? UITabBarController, let selected = tab.selectedViewController {
         return topMostViewController(base: selected)
     }
-    if let presented = base?.presentedViewController {
+    if let presented = resolvedBase?.presentedViewController {
         return topMostViewController(base: presented)
     }
-    return base
+    return resolvedBase
 }
 
 private enum SFSafePresenter {

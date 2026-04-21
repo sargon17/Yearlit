@@ -32,25 +32,29 @@ struct Provider: TimelineProvider {
 }
 
 struct HorizontalYearGrid: View {
+    @Environment(\.locale) private var locale
     let dotSize: CGFloat
     let family: WidgetFamily
     let referenceDate: Date
     let backgroundColor: Color
     let textPrimaryColor: Color
     let inactiveRatio: Double
+    let renderingMode: WidgetStyle.RenderingMode
 
     init(
         family: WidgetFamily,
         referenceDate: Date,
         backgroundColor: Color,
         textPrimaryColor: Color,
-        inactiveRatio: Double
+        inactiveRatio: Double,
+        renderingMode: WidgetStyle.RenderingMode
     ) {
         self.family = family
         self.referenceDate = referenceDate
         self.backgroundColor = backgroundColor
         self.textPrimaryColor = textPrimaryColor
         self.inactiveRatio = inactiveRatio
+        self.renderingMode = renderingMode
         switch family {
         case .systemLarge:
             dotSize = 9.0
@@ -62,17 +66,38 @@ struct HorizontalYearGrid: View {
     }
 
     private func colorForDay(_ day: Int) -> Color {
-        let todayIndex = currentDayNumber - 1
+        let todayIndex = self.todayIndex
+
+        if renderingMode.isMonochrome {
+            if day > todayIndex {
+                return WidgetStyle.monochromeFutureDotColor()
+            }
+
+            if day == todayIndex {
+                return accentColor
+            }
+
+            return WidgetStyle.monochromePastDotColor()
+        }
 
         if day > todayIndex {
             return inactiveDayColor(base: backgroundColor, overlay: textPrimaryColor, ratio: inactiveRatio)
         }
 
         if day == todayIndex {
-            return Color("qs-orange")
+            return accentColor
         }
 
         return activeDayColor(base: backgroundColor, overlay: textPrimaryColor)
+    }
+
+    private var accentColor: Color {
+        switch renderingMode {
+        case .fullColor:
+            return Color("qs-orange")
+        case .reduced:
+            return WidgetStyle.monochromeAccentColor()
+        }
     }
 
     var body: some View {
@@ -81,35 +106,28 @@ struct HorizontalYearGrid: View {
                 if family == .systemLarge || family == .systemMedium {
                     Text(LocalDayCalendar.calendar.component(.year, from: referenceDate).description)
                         .font(.system(size: 12, design: .monospaced))
-                        .foregroundColor(Color("text-primary"))
+                        .foregroundColor(renderingMode.isMonochrome ? .primary : Color("text-primary"))
                         .fontWeight(.heavy)
 
                     Text("/")
                         .font(.system(size: 12, design: .monospaced))
-                        .foregroundColor(Color("text-tertiary"))
+                        .foregroundColor(renderingMode.isMonochrome ? .secondary : Color("text-tertiary"))
                 }
 
                 let percent = Double(currentDayNumber) / Double(numberOfDaysInYear)
                 Text(String(format: "%.1f%%", percent * 100))
                     .font(.system(size: 9, design: .monospaced))
-                    .foregroundColor(.textSecondary)
+                    .foregroundColor(renderingMode.isMonochrome ? .secondary : .textSecondary)
                     .fontWeight(.black)
 
                 Spacer()
 
-                Text("\(numberOfDaysInYear - currentDayNumber)")
+                Text(LocalizedCountText.daysLeft(numberOfDaysInYear - currentDayNumber, locale: locale))
                     .font(.system(size: 9, design: .monospaced))
-                    .foregroundColor(.qsOrange)
-                    .fontWeight(.heavy)
-                    + Text(" ")
-                    .font(.system(size: 9, design: .monospaced))
-                    .foregroundColor(.textTertiary)
-                    + Text("days left")
-                    .font(.system(size: 9, design: .monospaced))
-                    .foregroundColor(.textTertiary)
+                    .foregroundColor(renderingMode.isMonochrome ? .secondary : .textTertiary)
             }
 
-            WidgetSeparator()
+            WidgetSeparator(renderingMode: renderingMode)
                 .padding(.horizontal, -16)
                 .padding(.bottom, 4)
 
@@ -132,7 +150,11 @@ struct HorizontalYearGrid: View {
                                 let day = row * layout.columns + col
                                 if day < numberOfDaysInYear {
                                     let color = colorForDay(day)
-                                    WidgetGridDot(color: color, dotSize: dotSize)
+                                    WidgetGridDot(
+                                        color: color,
+                                        dotSize: dotSize,
+                                        accentable: renderingMode.isMonochrome && day == todayIndex
+                                    )
                                 } else {
                                     Color.clear.frame(width: dotSize, height: dotSize)
                                 }
@@ -148,6 +170,10 @@ struct HorizontalYearGrid: View {
 
     private var selectedYear: Int {
         LocalDayCalendar.calendar.component(.year, from: referenceDate)
+    }
+
+    private var todayIndex: Int {
+        currentDayNumber - 1
     }
 
     private var currentDayNumber: Int {
@@ -180,10 +206,12 @@ struct YearWidgetEntryView: View {
     var entry: Provider.Entry
     @Environment(\.widgetFamily) var family
     @Environment(\.colorScheme) private var colorScheme
+    @Environment(\.widgetRenderingMode) private var widgetRenderingMode
 
     var body: some View {
-        let backgroundColor = WidgetStyle.surfaceMutedColor(for: colorScheme)
-        let primaryTextColor = WidgetStyle.textPrimaryColor(for: colorScheme)
+        let renderingMode = WidgetStyle.RenderingMode(widgetRenderingMode)
+        let backgroundColor = WidgetStyle.widgetBackgroundColor(for: colorScheme, renderingMode: renderingMode)
+        let primaryTextColor = WidgetStyle.primaryTextColor(for: colorScheme, renderingMode: renderingMode)
         let inactiveRatio = 0.04
 
         HorizontalYearGrid(
@@ -191,7 +219,8 @@ struct YearWidgetEntryView: View {
             referenceDate: entry.date,
             backgroundColor: backgroundColor,
             textPrimaryColor: primaryTextColor,
-            inactiveRatio: inactiveRatio
+            inactiveRatio: inactiveRatio,
+            renderingMode: renderingMode
         )
         .containerBackground(backgroundColor, for: .widget)
         .widgetAccentable(false)

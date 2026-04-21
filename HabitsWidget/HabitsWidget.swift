@@ -79,6 +79,7 @@ struct HorizontalCalendarGrid: View {
     let backgroundColor: Color
     let textPrimaryColor: Color
     let inactiveRatio: Double
+    let renderingMode: WidgetStyle.RenderingMode
     private let localCalendar = makeLocalCalendar()
 
     init(
@@ -90,7 +91,8 @@ struct HorizontalCalendarGrid: View {
         isCurrentPeriodCompleted: Bool,
         backgroundColor: Color,
         textPrimaryColor: Color,
-        inactiveRatio: Double
+        inactiveRatio: Double,
+        renderingMode: WidgetStyle.RenderingMode
     ) {
         self.family = family
         self.calendar = calendar
@@ -101,6 +103,7 @@ struct HorizontalCalendarGrid: View {
         self.backgroundColor = backgroundColor
         self.textPrimaryColor = textPrimaryColor
         self.inactiveRatio = inactiveRatio
+        self.renderingMode = renderingMode
         switch family {
         case .systemLarge:
             dotSize = 10.0
@@ -112,8 +115,49 @@ struct HorizontalCalendarGrid: View {
     }
 
     private func colorForDay(_ date: Date, today: Date) -> Color {
-        let normalized = localCalendar.startOfDay(for: date)
-        let normalizedToday = localCalendar.startOfDay(for: today)
+        let normalized = normalizedBucketDate(for: date)
+        let normalizedToday = normalizedBucketDate(for: today)
+
+        if renderingMode.isMonochrome {
+            if normalized > normalizedToday {
+                return WidgetStyle.monochromeFutureDotColor()
+            }
+
+            guard let calendar, let entry = calendar.entry(for: normalized) else {
+                return WidgetStyle.monochromePastDotColor()
+            }
+
+            switch calendar.trackingType {
+            case .binary:
+                if normalized == normalizedToday, entry.completed {
+                    return WidgetStyle.monochromeAccentColor()
+                }
+
+                return entry.completed ? WidgetStyle.monochromePrimaryColor().opacity(0.85) : WidgetStyle.monochromePastDotColor()
+            case .counter:
+                let ratio = max(0.35, Double(entry.count) / Double(maximumEntryCount))
+                guard entry.count > 0 else {
+                    return WidgetStyle.monochromePastDotColor()
+                }
+
+                if normalized == normalizedToday {
+                    return WidgetStyle.monochromeAccentColor().opacity(ratio)
+                }
+
+                return WidgetStyle.monochromePrimaryColor().opacity(ratio)
+            case .multipleDaily:
+                let opacity = min(1, max(0.35, Double(entry.count) / Double(calendar.dailyTarget)))
+                guard entry.count > 0 else {
+                    return WidgetStyle.monochromePastDotColor()
+                }
+
+                if normalized == normalizedToday {
+                    return WidgetStyle.monochromeAccentColor().opacity(opacity)
+                }
+
+                return WidgetStyle.monochromePrimaryColor().opacity(opacity)
+            }
+        }
 
         if normalized > normalizedToday {
             return inactiveDayColor(base: backgroundColor, overlay: textPrimaryColor, ratio: inactiveRatio)
@@ -128,9 +172,8 @@ struct HorizontalCalendarGrid: View {
                     ? Color(calendar.color)
                     : activeDayColor(base: backgroundColor, overlay: textPrimaryColor)
             case .counter:
-                let maxCount = max(1, calendar.entries.values.map { $0.count }.max() ?? 1)
                 if entry.count > 0 {
-                    let ratio = max(0.1, Double(entry.count) / Double(maxCount))
+                    let ratio = max(0.1, Double(entry.count) / Double(maximumEntryCount))
                     return WidgetStyle.blendedColor(base: backgroundColor, overlay: Color(calendar.color), ratio: ratio)
                 }
                 return activeDayColor(base: backgroundColor, overlay: textPrimaryColor)
@@ -146,13 +189,49 @@ struct HorizontalCalendarGrid: View {
         return activeDayColor(base: backgroundColor, overlay: textPrimaryColor)
     }
 
+    private func isAccentedDay(_ date: Date, today: Date) -> Bool {
+        guard renderingMode.isMonochrome else {
+            return false
+        }
+
+        let normalized = normalizedBucketDate(for: date)
+        let normalizedToday = normalizedBucketDate(for: today)
+
+        guard normalized <= normalizedToday, let calendar, let entry = calendar.entry(for: normalized) else {
+            return false
+        }
+
+        switch calendar.trackingType {
+        case .binary:
+            return normalized == normalizedToday && entry.completed
+        case .counter, .multipleDaily:
+            return normalized == normalizedToday && entry.count > 0
+        }
+    }
+
+    private func normalizedBucketDate(for date: Date) -> Date {
+        if calendar?.cadence == .weekly {
+            return LocalDayCalendar.startOfWeek(for: date)
+        }
+
+        return localCalendar.startOfDay(for: date)
+    }
+
+    private var maximumEntryCount: Int {
+        guard let calendar else {
+            return 1
+        }
+
+        return max(1, calendar.entries.values.map(\.count).max() ?? 1)
+    }
+
     var body: some View {
         VStack {
             HStack(spacing: 6) {
                 if let calendar = calendar {
                     Text(calendar.name)
                         .font(.system(size: 12, design: .monospaced))
-                        .foregroundColor(Color("text-primary"))
+                        .foregroundColor(renderingMode.isMonochrome ? .primary : Color("text-primary"))
                         .fontWeight(.heavy)
                         .lineLimit(1)
                         .minimumScaleFactor(0.5)
@@ -163,18 +242,19 @@ struct HorizontalCalendarGrid: View {
                 if let calendar = calendar {
                     HStack(spacing: 8) {
                         if calendar.trackingType != .binary && family != .systemSmall {
-                            TodaysCountView(count: todayCount, cadence: calendar.cadence)
+                            TodaysCountView(count: todayCount, cadence: calendar.cadence, renderingMode: renderingMode)
                         }
 
                         if family != .systemSmall, currentStreak > 0 {
-                            NumberOfDaysView(numberOfDays: currentStreak, cadence: calendar.cadence)
+                            NumberOfDaysView(numberOfDays: currentStreak, cadence: calendar.cadence, renderingMode: renderingMode)
                         }
 
                         if #available(iOS 17.0, *) {
                             Button(intent: HabitQuickAddIntent(calendarId: calendar.id.uuidString)) {
                                 QuickAddButtonContent(
                                     calendar: calendar,
-                                    isCurrentPeriodCompleted: isCurrentPeriodCompleted
+                                    isCurrentPeriodCompleted: isCurrentPeriodCompleted,
+                                    renderingMode: renderingMode
                                 )
                             }
                             .buttonStyle(.plain)
@@ -184,7 +264,8 @@ struct HorizontalCalendarGrid: View {
                             Link(destination: URL(string: "my-year://quick-add/\(calendar.id.uuidString)")!) {
                                 QuickAddButtonContent(
                                     calendar: calendar,
-                                    isCurrentPeriodCompleted: isCurrentPeriodCompleted
+                                    isCurrentPeriodCompleted: isCurrentPeriodCompleted,
+                                    renderingMode: renderingMode
                                 )
                             }
                             .frame(width: 24, height: 24)
@@ -193,7 +274,7 @@ struct HorizontalCalendarGrid: View {
                 }
             }
 
-            WidgetSeparator()
+            WidgetSeparator(renderingMode: renderingMode)
                 .padding(.horizontal, -16)
                 .padding(.bottom, 4)
 
@@ -218,7 +299,8 @@ struct HorizontalCalendarGrid: View {
                                 if day < totalDays {
                                     WidgetGridDot(
                                         color: colorForDay(dates[day], today: referenceDate),
-                                        dotSize: dotSize
+                                        dotSize: dotSize,
+                                        accentable: isAccentedDay(dates[day], today: referenceDate)
                                     )
                                 } else {
                                     Color.clear.frame(width: dotSize, height: dotSize)
@@ -294,14 +376,6 @@ struct HorizontalCalendarGrid: View {
         return buildWeekDates(from: LocalDayCalendar.startOfWeek(for: start), to: LocalDayCalendar.startOfWeek(for: end))
     }
 
-    private func recentMonths(from today: Date, months: Int) -> [Date] {
-        let end = localCalendar.startOfDay(for: today)
-        guard let start = localCalendar.date(byAdding: .month, value: -months, to: end) else {
-            return [end]
-        }
-        return buildDates(from: start, to: end)
-    }
-
     private func buildDates(from start: Date, to end: Date) -> [Date] {
         var dates: [Date] = []
         var current = start
@@ -335,11 +409,12 @@ struct HorizontalCalendarGrid: View {
 struct QuickAddButtonContent: View {
     let calendar: CustomCalendar
     let isCurrentPeriodCompleted: Bool
+    let renderingMode: WidgetStyle.RenderingMode
 
     var body: some View {
         ZStack {
             RoundedRectangle(cornerRadius: 3)
-                .fill(Color(calendar.color).opacity(0.1))
+                .fill(renderingMode.isMonochrome ? WidgetStyle.monochromeSecondaryColor().opacity(0.16) : Color(calendar.color).opacity(0.1))
                 .frame(width: 24, height: 24)
 
             Image(
@@ -348,19 +423,23 @@ struct QuickAddButtonContent: View {
                     ? "minus" : "plus"
             )
             .font(.system(size: 16))
-            .foregroundColor(Color(calendar.color))
+            .foregroundColor(renderingMode.isMonochrome ? WidgetStyle.monochromeAccentColor() : Color(calendar.color))
+            .widgetAccentable(renderingMode.isMonochrome)
         }
+        .widgetAccentable(false)
     }
 }
 
 struct NumberOfDaysView: View {
     let numberOfDays: Int
     let cadence: CalendarCadence
+    let renderingMode: WidgetStyle.RenderingMode
     let label: String
 
-    init(numberOfDays: Int, cadence: CalendarCadence) {
+    init(numberOfDays: Int, cadence: CalendarCadence, renderingMode: WidgetStyle.RenderingMode) {
         self.numberOfDays = numberOfDays
         self.cadence = cadence
+        self.renderingMode = renderingMode
         if cadence == .weekly {
             label = numberOfDays == 1 ? String(localized: "week") : String(localized: "weeks streak")
         } else {
@@ -372,10 +451,12 @@ struct NumberOfDaysView: View {
         HStack {
             Text("\(numberOfDays)")
                 .fontWeight(.bold)
-                + Text(" \(label)")
-                .foregroundColor(Color("text-tertiary"))
+                .widgetAccentable(renderingMode.isMonochrome)
+
+            Text(" \(label)")
+                .foregroundColor(renderingMode.isMonochrome ? WidgetStyle.monochromeSecondaryColor() : Color("text-tertiary"))
         }
-        .foregroundColor(Color("text-primary"))
+        .foregroundColor(renderingMode.isMonochrome ? WidgetStyle.monochromePrimaryColor() : Color("text-primary"))
         .font(.system(size: 9, design: .monospaced))
         .contentTransition(.numericText())
     }
@@ -384,11 +465,13 @@ struct NumberOfDaysView: View {
 struct TodaysCountView: View {
     let count: Int
     let cadence: CalendarCadence
+    let renderingMode: WidgetStyle.RenderingMode
     let label: String
 
-    init(count: Int, cadence: CalendarCadence) {
+    init(count: Int, cadence: CalendarCadence, renderingMode: WidgetStyle.RenderingMode) {
         self.count = count
         self.cadence = cadence
+        self.renderingMode = renderingMode
         label = cadence == .weekly ? String(localized: "this week") : String(localized: "today")
     }
 
@@ -396,11 +479,13 @@ struct TodaysCountView: View {
         HStack {
             Text("\(count)")
                 .fontWeight(.bold)
-                + Text(" \(label)")
-                .foregroundColor(Color("text-tertiary"))
+                .widgetAccentable(renderingMode.isMonochrome && count > 0)
+
+            Text(" \(label)")
+                .foregroundColor(renderingMode.isMonochrome ? WidgetStyle.monochromeSecondaryColor() : Color("text-tertiary"))
         }
         .lineLimit(1)
-        .foregroundColor(Color("text-primary"))
+        .foregroundColor(renderingMode.isMonochrome ? WidgetStyle.monochromePrimaryColor() : Color("text-primary"))
         .font(.system(size: 9, design: .monospaced))
         .contentTransition(.numericText())
     }
@@ -425,13 +510,15 @@ struct HabitsWidgetEntryView: View {
     var entry: Provider.Entry
     @Environment(\.widgetFamily) var family
     @Environment(\.colorScheme) private var colorScheme
+    @Environment(\.widgetRenderingMode) private var widgetRenderingMode
 
     var body: some View {
         let destinationURL = entry.calendar.map { calendar in
             URL(string: "my-year://calendar/\(calendar.id.uuidString)")
         } ?? nil
-        let backgroundColor = WidgetStyle.surfaceMutedColor(for: colorScheme)
-        let primaryTextColor = WidgetStyle.textPrimaryColor(for: colorScheme)
+        let renderingMode = WidgetStyle.RenderingMode(widgetRenderingMode)
+        let backgroundColor = WidgetStyle.widgetBackgroundColor(for: colorScheme, renderingMode: renderingMode)
+        let primaryTextColor = WidgetStyle.primaryTextColor(for: colorScheme, renderingMode: renderingMode)
         let inactiveRatio = 0.04
 
         if #available(iOS 17.0, *) {
@@ -444,7 +531,8 @@ struct HabitsWidgetEntryView: View {
                 isCurrentPeriodCompleted: entry.isCurrentPeriodCompleted,
                 backgroundColor: backgroundColor,
                 textPrimaryColor: primaryTextColor,
-                inactiveRatio: inactiveRatio
+                inactiveRatio: inactiveRatio,
+                renderingMode: renderingMode
             )
             .containerBackground(backgroundColor, for: .widget)
             .widgetURL(destinationURL)
@@ -458,7 +546,8 @@ struct HabitsWidgetEntryView: View {
                 isCurrentPeriodCompleted: entry.isCurrentPeriodCompleted,
                 backgroundColor: backgroundColor,
                 textPrimaryColor: primaryTextColor,
-                inactiveRatio: inactiveRatio
+                inactiveRatio: inactiveRatio,
+                renderingMode: renderingMode
             )
             .widgetURL(destinationURL)
         }
