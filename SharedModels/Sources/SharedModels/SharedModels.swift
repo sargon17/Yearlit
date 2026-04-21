@@ -228,6 +228,15 @@ public enum CalendarCadence: String, Codable, CaseIterable {
             return String(localized: "Track progress across each week, with one dot per week in the year view.")
         }
     }
+
+    public var icon: String {
+        switch self {
+        case .daily:
+            return "sun.max"
+        case .weekly:
+            return "calendar"
+        }
+    }
 }
 
 public struct CustomCalendar: Codable, Identifiable {
