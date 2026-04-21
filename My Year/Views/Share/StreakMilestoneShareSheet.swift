@@ -10,6 +10,7 @@ struct StreakMilestoneShareSheet: View {
     let currentStreak: Int
     let kind: MilestoneKind
     let dates: [Date]
+    let isPreview: Bool
 
     @Environment(\.colorScheme) private var colorScheme
     @State private var shareImage: UIImage?
@@ -21,6 +22,22 @@ struct StreakMilestoneShareSheet: View {
 
     private let sharePointSize = CGSize(width: 360, height: 450)
     private let shareScale: CGFloat = 3
+
+    init(
+        calendar: CustomCalendar,
+        milestone: Int,
+        currentStreak: Int,
+        kind: MilestoneKind,
+        dates: [Date],
+        isPreview: Bool = false
+    ) {
+        self.calendar = calendar
+        self.milestone = milestone
+        self.currentStreak = currentStreak
+        self.kind = kind
+        self.dates = dates
+        self.isPreview = isPreview
+    }
 
     var body: some View {
         NavigationStack {
@@ -40,7 +57,7 @@ struct StreakMilestoneShareSheet: View {
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
             .surfaceBackground(Color("surface-muted"), ignoresSafeArea: true)
-            .navigationTitle("Milestone")
+            .navigationTitle(isPreview ? "Milestone Preview" : "Milestone")
             .navigationBarTitleDisplayMode(.large)
         }
         .onAppear {
@@ -96,39 +113,42 @@ struct StreakMilestoneShareSheet: View {
         .padding(.vertical, 16)
     }
 
+    @ViewBuilder
     private var actionButtons: some View {
-        HStack {
-            HStack(spacing: 2) {
-                Button(action: shareMilestone) {
-                    HStack(spacing: 8) {
-                        Image(systemName: "square.and.arrow.up")
-                        Text("Share")
+        if !isPreview {
+            HStack {
+                HStack(spacing: 2) {
+                    Button(action: shareMilestone) {
+                        HStack(spacing: 8) {
+                            Image(systemName: "square.and.arrow.up")
+                            Text("Share")
+                        }
+                        .font(.system(size: 14, design: .monospaced))
+                        .foregroundColor(.textPrimary)
+                        .padding(.vertical, 10)
+                        .frame(maxWidth: .infinity)
                     }
-                    .font(.system(size: 14, design: .monospaced))
-                    .foregroundColor(.textPrimary)
-                    .padding(.vertical, 10)
-                    .frame(maxWidth: .infinity)
-                }
-                .sameLevelBorder()
-                .foregroundStyle(.textSecondary)
+                    .sameLevelBorder()
+                    .foregroundStyle(.textSecondary)
 
-                Button(action: saveToPhotos) {
-                    HStack(spacing: 8) {
-                        Image(systemName: "square.and.arrow.down")
-                        Text("Save to Photos")
+                    Button(action: saveToPhotos) {
+                        HStack(spacing: 8) {
+                            Image(systemName: "square.and.arrow.down")
+                            Text("Save to Photos")
+                        }
+                        .font(.system(size: 14, design: .monospaced))
+                        .foregroundColor(.textPrimary)
+                        .padding(.vertical, 10)
+                        .frame(maxWidth: .infinity)
                     }
-                    .font(.system(size: 14, design: .monospaced))
-                    .foregroundColor(.textPrimary)
-                    .padding(.vertical, 10)
-                    .frame(maxWidth: .infinity)
+                    .sameLevelBorder()
+                    .foregroundStyle(.textSecondary)
                 }
-                .sameLevelBorder()
-                .foregroundStyle(.textSecondary)
+                .padding(2)
+                .background(getVoidColor(colorScheme: colorScheme))
             }
-            .padding(2)
-            .background(getVoidColor(colorScheme: colorScheme))
+            .padding(.horizontal)
         }
-        .padding(.horizontal)
     }
 
     private var shareMessage: String {
@@ -139,6 +159,10 @@ struct StreakMilestoneShareSheet: View {
             return "I just hit \(milestone) \(unit) in a row on \(calendarName)!\n\ntracked using yearlit by @tymofyeyev "
         case .showedUp:
             return "I just showed up \(milestone) \(unit) on \(calendarName)!\n\ntracked using yearlit by @tymofyeyev "
+        case .showedUpMonth:
+            return "I showed up \(milestone) \(unit) this month on \(calendarName)!\n\ntracked using yearlit by @tymofyeyev "
+        case .showedUpYear:
+            return "I showed up \(milestone) \(unit) this year on \(calendarName)!\n\ntracked using yearlit by @tymofyeyev "
         }
     }
 

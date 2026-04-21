@@ -1833,6 +1833,9 @@
         }
       }
     },
+    "Debug only. Opens the milestone sheet without changing tracker state." : {
+
+    },
     "Decide the kind of person you want to be" : {
       "localizations" : {
         "it" : {
