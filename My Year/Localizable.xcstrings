@@ -4818,23 +4818,6 @@
         }
       }
     },
-    "Reset What's New" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Ripristina Novità"
-          }
-        },
-        "uk" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Скинути «Що нового»"
-          }
-        }
-      }
-    },
     "Rounds" : {
       "extractionState" : "stale",
       "localizations" : {

@@ -5,37 +5,20 @@
 //  Created by Mykhaylo Tymofyeyev  on 13/01/25.
 //
 
-import RevenueCat
-import RevenueCatUI
 import SharedModels
-import SwiftData
 import SwiftfulRouting
 import SwiftUI
-import UIKit
 
 struct ContentView: View {
-    @State private var customerInfo: CustomerInfo?
     @ObservedObject private var store = CustomCalendarStore.shared
     @State private var lastCleanupVersion: Int = -1
     @State private var cleanupTask: Task<Void, Never>?
-    @EnvironmentObject private var whatsNewManager: WhatsNewManager
     @Environment(\.scenePhase) private var scenePhase
 
     var body: some View {
         let snapshot = store.snapshot
 
         AppRouter()
-            .onAppear {
-                Purchases.shared.getCustomerInfo { customerInfo, _ in
-                    self.customerInfo = customerInfo
-                }
-            }
-            .onReceive(store.$snapshot) { snapshot in
-                whatsNewManager.evaluateIfNeeded(
-                    hasCalendars: !snapshot.calendars.isEmpty,
-                    isLoading: snapshot.isLoading
-                )
-            }
             .onChange(of: snapshot.dataVersion) { _, newVersion in
                 // Debounce cleanup to avoid excessive IPC calls
                 cleanupTask?.cancel()
@@ -67,19 +50,6 @@ struct ContentView: View {
     }
 }
 
-extension Binding {
-    func onChange(_ handler: @escaping (Value) -> Void) -> Binding<Value> {
-        Binding(
-            get: { self.wrappedValue },
-            set: { newValue in
-                self.wrappedValue = newValue
-                handler(newValue)
-            }
-        )
-    }
-}
-
 #Preview {
     ContentView()
-        .environmentObject(WhatsNewManager())
 }
