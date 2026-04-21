@@ -431,7 +431,7 @@ struct EditCalendarView: View {
             entries: entries,
             isArchived: overrideArchived ?? isArchived,
             recurringReminderEnabled: recurringReminderEnabled,
-            reminderTime: recurringReminderEnabled ? validateReminderTime(reminderTime) : nil,
+            reminderTime: recurringReminderEnabled ? reminderTime : nil,
             order: calendar.order,
             reminderWeekday: recurringReminderEnabled && cadence == .weekly ? reminderWeekday : nil,
             unit: (trackingType == .counter || trackingType == .multipleDaily) ? selectedUnit : nil,
