@@ -10,7 +10,7 @@ Yearlit is a SwiftUI iOS app focused on year‑level tracking and habit/streak v
   - **Managers**: `Managers/` (state + orchestration)
   - **Services**: `Services/` (entry creation and feature workflows)
   - **Utilities**: `Utils/` (date, stats, streaks, feedback, HTTP helpers)
-  - **Config/`** and `WhatsNew/` (feature gating and release notes)
+  - **Config/** for app configuration and build-time resources
 - **Widgets**: `HabitsWidget/`, `StreakWidget/`, `YearWidget/`
 - **Tests**: `My YearTests/`, `My YearUITests/`
 
@@ -18,11 +18,11 @@ Yearlit is a SwiftUI iOS app focused on year‑level tracking and habit/streak v
 1. **User interactions** occur inside SwiftUI `Views` and `Components`.
 2. Views call into **Managers** and **Services** for state changes and business rules.
 3. Domain data is represented by **Models** (app‑local) and **SharedModels** (app + widgets).
-4. Lightweight persistence and feature tracking use **UserDefaults** (e.g., milestones, whats‑new state).
+4. Lightweight persistence uses **UserDefaults** for onboarding state, feature flags, and small local settings.
 5. Widget targets read shared model/state to render timeline entries in WidgetKit.
 
 ## Data & state
-- **Persistence**: UserDefaults for local state (milestones, feature‑prompt/whats‑new).
+- **Persistence**: UserDefaults for onboarding state, feature flags, and other lightweight local settings.
 - **Shared models**: used by app + widgets for timeline data.
 - **Stats & streaks**: calculated via `Utils/Stats`, `Utils/Streaks` helpers.
 
