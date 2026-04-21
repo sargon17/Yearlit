@@ -6,6 +6,7 @@ import SwiftUI
 
 struct CreateCalendarView: View {
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.locale) private var locale
     let onCreate: (CustomCalendar) -> Void
 
     @State private var customerInfo: CustomerInfo?
@@ -273,7 +274,7 @@ struct CreateCalendarView: View {
                 CustomSection(label: "Already active streak?") {
                     VStack(spacing: 8) {
                         if !existingStreakEntries.isEmpty {
-                            Text("Backfilling \(existingStreakEntries.count) \(cadence == .weekly ? "weeks" : "days").")
+                            Text(backfillSummary)
                                 .font(.footnote)
                                 .foregroundStyle(.textTertiary)
                                 .frame(maxWidth: .infinity, alignment: .leading)
@@ -397,5 +398,9 @@ struct CreateCalendarView: View {
                 existingStreakEntries = [:]
             }
         }
+    }
+
+    private var backfillSummary: String {
+        LocalizedCountText.backfilling(existingStreakEntries.count, cadence: cadence, locale: locale)
     }
 }

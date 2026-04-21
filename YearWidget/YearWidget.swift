@@ -32,6 +32,7 @@ struct Provider: TimelineProvider {
 }
 
 struct HorizontalYearGrid: View {
+    @Environment(\.locale) private var locale
     let dotSize: CGFloat
     let family: WidgetFamily
     let referenceDate: Date
@@ -121,17 +122,9 @@ struct HorizontalYearGrid: View {
 
                 Spacer()
 
-                HStack(spacing: 0) {
-                    Text("\(numberOfDaysInYear - currentDayNumber)")
-                        .font(.system(size: 9, design: .monospaced))
-                        .foregroundColor(accentColor)
-                        .fontWeight(.heavy)
-                        .widgetAccentable(renderingMode.isMonochrome)
-
-                    Text(" days left")
-                        .font(.system(size: 9, design: .monospaced))
-                        .foregroundColor(renderingMode.isMonochrome ? .secondary : .textTertiary)
-                }
+                Text(LocalizedCountText.daysLeft(numberOfDaysInYear - currentDayNumber, locale: locale))
+                    .font(.system(size: 9, design: .monospaced))
+                    .foregroundColor(renderingMode.isMonochrome ? .secondary : .textTertiary)
             }
 
             WidgetSeparator(renderingMode: renderingMode)

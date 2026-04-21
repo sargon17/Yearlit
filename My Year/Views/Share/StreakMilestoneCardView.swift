@@ -3,6 +3,7 @@ import SharedModels
 import SwiftUI
 
 struct StreakMilestoneCardView: View {
+    @Environment(\.locale) private var locale
     let calendar: CustomCalendar
     let milestone: Int
     let currentStreak: Int
@@ -87,11 +88,15 @@ struct StreakMilestoneCardView: View {
                 .font(.system(size: 12, design: .monospaced))
                 .foregroundColor(secondaryTextColor)
             if kind == .streak, currentStreak > milestone {
-                Text("Now at \(currentStreak) \(calendar.cadence == .weekly ? "weeks" : "days")")
+                Text(currentStreakSummary)
                     .font(.system(size: 12, design: .monospaced))
                     .foregroundColor(secondaryTextColor)
             }
         }
+    }
+
+    private var currentStreakSummary: String {
+        LocalizedCountText.currentStreak(currentStreak, cadence: calendar.cadence, locale: locale)
     }
 
     private var footer: some View {
