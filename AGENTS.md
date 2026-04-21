@@ -10,8 +10,8 @@ before start read `SOUL.md`
 ## Build, Test, and Development Commands
 
 - `xed .` opens the project in Xcode with the workspace configuration.
-- `xcodebuild -scheme "My Year" -destination "platform=iOS Simulator,name=iPhone 15" build` performs a CI-friendly build.
-- `xcodebuild test -scheme "My Year" -destination "platform=iOS Simulator,name=iPhone 15"` runs the app, widget, and UI test bundles.
+- `xcodebuild -scheme "My Year" build` performs a CI-friendly build without a simulator destination.
+- `xcodebuild test -scheme "My Year"` runs the app, widget, and UI test bundles without pinning a simulator destination.
 - `swiftlint lint --quiet` enforces the static ruleset (`Baseline.json` suppresses known issues). Run `swiftlint --fix` before submitting formatting-only fixes.
 - `swift format --in-place --recursive "My Year" SharedModels/Sources` applies the `.swift-format` conventions when bulk refactoring.
 
