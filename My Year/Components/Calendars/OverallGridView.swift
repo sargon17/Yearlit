@@ -19,57 +19,32 @@ struct OverallGridView: View {
     var body: some View {
         let snapshot = store.snapshot
 
-        GeometryReader { geometry in
-            let dotSize: CGFloat = 10
-            let padding: CGFloat = 20
+        let dotSize: CGFloat = 10
+        let padding: CGFloat = 20
+        let dataVersion = snapshot.dataVersion
+        let sig = "\(cacheSignature(dataVersion: dataVersion, year: year))|loading:\(snapshot.isLoading)"
 
-            let availableWidth = max(0, geometry.size.width - (padding * 2))
-            let availableHeight = max(1, geometry.size.height - (padding * 2)) // avoid /0
-
-            let aspectRatio = max(0.001, availableWidth / availableHeight)
-            let targetColumns = max(1, min(365, Int(sqrt(365.0 * aspectRatio))))
-            let columns = max(1, min(targetColumns, 365))
-            let rows = max(1, Int(ceil(365.0 / Double(columns))))
-
-            let horizontalSpacing = max(
-                0,
-                (availableWidth - (dotSize * CGFloat(columns))) / CGFloat(max(1, columns - 1))
-            )
-            let verticalSpacing = max(
-                0,
-                (availableHeight - (dotSize * CGFloat(rows))) / CGFloat(max(1, rows - 1))
-            )
-            let dataVersion = snapshot.dataVersion
-            let sig = cacheSignature(dataVersion: dataVersion, year: year)
-            VStack(spacing: verticalSpacing) {
-                ForEach(0 ..< rows, id: \.self) { row in
-                    HStack(spacing: horizontalSpacing) {
-                        ForEach(0 ..< columns, id: \.self) { col in
-                            let day = row * columns + col
-                            if day < mappedDays.count {
-                                GridDot(
-                                    color: mappedDays[day].color,
-                                    dotSize: dotSize
-                                )
-                            } else {
-                                Color.clear.frame(width: dotSize, height: dotSize)
-                            }
-                        }
-                    }
-                }
+        DotGrid(
+            items: mappedDays,
+            dotSize: dotSize,
+            padding: padding,
+            dot: { day in
+                GridDot(color: day.color, dotSize: dotSize)
+            },
+            onTap: nil
+        )
+        .task(id: sig) {
+            guard !snapshot.isLoading else {
+                mappedDays = []
+                return
             }
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .padding(.horizontal)
-            .task(id: sig) {
-                if snapshot.isLoading { return }
-                guard snapshot.dataVersion == dataVersion else { return }
-                if let derived = await OverviewDerivedSnapshotService.shared.snapshot(
-                    storeSnapshot: snapshot,
-                    year: year,
-                    today: today
-                ) {
-                    mappedDays = mappedDays(from: derived.zByDay)
-                }
+            guard snapshot.dataVersion == dataVersion else { return }
+            if let derived = await OverviewDerivedSnapshotService.shared.snapshot(
+                storeSnapshot: snapshot,
+                year: year,
+                today: today
+            ) {
+                mappedDays = mappedDays(from: derived.zByDay)
             }
         }
     }

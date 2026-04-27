@@ -176,7 +176,7 @@ struct StreakMilestoneCardView: View {
     }
 
     private var foregroundColor: Color {
-        try! Garnish.contrastingShade(of: baseColor)
+        Color.safeContrastingShade(of: baseColor)
     }
 
     private var secondaryTextColor: Color {
@@ -188,7 +188,7 @@ struct StreakMilestoneCardView: View {
     }
 
     private var dividerDark: Color {
-        let opposite = try! Garnish.contrastingShade(of: foregroundColor)
+        let opposite = Color.safeContrastingShade(of: foregroundColor)
         return GarnishColor.blend(baseColor, with: opposite, ratio: 0.18)
     }
 

@@ -131,7 +131,7 @@ struct CreateFirstHabit: View {
                 cadence: .daily,
                 trackingType: .binary,
                 accentColor: .brand,
-                customerInfo: nil,
+                isPremiumUser: false,
                 recurringReminderEnabled: $recurringReminderEnabled,
                 reminderTime: $reminderTime,
                 notificationPrivacyMode: $notificationPrivacyMode,

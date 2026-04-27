@@ -1,10 +1,9 @@
-import RevenueCat
 import SharedModels
 import SwiftfulRouting
 import SwiftUI
 
 struct CalendarsSection: View {
-    @State private var customerInfo: CustomerInfo?
+    @EnvironmentObject private var entitlements: EntitlementManager
     @ObservedObject private var store = CustomCalendarStore.shared
     @EnvironmentObject var onboarding: OnboardingManager
     @ObservedObject private var valuationStore = ValuationStore.shared
@@ -27,7 +26,7 @@ struct CalendarsSection: View {
                 HStack(spacing: 6) {
                     Text("Yearlit")
                         .font(.system(size: 14, weight: .bold, design: .monospaced))
-                    if isPremium(customerInfo: customerInfo) {
+                    if entitlements.isPremium {
                         Image(systemName: "checkmark.seal")
                             .font(.system(size: 12, weight: .bold))
                             .foregroundStyle(.purple)
@@ -139,11 +138,6 @@ struct CalendarsSection: View {
                 }
             }
 
-            .onAppear {
-                Purchases.shared.getCustomerInfo { info, _ in
-                    customerInfo = info
-                }
-            }
         }
         .surfaceBackground(Color("surface-muted"), ignoresSafeArea: true)
     }

@@ -7,7 +7,7 @@ public extension Color {
     }
 
     static var brandInverted: Color {
-        return try! Garnish.contrastingShade(of: Color.qsOrange)
+        return safeContrastingShade(of: Color.qsOrange)
     }
 
     static var brandSecondary: Color {
@@ -15,7 +15,7 @@ public extension Color {
     }
 
     static var brandSecondaryInverted: Color {
-        return try! Garnish.contrastingShade(of: Color.brandSecondary)
+        return safeContrastingShade(of: Color.brandSecondary)
     }
 
     static var buttonBackground: Color {
@@ -51,7 +51,15 @@ public extension Color {
         )
     }
 
+    func safeContrastingShade(fallback: Color = .white) -> Color {
+        (try? contrastingShade()) ?? fallback
+    }
+
+    static func safeContrastingShade(of color: Color, fallback: Color = .white) -> Color {
+        (try? Garnish.contrastingShade(of: color)) ?? fallback
+    }
+
     static var buttonForeground: Color {
-        return try! Garnish.contrastingShade(of: Color.buttonBackground)
+        return safeContrastingShade(of: Color.buttonBackground)
     }
 }

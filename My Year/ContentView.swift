@@ -52,4 +52,7 @@ struct ContentView: View {
 
 #Preview {
     ContentView()
+        .environmentObject(OnboardingManager())
+        .environmentObject(FeatureRequestManager(config: AppConfig.wishConfiguration))
+        .environmentObject(EntitlementManager())
 }

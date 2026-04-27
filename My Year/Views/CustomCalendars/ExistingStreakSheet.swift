@@ -89,7 +89,7 @@ struct ExistingStreakSheet: View {
                             Text("Value")
                                 .labelStyle(type: .secondary)
                             Spacer()
-                            TextField("Value", value: $dailyValue, formatter: NumberFormatter())
+                            TextField("Value", value: $dailyValue, formatter: Formatters.integer)
                                 .keyboardType(.numberPad)
                                 .multilineTextAlignment(.trailing)
                                 .frame(maxWidth: 120)

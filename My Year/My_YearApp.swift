@@ -90,6 +90,7 @@ struct My_YearApp: App {
     @StateObject private var featureRequest = FeatureRequestManager(
         config: AppConfig.wishConfiguration
     )
+    @StateObject private var entitlements = EntitlementManager()
 
     #if DEBUG
         static let isDebugMode = true
@@ -160,6 +161,10 @@ struct My_YearApp: App {
             }
             .environmentObject(onboarding)
             .environmentObject(featureRequest)
+            .environmentObject(entitlements)
+            .task {
+                await entitlements.refresh()
+            }
             .fullScreenCover(isPresented: .constant(!onboarding.hasSeenOnboarding)) {
                 OnboardingView {
                     onboarding.markAsSeen()
