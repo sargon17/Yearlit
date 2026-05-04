@@ -9,6 +9,8 @@ struct SettingsView: View {
             Form {
                 SubscriptionStatusSection(customerInfo: customerInfo)
 
+                MilestoneCelebrationsSectionView()
+
                 About()
 
                 PoliciesSection()
