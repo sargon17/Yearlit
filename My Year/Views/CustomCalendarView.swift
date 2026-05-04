@@ -78,6 +78,8 @@ struct CustomCalendarView: View {
     @State private var isEntryEditSheetPresented: Bool = false
     @State private var isMilestoneDebugDialogPresented: Bool = false
 
+    private let milestoneCelebrationPolicy = MilestoneCelebrationPolicy.shared
+
     @Environment(\.router) private var router
 
     private let availableYears: [Int] = {
@@ -181,22 +183,11 @@ struct CustomCalendarView: View {
         guard let updatedCalendar = store.snapshot.calendar(id: calendarId) else { return }
         let currentStreak = currentStreak(for: updatedCalendar)
 
-        if let milestone = StreakMilestoneTracker.shared.milestoneToCelebrate(
+        if celebrateStreakMilestoneIfNeeded(
+            calendar: updatedCalendar,
             calendarId: calendarId,
-            streak: currentStreak
-        ) {
-            StreakMilestoneTracker.shared.markCelebrated(calendarId: calendarId, milestone: milestone)
-            router.showScreen(.sheet) { _ in
-                StreakMilestoneShareSheet(
-                    calendar: updatedCalendar,
-                    milestone: milestone,
-                    currentStreak: currentStreak,
-                    kind: .streak,
-                    dates: gridDates
-                )
-            }
-            return
-        }
+            currentStreak: currentStreak
+        ) { return }
 
         if updatedCalendar.cadence == .daily {
             for kind in [ShowedUpMilestoneKind.currentMonth, .currentYear] {
@@ -222,6 +213,33 @@ struct CustomCalendarView: View {
     }
 
     @discardableResult
+    private func celebrateStreakMilestoneIfNeeded(
+        calendar: CustomCalendar,
+        calendarId: UUID,
+        currentStreak: Int
+    ) -> Bool {
+        guard
+            let decision = milestoneCelebrationPolicy.decisionForStreakMilestone(
+                calendarId: calendarId,
+                streak: currentStreak
+            )
+        else { return false }
+
+        guard decision.shouldPresent else { return false }
+
+        router.showScreen(.sheet) { _ in
+            StreakMilestoneShareSheet(
+                calendar: calendar,
+                milestone: decision.milestone,
+                currentStreak: currentStreak,
+                kind: .streak,
+                dates: gridDates
+            )
+        }
+        return true
+    }
+
+    @discardableResult
     private func celebrateShowedUpMilestoneIfNeeded(
         calendar: CustomCalendar,
         calendarId: UUID,
@@ -233,7 +251,7 @@ struct CustomCalendarView: View {
         let showedUpCount = ShowedUpMilestones.showedUpCount(for: calendar, kind: kind, today: referenceDate)
 
         guard
-            let milestone = ShowedUpMilestoneTracker.shared.milestoneToCelebrate(
+            let decision = milestoneCelebrationPolicy.decisionForShowedUpMilestone(
                 calendarId: calendarId,
                 showedUpCount: showedUpCount,
                 kind: kind,
@@ -241,16 +259,12 @@ struct CustomCalendarView: View {
             )
         else { return false }
 
-        ShowedUpMilestoneTracker.shared.markCelebrated(
-            calendarId: calendarId,
-            milestone: milestone,
-            kind: kind,
-            periodKey: periodKey
-        )
+        guard decision.shouldPresent else { return false }
+
         router.showScreen(.sheet) { _ in
             StreakMilestoneShareSheet(
                 calendar: calendar,
-                milestone: milestone,
+                milestone: decision.milestone,
                 currentStreak: currentStreak,
                 kind: milestoneKind(for: kind),
                 dates: milestoneDates(for: kind, referenceDate: referenceDate)
@@ -392,7 +406,8 @@ struct CustomCalendarView: View {
                                 }
 
                                 if valuationStore.selectedYear == Calendar.current.component(.year, from: Date()) {
-                                    let isCompletedToday = store.getEntry(calendarId: resolvedCalendar.id, date: today)?.completed == true
+                                    let isCompletedToday =
+                                        store.getEntry(calendarId: resolvedCalendar.id, date: today)?.completed == true
                                     Button(action: {
                                         handleQuickAdd()
                                     }) {

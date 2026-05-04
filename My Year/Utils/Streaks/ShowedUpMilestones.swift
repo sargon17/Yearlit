@@ -8,7 +8,9 @@ enum ShowedUpMilestoneKind: String {
 }
 
 enum ShowedUpMilestones {
-    private static let allTimeMilestones: [Int] = [5, 10, 20, 30, 40, 50, 75, 100, 150]
+    private static let allTimeMilestones: [Int] = [10, 25, 50, 100, 250, 500]
+    private static let recurringMilestoneInterval: Int = 500
+    private static let recurringMilestoneStart: Int = 1000
     private static let currentMonthMilestones: [Int] = [3, 5, 7, 10, 14, 21, 28]
     private static let currentYearMilestones: [Int] = [7, 14, 30, 60, 90, 120, 180, 240, 300]
 
@@ -20,7 +22,9 @@ enum ShowedUpMilestones {
             if allTimeMilestones.contains(showedUpCount) {
                 return showedUpCount
             }
-            if showedUpCount > 150, showedUpCount % 50 == 0 {
+            if showedUpCount >= recurringMilestoneStart,
+               showedUpCount % recurringMilestoneInterval == 0
+            {
                 return showedUpCount
             }
             return nil
@@ -34,8 +38,8 @@ enum ShowedUpMilestones {
 
         switch kind {
         case .allTime:
-            if showedUpCount > 150 {
-                return showedUpCount - (showedUpCount % 50)
+            if showedUpCount >= recurringMilestoneStart {
+                return showedUpCount - (showedUpCount % recurringMilestoneInterval)
             }
             return allTimeMilestones.filter { $0 <= showedUpCount }.max()
         case .currentMonth, .currentYear:
@@ -51,7 +55,10 @@ enum ShowedUpMilestones {
             if let nextBaseMilestone = allTimeMilestones.first(where: { $0 > showedUpCount }) {
                 return nextBaseMilestone
             }
-            return max(200, ((showedUpCount / 50) + 1) * 50)
+            return max(
+                recurringMilestoneStart,
+                ((max(showedUpCount, 0) / recurringMilestoneInterval) + 1) * recurringMilestoneInterval
+            )
         case .currentMonth, .currentYear:
             return milestones(for: kind).first(where: { $0 > showedUpCount })
         }

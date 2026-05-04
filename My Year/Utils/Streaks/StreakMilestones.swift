@@ -1,14 +1,16 @@
 import Foundation
 
 enum StreakMilestones {
-    static let baseMilestones: [Int] = [1, 2, 3, 5, 10, 15, 20, 25, 30]
+    static let baseMilestones: [Int] = [3, 7, 14, 30, 50, 100]
+    private static let recurringMilestoneInterval: Int = 100
+    private static let recurringMilestoneStart: Int = 200
 
     static func milestone(for streak: Int) -> Int? {
         guard streak > 0 else { return nil }
         if baseMilestones.contains(streak) {
             return streak
         }
-        if streak >= 40, streak % 10 == 0 {
+        if streak >= recurringMilestoneStart, streak % recurringMilestoneInterval == 0 {
             return streak
         }
         return nil
@@ -16,8 +18,8 @@ enum StreakMilestones {
 
     static func latestMilestone(for streak: Int) -> Int? {
         guard streak > 0 else { return nil }
-        if streak >= 40 {
-            return streak - (streak % 10)
+        if streak >= recurringMilestoneStart {
+            return streak - (streak % recurringMilestoneInterval)
         }
         return baseMilestones.filter { $0 <= streak }.max()
     }
@@ -28,7 +30,9 @@ enum StreakMilestones {
             return nextBaseMilestone
         }
 
-        let nextDecade = max(40, ((streak / 10) + 1) * 10)
-        return nextDecade
+        return max(
+            recurringMilestoneStart,
+            ((max(streak, 0) / recurringMilestoneInterval) + 1) * recurringMilestoneInterval
+        )
     }
 }

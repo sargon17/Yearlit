@@ -30,12 +30,23 @@ final class ShowedUpMilestoneTracker {
         periodKey: String
     ) -> Int? {
         guard let milestone = ShowedUpMilestones.latestMilestone(for: showedUpCount, kind: kind) else { return nil }
-        let lastMilestone = lastCelebratedByScope[scopedKey(calendarId: calendarId, kind: kind, periodKey: periodKey)] ?? 0
+        let lastMilestone = lastCelebratedByScope[
+            scopedKey(calendarId: calendarId, kind: kind, periodKey: periodKey)
+        ] ?? 0
         guard milestone > lastMilestone else { return nil }
         return milestone
     }
 
     func markCelebrated(
+        calendarId: UUID,
+        milestone: Int,
+        kind: ShowedUpMilestoneKind,
+        periodKey: String
+    ) {
+        markRemembered(calendarId: calendarId, milestone: milestone, kind: kind, periodKey: periodKey)
+    }
+
+    func markRemembered(
         calendarId: UUID,
         milestone: Int,
         kind: ShowedUpMilestoneKind,
