@@ -358,9 +358,12 @@ struct CustomCalendarView: View {
                                     .padding(.horizontal, 4)
                                 }
 
-                                if valuationStore.selectedYear == Calendar.current.component(.year, from: Date()) {
-                                    let isCompletedToday =
-                                        store.getEntry(calendarId: resolvedCalendar.id, date: today)?.completed == true
+                                let currentYear = Calendar.current.component(.year, from: Date())
+                                if valuationStore.selectedYear == currentYear {
+                                    let isCompletedToday = store.getEntry(
+                                        calendarId: resolvedCalendar.id,
+                                        date: today
+                                    )?.completed == true
                                     Button(action: {
                                         handleQuickAdd()
                                     }) {
