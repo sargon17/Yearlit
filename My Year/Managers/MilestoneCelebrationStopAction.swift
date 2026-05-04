@@ -19,14 +19,14 @@ final class MilestoneCelebrationStopAction {
         kind: MilestoneKind,
         calendarId: UUID,
         milestone: Int,
-        referenceDate: Date = Date()
+        showedUpPeriodKey: String?
     ) {
         disableCelebration(for: kind)
         rememberDisplayedMilestone(
             kind: kind,
             calendarId: calendarId,
             milestone: milestone,
-            referenceDate: referenceDate
+            showedUpPeriodKey: showedUpPeriodKey
         )
     }
 
@@ -45,7 +45,7 @@ final class MilestoneCelebrationStopAction {
         kind: MilestoneKind,
         calendarId: UUID,
         milestone: Int,
-        referenceDate: Date
+        showedUpPeriodKey: String?
     ) {
         switch kind {
         case .streak:
@@ -55,21 +55,23 @@ final class MilestoneCelebrationStopAction {
                 calendarId: calendarId,
                 milestone: milestone,
                 kind: .allTime,
-                periodKey: ShowedUpMilestones.periodKey(for: .allTime, today: referenceDate)
+                periodKey: showedUpPeriodKey ?? ShowedUpMilestones.periodKey(for: .allTime)
             )
         case .showedUpMonth:
+            guard let showedUpPeriodKey else { return }
             showedUpTracker.markRemembered(
                 calendarId: calendarId,
                 milestone: milestone,
                 kind: .currentMonth,
-                periodKey: ShowedUpMilestones.periodKey(for: .currentMonth, today: referenceDate)
+                periodKey: showedUpPeriodKey
             )
         case .showedUpYear:
+            guard let showedUpPeriodKey else { return }
             showedUpTracker.markRemembered(
                 calendarId: calendarId,
                 milestone: milestone,
                 kind: .currentYear,
-                periodKey: ShowedUpMilestones.periodKey(for: .currentYear, today: referenceDate)
+                periodKey: showedUpPeriodKey
             )
         }
     }

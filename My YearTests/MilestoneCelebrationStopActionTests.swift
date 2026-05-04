@@ -18,7 +18,12 @@ struct MilestoneCelebrationStopActionTests {
         settings.showedUpMilestoneCelebrationsEnabled = false
         settings.recapMilestoneCelebrationsEnabled = true
 
-        stopAction.stopShowing(kind: .streak, calendarId: calendarId, milestone: 14)
+        stopAction.stopShowing(
+            kind: .streak,
+            calendarId: calendarId,
+            milestone: 14,
+            showedUpPeriodKey: nil
+        )
 
         #expect(settings.milestoneCelebrationsEnabled)
         #expect(settings.streakMilestoneCelebrationsEnabled == false)
@@ -27,7 +32,7 @@ struct MilestoneCelebrationStopActionTests {
         #expect(streakTracker.milestoneToCelebrate(calendarId: calendarId, streak: 14) == nil)
     }
 
-    @Test func stoppingRecapCelebrationDisablesOnlyRecapCategoryAndRemembersCurrentPeriod() throws {
+    @Test func stoppingRecapCelebrationUsesPresentedPeriodKey() throws {
         let fixture = makeFixture()
         defer { tearDownFixture(fixture) }
 
@@ -49,7 +54,7 @@ struct MilestoneCelebrationStopActionTests {
             kind: .showedUpMonth,
             calendarId: calendarId,
             milestone: 7,
-            referenceDate: referenceDate
+            showedUpPeriodKey: periodKey
         )
 
         #expect(settings.milestoneCelebrationsEnabled)
@@ -71,6 +76,50 @@ struct MilestoneCelebrationStopActionTests {
                 kind: .currentMonth,
                 periodKey: "2026-05"
             ) == 7
+        )
+    }
+
+    @Test func stoppingYearlyRecapCelebrationUsesPresentedPeriodKey() throws {
+        let fixture = makeFixture()
+        defer { tearDownFixture(fixture) }
+
+        let settings = MilestoneCelebrationSettings(defaults: fixture.defaults)
+        let showedUpTracker = ShowedUpMilestoneTracker(defaults: fixture.defaults)
+        let stopAction = MilestoneCelebrationStopAction(
+            settings: settings,
+            streakTracker: StreakMilestoneTracker(defaults: fixture.defaults),
+            showedUpTracker: showedUpTracker
+        )
+        let calendarId = UUID()
+        let periodKey = "2026"
+        settings.streakMilestoneCelebrationsEnabled = false
+        settings.showedUpMilestoneCelebrationsEnabled = false
+        settings.recapMilestoneCelebrationsEnabled = true
+
+        stopAction.stopShowing(
+            kind: .showedUpYear,
+            calendarId: calendarId,
+            milestone: 30,
+            showedUpPeriodKey: periodKey
+        )
+
+        #expect(settings.milestoneCelebrationsEnabled)
+        #expect(settings.recapMilestoneCelebrationsEnabled == false)
+        #expect(
+            showedUpTracker.milestoneToCelebrate(
+                calendarId: calendarId,
+                showedUpCount: 30,
+                kind: .currentYear,
+                periodKey: periodKey
+            ) == nil
+        )
+        #expect(
+            showedUpTracker.milestoneToCelebrate(
+                calendarId: calendarId,
+                showedUpCount: 30,
+                kind: .currentYear,
+                periodKey: "2027"
+            ) == 30
         )
     }
 

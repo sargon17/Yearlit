@@ -11,6 +11,7 @@ struct MilestoneCelebrationSheet: View {
     let kind: MilestoneKind
     let dates: [Date]
     let allowsStopShowing: Bool
+    let showedUpPeriodKey: String?
 
     @Environment(\.colorScheme) private var colorScheme
     @Environment(\.dismiss) private var dismiss
@@ -31,7 +32,8 @@ struct MilestoneCelebrationSheet: View {
         currentStreak: Int,
         kind: MilestoneKind,
         dates: [Date],
-        allowsStopShowing: Bool = true
+        allowsStopShowing: Bool = true,
+        showedUpPeriodKey: String?
     ) {
         self.calendar = calendar
         self.milestone = milestone
@@ -39,6 +41,7 @@ struct MilestoneCelebrationSheet: View {
         self.kind = kind
         self.dates = dates
         self.allowsStopShowing = allowsStopShowing
+        self.showedUpPeriodKey = showedUpPeriodKey
     }
 
     var body: some View {
@@ -220,7 +223,8 @@ struct MilestoneCelebrationSheet: View {
         stopAction.stopShowing(
             kind: kind,
             calendarId: calendar.id,
-            milestone: milestone
+            milestone: milestone,
+            showedUpPeriodKey: showedUpPeriodKey
         )
     }
 
