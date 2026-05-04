@@ -24,7 +24,9 @@ final class StreakMilestoneTracker {
     }
 
     func markRemembered(calendarId: UUID, milestone: Int) {
-        lastCelebratedByCalendar[calendarId.uuidString] = milestone
+        let key = calendarId.uuidString
+        let rememberedMilestone = max(lastCelebratedByCalendar[key] ?? 0, milestone)
+        lastCelebratedByCalendar[key] = rememberedMilestone
         save()
     }
 

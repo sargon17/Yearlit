@@ -76,6 +76,23 @@ struct StreakMilestoneTrackerTests {
         tracker.markCelebrated(calendarId: calendarId, milestone: 3)
         #expect(tracker.milestoneToCelebrate(calendarId: calendarId, streak: 11) == 7)
     }
+
+    @Test func trackerDoesNotRegressHigherRememberedState() throws {
+        let suiteName = "streak.milestone.regression.tests.\(UUID().uuidString)"
+        guard let defaults = UserDefaults(suiteName: suiteName) else {
+            throw TestError("Unable to create UserDefaults suite.")
+        }
+        defaults.removePersistentDomain(forName: suiteName)
+
+        let tracker = StreakMilestoneTracker(defaults: defaults)
+        let calendarId = UUID()
+
+        tracker.markCelebrated(calendarId: calendarId, milestone: 7)
+        tracker.markRemembered(calendarId: calendarId, milestone: 3)
+
+        #expect(tracker.milestoneToCelebrate(calendarId: calendarId, streak: 7) == nil)
+        #expect(tracker.milestoneToCelebrate(calendarId: calendarId, streak: 14) == 14)
+    }
 }
 
 struct ShowedUpMilestonesTests {
@@ -218,6 +235,47 @@ struct ShowedUpMilestoneTrackerTests {
                 kind: .currentYear,
                 periodKey: "2026"
             ) == 30
+        )
+    }
+
+    @Test func trackerDoesNotRegressHigherRememberedState() throws {
+        let suiteName = "showedup.milestone.regression.tests.\(UUID().uuidString)"
+        guard let defaults = UserDefaults(suiteName: suiteName) else {
+            throw TestError("Unable to create UserDefaults suite.")
+        }
+        defaults.removePersistentDomain(forName: suiteName)
+
+        let tracker = ShowedUpMilestoneTracker(defaults: defaults)
+        let calendarId = UUID()
+
+        tracker.markCelebrated(
+            calendarId: calendarId,
+            milestone: 50,
+            kind: .allTime,
+            periodKey: "all"
+        )
+        tracker.markRemembered(
+            calendarId: calendarId,
+            milestone: 10,
+            kind: .allTime,
+            periodKey: "all"
+        )
+
+        #expect(
+            tracker.milestoneToCelebrate(
+                calendarId: calendarId,
+                showedUpCount: 51,
+                kind: .allTime,
+                periodKey: "all"
+            ) == nil
+        )
+        #expect(
+            tracker.milestoneToCelebrate(
+                calendarId: calendarId,
+                showedUpCount: 500,
+                kind: .allTime,
+                periodKey: "all"
+            ) == 500
         )
     }
 

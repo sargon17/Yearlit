@@ -232,7 +232,8 @@ struct CustomCalendarView: View {
                 milestone: decision.milestone,
                 currentStreak: currentStreak,
                 kind: .streak,
-                dates: gridDates
+                dates: gridDates,
+                allowsStopShowing: true
             )
         }
         return true
@@ -266,7 +267,8 @@ struct CustomCalendarView: View {
                 milestone: decision.milestone,
                 currentStreak: currentStreak,
                 kind: milestoneKind(for: kind),
-                dates: milestoneDates(for: kind, referenceDate: referenceDate)
+                dates: milestoneDates(for: kind, referenceDate: referenceDate),
+                allowsStopShowing: true
             )
         }
         return true
@@ -472,7 +474,8 @@ struct CustomCalendarView: View {
                                     milestone: milestone,
                                     currentStreak: currentStreak(for: resolvedCalendar),
                                     kind: .streak,
-                                    dates: gridDates
+                                    dates: gridDates,
+                                    allowsStopShowing: false
                                 )
                             }
                         },
@@ -489,7 +492,8 @@ struct CustomCalendarView: View {
                                     milestone: milestone,
                                     currentStreak: currentStreak(for: resolvedCalendar),
                                     kind: .showedUp,
-                                    dates: gridDates
+                                    dates: gridDates,
+                                    allowsStopShowing: false
                                 )
                             }
                         },

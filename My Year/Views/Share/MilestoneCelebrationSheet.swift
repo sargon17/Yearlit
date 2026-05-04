@@ -10,6 +10,7 @@ struct MilestoneCelebrationSheet: View {
     let currentStreak: Int
     let kind: MilestoneKind
     let dates: [Date]
+    let allowsStopShowing: Bool
 
     @Environment(\.colorScheme) private var colorScheme
     @Environment(\.dismiss) private var dismiss
@@ -23,6 +24,22 @@ struct MilestoneCelebrationSheet: View {
     private let stopAction = MilestoneCelebrationStopAction()
     private let sharePointSize = CGSize(width: 360, height: 450)
     private let shareScale: CGFloat = 3
+
+    init(
+        calendar: CustomCalendar,
+        milestone: Int,
+        currentStreak: Int,
+        kind: MilestoneKind,
+        dates: [Date],
+        allowsStopShowing: Bool = true
+    ) {
+        self.calendar = calendar
+        self.milestone = milestone
+        self.currentStreak = currentStreak
+        self.kind = kind
+        self.dates = dates
+        self.allowsStopShowing = allowsStopShowing
+    }
 
     var body: some View {
         NavigationStack {
@@ -134,13 +151,15 @@ struct MilestoneCelebrationSheet: View {
             }
             .padding(.horizontal)
 
-            Button(role: .destructive, action: stopShowingThisKind) {
-                Text("Stop showing this kind")
-                    .font(.system(size: 14, design: .monospaced))
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .padding(.horizontal)
+            if allowsStopShowing {
+                Button(role: .destructive, action: stopShowingThisKind) {
+                    Text("Stop showing this kind")
+                        .font(.system(size: 14, design: .monospaced))
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding(.horizontal)
+                }
+                .buttonStyle(.plain)
             }
-            .buttonStyle(.plain)
         }
     }
 

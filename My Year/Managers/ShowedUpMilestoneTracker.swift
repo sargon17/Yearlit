@@ -52,7 +52,9 @@ final class ShowedUpMilestoneTracker {
         kind: ShowedUpMilestoneKind,
         periodKey: String
     ) {
-        lastCelebratedByScope[scopedKey(calendarId: calendarId, kind: kind, periodKey: periodKey)] = milestone
+        let key = scopedKey(calendarId: calendarId, kind: kind, periodKey: periodKey)
+        let rememberedMilestone = max(lastCelebratedByScope[key] ?? 0, milestone)
+        lastCelebratedByScope[key] = rememberedMilestone
         save()
     }
 
