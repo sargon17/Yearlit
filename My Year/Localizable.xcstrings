@@ -3230,6 +3230,86 @@
         }
       }
     },
+    "Milestone celebrations" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Celebrazioni dei traguardi"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Святкування віх"
+          }
+        }
+      }
+    },
+    "Monthly & yearly recaps" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Riepiloghi mensili e annuali"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Місячні та річні підсумки"
+          }
+        }
+      }
+    },
+    "Show milestone celebrations" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mostra le celebrazioni dei traguardi"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Показувати святкування віх"
+          }
+        }
+      }
+    },
+    "Showing up celebrations" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Celebrazioni della presenza"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Святкування появ"
+          }
+        }
+      }
+    },
+    "Streak celebrations" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Celebrazioni delle serie"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Святкування серій"
+          }
+        }
+      }
+    },
     "Milestone" : {
       "extractionState" : "stale",
       "localizations" : {
