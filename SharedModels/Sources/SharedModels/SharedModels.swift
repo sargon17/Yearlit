@@ -421,7 +421,7 @@ public struct CustomCalendar: Codable, Identifiable {
         cadence = try container.decodeIfPresent(CalendarCadence.self, forKey: .cadence) ?? .daily
         trackingType = try container.decode(TrackingType.self, forKey: .trackingType)
         let decodedEntries = try container.decodeIfPresent([String: CalendarEntry].self, forKey: .entries) ?? [:]
-        trackingStartedAt = Self.resolveTrackingStartedAt(
+        trackingStartedAt = try Self.resolveTrackingStartedAt(
             from: container,
             cadence: cadence,
             entries: decodedEntries
@@ -476,11 +476,12 @@ public struct CustomCalendar: Codable, Identifiable {
         from container: KeyedDecodingContainer<CodingKeys>,
         cadence: CalendarCadence,
         entries: [String: CalendarEntry]
-    ) -> Date {
-        if let decoded = try? container.decode(Date.self, forKey: .trackingStartedAt) {
+    ) throws -> Date {
+        if let decoded = try container.decodeIfPresent(Date.self, forKey: .trackingStartedAt) {
             return LocalDayCalendar.startOfDay(for: decoded)
         }
 
+        // Key absent — fall back to earliest entry date
         let startDates = entries.values.map {
             cadence == .weekly ? LocalDayCalendar.startOfWeek(for: $0.date) : LocalDayCalendar.startOfDay(for: $0.date)
         }
