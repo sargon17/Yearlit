@@ -56,7 +56,10 @@ struct TimelinePreferenceChoiceSheet: View {
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding()
         }
-        .buttonStyle(isPrimary ? .borderedProminent : .bordered)
-        .tint(isPrimary ? .accentColor : .secondary)
+        if isPrimary {
+            button.buttonStyle(.borderedProminent).tint(.accentColor)
+        } else {
+            button.buttonStyle(.bordered).tint(.secondary)
+        }
     }
 }
