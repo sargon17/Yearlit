@@ -22,7 +22,7 @@ RUN usermod -d /home/agent -m -l agent node
 # Sandcastle currently runs Codex, so prompts explicitly tell agents to read these
 # SKILL.md files when a task matches; if we switch to pi later, this path is
 # discovered automatically by pi.
-COPY .sandcastle/skills/ /home/agent/.pi/agent/skills/
+COPY skills/ /home/agent/.pi/agent/skills/
 
 # Sandcastle's Docker provider runs containers as the host UID/GID. On macOS
 # that UID is usually not 1000, so /home/agent must be writable by that user.
