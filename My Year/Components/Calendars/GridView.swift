@@ -112,12 +112,8 @@ struct GridView: View {
 
     private func colorForYour365Day(_ cell: Your365Cell) -> Color {
         switch cell.state {
-        case .completed:
+        case .completed, .missed, .todayPending:
             return colorForDay(cell.date, calendar: calendar, today: today, counts: calendar.entries.values.map(\.count))
-        case .missed:
-            return missedDayColor()
-        case .todayPending:
-            return activeDayColor()
         case .future:
             return futureDayColor()
         case .notTracked:
