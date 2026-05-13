@@ -212,7 +212,7 @@ struct YearWidgetEntryView: View {
         let renderingMode = WidgetStyle.RenderingMode(widgetRenderingMode)
         let backgroundColor = WidgetStyle.widgetBackgroundColor(for: colorScheme, renderingMode: renderingMode)
         let primaryTextColor = WidgetStyle.primaryTextColor(for: colorScheme, renderingMode: renderingMode)
-        let inactiveRatio = 0.04
+        let inactiveRatio = colorScheme == .dark ? 0.04 : 0.025
 
         HorizontalYearGrid(
             family: family,

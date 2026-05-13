@@ -101,7 +101,7 @@ public enum WidgetStyle {
     public static func inactiveDotColor(
         surface: Color = Color("surface-muted"),
         text: Color = Color("text-primary"),
-        ratio: Double = 0.04
+        ratio: Double = 0.025
     ) -> Color {
         blendedColor(base: surface, overlay: text, ratio: ratio)
     }
