@@ -99,8 +99,8 @@ public enum WidgetStyle {
     }
 
     public static let futureDotFillRatio = 0.025
-    public static let missedDotFillRatio = 0.055
-    public static let todayEmptyDotFillRatio = 0.14
+    public static let missedDotFillRatio = 0.075
+    public static let todayEmptyDotFillRatio = 0.9
 
     public static func futureDotColor(
         surface: Color = Color("surface-muted"),
