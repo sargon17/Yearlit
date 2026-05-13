@@ -81,7 +81,7 @@ struct CreateCalendarView: View {
             color: selectedColor,
             cadence: cadence,
             trackingType: trackingType,
-            trackingStartedAt: Date(),
+            trackingStartedAt: initialTrackingStartedAt(),
             dailyTarget: dailyTarget,
             entries: existingStreakEntries,
             isArchived: false,
@@ -102,6 +102,13 @@ struct CreateCalendarView: View {
         )
         scheduleNotifications(for: calendar, store: CustomCalendarStore.shared)
         onCreate(calendar)
+    }
+
+    private func initialTrackingStartedAt() -> Date {
+        let entryStarts = existingStreakEntries.values.map { entry in
+            cadence == .weekly ? LocalDayCalendar.startOfWeek(for: entry.date) : LocalDayCalendar.startOfDay(for: entry.date)
+        }
+        return entryStarts.min() ?? Date()
     }
 
     func handleCreateCalendar() {

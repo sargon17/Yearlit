@@ -116,24 +116,42 @@ struct LegacyDataMigrationTests {
         #expect(fixture.defaults.bool(forKey: LegacyPersistenceKeys.trackingStartedAtBackfillMigrationFlagKey))
     }
 
-    @Test func doesNotBackfillTrackingStartedAtWhenPrerequisiteMigrationsDidNotComplete() throws {
+    @Test func repairsTrackingStartedAtWhenEarlierEntriesExistAfterBackfillFlagWasAlreadySet() throws {
         let fixture = makeDefaultsFixture()
         defer { tearDownDefaultsFixture(fixture) }
+
+        fixture.defaults.set(true, forKey: LegacyPersistenceKeys.migrationFlagKey)
+        fixture.defaults.set(true, forKey: LegacyPersistenceKeys.dayKeyMigrationFlagKey)
+        fixture.defaults.set(true, forKey: LegacyPersistenceKeys.trackingStartedAtBackfillMigrationFlagKey)
 
         let container = makeContainer()
         let context = ModelContext(container)
         context.autosaveEnabled = false
 
-        let blockedStart = try #require(makeDate(year: 2025, month: 1, day: 1, hour: 8, minute: 15))
-        let expectedStart = LocalDayCalendar.startOfDay(for: blockedStart)
+        let incorrectStart = try #require(makeDate(year: 2026, month: 5, day: 1, hour: 8, minute: 0))
+        let earliestEntry = try #require(makeDate(year: 2025, month: 5, day: 1, hour: 18, minute: 0))
+        let expectedStart = LocalDayCalendar.startOfDay(for: earliestEntry)
         let calendar = HabitCalendarEntity(
-            name: "Blocked",
+            name: "Long streak",
             color: "qs-orange",
             trackingTypeRawValue: TrackingType.binary.rawValue,
             dailyTarget: 1,
-            trackingStartedAt: blockedStart
+            trackingStartedAt: incorrectStart
         )
         context.insert(calendar)
+        context.insert(
+            CalendarEntryEntity(
+                compositeKey: CalendarEntryEntity.makeCompositeKey(
+                    calendarId: calendar.id,
+                    dayKey: DayKeyFormatter.shared.string(from: expectedStart)
+                ),
+                calendarId: calendar.id,
+                dayKey: DayKeyFormatter.shared.string(from: expectedStart),
+                date: earliestEntry,
+                count: 1,
+                completed: true
+            )
+        )
         try context.save()
 
         LegacyDataMigrator.migrateIfNeeded(container: container, defaults: fixture.defaults)
@@ -143,7 +161,37 @@ struct LegacyDataMigrationTests {
         let reloaded = try #require(refreshedContext.fetch(FetchDescriptor<HabitCalendarEntity>()).first)
 
         #expect(reloaded.trackingStartedAt == expectedStart)
-        #expect(!fixture.defaults.bool(forKey: LegacyPersistenceKeys.trackingStartedAtBackfillMigrationFlagKey))
+        #expect(fixture.defaults.bool(forKey: LegacyPersistenceKeys.trackingStartedAtRepairMigrationFlagKey))
+    }
+
+    @Test func backfillsEmptySwiftDataCalendarWhenLegacyPayloadIsEmpty() throws {
+        let fixture = makeDefaultsFixture()
+        defer { tearDownDefaultsFixture(fixture) }
+
+        let container = makeContainer()
+        let context = ModelContext(container)
+        context.autosaveEnabled = false
+
+        let oldStart = try #require(makeDate(year: 2025, month: 1, day: 1, hour: 8, minute: 15))
+        let calendar = HabitCalendarEntity(
+            name: "Empty",
+            color: "qs-orange",
+            trackingTypeRawValue: TrackingType.binary.rawValue,
+            dailyTarget: 1,
+            trackingStartedAt: oldStart
+        )
+        context.insert(calendar)
+        try context.save()
+
+        let expectedMigrationDate = LocalDayCalendar.startOfDay(for: Date())
+        LegacyDataMigrator.migrateIfNeeded(container: container, defaults: fixture.defaults)
+
+        let refreshedContext = ModelContext(container)
+        refreshedContext.autosaveEnabled = false
+        let reloaded = try #require(refreshedContext.fetch(FetchDescriptor<HabitCalendarEntity>()).first)
+
+        #expect(reloaded.trackingStartedAt == expectedMigrationDate)
+        #expect(fixture.defaults.bool(forKey: LegacyPersistenceKeys.trackingStartedAtBackfillMigrationFlagKey))
     }
 
     private func makeContainer() -> ModelContainer {

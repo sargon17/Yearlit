@@ -8,6 +8,7 @@ enum LegacyPersistenceKeys {
     static let migrationFlagKey = "swiftDataMigrationComplete"
     static let dayKeyMigrationFlagKey = "swiftDataDayKeyMigrationComplete"
     static let trackingStartedAtBackfillMigrationFlagKey = "swiftDataTrackingStartedAtBackfillMigrationComplete"
+    static let trackingStartedAtRepairMigrationFlagKey = "swiftDataTrackingStartedAtRepairV2Complete"
 }
 
 @available(iOS 17.0, macOS 14.0, *)
@@ -33,6 +34,7 @@ enum LegacyDataMigrator {
 
         if legacyMigrationSucceeded && dayKeyMigrationSucceeded {
             migrateTrackingStartedAtIfNeeded(defaults: defaults, container: container)
+            repairTrackingStartedAtIfNeeded(defaults: defaults, container: container)
         }
     }
 
@@ -229,12 +231,10 @@ enum LegacyDataMigrator {
             let entriesByCalendarId = Dictionary(grouping: entries, by: { $0.calendarId })
 
             for calendar in calendars {
-                let candidateDates = entriesByCalendarId[calendar.id]?.map {
-                    calendar.cadenceRawValue == CalendarCadence.weekly.rawValue
-                        ? LocalDayCalendar.startOfWeek(for: $0.date)
-                        : LocalDayCalendar.startOfDay(for: $0.date)
-                } ?? []
-                let resolvedStart = candidateDates.min() ?? migrationDate
+                let resolvedStart = earliestEntryBucketDate(
+                    for: calendar,
+                    entries: entriesByCalendarId[calendar.id, default: []]
+                ) ?? migrationDate
                 if calendar.trackingStartedAt != resolvedStart {
                     calendar.trackingStartedAt = resolvedStart
                 }
@@ -247,6 +247,49 @@ enum LegacyDataMigrator {
         } catch {
             NSLog("Tracking started at backfill failed: \(error)")
         }
+    }
+
+    private static func repairTrackingStartedAtIfNeeded(defaults: UserDefaults, container: ModelContainer) {
+        guard !defaults.bool(forKey: LegacyPersistenceKeys.trackingStartedAtRepairMigrationFlagKey) else { return }
+
+        let context = ModelContext(container)
+        context.autosaveEnabled = false
+
+        do {
+            let calendars = try context.fetch(FetchDescriptor<HabitCalendarEntity>())
+            let entries = try context.fetch(FetchDescriptor<CalendarEntryEntity>())
+            let entriesByCalendarId = Dictionary(grouping: entries, by: { $0.calendarId })
+
+            for calendar in calendars {
+                guard let earliestEntryDate = earliestEntryBucketDate(
+                    for: calendar,
+                    entries: entriesByCalendarId[calendar.id, default: []]
+                ) else { continue }
+
+                let currentStart = LocalDayCalendar.startOfDay(for: calendar.trackingStartedAt)
+                if earliestEntryDate < currentStart {
+                    calendar.trackingStartedAt = earliestEntryDate
+                }
+            }
+
+            if context.hasChanges {
+                try context.save()
+            }
+            defaults.set(true, forKey: LegacyPersistenceKeys.trackingStartedAtRepairMigrationFlagKey)
+        } catch {
+            NSLog("Tracking started at repair failed: \(error)")
+        }
+    }
+
+    private static func earliestEntryBucketDate(
+        for calendar: HabitCalendarEntity,
+        entries: [CalendarEntryEntity]
+    ) -> Date? {
+        entries.map {
+            calendar.cadenceRawValue == CalendarCadence.weekly.rawValue
+                ? LocalDayCalendar.startOfWeek(for: $0.date)
+                : LocalDayCalendar.startOfDay(for: $0.date)
+        }.min()
     }
 
     private static func decodeOldCalendars(from data: Data) -> [CustomCalendar]? {

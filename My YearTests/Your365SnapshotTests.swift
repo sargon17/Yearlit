@@ -71,6 +71,25 @@ struct Your365SnapshotTests {
         #expect(snapshot.cells.contains(where: { $0.state == .completed }))
     }
 
+    @Test func matureLongStreakKeepsLatest365DaysCompleted() {
+        let start = makeDate(year: 2024, month: 1, day: 1)
+        let today = makeDate(year: 2026, month: 1, day: 1)
+        let calendar = LocalDayCalendar.calendar
+        let completed = Set((0 ..< 365).compactMap { offset in
+            calendar.date(byAdding: .day, value: -offset, to: today).map { LocalDayCalendar.startOfDay(for: $0) }
+        })
+
+        let snapshot = Your365Snapshot.makeLatest365Days(
+            trackingStartedAt: start,
+            completedDates: completed,
+            today: today
+        )
+
+        #expect(snapshot.cells.count == 365)
+        #expect(snapshot.cells.allSatisfy { $0.state == .completed })
+        #expect(snapshot.cells.last?.date == today)
+    }
+
     @Test func latest365SnapshotMarksPreStartDaysAsNotTracked() {
         let start = makeDate(year: 2026, month: 1, day: 20)
         let today = makeDate(year: 2026, month: 1, day: 25)
@@ -83,10 +102,10 @@ struct Your365SnapshotTests {
     }
 
     @Test func dayIndexingSurvivesDstStyleCalendarGaps() {
-        let originalTimeZone = TimeZone.default
+        let originalTimeZone = NSTimeZone.default
         let dstZone = TimeZone(identifier: "America/New_York")!
-        TimeZone.default = dstZone
-        defer { TimeZone.default = originalTimeZone }
+        NSTimeZone.default = dstZone
+        defer { NSTimeZone.default = originalTimeZone }
 
         let start = makeDate(year: 2026, month: 3, day: 7)
         let today = makeDate(year: 2026, month: 3, day: 10)

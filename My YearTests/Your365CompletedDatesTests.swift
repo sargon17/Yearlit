@@ -40,8 +40,8 @@ struct Your365CompletedDatesTests {
             color: "qs-blue",
             cadence: .daily,
             trackingType: trackingType,
-            dailyTarget: 3,
             trackingStartedAt: makeDate(year: 2026, month: 1, day: 1),
+            dailyTarget: 3,
             entries: entries
         )
     }

@@ -1,4 +1,5 @@
 @testable import My_Year
+import SharedModels
 import Testing
 
 struct DotFillRatioTests {
