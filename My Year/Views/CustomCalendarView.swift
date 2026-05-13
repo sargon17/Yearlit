@@ -92,7 +92,10 @@ struct CustomCalendarView: View {
     }
 
     private var calendarYearGridDates: [Date] {
-        yearDates
+        if activeCalendar.cadence == .weekly {
+            return getYearWeekDatesArray(for: valuationStore.selectedYear)
+        }
+        return yearDates
     }
 
     private var completedEntryDates: Set<Date> {
