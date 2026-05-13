@@ -39,6 +39,17 @@ struct Your365SnapshotTests {
         #expect(snapshot.cells.last?.state == .missed)
     }
 
+    @Test func firstYearSnapshotKeepsDay365InFirstYearMode() {
+        let start = makeDate(year: 2026, month: 1, day: 1)
+        let today = makeDate(year: 2026, month: 12, day: 31)
+
+        let snapshot = Your365Snapshot.makeFirstYear(trackingStartedAt: start, completedDates: [], today: today)
+
+        #expect(snapshot.cells.count == 365)
+        #expect(snapshot.cells.last?.date == today)
+        #expect(snapshot.cells.last?.state == .todayPending)
+    }
+
     @Test func latest365SnapshotEndsTodayForMatureCalendar() {
         let start = makeDate(year: 2024, month: 1, day: 1)
         let today = makeDate(year: 2025, month: 2, day: 1)

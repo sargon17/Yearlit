@@ -3,11 +3,22 @@ import SwiftDate
 import SwiftUI
 
 struct GridView: View {
+    struct Your365Presentation {
+        let snapshot: Your365Snapshot
+        let cellsByDateKey: [String: Your365Cell]
+
+        init(snapshot: Your365Snapshot) {
+            self.snapshot = snapshot
+            cellsByDateKey = Dictionary(uniqueKeysWithValues: snapshot.cells.map { ($0.id, $0) })
+        }
+    }
+
     let calendar: CustomCalendar
     let store: CustomCalendarStore
     let handleDayTap: (Date) -> Void
     let dates: [Date]
     let year: Int
+    let your365Presentation: Your365Presentation?
 
     @Environment(\.colorScheme) var colorScheme
     @State var mappedDays: [(date: Date, color: Color)] = []
@@ -37,12 +48,17 @@ struct GridView: View {
                         ForEach(0 ..< columns, id: \.self) { col in
                             let day = row * columns + col
                             if day < mappedDays.count {
+                                let mappedDay = mappedDays[day]
+                                let presentation = your365Presentation?.cellsByDateKey[dayKey(for: mappedDay.date)]
+                                let isTapDisabled = presentation.map { $0.state == .future || $0.state == .notTracked } ?? false
+
                                 TappableGridDot(
-                                    color: mappedDays[day].color,
+                                    color: mappedDay.color,
                                     dotSize: dotSize,
-                                    hitSize: hitSize
+                                    hitSize: hitSize,
+                                    isDisabled: isTapDisabled
                                 ) {
-                                    handleDayTap(mappedDays[day].date)
+                                    handleDayTap(mappedDay.date)
                                 }
                             } else {
                                 Color.clear.frame(width: dotSize, height: dotSize)
@@ -65,7 +81,13 @@ struct GridView: View {
                 } else {
                     let counts = calendar.entries.values.map { $0.count }
                     mappedDays = dates.map {
-                        (date: $0, color: colorForDay($0, calendar: calendar, today: today, counts: counts))
+                        let presentation = your365Presentation?.cellsByDateKey[dayKey(for: $0)]
+
+                        if let presentation {
+                            return (date: $0, color: colorForYour365Day(presentation))
+                        }
+
+                        return (date: $0, color: colorForDay($0, calendar: calendar, today: today, counts: counts))
                     }
                     CacheStore.shared.set(cacheKey, value: mappedDays)
                 }
@@ -80,11 +102,27 @@ struct GridView: View {
         let schemeKey = colorScheme == .dark ? "dark" : "light"
         let daySeedKey = dayKey(for: LocalDayCalendar.startOfDay(for: Date()))
         let timeZoneKey = TimeZone.autoupdatingCurrent.identifier
-        return "\(calendar.id.uuidString)|\(year)|v\(snapshot.dataVersion)|\(calendar.cadence.rawValue)|\(schemeKey)|\(daySeedKey)|\(timeZoneKey)"
+        let presentationKey = your365Presentation.map { "y365:\($0.snapshot.trackingStartedAt.timeIntervalSince1970):\($0.snapshot.cells.count)" } ?? "y365:none"
+        return "\(calendar.id.uuidString)|\(year)|v\(snapshot.dataVersion)|\(calendar.cadence.rawValue)|\(schemeKey)|\(daySeedKey)|\(timeZoneKey)|\(presentationKey)"
     }
 
     private var today: Date {
         Date().date
+    }
+
+    private func colorForYour365Day(_ cell: Your365Cell) -> Color {
+        switch cell.state {
+        case .completed:
+            return colorForDay(cell.date, calendar: calendar, today: today, counts: calendar.entries.values.map(\.count))
+        case .missed:
+            return missedDayColor()
+        case .todayPending:
+            return activeDayColor()
+        case .future:
+            return futureDayColor()
+        case .notTracked:
+            return missedDayColor().opacity(0.35)
+        }
     }
 }
 
@@ -92,6 +130,7 @@ private struct TappableGridDot: View {
     let color: Color
     let dotSize: CGFloat
     let hitSize: CGFloat
+    let isDisabled: Bool
     let onTap: () -> Void
 
     var body: some View {
@@ -101,7 +140,10 @@ private struct TappableGridDot: View {
                 Color.clear
                     .frame(width: hitSize, height: hitSize)
                     .contentShape(Rectangle())
-                    .onTapGesture(perform: onTap)
+                    .onTapGesture {
+                        guard !isDisabled else { return }
+                        onTap()
+                    }
             )
     }
 }

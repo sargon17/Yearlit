@@ -51,14 +51,66 @@ struct CustomCalendarView: View {
         getYearDatesArray(for: valuationStore.selectedYear)
     }
 
-    private var gridDates: [Date] {
-        activeCalendar.cadence == .weekly
-            ? getYearWeekDatesArray(for: valuationStore.selectedYear)
-            : yearDates
+    private var timelinePreference: CalendarTimelineMode {
+        TimelinePreferenceStore.mode().effectiveMode(for: activeCalendar.cadence)
+    }
+
+    private var isShowingYour365: Bool {
+        activeCalendar.cadence == .daily && timelinePreference == .your365
+    }
+
+    private var your365Snapshot: Your365Snapshot? {
+        guard isShowingYour365 else { return nil }
+        return activeCalendar.makeYour365Snapshot(
+            completedDates: completedEntryDates,
+            today: today
+        )
+    }
+
+    private var visibleGridDates: [Date] {
+        if activeCalendar.cadence == .weekly {
+            return getYearWeekDatesArray(for: valuationStore.selectedYear)
+        }
+
+        if let snapshot = your365Snapshot {
+            return snapshot.cells.map(\.date)
+        }
+
+        return yearDates
+    }
+
+    private var calendarYearGridDates: [Date] {
+        yearDates
+    }
+
+    private var completedEntryDates: Set<Date> {
+        your365CompletedDates(for: activeCalendar)
+    }
+
+    private var your365HeaderTitle: String? {
+        guard let snapshot = your365Snapshot else { return nil }
+        if snapshot.cells.contains(where: { $0.state == .future }),
+           let todayCell = snapshot.cells.first(where: { Calendar.current.isDate($0.date, inSameDayAs: today) })
+        {
+            return "Day \(todayCell.dayNumber) of your 365"
+        }
+        return "Latest 365 days"
+    }
+
+    private var your365HeaderSubtitle: String? {
+        guard let snapshot = your365Snapshot else { return nil }
+        if snapshot.cells.contains(where: { $0.state == .future }) {
+            return "Your year started on \(dateFormatterLong.string(from: snapshot.trackingStartedAt))"
+        }
+        return nil
     }
 
     private var currentPeriodReferenceDate: Date? {
-        yearDates.first { Calendar.current.isDate($0, inSameDayAs: Date()) }
+        if isShowingYour365 {
+            return your365Snapshot?.cells.first(where: { Calendar.current.isDate($0.date, inSameDayAs: today) })?.date ?? today
+        }
+
+        return calendarYearGridDates.first { Calendar.current.isDate($0, inSameDayAs: today) }
     }
 
     private var activeCalendar: CustomCalendar {
@@ -93,14 +145,10 @@ struct CustomCalendarView: View {
         let sourceDates: [Date]
         if activeCalendar.cadence == .weekly {
             sourceDates = getYearWeekDatesArray(for: valuationStore.selectedYear)
+        } else if isShowingYour365 {
+            sourceDates = your365Snapshot?.cells.map(\.date) ?? []
         } else {
-            let calendar = Calendar.current
-            let startOfYear = calendar.date(
-                from: DateComponents(year: valuationStore.selectedYear, month: 1, day: 1)
-            )!
-            sourceDates = (0 ..< valuationStore.currentDayNumber).compactMap { day in
-                calendar.date(byAdding: .day, value: day, to: startOfYear)
-            }
+            sourceDates = calendarYearGridDates
         }
 
         for date in sourceDates {
@@ -232,7 +280,7 @@ struct CustomCalendarView: View {
                 milestone: decision.milestone,
                 currentStreak: currentStreak,
                 kind: .streak,
-                dates: gridDates,
+                dates: calendarYearGridDates,
                 allowsStopShowing: true,
                 showedUpPeriodKey: nil
             )
@@ -290,7 +338,7 @@ struct CustomCalendarView: View {
     private func milestoneDates(for kind: ShowedUpMilestoneKind, referenceDate: Date) -> [Date] {
         switch kind {
         case .allTime:
-            return gridDates
+            return calendarYearGridDates
         case .currentMonth:
             let referenceYear = LocalDayCalendar.calendar.component(.year, from: referenceDate)
             return getYearDatesArray(for: referenceYear).filter {
@@ -385,16 +433,32 @@ struct CustomCalendarView: View {
                             }
 
                             HStack(spacing: 4) {
-                                Button(action: { showingYearPicker = true }) {
-                                    Text("\(valuationStore.year.description)")
-                                        .font(.system(size: 12, design: .monospaced))
-                                        .foregroundColor(Color("text-tertiary"))
-                                }
+                                if isShowingYour365 {
+                                    VStack(alignment: .leading, spacing: 2) {
+                                        if let title = your365HeaderTitle {
+                                            Text(title)
+                                                .font(.system(size: 12, design: .monospaced))
+                                                .foregroundColor(Color("text-tertiary"))
+                                        }
 
-                                Text("•")
-                                    .font(.system(size: 4, weight: .black, design: .monospaced))
-                                    .foregroundColor(Color("text-tertiary"))
-                                    .padding(.horizontal, 2)
+                                        if let subtitle = your365HeaderSubtitle {
+                                            Text(subtitle)
+                                                .font(.system(size: 12, design: .monospaced))
+                                                .foregroundColor(Color("text-tertiary"))
+                                        }
+                                    }
+                                } else {
+                                    Button(action: { showingYearPicker = true }) {
+                                        Text("\(valuationStore.year.description)")
+                                            .font(.system(size: 12, design: .monospaced))
+                                            .foregroundColor(Color("text-tertiary"))
+                                    }
+
+                                    Text("•")
+                                        .font(.system(size: 4, weight: .black, design: .monospaced))
+                                        .foregroundColor(Color("text-tertiary"))
+                                        .padding(.horizontal, 2)
+                                }
 
                                 HStack(alignment: .center, spacing: 4) {
                                     if resolvedCalendar.recurringReminderEnabled,
@@ -440,8 +504,9 @@ struct CustomCalendarView: View {
                     calendar: resolvedCalendar,
                     store: store,
                     handleDayTap: handleDayTap,
-                    dates: gridDates,
-                    year: valuationStore.selectedYear
+                    dates: visibleGridDates,
+                    year: valuationStore.selectedYear,
+                    your365Presentation: your365Snapshot.map { GridView.Your365Presentation(snapshot: $0) }
                 )
                 .frame(height: UIScreen.main.bounds.height * 0.55)
 
@@ -479,7 +544,7 @@ struct CustomCalendarView: View {
                                     milestone: milestone,
                                     currentStreak: currentStreak(for: resolvedCalendar),
                                     kind: .streak,
-                                    dates: gridDates,
+                                    dates: calendarYearGridDates,
                                     allowsStopShowing: false,
                                     showedUpPeriodKey: nil
                                 )
@@ -498,7 +563,7 @@ struct CustomCalendarView: View {
                                     milestone: milestone,
                                     currentStreak: currentStreak(for: resolvedCalendar),
                                     kind: .showedUp,
-                                    dates: gridDates,
+                                    dates: calendarYearGridDates,
                                     allowsStopShowing: false,
                                     showedUpPeriodKey: ShowedUpMilestones.periodKey(for: .allTime)
                                 )
@@ -509,7 +574,7 @@ struct CustomCalendarView: View {
                                 CalendarShareSheet(
                                     calendar: resolvedCalendar,
                                     year: valuationStore.selectedYear,
-                                    dates: gridDates,
+                                    dates: calendarYearGridDates,
                                     statsBundle: statsBundle,
                                     isPremium: isPremium(customerInfo: customerInfo)
                                 )
@@ -594,7 +659,7 @@ struct CustomCalendarView: View {
                 computeCalendarStatsBundle(
                     calendar: resolvedCalendar,
                     year: selectedYear,
-                    todayLocal: Date(),
+                    todayLocal: today,
                     currentPeriodReferenceDate: resolvedCurrentPeriodReferenceDate
                 )
             }.value

@@ -749,7 +749,7 @@ public extension CustomCalendar {
         let todayStart = LocalDayCalendar.startOfDay(for: today)
         let maturityBoundary = LocalDayCalendar.calendar.date(byAdding: .day, value: 364, to: trackingStart)
 
-        if let maturityBoundary, todayStart < maturityBoundary {
+        if let maturityBoundary, todayStart <= maturityBoundary {
             return Your365Snapshot.makeFirstYear(
                 trackingStartedAt: trackingStart,
                 completedDates: completedDates,
