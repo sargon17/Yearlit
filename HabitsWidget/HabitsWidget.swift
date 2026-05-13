@@ -162,7 +162,7 @@ struct HorizontalCalendarGrid: View {
         }
 
         if normalized > normalizedToday {
-            return inactiveDayColor(base: backgroundColor, overlay: textPrimaryColor, ratio: inactiveRatio)
+            return futureDayColor(base: backgroundColor, overlay: textPrimaryColor, ratio: inactiveRatio)
         }
 
         if let calendar = calendar,
@@ -172,23 +172,23 @@ struct HorizontalCalendarGrid: View {
             case .binary:
                 return entry.completed
                     ? Color(calendar.color)
-                    : activeDayColor(base: backgroundColor, overlay: textPrimaryColor)
+                    : emptyDotColor(for: normalized, today: today)
             case .counter:
                 if entry.count > 0 {
                     let ratio = counterDotFillRatio(count: entry.count, counts: calendar.entries.values.map { $0.count })
                     return WidgetStyle.blendedColor(base: backgroundColor, overlay: Color(calendar.color), ratio: ratio)
                 }
-                return activeDayColor(base: backgroundColor, overlay: textPrimaryColor)
+                return emptyDotColor(for: normalized, today: today)
             case .multipleDaily:
                 if entry.count > 0 {
                     let opacity = multipleDailyDotFillRatio(count: entry.count, dailyTarget: calendar.dailyTarget)
                     return Color(calendar.color).opacity(opacity)
                 }
-                return activeDayColor(base: backgroundColor, overlay: textPrimaryColor)
+                return emptyDotColor(for: normalized, today: today)
             }
         }
 
-        return activeDayColor(base: backgroundColor, overlay: textPrimaryColor)
+        return emptyDotColor(for: normalized, today: today)
     }
 
     private func isAccentedDay(_ date: Date, today: Date) -> Bool {
@@ -209,6 +209,12 @@ struct HorizontalCalendarGrid: View {
         case .counter, .multipleDaily:
             return normalized == normalizedToday && entry.count > 0
         }
+    }
+
+    private func emptyDotColor(for normalized: Date, today: Date) -> Color {
+        normalized == normalizedBucketDate(for: today)
+            ? activeDayColor(base: backgroundColor, overlay: textPrimaryColor)
+            : missedDayColor(base: backgroundColor, overlay: textPrimaryColor)
     }
 
     private func normalizedBucketDate(for date: Date) -> Date {
@@ -490,6 +496,14 @@ private func makeLocalCalendar() -> Calendar {
     calendar.locale = .autoupdatingCurrent
     calendar.timeZone = .autoupdatingCurrent
     return calendar
+}
+
+private func futureDayColor(base: Color, overlay: Color, ratio: Double) -> Color {
+    WidgetStyle.futureDotColor(surface: base, text: overlay, ratio: ratio)
+}
+
+private func missedDayColor(base: Color, overlay: Color) -> Color {
+    WidgetStyle.missedDotColor(surface: base, text: overlay)
 }
 
 private func inactiveDayColor(base: Color, overlay: Color, ratio: Double) -> Color {

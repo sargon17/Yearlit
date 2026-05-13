@@ -82,11 +82,14 @@ struct OverallGridView: View {
     }
 
     private func mappedDays(from zByDay: [Double]) -> [(date: Date, color: Color)] {
-        let inactiveColor = inactiveDayColor()
-        let activeColor = activeDayColor()
+        let futureColor = futureDayColor()
+        let todayColor = activeDayColor()
+        let missedColor = missedDayColor()
+        let todayBucket = LocalDayCalendar.startOfDay(for: today)
         return zip(dates, zByDay).map { day, z -> (date: Date, color: Color) in
-            if day > today { return (day, inactiveColor) }
-            if z <= 0 { return (day, activeColor) }
+            let dayBucket = LocalDayCalendar.startOfDay(for: day)
+            if dayBucket > todayBucket { return (day, futureColor) }
+            if z <= 0 { return (day, dayBucket == todayBucket ? todayColor : missedColor) }
             let opacity = min(1, max(0.2, z))
             return (day, accentColor.opacity(opacity))
         }

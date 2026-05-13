@@ -143,30 +143,32 @@ extension CalendarsOverviewsItem {
 
     private func buildLatestSlotColors() -> [Color] {
         let counts = calendar.entries.values.map { $0.count }
-        let inactiveColor = inactiveDayColor()
-        let activeColor = activeDayColor()
+        let futureColor = futureDayColor()
+        let todayColor = activeDayColor()
+        let missedColor = missedDayColor()
 
         return latestSlots.map { day -> Color in
             let bucketDate = calendar.bucketDate(for: day)
             let todayBucket = calendar.bucketDate(for: todayStart)
-            if bucketDate > todayBucket { return inactiveColor }
-            guard let entry = calendar.entry(for: day) else { return activeColor }
+            if bucketDate > todayBucket { return futureColor }
+            let emptyColor = bucketDate == todayBucket ? todayColor : missedColor
+            guard let entry = calendar.entry(for: day) else { return emptyColor }
 
             switch calendar.trackingType {
             case .binary:
-                return entry.completed ? Color(calendar.color) : activeColor
+                return entry.completed ? Color(calendar.color) : emptyColor
             case .counter:
                 if entry.count > 0 {
                     let ratio = counterDotFillRatio(count: entry.count, counts: counts)
                     return GarnishColor.blend(.surfaceMuted, with: Color(calendar.color), ratio: ratio)
                 }
-                return activeColor
+                return emptyColor
             case .multipleDaily:
                 if entry.count > 0 {
                     let opacity = multipleDailyDotFillRatio(count: entry.count, dailyTarget: calendar.dailyTarget)
                     return Color(calendar.color).opacity(opacity)
                 }
-                return activeColor
+                return emptyColor
             }
         }
     }

@@ -1,8 +1,12 @@
 import SharedModels
 import SwiftUI
 
-func inactiveDayColor() -> Color {
-    WidgetStyle.inactiveDotColor()
+func futureDayColor() -> Color {
+    WidgetStyle.futureDotColor()
+}
+
+func missedDayColor() -> Color {
+    WidgetStyle.missedDotColor()
 }
 
 func activeDayColor() -> Color {

@@ -98,12 +98,28 @@ public enum WidgetStyle {
         return Color(red: Double(red), green: Double(green), blue: Double(blue), opacity: Double(alpha))
     }
 
-    public static func inactiveDotColor(
+    public static func futureDotColor(
         surface: Color = Color("surface-muted"),
         text: Color = Color("text-primary"),
         ratio: Double = 0.025
     ) -> Color {
         blendedColor(base: surface, overlay: text, ratio: ratio)
+    }
+
+    public static func missedDotColor(
+        surface: Color = Color("surface-muted"),
+        text: Color = Color("text-primary"),
+        ratio: Double = 0.015
+    ) -> Color {
+        blendedColor(base: surface, overlay: text, ratio: ratio)
+    }
+
+    public static func inactiveDotColor(
+        surface: Color = Color("surface-muted"),
+        text: Color = Color("text-primary"),
+        ratio: Double = 0.025
+    ) -> Color {
+        futureDotColor(surface: surface, text: text, ratio: ratio)
     }
 
     public static func activeDotColor(

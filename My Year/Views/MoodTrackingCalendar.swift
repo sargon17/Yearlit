@@ -29,15 +29,15 @@ struct MoodTrackingCalendar: View {
     private func colorForDay(_ day: Int) -> Color {
         let dayDate = store.dateForDay(day)
 
-        if day >= store.currentDayNumber {
-            return inactiveDayColor()
+        if day > store.currentDayNumber {
+            return futureDayColor()
         }
 
         if let valuation = store.getValuation(for: dayDate) {
             return Color(valuation.mood.color)
         }
 
-        return activeDayColor()
+        return day == store.currentDayNumber ? activeDayColor() : missedDayColor()
     }
 
     private func handleDayTap(_ day: Int) {

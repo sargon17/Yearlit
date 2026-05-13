@@ -450,19 +450,23 @@ private struct MilestoneGridView: View {
     }
 
     private func dotColor(for date: Date) -> Color {
-        if date.isInFuture {
+        let bucketDate = calendar.bucketDate(for: date)
+        let todayBucket = calendar.bucketDate(for: Date())
+        if bucketDate > todayBucket {
             return foregroundColor.opacity(0.12)
         }
+
+        let emptyOpacity = bucketDate == todayBucket ? 0.25 : 0.12
         let entry = entry(for: calendar, date: date)
         switch calendar.trackingType {
         case .binary:
-            return entry?.completed == true ? foregroundColor : foregroundColor.opacity(0.25)
+            return entry?.completed == true ? foregroundColor : foregroundColor.opacity(emptyOpacity)
         case .counter:
-            guard let entry, entry.count > 0 else { return foregroundColor.opacity(0.25) }
+            guard let entry, entry.count > 0 else { return foregroundColor.opacity(emptyOpacity) }
             let ratio = counterDotFillRatio(count: entry.count, counts: calendar.entries.values.map { $0.count })
             return foregroundColor.opacity(ratio)
         case .multipleDaily:
-            guard let entry, entry.count > 0 else { return foregroundColor.opacity(0.25) }
+            guard let entry, entry.count > 0 else { return foregroundColor.opacity(emptyOpacity) }
             let ratio = multipleDailyDotFillRatio(count: entry.count, dailyTarget: calendar.dailyTarget)
             return foregroundColor.opacity(ratio)
         }
