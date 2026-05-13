@@ -743,8 +743,22 @@ public struct Your365Snapshot: Codable, Hashable {
 public extension CustomCalendar {
     func makeYour365Snapshot(completedDates: Set<Date>, today: Date = Date()) -> Your365Snapshot? {
         guard cadence == .daily else { return nil }
-        return isArchived ? nil : Your365Snapshot.makeLatest365Days(
-            trackingStartedAt: trackingStartedAt,
+        guard !isArchived else { return nil }
+
+        let trackingStart = LocalDayCalendar.startOfDay(for: trackingStartedAt)
+        let todayStart = LocalDayCalendar.startOfDay(for: today)
+        let maturityBoundary = LocalDayCalendar.calendar.date(byAdding: .day, value: 364, to: trackingStart)
+
+        if let maturityBoundary, todayStart < maturityBoundary {
+            return Your365Snapshot.makeFirstYear(
+                trackingStartedAt: trackingStart,
+                completedDates: completedDates,
+                today: today
+            )
+        }
+
+        return Your365Snapshot.makeLatest365Days(
+            trackingStartedAt: trackingStart,
             completedDates: completedDates,
             today: today
         )

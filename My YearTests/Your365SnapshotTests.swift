@@ -35,8 +35,8 @@ struct Your365SnapshotTests {
         #expect(snapshot.cells.count == 365)
         #expect(snapshot.cells.first?.dayNumber == 1)
         #expect(snapshot.cells.last?.dayNumber == 365)
-        #expect(snapshot.cells.last?.date == today)
-        #expect(snapshot.cells.last?.state == .todayPending)
+        #expect(snapshot.cells.last?.date == makeDate(year: 2025, month: 12, day: 31))
+        #expect(snapshot.cells.last?.state == .missed)
     }
 
     @Test func latest365SnapshotEndsTodayForMatureCalendar() {
@@ -56,7 +56,7 @@ struct Your365SnapshotTests {
         #expect(snapshot.cells.count == 365)
         #expect(snapshot.cells.first?.date == LocalDayCalendar.startOfDay(for: Calendar.current.date(byAdding: .day, value: -364, to: today)!))
         #expect(snapshot.cells.last?.date == today)
-        #expect(snapshot.cells.last?.state == .todayPending)
+        #expect(snapshot.cells.last?.state == .completed)
         #expect(snapshot.cells.contains(where: { $0.state == .completed }))
     }
 
