@@ -17,6 +17,7 @@ struct CalendarsSection: View {
 
     @State private var position = ScrollPosition(edge: .leading)
     @State private var pendingCalendarId: String?
+    @State private var isTimelinePreferenceSheetPresented = false
 
     var body: some View {
         let snapshot = store.snapshot
@@ -146,6 +147,12 @@ struct CalendarsSection: View {
             }
         }
         .surfaceBackground(Color("surface-muted"), ignoresSafeArea: true)
+        .fullScreenCover(isPresented: $isTimelinePreferenceSheetPresented) {
+            TimelinePreferenceChoiceSheet { mode in
+                TimelinePreferenceStore.setMode(mode)
+                isTimelinePreferenceSheetPresented = false
+            }
+        }
     }
 
     var toolbar: some View {
@@ -159,6 +166,13 @@ struct CalendarsSection: View {
                         .font(.system(size: 16))
                 }
 
+                Button(action: {
+                    isTimelinePreferenceSheetPresented = true
+                }) {
+                    Image(systemName: "calendar.badge.clock")
+                        .font(.system(size: 16))
+                }
+                .accessibilityLabel("Show Timeline Choice Sheet")
             #endif
 
             Button(action: {

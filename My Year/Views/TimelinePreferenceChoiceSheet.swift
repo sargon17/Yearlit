@@ -2,75 +2,172 @@ import SharedModels
 import SwiftUI
 
 struct TimelinePreferenceChoiceSheet: View {
-    let onSelect: (CalendarTimelineMode) -> Void
+  let onSelect: (CalendarTimelineMode) -> Void
 
-    var body: some View {
-        VStack(alignment: .leading, spacing: 20) {
+  @Environment(\.colorScheme) private var colorScheme
+
+  var body: some View {
+    NavigationStack {
+      VStack(spacing: 0) {
+        CustomSeparator()
+          .padding(.horizontal, -16)
+
+        VStack(spacing: 0) {
+          Spacer(minLength: 24)
+
+          VStack(alignment: .leading, spacing: 16) {
+            Text("Your year starts the day you do.")
+              .font(.system(size: 22, weight: .black, design: .monospaced))
+              .foregroundStyle(.textPrimary)
+              .multilineTextAlignment(.leading)
+              .fixedSize(horizontal: false, vertical: true)
+
+            Text(
+              "Habits rarely begin on January 1st. Your 365 gives each daily habit its own year, starting on day one."
+            )
+            .font(.system(size: 14, design: .monospaced))
+            .foregroundStyle(.textSecondary)
+            .multilineTextAlignment(.leading)
+            .fixedSize(horizontal: false, vertical: true)
+
+            Text("No empty months. No feeling late. Just the year you’re actually building.")
+              .font(.system(size: 14, design: .monospaced))
+              .foregroundStyle(.textSecondary)
+              .multilineTextAlignment(.leading)
+              .fixedSize(horizontal: false, vertical: true)
+
             VStack(alignment: .leading, spacing: 8) {
-                Text("Choose your default year view")
-                    .font(.title2.bold())
-                Text("Pick the view you want to open by default. You can change it later in Settings.")
-                    .foregroundStyle(.secondary)
+              Text("Recommended")
+                .font(.system(size: 11, weight: .bold, design: .monospaced))
+                .foregroundStyle(.textTertiary)
+                .textCase(.uppercase)
+
+              Text("Use the new view to make every completed day feel like visible proof you showed up.")
+                .font(.system(size: 14, design: .monospaced))
+                .foregroundStyle(.textSecondary)
+                .multilineTextAlignment(.leading)
+                .fixedSize(horizontal: false, vertical: true)
             }
+            .padding(.top, 8)
+          }
+          .frame(maxWidth: .infinity)
 
-            VStack(alignment: .leading, spacing: 14) {
-                modeButton(
-                    title: "Use Your 365",
-                    subtitle: "Each habit starts its own 365-day journey from the day you began.",
-                    mode: .your365,
-                    isPrimary: true
-                )
+          Spacer(minLength: 24)
 
-                modeButton(
-                    title: "Keep Calendar Year",
-                    subtitle: "View progress from January to December.",
-                    mode: .calendarYear,
-                    isPrimary: false
-                )
-            }
+          VStack(spacing: 14) {
+            modeButton(
+              title: "Use 'Your 365' View",
+              mode: .your365,
+              style: .primary
+            )
 
-            Spacer(minLength: 0)
+            modeButton(
+              title: "Stay Calendar View",
+              mode: .calendarYear,
+              style: .link
+            )
+          }
         }
-        .padding(20)
-        .surfaceBackground(Color("surface-muted"), ignoresSafeArea: true)
-        .interactiveDismissDisabled(true)
+        .padding(.horizontal, 16)
+        .padding(.top, 24)
+        .padding(.bottom, 32)
+      }
+      .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+      .surfaceBackground(Color("surface-muted"), ignoresSafeArea: true)
+      .navigationTitle("Your 365")
+      .navigationBarTitleDisplayMode(.large)
     }
+    .interactiveDismissDisabled(true)
+  }
 
-    @ViewBuilder
-    private func modeButton(
-        title: String,
-        subtitle: String,
-        mode: CalendarTimelineMode,
-        isPrimary: Bool
-    ) -> some View {
-        if isPrimary {
-            Button {
-                onSelect(mode)
-            } label: {
-                content(title: title, subtitle: subtitle)
-            }
-            .buttonStyle(.borderedProminent)
-            .tint(.accentColor)
-        } else {
-            Button {
-                onSelect(mode)
-            } label: {
-                content(title: title, subtitle: subtitle)
-            }
-            .buttonStyle(.bordered)
-            .tint(.secondary)
-        }
+  @ViewBuilder
+  private func modeButton(
+    title: String,
+    mode: CalendarTimelineMode,
+    style: ModeButtonStyle
+  ) -> some View {
+    let button = Button {
+      onSelect(mode)
+    } label: {
+      modeButtonLabel(title: title, style: style)
     }
+    .buttonStyle(.plain)
+    .accessibilityLabel(title)
 
-    private func content(title: String, subtitle: String) -> some View {
-        VStack(alignment: .leading, spacing: 6) {
-            Text(title)
-                .font(.headline)
-            Text(subtitle)
-                .font(.footnote)
-                .foregroundStyle(.secondary)
-        }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .padding()
+    if style == .primary {
+      VStack {
+        button
+          .clipShape(RoundedRectangle(cornerRadius: 4))
+          .sameLevelBorder(radius: 4, color: .brand)
+      }
+      .padding(2)
+      .background(getVoidColor(colorScheme: colorScheme))
+    } else {
+      button
     }
+  }
+
+  private func modeButtonLabel(
+    title: String,
+    style: ModeButtonStyle
+  ) -> some View {
+    Text(title)
+      .font(.system(size: style.titleSize, weight: .bold, design: .monospaced))
+      .foregroundStyle(style.foregroundColor)
+      .underline(style == .link)
+      .padding(.horizontal, style.horizontalPadding)
+      .padding(.vertical, style.verticalPadding)
+      .frame(maxWidth: .infinity, alignment: .center)
+      .background(style.backgroundColor)
+  }
+}
+
+private enum ModeButtonStyle: Equatable {
+  case primary
+  case link
+
+  var foregroundColor: Color {
+    switch self {
+    case .primary:
+      return .brandInverted
+    case .link:
+      return .textSecondary
+    }
+  }
+
+  var backgroundColor: Color {
+    switch self {
+    case .primary:
+      return .brand
+    case .link:
+      return .clear
+    }
+  }
+
+  var horizontalPadding: CGFloat {
+    switch self {
+    case .primary:
+      return 14
+    case .link:
+      return 0
+    }
+  }
+
+  var verticalPadding: CGFloat {
+    switch self {
+    case .primary:
+      return 16
+    case .link:
+      return 4
+    }
+  }
+
+  var titleSize: CGFloat {
+    switch self {
+    case .primary:
+      return 18
+    case .link:
+      return 14
+    }
+  }
 }

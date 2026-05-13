@@ -84,7 +84,7 @@ struct GridView: View {
                         let presentation = your365Presentation?.cellsByDateKey[dayKey(for: $0)]
 
                         if let presentation {
-                            return (date: $0, color: colorForYour365Day(presentation))
+                            return (date: $0, color: colorForYour365Day(presentation, counts: counts))
                         }
 
                         return (date: $0, color: colorForDay($0, calendar: calendar, today: today, counts: counts))
@@ -110,10 +110,10 @@ struct GridView: View {
         Date().date
     }
 
-    private func colorForYour365Day(_ cell: Your365Cell) -> Color {
+    private func colorForYour365Day(_ cell: Your365Cell, counts: [Int]) -> Color {
         switch cell.state {
         case .completed, .missed, .todayPending:
-            return colorForDay(cell.date, calendar: calendar, today: today, counts: calendar.entries.values.map(\.count))
+            return colorForDay(cell.date, calendar: calendar, today: today, counts: counts)
         case .future:
             return futureDayColor()
         case .notTracked:

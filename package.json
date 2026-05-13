@@ -5,6 +5,8 @@
     "sandcastle:basic": "bun .sandcastle/main.mts",
     "sandcastle:build-image": "sandcastle docker build-image",
     "build:ios": "./scripts/xcodebuild-device-build.sh",
+    "sim:boot": "./scripts/ios-simulator.sh boot",
+    "test:sim": "./scripts/ios-simulator.sh test",
     "lint:swift": "swiftlint lint --quiet",
     "format:swift": "swift format --in-place --recursive \"My Year\" SharedModels/Sources YearWidget YearEvaluationWidget HabitsWidget StreakWidget \"My YearTests\" \"My YearUITests\"",
     "format:swift:check": "swift format lint --recursive \"My Year\" SharedModels/Sources YearWidget YearEvaluationWidget HabitsWidget StreakWidget \"My YearTests\" \"My YearUITests\"",

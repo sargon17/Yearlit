@@ -177,14 +177,11 @@ struct My_YearApp: App {
                 isOnboardingPresented = !onboarding.hasSeenOnboarding
                 updateTimelinePreferenceSheetPresentation()
             }
-            .sheet(isPresented: $isTimelinePreferenceSheetPresented) {
+            .fullScreenCover(isPresented: $isTimelinePreferenceSheetPresented) {
                 TimelinePreferenceChoiceSheet { mode in
                     TimelinePreferenceStore.setMode(mode)
                     isTimelinePreferenceSheetPresented = false
                 }
-                .presentationDetents([.medium])
-                .presentationDragIndicator(.hidden)
-                .interactiveDismissDisabled(true)
             }
         }
     }
