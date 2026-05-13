@@ -2,7 +2,9 @@
 
 Fix issue {{TASK_ID}}: {{ISSUE_TITLE}}
 
-Pull in the issue using `gh issue view {{TASK_ID}}`. If it has a parent PRD, pull that in too.
+Pull in the issue using `.sandcastle/scripts/gh-issue.sh view {{TASK_ID}}`. If it has a parent PRD, pull that in too.
+
+Avoid `gh issue view` unless the helper is unavailable; `gh issue view` uses GraphQL and may hit GraphQL rate limits.
 
 Only work on the issue specified.
 

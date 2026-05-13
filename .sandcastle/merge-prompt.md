@@ -23,7 +23,7 @@ You usually do not need it while merging, but if a marketing/product conflict re
 
 For each issue that was merged, close it using:
 
-`gh issue close <issue-id> --comment "Completed by Sandcastle"`
+`.sandcastle/scripts/gh-issue.sh close <issue-id>`
 
 Here are all the issues:
 

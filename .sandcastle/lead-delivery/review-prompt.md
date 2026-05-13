@@ -25,9 +25,11 @@ Use commands like:
 - `git diff {{BASE_BRANCH}}...HEAD`
 - `git log {{BASE_BRANCH}}..HEAD --oneline`
 
-Also read the issue:
+Also read the issue using the REST-backed helper:
 
-`gh issue view {{TASK_ID}} --repo sargon17/Yearlit`
+`.sandcastle/scripts/gh-issue.sh view {{TASK_ID}}`
+
+Avoid `gh issue view` unless the helper is unavailable; `gh issue view` uses GraphQL and may hit GraphQL rate limits.
 
 Follow `AGENTS.md` and `.sandcastle/CODING_STANDARDS.md` where relevant.
 

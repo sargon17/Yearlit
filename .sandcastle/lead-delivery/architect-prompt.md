@@ -9,9 +9,11 @@ Design the implementation for issue {{TASK_ID}}: {{ISSUE_TITLE}}
 Branch: `{{BRANCH}}`
 Base branch: `{{BASE_BRANCH}}`
 
-Pull in the issue using:
+Pull in the issue using the REST-backed helper:
 
-`gh issue view {{TASK_ID}} --repo sargon17/Yearlit`
+`.sandcastle/scripts/gh-issue.sh view {{TASK_ID}}`
+
+Avoid `gh issue view` unless the helper is unavailable; `gh issue view` uses GraphQL and may hit GraphQL rate limits.
 
 If the issue references a parent PRD, design doc, or related issue, read that too.
 
