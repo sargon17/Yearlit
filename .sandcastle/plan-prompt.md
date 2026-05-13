@@ -12,6 +12,11 @@ Here are the open issues in the repo:
 
 Analyze the open issues and build a dependency graph. For each issue, determine whether it **blocks** or **is blocked by** any other open issue.
 
+# MARKETING SKILLS
+
+A curated marketing skill bundle is available at `/home/agent/.pi/agent/skills` with an index at `/home/agent/.pi/agent/skills/INDEX.txt`.
+If an issue involves marketing, growth, SEO, ASO, copy, pricing, paywalls, onboarding, CRO, analytics, launch, referrals, customer research, ads, email, social, or positioning, account for those skill areas when judging dependencies and priority. You do not need to read full skill files during planning unless an issue is ambiguous.
+
 An issue B is **blocked by** issue A if:
 
 - B requires code or infrastructure that A introduces

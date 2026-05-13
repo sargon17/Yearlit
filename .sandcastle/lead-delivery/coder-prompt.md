@@ -61,6 +61,11 @@ This repo is a SwiftUI iOS app with widget targets and a SharedModels Swift pack
 
 Follow `AGENTS.md` and `.sandcastle/CODING_STANDARDS.md` when relevant.
 
+# MARKETING SKILLS
+
+A curated marketing skill bundle is available at `/home/agent/.pi/agent/skills` with an index at `/home/agent/.pi/agent/skills/INDEX.txt`.
+If the issue involves marketing, growth, SEO, ASO, copy, pricing, paywalls, onboarding, CRO, analytics, launch, referrals, customer research, ads, email, social, or positioning, read the relevant skill's `SKILL.md` before implementing.
+
 Recent commits:
 
 <recent-commits>

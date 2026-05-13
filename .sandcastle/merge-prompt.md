@@ -14,6 +14,11 @@ For each branch:
 
 After all branches are merged, make a single commit summarizing the merge.
 
+# MARKETING SKILLS
+
+A curated marketing skill bundle is available at `/home/agent/.pi/agent/skills` with an index at `/home/agent/.pi/agent/skills/INDEX.txt`.
+You usually do not need it while merging, but if a marketing/product conflict requires semantic judgment, read the relevant skill's `SKILL.md` first.
+
 # CLOSE ISSUES
 
 For each issue that was merged, close it using:

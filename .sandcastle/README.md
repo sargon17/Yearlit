@@ -33,6 +33,18 @@ gh auth login
 
 The orchestrators pass GitHub auth into Docker from `GH_TOKEN`, `GITHUB_TOKEN`, `.sandcastle/.env`, or `gh auth token` on the host. Optional `.sandcastle/.env` can be copied from `.sandcastle/.env.example`.
 
+## Marketing skills
+
+Curated marketing skills live in `.sandcastle/skills/` and are baked into the Docker image at `/home/agent/.pi/agent/skills/`.
+
+Rebuild the image after changing skills:
+
+```sh
+bun run sandcastle:build-image
+```
+
+Sandcastle currently runs Codex, not pi, so the role prompts explicitly tell agents to read the relevant `SKILL.md` files. If we switch a Sandcastle agent to `sandcastle.pi(...)` later, the same baked path is auto-discovered by pi.
+
 ## Commands
 
 - `bun run sandcastle` — lead-delivery flow with host macOS validation.

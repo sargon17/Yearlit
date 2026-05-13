@@ -12,6 +12,11 @@ Review the code changes on branch `{{BRANCH}}` and improve code clarity, consist
 
 !`git log {{SOURCE_BRANCH}}..{{BRANCH}} --oneline`
 
+# MARKETING SKILLS
+
+A curated marketing skill bundle is available at `/home/agent/.pi/agent/skills` with an index at `/home/agent/.pi/agent/skills/INDEX.txt`.
+If the branch changes marketing, growth, SEO, ASO, copy, pricing, paywalls, onboarding, CRO, analytics, launch, referrals, customer research, ads, email, social, or positioning behavior, read the relevant skill's `SKILL.md` before reviewing.
+
 # REVIEW PROCESS
 
 1. **Understand the change**: Read the diff and commits above to understand the intent.

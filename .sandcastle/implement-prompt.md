@@ -10,6 +10,9 @@ Work on branch {{BRANCH}}. Make commits and run tests.
 
 # CONTEXT
 
+A curated marketing skill bundle is available at `/home/agent/.pi/agent/skills` with an index at `/home/agent/.pi/agent/skills/INDEX.txt`.
+If the issue involves marketing, growth, SEO, ASO, copy, pricing, paywalls, onboarding, CRO, analytics, launch, referrals, customer research, ads, email, social, or positioning, read the relevant skill's `SKILL.md` before implementing.
+
 Here are the last 10 commits:
 
 <recent-commits>
