@@ -427,6 +427,7 @@ struct EditCalendarView: View {
             color: selectedColor,
             cadence: cadence,
             trackingType: trackingType,
+            trackingStartedAt: calendar.trackingStartedAt,
             dailyTarget: dailyTarget,
             entries: entries,
             isArchived: overrideArchived ?? isArchived,

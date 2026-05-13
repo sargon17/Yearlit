@@ -7,6 +7,7 @@ enum LegacyPersistenceKeys {
     static let valuationsKey = "dayValuations"
     static let migrationFlagKey = "swiftDataMigrationComplete"
     static let dayKeyMigrationFlagKey = "swiftDataDayKeyMigrationComplete"
+    static let trackingStartedAtBackfillMigrationFlagKey = "swiftDataTrackingStartedAtBackfillMigrationComplete"
 }
 
 @available(iOS 17.0, macOS 14.0, *)
@@ -28,6 +29,7 @@ enum LegacyDataMigrator {
         }
 
         migrateDayKeysIfNeeded(defaults: defaults, container: container)
+        migrateTrackingStartedAtIfNeeded(defaults: defaults, container: container)
     }
 
     private static func migrateLegacyData(defaults: UserDefaults, container: ModelContainer) {
@@ -206,6 +208,39 @@ enum LegacyDataMigrator {
         }
     }
 
+    private static func migrateTrackingStartedAtIfNeeded(defaults: UserDefaults, container: ModelContainer) {
+        guard !defaults.bool(forKey: LegacyPersistenceKeys.trackingStartedAtBackfillMigrationFlagKey) else { return }
+
+        let context = ModelContext(container)
+        context.autosaveEnabled = false
+        let migrationDate = LocalDayCalendar.startOfDay(for: Date())
+
+        do {
+            let calendars = try context.fetch(FetchDescriptor<HabitCalendarEntity>())
+            let entries = try context.fetch(FetchDescriptor<CalendarEntryEntity>())
+            let entriesByCalendarId = Dictionary(grouping: entries, by: { $0.calendarId })
+
+            for calendar in calendars {
+                let candidateDates = entriesByCalendarId[calendar.id]?.map {
+                    calendar.cadenceRawValue == CalendarCadence.weekly.rawValue
+                        ? LocalDayCalendar.startOfWeek(for: $0.date)
+                        : LocalDayCalendar.startOfDay(for: $0.date)
+                } ?? []
+                let resolvedStart = candidateDates.min() ?? migrationDate
+                if calendar.trackingStartedAt != resolvedStart {
+                    calendar.trackingStartedAt = resolvedStart
+                }
+            }
+
+            if context.hasChanges {
+                try context.save()
+            }
+            defaults.set(true, forKey: LegacyPersistenceKeys.trackingStartedAtBackfillMigrationFlagKey)
+        } catch {
+            NSLog("Tracking started at backfill failed: \(error)")
+        }
+    }
+
     private static func decodeOldCalendars(from data: Data) -> [CustomCalendar]? {
         struct OldCalendar: Codable {
             let id: UUID
@@ -225,6 +260,7 @@ enum LegacyDataMigrator {
                 name: old.name,
                 color: old.color,
                 trackingType: old.trackingType,
+                trackingStartedAt: Date(),
                 dailyTarget: old.trackingType == .multipleDaily ? 2 : 1,
                 entries: old.entries,
                 isArchived: false,

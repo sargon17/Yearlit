@@ -81,6 +81,7 @@ struct CreateCalendarView: View {
             color: selectedColor,
             cadence: cadence,
             trackingType: trackingType,
+            trackingStartedAt: Date(),
             dailyTarget: dailyTarget,
             entries: existingStreakEntries,
             isArchived: false,

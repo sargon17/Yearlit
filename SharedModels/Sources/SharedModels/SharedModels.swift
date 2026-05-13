@@ -245,6 +245,7 @@ public struct CustomCalendar: Codable, Identifiable {
     public var color: String // Store as hex or named color
     public var cadence: CalendarCadence
     public var trackingType: TrackingType
+    public var trackingStartedAt: Date
     // Legacy persisted name kept to avoid risky data migration.
     // Semantically this is the target for the calendar cadence period
     // (daily for daily calendars, weekly for weekly calendars).
@@ -269,6 +270,7 @@ public struct CustomCalendar: Codable, Identifiable {
     public init(
         id: UUID = UUID(), name: String, color: String, cadence: CalendarCadence = .daily,
         trackingType: TrackingType,
+        trackingStartedAt: Date = Date(),
         dailyTarget: Int = 1, entries: [String: CalendarEntry] = [:],
         isArchived: Bool = false,
         recurringReminderEnabled: Bool = false, reminderTime: Date? = nil, order: Int = 0,
@@ -288,6 +290,7 @@ public struct CustomCalendar: Codable, Identifiable {
         self.color = color
         self.cadence = cadence
         self.trackingType = trackingType
+        self.trackingStartedAt = LocalDayCalendar.startOfDay(for: trackingStartedAt)
         self.dailyTarget = dailyTarget
         self.unit = unit
         self.defaultRecordValue = defaultRecordValue
@@ -317,6 +320,7 @@ public struct CustomCalendar: Codable, Identifiable {
     public init(
         id: UUID = UUID(), name: String, color: String, cadence: CalendarCadence = .daily,
         trackingType: TrackingType,
+        trackingStartedAt: Date = Date(),
         dailyTarget: Int = 1, entries: [String: CalendarEntry] = [:],
         isArchived: Bool = false,
         recurringReminderEnabled: Bool = false, reminderHour: Int? = nil, reminderMinute: Int? = nil,
@@ -346,6 +350,7 @@ public struct CustomCalendar: Codable, Identifiable {
         self.color = color
         self.cadence = cadence
         self.trackingType = trackingType
+        self.trackingStartedAt = LocalDayCalendar.startOfDay(for: trackingStartedAt)
         self.dailyTarget = dailyTarget
         self.unit = unit
         self.defaultRecordValue = defaultRecordValue
@@ -388,6 +393,7 @@ public struct CustomCalendar: Codable, Identifiable {
         case color
         case cadence
         case trackingType
+        case trackingStartedAt
         case dailyTarget
         case unit
         case currencySymbol
@@ -414,6 +420,12 @@ public struct CustomCalendar: Codable, Identifiable {
         color = try container.decode(String.self, forKey: .color)
         cadence = try container.decodeIfPresent(CalendarCadence.self, forKey: .cadence) ?? .daily
         trackingType = try container.decode(TrackingType.self, forKey: .trackingType)
+        let decodedEntries = try container.decodeIfPresent([String: CalendarEntry].self, forKey: .entries) ?? [:]
+        trackingStartedAt = Self.resolveTrackingStartedAt(
+            from: container,
+            cadence: cadence,
+            entries: decodedEntries
+        )
         dailyTarget = try container.decode(Int.self, forKey: .dailyTarget)
         unit = try container.decodeIfPresent(UnitOfMeasure.self, forKey: .unit)
         currencySymbol = try container.decodeIfPresent(String.self, forKey: .currencySymbol)
@@ -430,7 +442,7 @@ public struct CustomCalendar: Codable, Identifiable {
         additionalReminderTimes = try container.decodeIfPresent([ReminderTime].self, forKey: .additionalReminderTimes) ?? []
         streakProtectionEnabled = try container.decodeIfPresent(Bool.self, forKey: .streakProtectionEnabled) ?? true
         streakProtectionThreshold = try container.decodeIfPresent(Int.self, forKey: .streakProtectionThreshold) ?? 5
-        entries = try container.decodeIfPresent([String: CalendarEntry].self, forKey: .entries) ?? [:]
+        entries = decodedEntries
     }
 
     public func encode(to encoder: Encoder) throws {
@@ -440,6 +452,7 @@ public struct CustomCalendar: Codable, Identifiable {
         try container.encode(color, forKey: .color)
         try container.encode(cadence, forKey: .cadence)
         try container.encode(trackingType, forKey: .trackingType)
+        try container.encode(trackingStartedAt, forKey: .trackingStartedAt)
         try container.encode(dailyTarget, forKey: .dailyTarget)
         try container.encodeIfPresent(unit, forKey: .unit)
         try container.encodeIfPresent(currencySymbol, forKey: .currencySymbol)
@@ -457,6 +470,24 @@ public struct CustomCalendar: Codable, Identifiable {
         try container.encode(streakProtectionEnabled, forKey: .streakProtectionEnabled)
         try container.encode(streakProtectionThreshold, forKey: .streakProtectionThreshold)
         try container.encode(entries, forKey: .entries)
+    }
+
+    private static func resolveTrackingStartedAt(
+        from container: KeyedDecodingContainer<CodingKeys>,
+        cadence: CalendarCadence,
+        entries: [String: CalendarEntry]
+    ) -> Date {
+        if let decoded = try? container.decode(Date.self, forKey: .trackingStartedAt) {
+            return LocalDayCalendar.startOfDay(for: decoded)
+        }
+
+        let startDates = entries.values.map {
+            cadence == .weekly ? LocalDayCalendar.startOfWeek(for: $0.date) : LocalDayCalendar.startOfDay(for: $0.date)
+        }
+        guard let earliest = startDates.min() else {
+            return LocalDayCalendar.startOfDay(for: Date())
+        }
+        return earliest
     }
 }
 
@@ -604,6 +635,128 @@ public struct DayValuation: Codable, Identifiable, Equatable {
 
     public static func == (lhs: DayValuation, rhs: DayValuation) -> Bool {
         return lhs.id == rhs.id && lhs.mood == rhs.mood && lhs.note == rhs.note
+    }
+}
+
+public enum Your365CellState: String, Codable, CaseIterable {
+    case completed
+    case missed
+    case todayPending
+    case future
+    case notTracked
+}
+
+public struct Your365Cell: Codable, Hashable, Identifiable {
+    public let id: String
+    public let date: Date
+    public let dayNumber: Int
+    public let state: Your365CellState
+
+    public init(date: Date, dayNumber: Int, state: Your365CellState) {
+        let canonicalDate = LocalDayCalendar.startOfDay(for: date)
+        id = DayKeyFormatter.shared.string(from: canonicalDate)
+        self.date = canonicalDate
+        self.dayNumber = dayNumber
+        self.state = state
+    }
+}
+
+public struct Your365Snapshot: Codable, Hashable {
+    public let cells: [Your365Cell]
+    public let trackingStartedAt: Date
+
+    public init(cells: [Your365Cell], trackingStartedAt: Date) {
+        self.cells = cells
+        self.trackingStartedAt = LocalDayCalendar.startOfDay(for: trackingStartedAt)
+    }
+
+    public static func makeFirstYear(
+        trackingStartedAt: Date,
+        completedDates: Set<Date>,
+        today: Date
+    ) -> Your365Snapshot {
+        let calendar = LocalDayCalendar.calendar
+        let start = LocalDayCalendar.startOfDay(for: trackingStartedAt)
+        let todayStart = LocalDayCalendar.startOfDay(for: today)
+        let completed = normalizeDates(completedDates)
+
+        var cells: [Your365Cell] = []
+        cells.reserveCapacity(365)
+        for offset in 0 ..< 365 {
+            guard let date = calendar.date(byAdding: .day, value: offset, to: start) else { continue }
+            let canonicalDate = LocalDayCalendar.startOfDay(for: date)
+            let state: Your365CellState
+            if canonicalDate > todayStart {
+                state = .future
+            } else if completed.contains(canonicalDate) {
+                state = .completed
+            } else if calendar.isDate(canonicalDate, inSameDayAs: todayStart) {
+                state = .todayPending
+            } else {
+                state = .missed
+            }
+            cells.append(Your365Cell(date: canonicalDate, dayNumber: offset + 1, state: state))
+        }
+        return Your365Snapshot(cells: cells, trackingStartedAt: start)
+    }
+
+    public static func makeLatest365Days(
+        trackingStartedAt: Date,
+        completedDates: Set<Date>,
+        today: Date
+    ) -> Your365Snapshot {
+        let calendar = LocalDayCalendar.calendar
+        let start = LocalDayCalendar.startOfDay(for: trackingStartedAt)
+        let todayStart = LocalDayCalendar.startOfDay(for: today)
+        let completed = normalizeDates(completedDates)
+        guard let rangeStart = calendar.date(byAdding: .day, value: -364, to: todayStart) else {
+            return Your365Snapshot(cells: [], trackingStartedAt: start)
+        }
+
+        var cells: [Your365Cell] = []
+        cells.reserveCapacity(365)
+        for offset in 0 ..< 365 {
+            guard let date = calendar.date(byAdding: .day, value: offset, to: rangeStart) else { continue }
+            let canonicalDate = LocalDayCalendar.startOfDay(for: date)
+            let state: Your365CellState
+            if canonicalDate < start {
+                state = .notTracked
+            } else if completed.contains(canonicalDate) {
+                state = .completed
+            } else if calendar.isDate(canonicalDate, inSameDayAs: todayStart) {
+                state = .todayPending
+            } else if canonicalDate > todayStart {
+                state = .future
+            } else {
+                state = .missed
+            }
+            cells.append(Your365Cell(date: canonicalDate, dayNumber: offset + 1, state: state))
+        }
+        return Your365Snapshot(cells: cells, trackingStartedAt: start)
+    }
+
+    private static func normalizeDates(_ dates: Set<Date>) -> Set<Date> {
+        Set(dates.map { LocalDayCalendar.startOfDay(for: $0) })
+    }
+}
+
+public extension CustomCalendar {
+    func makeYour365Snapshot(completedDates: Set<Date>, today: Date = Date()) -> Your365Snapshot? {
+        guard cadence == .daily else { return nil }
+        return isArchived ? nil : Your365Snapshot.makeLatest365Days(
+            trackingStartedAt: trackingStartedAt,
+            completedDates: completedDates,
+            today: today
+        )
+    }
+
+    func makeFirstYearYour365Snapshot(completedDates: Set<Date>, today: Date = Date()) -> Your365Snapshot? {
+        guard cadence == .daily else { return nil }
+        return isArchived ? nil : Your365Snapshot.makeFirstYear(
+            trackingStartedAt: trackingStartedAt,
+            completedDates: completedDates,
+            today: today
+        )
     }
 }
 

@@ -9,6 +9,7 @@ public final class HabitCalendarEntity {
     public var color: String = ""
     public var cadenceRawValue: String = CalendarCadence.daily.rawValue
     public var trackingTypeRawValue: String = TrackingType.binary.rawValue
+    public var trackingStartedAt: Date = Date()
     // Legacy persisted name kept to avoid risky data migration.
     // Semantically this is the target for the calendar cadence period.
     public var dailyTarget: Int = 1
@@ -34,6 +35,7 @@ public final class HabitCalendarEntity {
         color: String,
         cadenceRawValue: String = CalendarCadence.daily.rawValue,
         trackingTypeRawValue: String,
+        trackingStartedAt: Date = Date(),
         dailyTarget: Int,
         unitRawValue: String? = nil,
         defaultRecordValue: Int? = nil,
@@ -56,6 +58,7 @@ public final class HabitCalendarEntity {
         self.color = color
         self.cadenceRawValue = cadenceRawValue
         self.trackingTypeRawValue = trackingTypeRawValue
+        self.trackingStartedAt = LocalDayCalendar.startOfDay(for: trackingStartedAt)
         self.dailyTarget = dailyTarget
         self.unitRawValue = unitRawValue
         self.defaultRecordValue = defaultRecordValue
@@ -222,6 +225,7 @@ extension HabitCalendarEntity {
             color: color,
             cadence: cadence,
             trackingType: tracking,
+            trackingStartedAt: trackingStartedAt,
             dailyTarget: dailyTarget,
             entries: entries,
             isArchived: isArchived,
@@ -249,6 +253,7 @@ extension HabitCalendarEntity {
             color: color,
             cadence: cadence,
             trackingType: tracking,
+            trackingStartedAt: trackingStartedAt,
             dailyTarget: dailyTarget,
             entries: entries,
             isArchived: isArchived,
@@ -273,6 +278,7 @@ extension HabitCalendarEntity {
         color = model.color
         cadenceRawValue = model.cadence.rawValue
         trackingTypeRawValue = model.trackingType.rawValue
+        trackingStartedAt = LocalDayCalendar.startOfDay(for: model.trackingStartedAt)
         dailyTarget = model.dailyTarget
         unitRawValue = model.unit?.rawValue
         defaultRecordValue = model.defaultRecordValue
@@ -298,6 +304,7 @@ extension HabitCalendarEntity {
             color: model.color,
             cadenceRawValue: model.cadence.rawValue,
             trackingTypeRawValue: model.trackingType.rawValue,
+            trackingStartedAt: model.trackingStartedAt,
             dailyTarget: model.dailyTarget,
             unitRawValue: model.unit?.rawValue,
             defaultRecordValue: model.defaultRecordValue,

@@ -63,6 +63,59 @@ struct LegacyDataMigrationTests {
         #expect(fixture.defaults.bool(forKey: LegacyPersistenceKeys.dayKeyMigrationFlagKey))
     }
 
+    @Test func backfillsTrackingStartedAtOnceFromEntryBucketsAndMigrationDate() throws {
+        let fixture = makeDefaultsFixture()
+        defer { tearDownDefaultsFixture(fixture) }
+
+        let container = makeContainer()
+        let context = ModelContext(container)
+        context.autosaveEnabled = false
+
+        let datedCalendar = HabitCalendarEntity(
+            name: "Tracked",
+            color: "qs-emerald",
+            trackingTypeRawValue: TrackingType.binary.rawValue,
+            dailyTarget: 1,
+            trackingStartedAt: Date.distantPast
+        )
+        let emptyCalendar = HabitCalendarEntity(
+            name: "Empty",
+            color: "qs-blue",
+            trackingTypeRawValue: TrackingType.binary.rawValue,
+            dailyTarget: 1,
+            trackingStartedAt: Date.distantPast
+        )
+        context.insert(datedCalendar)
+        context.insert(emptyCalendar)
+
+        let entryDate = try #require(makeDate(year: 2026, month: 1, day: 12, hour: 18, minute: 45))
+        let bucketDate = LocalDayCalendar.startOfDay(for: entryDate)
+        context.insert(
+            CalendarEntryEntity(
+                compositeKey: CalendarEntryEntity.makeCompositeKey(calendarId: datedCalendar.id, dayKey: DayKeyFormatter.shared.string(from: bucketDate)),
+                calendarId: datedCalendar.id,
+                dayKey: DayKeyFormatter.shared.string(from: bucketDate),
+                date: entryDate,
+                count: 1,
+                completed: true
+            )
+        )
+        try context.save()
+
+        let expectedMigrationDate = LocalDayCalendar.startOfDay(for: Date())
+        LegacyDataMigrator.migrateIfNeeded(container: container, defaults: fixture.defaults)
+
+        let refreshedContext = ModelContext(container)
+        refreshedContext.autosaveEnabled = false
+        let calendars = try refreshedContext.fetch(FetchDescriptor<HabitCalendarEntity>())
+        let tracked = try #require(calendars.first(where: { $0.id == datedCalendar.id }))
+        let empty = try #require(calendars.first(where: { $0.id == emptyCalendar.id }))
+
+        #expect(tracked.trackingStartedAt == bucketDate)
+        #expect(empty.trackingStartedAt == expectedMigrationDate)
+        #expect(fixture.defaults.bool(forKey: LegacyPersistenceKeys.trackingStartedAtBackfillMigrationFlagKey))
+    }
+
     private func makeContainer() -> ModelContainer {
         let configuration = ModelConfiguration(isStoredInMemoryOnly: true)
         return try! ModelContainer(
