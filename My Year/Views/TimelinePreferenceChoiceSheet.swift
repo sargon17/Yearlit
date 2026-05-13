@@ -43,23 +43,34 @@ struct TimelinePreferenceChoiceSheet: View {
         mode: CalendarTimelineMode,
         isPrimary: Bool
     ) -> some View {
-        Button {
-            onSelect(mode)
-        } label: {
-            VStack(alignment: .leading, spacing: 6) {
-                Text(title)
-                    .font(.headline)
-                Text(subtitle)
-                    .font(.footnote)
-                    .foregroundStyle(.secondary)
-            }
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .padding()
-        }
         if isPrimary {
-            button.buttonStyle(.borderedProminent).tint(.accentColor)
+            Button {
+                onSelect(mode)
+            } label: {
+                content(title: title, subtitle: subtitle)
+            }
+            .buttonStyle(.borderedProminent)
+            .tint(.accentColor)
         } else {
-            button.buttonStyle(.bordered).tint(.secondary)
+            Button {
+                onSelect(mode)
+            } label: {
+                content(title: title, subtitle: subtitle)
+            }
+            .buttonStyle(.bordered)
+            .tint(.secondary)
         }
+    }
+
+    private func content(title: String, subtitle: String) -> some View {
+        VStack(alignment: .leading, spacing: 6) {
+            Text(title)
+                .font(.headline)
+            Text(subtitle)
+                .font(.footnote)
+                .foregroundStyle(.secondary)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding()
     }
 }
