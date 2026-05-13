@@ -23,16 +23,20 @@ enum LegacyDataMigrator {
     static func migrateIfNeeded(container: ModelContainer, defaults: UserDefaults) {
         // Only migrate legacy data once.
         let alreadyMigrated = defaults.bool(forKey: LegacyPersistenceKeys.migrationFlagKey)
+        var legacyMigrationSucceeded = alreadyMigrated
 
         if !alreadyMigrated {
-            migrateLegacyData(defaults: defaults, container: container)
+            legacyMigrationSucceeded = migrateLegacyData(defaults: defaults, container: container)
         }
 
-        migrateDayKeysIfNeeded(defaults: defaults, container: container)
-        migrateTrackingStartedAtIfNeeded(defaults: defaults, container: container)
+        let dayKeyMigrationSucceeded = migrateDayKeysIfNeeded(defaults: defaults, container: container)
+
+        if legacyMigrationSucceeded && dayKeyMigrationSucceeded {
+            migrateTrackingStartedAtIfNeeded(defaults: defaults, container: container)
+        }
     }
 
-    private static func migrateLegacyData(defaults: UserDefaults, container: ModelContainer) {
+    private static func migrateLegacyData(defaults: UserDefaults, container: ModelContainer) -> Bool {
         let context = ModelContext(container)
         context.autosaveEnabled = false
 
@@ -56,7 +60,7 @@ enum LegacyDataMigrator {
 
         guard !calendarsToPersist.isEmpty || !valuationsToPersist.isEmpty else {
             defaults.set(true, forKey: LegacyPersistenceKeys.migrationFlagKey)
-            return
+            return true
         }
 
         for calendar in calendarsToPersist {
@@ -90,14 +94,16 @@ enum LegacyDataMigrator {
                 try context.save()
             }
             defaults.set(true, forKey: LegacyPersistenceKeys.migrationFlagKey)
+            return true
         } catch {
             // If the migration fails we keep the legacy data and try again next launch.
             NSLog("SwiftData migration failed: \(error)")
+            return false
         }
     }
 
-    private static func migrateDayKeysIfNeeded(defaults: UserDefaults, container: ModelContainer) {
-        guard !defaults.bool(forKey: LegacyPersistenceKeys.dayKeyMigrationFlagKey) else { return }
+    private static func migrateDayKeysIfNeeded(defaults: UserDefaults, container: ModelContainer) -> Bool {
+        guard !defaults.bool(forKey: LegacyPersistenceKeys.dayKeyMigrationFlagKey) else { return true }
 
         let context = ModelContext(container)
         context.autosaveEnabled = false
@@ -203,8 +209,10 @@ enum LegacyDataMigrator {
             }
 
             defaults.set(true, forKey: LegacyPersistenceKeys.dayKeyMigrationFlagKey)
+            return true
         } catch {
             NSLog("Day key migration failed: \(error)")
+            return false
         }
     }
 

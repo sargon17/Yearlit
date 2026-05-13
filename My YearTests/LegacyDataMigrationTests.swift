@@ -116,6 +116,36 @@ struct LegacyDataMigrationTests {
         #expect(fixture.defaults.bool(forKey: LegacyPersistenceKeys.trackingStartedAtBackfillMigrationFlagKey))
     }
 
+    @Test func doesNotBackfillTrackingStartedAtWhenPrerequisiteMigrationsDidNotComplete() throws {
+        let fixture = makeDefaultsFixture()
+        defer { tearDownDefaultsFixture(fixture) }
+
+        let container = makeContainer()
+        let context = ModelContext(container)
+        context.autosaveEnabled = false
+
+        let blockedStart = try #require(makeDate(year: 2025, month: 1, day: 1, hour: 8, minute: 15))
+        let expectedStart = LocalDayCalendar.startOfDay(for: blockedStart)
+        let calendar = HabitCalendarEntity(
+            name: "Blocked",
+            color: "qs-orange",
+            trackingTypeRawValue: TrackingType.binary.rawValue,
+            dailyTarget: 1,
+            trackingStartedAt: blockedStart
+        )
+        context.insert(calendar)
+        try context.save()
+
+        LegacyDataMigrator.migrateIfNeeded(container: container, defaults: fixture.defaults)
+
+        let refreshedContext = ModelContext(container)
+        refreshedContext.autosaveEnabled = false
+        let reloaded = try #require(refreshedContext.fetch(FetchDescriptor<HabitCalendarEntity>()).first)
+
+        #expect(reloaded.trackingStartedAt == expectedStart)
+        #expect(!fixture.defaults.bool(forKey: LegacyPersistenceKeys.trackingStartedAtBackfillMigrationFlagKey))
+    }
+
     private func makeContainer() -> ModelContainer {
         let configuration = ModelConfiguration(isStoredInMemoryOnly: true)
         return try! ModelContainer(
