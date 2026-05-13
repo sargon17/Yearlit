@@ -98,9 +98,9 @@ public enum WidgetStyle {
         return Color(red: Double(red), green: Double(green), blue: Double(blue), opacity: Double(alpha))
     }
 
-    public static let futureDotFillRatio = 0.01
-    public static let missedDotFillRatio = 0.035
-    public static let todayEmptyDotFillRatio = 0.12
+    public static let futureDotFillRatio = 0.025
+    public static let missedDotFillRatio = 0.055
+    public static let todayEmptyDotFillRatio = 0.14
 
     public static func futureDotColor(
         surface: Color = Color("surface-muted"),
