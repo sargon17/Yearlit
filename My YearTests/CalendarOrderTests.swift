@@ -78,6 +78,7 @@ struct CalendarOrderTests {
             name: name,
             color: "qs-amber",
             trackingType: .binary,
+            trackingStartedAt: Date(),
             isArchived: isArchived,
             order: order
         )

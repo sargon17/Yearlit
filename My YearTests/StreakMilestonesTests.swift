@@ -137,6 +137,7 @@ struct ShowedUpMilestonesTests {
             color: "AccentColor",
             cadence: .daily,
             trackingType: .multipleDaily,
+            trackingStartedAt: Date(),
             dailyTarget: 2,
             entries: [
                 entryKey(year: 2026, month: 4, day: 2): CalendarEntry(

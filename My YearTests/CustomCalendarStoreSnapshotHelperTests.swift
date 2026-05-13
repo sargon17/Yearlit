@@ -22,6 +22,7 @@ struct CustomCalendarStoreSnapshotHelperTests {
             name: name,
             color: "qs-emerald",
             trackingType: .binary,
+            trackingStartedAt: Date(),
             isArchived: isArchived
         )
     }

@@ -1,8 +1,8 @@
 import RevenueCat
 import RevenueCatUI
 import SharedModels
-import SwiftUI
 import SwiftfulRouting
+import SwiftUI
 import UserNotifications
 import WidgetKit
 
@@ -45,7 +45,7 @@ struct CustomCalendarView: View {
   @AppStorage("runtimeDebugEnabled") private var runtimeDebugEnabled: Bool = false
   @AppStorage("wandFillForce") private var wandFillForce: Double = 0.5
 
-  private let today = Date()
+  private var today: Date { Date() }
 
   private var yearDates: [Date] {
     getYearDatesArray(for: valuationStore.selectedYear)
@@ -69,26 +69,7 @@ struct CustomCalendarView: View {
 
   private var isYour365FirstYear: Bool {
     guard isShowingYour365 else { return false }
-
-    let trackingStart = LocalDayCalendar.startOfDay(for: activeCalendar.trackingStartedAt)
-    let todayStart = LocalDayCalendar.startOfDay(for: today)
-    guard let maturityBoundary = LocalDayCalendar.calendar.date(byAdding: .day, value: 364, to: trackingStart) else {
-      return false
-    }
-
-    return todayStart <= maturityBoundary
-  }
-
-  private var visibleGridDates: [Date] {
-    if activeCalendar.cadence == .weekly {
-      return getYearWeekDatesArray(for: valuationStore.selectedYear)
-    }
-
-    if let snapshot = your365Snapshot {
-      return snapshot.cells.map(\.date)
-    }
-
-    return yearDates
+    return activeCalendar.isWithinFirstYear(today: today)
   }
 
   private var calendarYearGridDates: [Date] {
@@ -96,6 +77,10 @@ struct CustomCalendarView: View {
       return getYearWeekDatesArray(for: valuationStore.selectedYear)
     }
     return yearDates
+  }
+
+  private var visibleGridDates: [Date] {
+    your365Snapshot?.cells.map(\.date) ?? calendarYearGridDates
   }
 
   private var completedEntryDates: Set<Date> {
@@ -109,11 +94,7 @@ struct CustomCalendarView: View {
   private func makeYour365HeaderTitle(snapshot: Your365Snapshot?, calendar: CustomCalendar) -> String? {
     guard let snapshot else { return nil }
 
-    let trackingStart = LocalDayCalendar.startOfDay(for: calendar.trackingStartedAt)
-    let todayStart = LocalDayCalendar.startOfDay(for: today)
-    let maturityBoundary = LocalDayCalendar.calendar.date(byAdding: .day, value: 364, to: trackingStart)
-    if let maturityBoundary,
-      todayStart <= maturityBoundary,
+    if calendar.isWithinFirstYear(today: today),
       let todayCell = snapshot.cells.first(where: { LocalDayCalendar.calendar.isDate($0.date, inSameDayAs: today) })
     {
       return "Day \(todayCell.dayNumber) of your 365"
@@ -299,7 +280,7 @@ struct CustomCalendarView: View {
         milestone: decision.milestone,
         currentStreak: currentStreak,
         kind: .streak,
-        dates: calendarYearGridDates,
+        dates: visibleGridDates,
         allowsStopShowing: true,
         showedUpPeriodKey: nil
       )
@@ -383,27 +364,6 @@ struct CustomCalendarView: View {
     let selectedYear = valuationStore.selectedYear
     let statsTaskId =
       "\(calendar.id.uuidString)|\(selectedYear)|\(dataVersion)|\(statsRefreshToken.uuidString)"
-    let resolvedCalendar = activeCalendar
-    let resolvedIsShowingYour365 = resolvedCalendar.cadence == .daily
-      && TimelinePreferenceStore.mode().effectiveMode(for: resolvedCalendar.cadence) == .your365
-    let resolvedCompletedEntryDates = resolvedIsShowingYour365 ? your365CompletedDates(for: resolvedCalendar) : Set<Date>()
-    let resolvedYour365Snapshot = resolvedIsShowingYour365
-      ? resolvedCalendar.makeYour365Snapshot(completedDates: resolvedCompletedEntryDates, today: today)
-      : nil
-    let resolvedCalendarYearGridDates = resolvedCalendar.cadence == .weekly
-      ? getYearWeekDatesArray(for: selectedYear)
-      : yearDates
-    let resolvedVisibleGridDates = resolvedYour365Snapshot?.cells.map(\.date) ?? resolvedCalendarYearGridDates
-    let resolvedCurrentPeriodReferenceDate = resolvedYour365Snapshot?.cells.first {
-      Calendar.current.isDate($0.date, inSameDayAs: today)
-    }?.date ?? resolvedCalendarYearGridDates.first {
-      Calendar.current.isDate($0, inSameDayAs: today)
-    }
-    let resolvedYour365HeaderTitle = makeYour365HeaderTitle(
-      snapshot: resolvedYour365Snapshot,
-      calendar: resolvedCalendar
-    )
-
     ScrollView {
       VStack(spacing: 10) {
         // Stats header
@@ -411,7 +371,7 @@ struct CustomCalendarView: View {
           HStack(alignment: .center, spacing: 6) {
             VStack(alignment: .leading, spacing: 0) {
               HStack(alignment: .firstTextBaseline, spacing: 8) {
-                Text(resolvedCalendar.name.capitalized)
+                Text(activeCalendar.name.capitalized)
                   .font(.system(size: 36, design: .monospaced))
                   .lineLimit(2)
                   .minimumScaleFactor(0.5)
@@ -420,12 +380,12 @@ struct CustomCalendarView: View {
                   .onTapGesture {
                     router.showScreen(.sheet) { _ in
                       EditCalendarView(
-                        calendar: resolvedCalendar,
+                        calendar: activeCalendar,
                         onSave: { updatedCalendar in
                           store.updateCalendar(updatedCalendar)
                         },
                         onDelete: { _ in
-                          store.deleteCalendar(id: resolvedCalendar.id)
+                          store.deleteCalendar(id: activeCalendar.id)
                         }
                       )
                     }
@@ -433,22 +393,22 @@ struct CustomCalendarView: View {
                   .padding(.top)
                 Spacer()
 
-                let today = valuationStore.dateForDay(valuationStore.currentDayNumber - 1)
+                let currentDayDate = valuationStore.dateForDay(valuationStore.currentDayNumber - 1)
 
                 if My_YearApp.isDebugMode && runtimeDebugEnabled {
                   Button(action: fillRandomEntries) {
                     Image(systemName: "wand.and.stars")
-                      .foregroundColor(Color(resolvedCalendar.color))
+                      .foregroundColor(Color(activeCalendar.color))
                   }
                   .padding(.horizontal, 4)
                 }
 
                 let currentYear = Calendar.current.component(.year, from: Date())
-                if resolvedIsShowingYour365 || valuationStore.selectedYear == currentYear {
-                  let quickAddDate = resolvedCurrentPeriodReferenceDate ?? today
+                if isShowingYour365 || valuationStore.selectedYear == currentYear {
+                  let quickAddDate = currentPeriodReferenceDate ?? currentDayDate
                   let isCompletedToday =
                     store.getEntry(
-                      calendarId: resolvedCalendar.id,
+                      calendarId: activeCalendar.id,
                       date: quickAddDate
                     )?.completed == true
                   Button(action: {
@@ -456,25 +416,25 @@ struct CustomCalendarView: View {
                   }) {
                     ZStack {
                       RoundedRectangle(cornerRadius: 3)
-                        .fill(Color(resolvedCalendar.color).opacity(0.1))
+                        .fill(Color(activeCalendar.color).opacity(0.1))
                         .frame(width: 20, height: 20)
 
                       Image(
-                        systemName: resolvedCalendar.trackingType == .binary
+                        systemName: activeCalendar.trackingType == .binary
                           && isCompletedToday
                           ? "minus" : "plus"
                       )
                       .font(.system(size: 16))
-                      .foregroundColor(Color(resolvedCalendar.color))
+                      .foregroundColor(Color(activeCalendar.color))
                     }
                   }.frame(width: 24, height: 24)
                 }
               }
 
-              HStack(spacing: 4) {
-                if resolvedIsShowingYour365 {
+              HStack(spacing: 10) {
+                if isShowingYour365 {
                   VStack(alignment: .leading, spacing: 2) {
-                    if let title = resolvedYour365HeaderTitle {
+                    if let title = your365HeaderTitle {
                       Text(title)
                         .font(.system(size: 12, design: .monospaced))
                         .foregroundColor(Color("text-tertiary"))
@@ -494,9 +454,9 @@ struct CustomCalendarView: View {
                 }
 
                 HStack(alignment: .center, spacing: 4) {
-                  if resolvedCalendar.recurringReminderEnabled,
-                    let hour = resolvedCalendar.reminderHour,
-                    let minute = resolvedCalendar.reminderMinute
+                  if activeCalendar.recurringReminderEnabled,
+                    let hour = activeCalendar.reminderHour,
+                    let minute = activeCalendar.reminderMinute
                   {
                     let reminderTime = String(format: "%02d:%02d", hour, minute)
                     Image(systemName: "bell")
@@ -517,7 +477,7 @@ struct CustomCalendarView: View {
                 .onTapGesture {
                   router.showScreen(.sheet) { _ in
                     NotificationSettingsSheet(
-                      calendar: resolvedCalendar,
+                      calendar: activeCalendar,
                       customerInfo: customerInfo,
                       onSave: { updatedCalendar in
                         store.updateCalendar(updatedCalendar)
@@ -534,26 +494,26 @@ struct CustomCalendarView: View {
         }
 
         GridView(
-          calendar: resolvedCalendar,
+          calendar: activeCalendar,
           store: store,
           handleDayTap: handleDayTap,
-          dates: resolvedVisibleGridDates,
+          dates: visibleGridDates,
           year: valuationStore.selectedYear,
-          your365Presentation: resolvedYour365Snapshot.map { GridView.Your365Presentation(snapshot: $0) }
+          your365Presentation: your365Snapshot.map { GridView.Your365Presentation(snapshot: $0) }
         )
         .frame(height: UIScreen.main.bounds.height * 0.55)
 
-        let currentPeriodLogCount: Int? = resolvedCurrentPeriodReferenceDate.map {
-          entry(for: resolvedCalendar, date: $0)?.count ?? 0
+        let currentPeriodLogCount: Int? = currentPeriodReferenceDate.map {
+          entry(for: activeCalendar, date: $0)?.count ?? 0
         }
 
         if let bundle = statsBundle {
           CalendarStatisticsView(
             stats: bundle.basic,
-            accentColor: Color(resolvedCalendar.color),
+            accentColor: Color(activeCalendar.color),
             currentPeriodCount: currentPeriodLogCount,
-            unit: resolvedCalendar.unit,
-            currencySymbol: resolvedCalendar.currencySymbol,
+            unit: activeCalendar.unit,
+            currencySymbol: activeCalendar.currencySymbol,
             completionRateTrailingLongWindow: bundle.completionRateTrailingLongWindow,
             bestWeekday: bundle.bestWeekday,
             weekdayRates: bundle.weekdayRates,
@@ -563,28 +523,28 @@ struct CustomCalendarView: View {
             volatilityStdDev: bundle.volatilityStd,
             isPremium: isPremium(customerInfo: customerInfo),
             onUpgrade: { isPaywallPresented = true },
-            cadence: resolvedCalendar.cadence,
-            trackingType: resolvedCalendar.trackingType,
+            cadence: activeCalendar.cadence,
+            trackingType: activeCalendar.trackingType,
             onTapCurrentStreak: {
               guard
                 let milestone = StreakMilestones.latestMilestone(
-                  for: currentStreak(for: resolvedCalendar)
+                  for: currentStreak(for: activeCalendar)
                 )
               else { return }
               router.showScreen(.sheet) { _ in
                 MilestoneCelebrationSheet(
-                  calendar: resolvedCalendar,
+                  calendar: activeCalendar,
                   milestone: milestone,
-                  currentStreak: currentStreak(for: resolvedCalendar),
+                  currentStreak: currentStreak(for: activeCalendar),
                   kind: .streak,
-                  dates: calendarYearGridDates,
+                  dates: visibleGridDates,
                   allowsStopShowing: false,
                   showedUpPeriodKey: nil
                 )
               }
             },
             onTapActiveDays: {
-              let showedUpCount = showedUpCount(for: resolvedCalendar)
+              let showedUpCount = showedUpCount(for: activeCalendar)
               guard
                 let milestone = ShowedUpMilestones.latestMilestone(
                   for: showedUpCount
@@ -592,11 +552,11 @@ struct CustomCalendarView: View {
               else { return }
               router.showScreen(.sheet) { _ in
                 MilestoneCelebrationSheet(
-                  calendar: resolvedCalendar,
+                  calendar: activeCalendar,
                   milestone: milestone,
-                  currentStreak: currentStreak(for: resolvedCalendar),
+                  currentStreak: currentStreak(for: activeCalendar),
                   kind: .showedUp,
-                  dates: calendarYearGridDates,
+                  dates: visibleGridDates,
                   allowsStopShowing: false,
                   showedUpPeriodKey: ShowedUpMilestones.periodKey(for: .allTime)
                 )
@@ -605,9 +565,9 @@ struct CustomCalendarView: View {
             onTapShare: {
               router.showScreen(.sheet) { _ in
                 CalendarShareSheet(
-                  calendar: resolvedCalendar,
+                  calendar: activeCalendar,
                   year: valuationStore.selectedYear,
-                  dates: calendarYearGridDates,
+                  dates: visibleGridDates,
                   statsBundle: statsBundle,
                   isPremium: isPremium(customerInfo: customerInfo)
                 )
@@ -690,56 +650,15 @@ struct CustomCalendarView: View {
       let token = statsRefreshToken
       let bundle = await Task.detached(priority: .userInitiated) {
         computeCalendarStatsBundle(
-          calendar: resolvedCalendar,
+          calendar: activeCalendar,
           year: selectedYear,
           todayLocal: today,
-          currentPeriodReferenceDate: resolvedCurrentPeriodReferenceDate
+          currentPeriodReferenceDate: currentPeriodReferenceDate
         )
       }.value
       if token == statsRefreshToken {
         statsBundle = bundle
       }
-    }
-  }
-}
-
-enum CalendarError: LocalizedError, Identifiable {
-  case invalidName
-  case notificationPermissionDenied
-  case notificationSchedulingFailed(Error)
-  case errorAddingEntry(Error)
-
-  var id: String {
-    localizedDescription
-  }
-
-  var title: String {
-    switch self {
-    case .invalidName:
-      return "Invalid Name"
-    case .notificationPermissionDenied:
-      return "Notification Permission Denied"
-    case .notificationSchedulingFailed:
-      return "Notification Error"
-    case .errorAddingEntry:
-      return "Entry Error"
-    }
-  }
-
-  var message: String {
-    errorDescription ?? "An unknown error occurred."
-  }
-
-  var errorDescription: String? {
-    switch self {
-    case .invalidName:
-      return "Please enter a valid name (1-50 characters)"
-    case .notificationPermissionDenied:
-      return "Please enable notifications in Settings to receive reminders."
-    case .notificationSchedulingFailed(let error):
-      return "Failed to schedule notification: \(error.localizedDescription)"
-    case .errorAddingEntry(let error):
-      return "Failed to add entry: \(error.localizedDescription)"
     }
   }
 }

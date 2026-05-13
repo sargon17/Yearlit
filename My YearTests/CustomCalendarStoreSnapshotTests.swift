@@ -127,6 +127,7 @@ struct CustomCalendarStoreSnapshotTests {
             name: name,
             color: "qs-emerald",
             trackingType: .binary,
+            trackingStartedAt: Date(),
             dailyTarget: 1
         )
     }

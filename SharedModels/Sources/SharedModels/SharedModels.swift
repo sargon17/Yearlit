@@ -270,7 +270,7 @@ public struct CustomCalendar: Codable, Identifiable {
     public init(
         id: UUID = UUID(), name: String, color: String, cadence: CalendarCadence = .daily,
         trackingType: TrackingType,
-        trackingStartedAt: Date = Date(),
+        trackingStartedAt: Date,
         dailyTarget: Int = 1, entries: [String: CalendarEntry] = [:],
         isArchived: Bool = false,
         recurringReminderEnabled: Bool = false, reminderTime: Date? = nil, order: Int = 0,
@@ -320,7 +320,7 @@ public struct CustomCalendar: Codable, Identifiable {
     public init(
         id: UUID = UUID(), name: String, color: String, cadence: CalendarCadence = .daily,
         trackingType: TrackingType,
-        trackingStartedAt: Date = Date(),
+        trackingStartedAt: Date,
         dailyTarget: Int = 1, entries: [String: CalendarEntry] = [:],
         isArchived: Bool = false,
         recurringReminderEnabled: Bool = false, reminderHour: Int? = nil, reminderMinute: Int? = nil,
@@ -676,28 +676,13 @@ public struct Your365Snapshot: Codable, Hashable {
         completedDates: Set<Date>,
         today: Date
     ) -> Your365Snapshot {
-        let calendar = LocalDayCalendar.calendar
         let start = LocalDayCalendar.startOfDay(for: trackingStartedAt)
-        let todayStart = LocalDayCalendar.startOfDay(for: today)
-        let completed = normalizeDates(completedDates)
-
-        var cells: [Your365Cell] = []
-        cells.reserveCapacity(365)
-        for offset in 0 ..< 365 {
-            guard let date = calendar.date(byAdding: .day, value: offset, to: start) else { continue }
-            let canonicalDate = LocalDayCalendar.startOfDay(for: date)
-            let state: Your365CellState
-            if canonicalDate > todayStart {
-                state = .future
-            } else if completed.contains(canonicalDate) {
-                state = .completed
-            } else if calendar.isDate(canonicalDate, inSameDayAs: todayStart) {
-                state = .todayPending
-            } else {
-                state = .missed
-            }
-            cells.append(Your365Cell(date: canonicalDate, dayNumber: offset + 1, state: state))
-        }
+        let cells = buildCells(
+            anchor: start,
+            trackingStart: start,
+            completedDates: completedDates,
+            today: today
+        )
         return Your365Snapshot(cells: cells, trackingStartedAt: start)
     }
 
@@ -706,34 +691,52 @@ public struct Your365Snapshot: Codable, Hashable {
         completedDates: Set<Date>,
         today: Date
     ) -> Your365Snapshot {
-        let calendar = LocalDayCalendar.calendar
         let start = LocalDayCalendar.startOfDay(for: trackingStartedAt)
         let todayStart = LocalDayCalendar.startOfDay(for: today)
-        let completed = normalizeDates(completedDates)
-        guard let rangeStart = calendar.date(byAdding: .day, value: -364, to: todayStart) else {
+        guard let rangeStart = LocalDayCalendar.calendar.date(byAdding: .day, value: -364, to: todayStart) else {
             return Your365Snapshot(cells: [], trackingStartedAt: start)
         }
+        let cells = buildCells(
+            anchor: rangeStart,
+            trackingStart: start,
+            completedDates: completedDates,
+            today: today
+        )
+        return Your365Snapshot(cells: cells, trackingStartedAt: start)
+    }
+
+    /// Builds 365 cells starting from `anchor`.
+    /// Days before `trackingStart` are marked `.notTracked` (used by the rolling-365 view).
+    private static func buildCells(
+        anchor: Date,
+        trackingStart: Date,
+        completedDates: Set<Date>,
+        today: Date
+    ) -> [Your365Cell] {
+        let calendar = LocalDayCalendar.calendar
+        let todayStart = LocalDayCalendar.startOfDay(for: today)
+        let completed = normalizeDates(completedDates)
 
         var cells: [Your365Cell] = []
         cells.reserveCapacity(365)
         for offset in 0 ..< 365 {
-            guard let date = calendar.date(byAdding: .day, value: offset, to: rangeStart) else { continue }
+            guard let date = calendar.date(byAdding: .day, value: offset, to: anchor) else { continue }
             let canonicalDate = LocalDayCalendar.startOfDay(for: date)
             let state: Your365CellState
-            if canonicalDate < start {
+            if canonicalDate < trackingStart {
                 state = .notTracked
+            } else if canonicalDate > todayStart {
+                state = .future
             } else if completed.contains(canonicalDate) {
                 state = .completed
             } else if calendar.isDate(canonicalDate, inSameDayAs: todayStart) {
                 state = .todayPending
-            } else if canonicalDate > todayStart {
-                state = .future
             } else {
                 state = .missed
             }
             cells.append(Your365Cell(date: canonicalDate, dayNumber: offset + 1, state: state))
         }
-        return Your365Snapshot(cells: cells, trackingStartedAt: start)
+        return cells
     }
 
     private static func normalizeDates(_ dates: Set<Date>) -> Set<Date> {
@@ -742,15 +745,23 @@ public struct Your365Snapshot: Codable, Hashable {
 }
 
 public extension CustomCalendar {
+    /// Returns true while today is still within the first 365 days of tracking.
+    func isWithinFirstYear(today: Date) -> Bool {
+        let trackingStart = LocalDayCalendar.startOfDay(for: trackingStartedAt)
+        let todayStart = LocalDayCalendar.startOfDay(for: today)
+        guard let maturityBoundary = LocalDayCalendar.calendar.date(byAdding: .day, value: 364, to: trackingStart) else {
+            return false
+        }
+        return todayStart <= maturityBoundary
+    }
+
     func makeYour365Snapshot(completedDates: Set<Date>, today: Date = Date()) -> Your365Snapshot? {
         guard cadence == .daily else { return nil }
         guard !isArchived else { return nil }
 
         let trackingStart = LocalDayCalendar.startOfDay(for: trackingStartedAt)
-        let todayStart = LocalDayCalendar.startOfDay(for: today)
-        let maturityBoundary = LocalDayCalendar.calendar.date(byAdding: .day, value: 364, to: trackingStart)
 
-        if let maturityBoundary, todayStart <= maturityBoundary {
+        if isWithinFirstYear(today: today) {
             return Your365Snapshot.makeFirstYear(
                 trackingStartedAt: trackingStart,
                 completedDates: completedDates,

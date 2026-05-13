@@ -125,6 +125,7 @@ struct Your365SnapshotTests {
             color: "qs-blue",
             cadence: .weekly,
             trackingType: .binary,
+            trackingStartedAt: Date(),
             dailyTarget: 1
         )
 

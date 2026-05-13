@@ -119,6 +119,7 @@ struct OverviewDerivedSnapshotServiceTests {
             name: "Overview Service",
             color: "qs-emerald",
             trackingType: .counter,
+            trackingStartedAt: Date(),
             dailyTarget: 1,
             entries: [
                 dayKey(for: makeDate(year: 2026, month: 1, day: 3)): CalendarEntry(

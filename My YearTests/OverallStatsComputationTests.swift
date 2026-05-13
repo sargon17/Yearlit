@@ -74,6 +74,7 @@ struct OverallStatsComputationTests {
             color: "qs-emerald",
             cadence: .weekly,
             trackingType: .binary,
+            trackingStartedAt: Date(),
             dailyTarget: 1,
             entries: [
                 dayKey(for: makeDate(year: 2026, month: 1, day: 5)): makeEntry(
@@ -147,6 +148,7 @@ struct OverallStatsComputationTests {
             color: "qs-emerald",
             cadence: cadence,
             trackingType: trackingType,
+            trackingStartedAt: Date(),
             dailyTarget: dailyTarget,
             entries: Dictionary(uniqueKeysWithValues: entries.map { (dayKey(for: $0.date), $0) })
         )

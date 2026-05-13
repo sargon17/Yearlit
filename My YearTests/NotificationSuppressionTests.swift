@@ -55,6 +55,7 @@ private func makeCalendar(
         name: name,
         color: "#000000",
         trackingType: trackingType,
+        trackingStartedAt: Date(),
         dailyTarget: dailyTarget
     )
 }
