@@ -67,6 +67,18 @@ struct CustomCalendarView: View {
         )
     }
 
+    private var isYour365FirstYear: Bool {
+        guard isShowingYour365 else { return false }
+
+        let trackingStart = LocalDayCalendar.startOfDay(for: activeCalendar.trackingStartedAt)
+        let todayStart = LocalDayCalendar.startOfDay(for: today)
+        guard let maturityBoundary = LocalDayCalendar.calendar.date(byAdding: .day, value: 364, to: trackingStart) else {
+            return false
+        }
+
+        return todayStart <= maturityBoundary
+    }
+
     private var visibleGridDates: [Date] {
         if activeCalendar.cadence == .weekly {
             return getYearWeekDatesArray(for: valuationStore.selectedYear)
@@ -89,7 +101,7 @@ struct CustomCalendarView: View {
 
     private var your365HeaderTitle: String? {
         guard let snapshot = your365Snapshot else { return nil }
-        if snapshot.cells.contains(where: { $0.state == .future }),
+        if isYour365FirstYear,
            let todayCell = snapshot.cells.first(where: { Calendar.current.isDate($0.date, inSameDayAs: today) })
         {
             return "Day \(todayCell.dayNumber) of your 365"
@@ -99,7 +111,7 @@ struct CustomCalendarView: View {
 
     private var your365HeaderSubtitle: String? {
         guard let snapshot = your365Snapshot else { return nil }
-        if snapshot.cells.contains(where: { $0.state == .future }) {
+        if isYour365FirstYear {
             return "Your year started on \(dateFormatterLong.string(from: snapshot.trackingStartedAt))"
         }
         return nil
@@ -407,10 +419,11 @@ struct CustomCalendarView: View {
                                 }
 
                                 let currentYear = Calendar.current.component(.year, from: Date())
-                                if valuationStore.selectedYear == currentYear {
+                                if isShowingYour365 || valuationStore.selectedYear == currentYear {
+                                    let quickAddDate = resolvedCurrentPeriodReferenceDate ?? today
                                     let isCompletedToday = store.getEntry(
                                         calendarId: resolvedCalendar.id,
-                                        date: today
+                                        date: quickAddDate
                                     )?.completed == true
                                     Button(action: {
                                         handleQuickAdd()
