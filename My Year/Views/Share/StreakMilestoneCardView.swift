@@ -416,10 +416,6 @@ private struct MilestoneGridView: View {
     let dates: [Date]
     let foregroundColor: Color
 
-    private var maxCount: Int {
-        getMaxCount(calendar: calendar)
-    }
-
     var body: some View {
         GeometryReader { geometry in
             let dotSize: CGFloat = 10
@@ -463,11 +459,11 @@ private struct MilestoneGridView: View {
             return entry?.completed == true ? foregroundColor : foregroundColor.opacity(0.25)
         case .counter:
             guard let entry, entry.count > 0 else { return foregroundColor.opacity(0.25) }
-            let ratio = min(1, max(0.2, Double(entry.count) / Double(maxCount)))
+            let ratio = counterDotFillRatio(count: entry.count, counts: calendar.entries.values.map { $0.count })
             return foregroundColor.opacity(ratio)
         case .multipleDaily:
             guard let entry, entry.count > 0 else { return foregroundColor.opacity(0.25) }
-            let ratio = min(1, max(0.2, Double(entry.count) / Double(calendar.dailyTarget)))
+            let ratio = multipleDailyDotFillRatio(count: entry.count, dailyTarget: calendar.dailyTarget)
             return foregroundColor.opacity(ratio)
         }
     }

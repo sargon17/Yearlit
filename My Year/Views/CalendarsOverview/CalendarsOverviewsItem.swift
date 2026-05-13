@@ -142,9 +142,9 @@ extension CalendarsOverviewsItem {
     }
 
     private func buildLatestSlotColors() -> [Color] {
+        let counts = calendar.entries.values.map { $0.count }
         let inactiveColor = inactiveDayColor()
         let activeColor = activeDayColor()
-        let maxCount = calendar.trackingType == .counter ? getMaxCount(calendar: calendar) : 1
 
         return latestSlots.map { day -> Color in
             let bucketDate = calendar.bucketDate(for: day)
@@ -157,13 +157,13 @@ extension CalendarsOverviewsItem {
                 return entry.completed ? Color(calendar.color) : activeColor
             case .counter:
                 if entry.count > 0 {
-                    let ratio = max(0.1, Double(entry.count) / Double(max(maxCount, 1)))
+                    let ratio = counterDotFillRatio(count: entry.count, counts: counts)
                     return GarnishColor.blend(.surfaceMuted, with: Color(calendar.color), ratio: ratio)
                 }
                 return activeColor
             case .multipleDaily:
                 if entry.count > 0 {
-                    let opacity = min(1, max(0.2, Double(entry.count) / Double(calendar.dailyTarget)))
+                    let opacity = multipleDailyDotFillRatio(count: entry.count, dailyTarget: calendar.dailyTarget)
                     return Color(calendar.color).opacity(opacity)
                 }
                 return activeColor

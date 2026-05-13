@@ -63,9 +63,9 @@ struct GridView: View {
                 if let cachedMappedDays: [(date: Date, color: Color)] = CacheStore.shared.get(cacheKey) {
                     mappedDays = cachedMappedDays
                 } else {
-                    let maxCount = getMaxCount(calendar: calendar)
+                    let counts = calendar.entries.values.map { $0.count }
                     mappedDays = dates.map {
-                        (date: $0, color: colorForDay($0, calendar: calendar, today: today, maxCount: maxCount))
+                        (date: $0, color: colorForDay($0, calendar: calendar, today: today, counts: counts))
                     }
                     CacheStore.shared.set(cacheKey, value: mappedDays)
                 }

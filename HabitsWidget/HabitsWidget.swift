@@ -135,10 +135,11 @@ struct HorizontalCalendarGrid: View {
 
                 return entry.completed ? WidgetStyle.monochromePrimaryColor().opacity(0.85) : WidgetStyle.monochromePastDotColor()
             case .counter:
-                let ratio = max(0.35, Double(entry.count) / Double(maximumEntryCount))
                 guard entry.count > 0 else {
                     return WidgetStyle.monochromePastDotColor()
                 }
+
+                let ratio = max(0.35, counterDotFillRatio(count: entry.count, counts: calendar.entries.values.map { $0.count }))
 
                 if normalized == normalizedToday {
                     return WidgetStyle.monochromeAccentColor().opacity(ratio)
@@ -146,10 +147,11 @@ struct HorizontalCalendarGrid: View {
 
                 return WidgetStyle.monochromePrimaryColor().opacity(ratio)
             case .multipleDaily:
-                let opacity = min(1, max(0.35, Double(entry.count) / Double(calendar.dailyTarget)))
                 guard entry.count > 0 else {
                     return WidgetStyle.monochromePastDotColor()
                 }
+
+                let opacity = max(0.35, multipleDailyDotFillRatio(count: entry.count, dailyTarget: calendar.dailyTarget))
 
                 if normalized == normalizedToday {
                     return WidgetStyle.monochromeAccentColor().opacity(opacity)
@@ -173,13 +175,13 @@ struct HorizontalCalendarGrid: View {
                     : activeDayColor(base: backgroundColor, overlay: textPrimaryColor)
             case .counter:
                 if entry.count > 0 {
-                    let ratio = max(0.1, Double(entry.count) / Double(maximumEntryCount))
+                    let ratio = counterDotFillRatio(count: entry.count, counts: calendar.entries.values.map { $0.count })
                     return WidgetStyle.blendedColor(base: backgroundColor, overlay: Color(calendar.color), ratio: ratio)
                 }
                 return activeDayColor(base: backgroundColor, overlay: textPrimaryColor)
             case .multipleDaily:
                 if entry.count > 0 {
-                    let opacity = min(1, max(0.2, Double(entry.count) / Double(calendar.dailyTarget)))
+                    let opacity = multipleDailyDotFillRatio(count: entry.count, dailyTarget: calendar.dailyTarget)
                     return Color(calendar.color).opacity(opacity)
                 }
                 return activeDayColor(base: backgroundColor, overlay: textPrimaryColor)
@@ -215,14 +217,6 @@ struct HorizontalCalendarGrid: View {
         }
 
         return localCalendar.startOfDay(for: date)
-    }
-
-    private var maximumEntryCount: Int {
-        guard let calendar else {
-            return 1
-        }
-
-        return max(1, calendar.entries.values.map(\.count).max() ?? 1)
     }
 
     var body: some View {

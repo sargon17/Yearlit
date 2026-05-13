@@ -6,7 +6,7 @@ func colorForDay(
     _ day: Date,
     calendar: CustomCalendar,
     today: Date,
-    maxCount: Int
+    counts: [Int]
 ) -> Color {
     let comparisonDate = calendar.bucketDate(for: today)
     let bucketDate = calendar.bucketDate(for: day)
@@ -21,15 +21,14 @@ func colorForDay(
             return entry.completed ? Color(calendar.color) : activeDayColor()
         case .counter:
             if entry.count > 0 {
-                let safeMax = max(maxCount, 1)
-                let ratio = max(0.1, Double(entry.count) / Double(safeMax))
+                let ratio = counterDotFillRatio(count: entry.count, counts: counts)
                 return GarnishColor.blend(.surfaceMuted, with: Color(calendar.color), ratio: ratio)
             } else {
                 return activeDayColor()
             }
         case .multipleDaily:
             if entry.count > 0 {
-                let opacity = min(1, max(0.2, Double(entry.count) / Double(calendar.dailyTarget)))
+                let opacity = multipleDailyDotFillRatio(count: entry.count, dailyTarget: calendar.dailyTarget)
                 return Color(calendar.color).opacity(opacity)
             } else {
                 return activeDayColor()

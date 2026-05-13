@@ -67,9 +67,9 @@ struct ShareCalendarGridView: View {
 
     init(calendar: CustomCalendar, dates: [Date]) {
         let today = Date().date
-        let maxCount = getMaxCount(calendar: calendar)
+        let counts = calendar.entries.values.map { $0.count }
         mappedDays = dates.map { date in
-            (date: date, color: colorForDay(date, calendar: calendar, today: today, maxCount: maxCount))
+            (date: date, color: colorForDay(date, calendar: calendar, today: today, counts: counts))
         }
     }
 
