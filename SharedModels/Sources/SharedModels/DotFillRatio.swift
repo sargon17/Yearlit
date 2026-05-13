@@ -1,6 +1,6 @@
 import Foundation
 
-private let minimumTrackedDotFillRatio = 0.2
+private let minimumTrackedDotFillRatio = 0.35
 private let robustDotScalePercentile = 0.9
 
 public func counterDotFillRatio(count: Int, counts: [Int]) -> Double {
