@@ -1,3 +1,4 @@
+import Foundation
 import SharedModels
 
 func your365CompletedDates(for calendar: CustomCalendar) -> Set<Date> {
