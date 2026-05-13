@@ -90,6 +90,7 @@ struct My_YearApp: App {
     @StateObject private var featureRequest = FeatureRequestManager(
         config: AppConfig.wishConfiguration
     )
+    @State private var isOnboardingPresented = false
     @State private var isTimelinePreferenceSheetPresented = false
 
     #if DEBUG
@@ -161,15 +162,19 @@ struct My_YearApp: App {
             }
             .environmentObject(onboarding)
             .environmentObject(featureRequest)
-            .fullScreenCover(isPresented: .constant(!onboarding.hasSeenOnboarding)) {
+            .fullScreenCover(isPresented: $isOnboardingPresented) {
                 OnboardingView {
                     onboarding.markAsSeen()
+                    isOnboardingPresented = false
+                    updateTimelinePreferenceSheetPresentation()
                 }
             }
             .onAppear {
+                isOnboardingPresented = !onboarding.hasSeenOnboarding
                 updateTimelinePreferenceSheetPresentation()
             }
             .onChange(of: onboarding.hasSeenOnboarding) { _, _ in
+                isOnboardingPresented = !onboarding.hasSeenOnboarding
                 updateTimelinePreferenceSheetPresentation()
             }
             .sheet(isPresented: $isTimelinePreferenceSheetPresented) {
