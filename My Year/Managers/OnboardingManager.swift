@@ -1,4 +1,5 @@
 import SwiftUI
+import SharedModels
 
 /// Gestisce lo stato di visualizzazione dell'onboarding.
 /// Usa una chiave con versione così, se cambi onboarding, puoi forzare a rivederlo.
@@ -13,6 +14,9 @@ final class OnboardingManager: ObservableObject {
 
     func markAsSeen() {
         seenV1 = true
+        if !TimelinePreferenceStore.hasStoredMode() {
+            TimelinePreferenceStore.setMode(.your365)
+        }
         objectWillChange.send()
     }
 
