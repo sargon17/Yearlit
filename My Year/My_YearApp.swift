@@ -90,6 +90,7 @@ struct My_YearApp: App {
     @StateObject private var featureRequest = FeatureRequestManager(
         config: AppConfig.wishConfiguration
     )
+    @State private var isTimelinePreferenceSheetPresented = false
 
     #if DEBUG
         static let isDebugMode = true
@@ -165,7 +166,25 @@ struct My_YearApp: App {
                     onboarding.markAsSeen()
                 }
             }
+            .onAppear {
+                updateTimelinePreferenceSheetPresentation()
+            }
+            .onChange(of: onboarding.hasSeenOnboarding) { _, _ in
+                updateTimelinePreferenceSheetPresentation()
+            }
+            .sheet(isPresented: $isTimelinePreferenceSheetPresented) {
+                TimelinePreferenceChoiceSheet { mode in
+                    TimelinePreferenceStore.setMode(mode)
+                    isTimelinePreferenceSheetPresented = false
+                }
+                .presentationDetents([.medium])
+                .presentationDragIndicator(.hidden)
+            }
         }
+    }
+
+    private func updateTimelinePreferenceSheetPresentation() {
+        isTimelinePreferenceSheetPresented = onboarding.hasSeenOnboarding && !TimelinePreferenceStore.hasStoredMode()
     }
 }
 
