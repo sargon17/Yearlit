@@ -3,6 +3,18 @@ import Foundation
 private let minimumTrackedDotFillRatio = 0.35
 private let robustDotScalePercentile = 0.9
 
+/// Precompute the robust scale once for a set of counts, then pass it to `counterDotFillRatio(count:precomputedScale:)`.
+public func precomputeRobustDotScale(for counts: [Int]) -> Double {
+    robustDotScale(for: counts)
+}
+
+/// Use this in tight loops where `counts` is constant — avoids recomputing the scale per cell.
+public func counterDotFillRatio(count: Int, precomputedScale: Double) -> Double {
+    guard count > 0 else { return 0 }
+    let ratio = Double(count) / precomputedScale
+    return min(1, max(minimumTrackedDotFillRatio, ratio))
+}
+
 public func counterDotFillRatio(count: Int, counts: [Int]) -> Double {
     guard count > 0 else { return 0 }
 

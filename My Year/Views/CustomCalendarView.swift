@@ -45,7 +45,8 @@ struct CustomCalendarView: View {
   @AppStorage("runtimeDebugEnabled") private var runtimeDebugEnabled: Bool = false
   @AppStorage("wandFillForce") private var wandFillForce: Double = 0.5
 
-  private var today: Date { Date() }
+  @State private var today: Date = Calendar.current.startOfDay(for: Date())
+  @Environment(\.scenePhase) private var scenePhase
 
   private var yearDates: [Date] {
     getYearDatesArray(for: valuationStore.selectedYear)
@@ -59,13 +60,7 @@ struct CustomCalendarView: View {
     activeCalendar.cadence == .daily && timelinePreference == .your365
   }
 
-  private var your365Snapshot: Your365Snapshot? {
-    guard isShowingYour365 else { return nil }
-    return activeCalendar.makeYour365Snapshot(
-      completedDates: completedEntryDates,
-      today: today
-    )
-  }
+  @State private var your365Snapshot: Your365Snapshot? = nil
 
   private var isYour365FirstYear: Bool {
     guard isShowingYour365 else { return false }
@@ -83,19 +78,10 @@ struct CustomCalendarView: View {
     your365Snapshot?.cells.map(\.date) ?? calendarYearGridDates
   }
 
-  private var completedEntryDates: Set<Date> {
-    your365CompletedDates(for: activeCalendar)
-  }
-
   private var your365HeaderTitle: String? {
-    makeYour365HeaderTitle(snapshot: your365Snapshot, calendar: activeCalendar)
-  }
-
-  private func makeYour365HeaderTitle(snapshot: Your365Snapshot?, calendar: CustomCalendar) -> String? {
-    guard let snapshot else { return nil }
-
-    if calendar.isWithinFirstYear(today: today),
-      let todayCell = snapshot.cells.first(where: { LocalDayCalendar.calendar.isDate($0.date, inSameDayAs: today) })
+    guard let snapshot = your365Snapshot else { return nil }
+    if activeCalendar.isWithinFirstYear(today: today),
+      let todayCell = snapshot.todayCell
     {
       return "Day \(todayCell.dayNumber) of your 365"
     }
@@ -104,11 +90,21 @@ struct CustomCalendarView: View {
 
   private var currentPeriodReferenceDate: Date? {
     if isShowingYour365 {
-      return your365Snapshot?.cells.first(where: { Calendar.current.isDate($0.date, inSameDayAs: today) })?.date
-        ?? today
+      return your365Snapshot?.todayCell?.date ?? today
     }
-
     return calendarYearGridDates.first { Calendar.current.isDate($0, inSameDayAs: today) }
+  }
+
+  private func recomputeYour365() {
+    guard isShowingYour365 else {
+      your365Snapshot = nil
+      return
+    }
+    let completedDates = your365CompletedDates(for: activeCalendar)
+    your365Snapshot = activeCalendar.makeYour365Snapshot(
+      completedDates: completedDates,
+      today: today
+    )
   }
 
   private var activeCalendar: CustomCalendar {
@@ -632,14 +628,25 @@ struct CustomCalendarView: View {
       Purchases.shared.getCustomerInfo { info, _ in
         self.customerInfo = info
       }
+      today = Calendar.current.startOfDay(for: Date())
+      recomputeYour365()
       if lastObservedDataVersion != store.snapshot.dataVersion {
         lastObservedDataVersion = store.snapshot.dataVersion
         statsRefreshToken = UUID()
       }
     }
+    .onChange(of: scenePhase) { _, newPhase in
+      guard newPhase == .active else { return }
+      let newToday = Calendar.current.startOfDay(for: Date())
+      if newToday != today {
+        today = newToday
+      }
+      recomputeYour365()
+    }
     .onChange(of: store.snapshot.dataVersion) { _, newValue in
       lastObservedDataVersion = newValue
       statsRefreshToken = UUID()
+      recomputeYour365()
       if isEntryEditSheetPresented {
         scheduleMilestoneCheck()
       } else {

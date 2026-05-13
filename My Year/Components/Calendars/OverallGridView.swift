@@ -87,7 +87,7 @@ struct OverallGridView: View {
         let missedColor = missedDayColor()
         let todayBucket = LocalDayCalendar.startOfDay(for: today)
         return zip(dates, zByDay).map { day, z -> (date: Date, color: Color) in
-            let dayBucket = LocalDayCalendar.startOfDay(for: day)
+            let dayBucket = day  // dates from getYearDatesArray are pre-bucketed to midnight
             if dayBucket > todayBucket { return (day, futureColor) }
             if z <= 0 { return (day, dayBucket == todayBucket ? todayColor : missedColor) }
             let opacity = min(1, max(0.2, z))

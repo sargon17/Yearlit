@@ -5,11 +5,11 @@ import SwiftUI
 struct GridView: View {
     struct Your365Presentation {
         let snapshot: Your365Snapshot
-        let cellsByDateKey: [String: Your365Cell]
+        let cellsByDate: [Date: Your365Cell]
 
         init(snapshot: Your365Snapshot) {
             self.snapshot = snapshot
-            cellsByDateKey = Dictionary(uniqueKeysWithValues: snapshot.cells.map { ($0.id, $0) })
+            cellsByDate = Dictionary(uniqueKeysWithValues: snapshot.cells.map { ($0.date, $0) })
         }
     }
 
@@ -21,7 +21,31 @@ struct GridView: View {
     let your365Presentation: Your365Presentation?
 
     @Environment(\.colorScheme) var colorScheme
-    @State var mappedDays: [(date: Date, color: Color)] = []
+    @State var mappedDays: [(date: Date, color: Color)]
+
+    init(
+        calendar: CustomCalendar,
+        store: CustomCalendarStore,
+        handleDayTap: @escaping (Date) -> Void,
+        dates: [Date],
+        year: Int,
+        your365Presentation: Your365Presentation?
+    ) {
+        self.calendar = calendar
+        self.store = store
+        self.handleDayTap = handleDayTap
+        self.dates = dates
+        self.year = year
+        self.your365Presentation = your365Presentation
+        _mappedDays = State(
+            initialValue: Self.makeMappedDays(
+                calendar: calendar,
+                dates: dates,
+                today: Date().date,
+                your365Presentation: your365Presentation
+            )
+        )
+    }
 
     var body: some View {
         GeometryReader { geometry in
@@ -41,15 +65,23 @@ struct GridView: View {
             let verticalSpacing =
                 max(0, (availableHeight - (dotSize * CGFloat(rows))) / CGFloat(max(1, rows - 1)))
             let hitSize = dotSize + max(0, min(horizontalSpacing, verticalSpacing))
+            let displayMappedDays = mappedDays.count == dates.count
+                ? mappedDays
+                : Self.makeMappedDays(
+                    calendar: calendar,
+                    dates: dates,
+                    today: today,
+                    your365Presentation: your365Presentation
+                )
 
             VStack(spacing: verticalSpacing) {
                 ForEach(0 ..< rows, id: \.self) { row in
                     HStack(spacing: horizontalSpacing) {
                         ForEach(0 ..< columns, id: \.self) { col in
                             let day = row * columns + col
-                            if day < mappedDays.count {
-                                let mappedDay = mappedDays[day]
-                                let presentation = your365Presentation?.cellsByDateKey[dayKey(for: mappedDay.date)]
+                            if day < displayMappedDays.count {
+                                let mappedDay = displayMappedDays[day]
+                                let presentation = your365Presentation?.cellsByDate[mappedDay.date]
                                 let isTapDisabled = presentation.map { $0.state == .future || $0.state == .notTracked } ?? false
 
                                 TappableGridDot(
@@ -79,16 +111,12 @@ struct GridView: View {
                 if let cachedMappedDays: [(date: Date, color: Color)] = CacheStore.shared.get(cacheKey) {
                     mappedDays = cachedMappedDays
                 } else {
-                    let counts = calendar.entries.values.map { $0.count }
-                    mappedDays = dates.map {
-                        let presentation = your365Presentation?.cellsByDateKey[dayKey(for: $0)]
-
-                        if let presentation {
-                            return (date: $0, color: colorForYour365Day(presentation, counts: counts))
-                        }
-
-                        return (date: $0, color: colorForDay($0, calendar: calendar, today: today, counts: counts))
-                    }
+                    mappedDays = Self.makeMappedDays(
+                        calendar: calendar,
+                        dates: dates,
+                        today: today,
+                        your365Presentation: your365Presentation
+                    )
                     CacheStore.shared.set(cacheKey, value: mappedDays)
                 }
             }
@@ -102,7 +130,9 @@ struct GridView: View {
         let schemeKey = colorScheme == .dark ? "dark" : "light"
         let daySeedKey = dayKey(for: LocalDayCalendar.startOfDay(for: Date()))
         let timeZoneKey = TimeZone.autoupdatingCurrent.identifier
-        let presentationKey = your365Presentation.map { "y365:\($0.snapshot.trackingStartedAt.timeIntervalSince1970):\($0.snapshot.cells.count)" } ?? "y365:none"
+        let presentationKey = your365Presentation.map {
+            "y365:\($0.snapshot.trackingStartedAt.timeIntervalSince1970):\($0.snapshot.cells.count)"
+        } ?? "y365:none"
         return "\(calendar.id.uuidString)|\(year)|v\(snapshot.dataVersion)|\(calendar.cadence.rawValue)|\(schemeKey)|\(daySeedKey)|\(timeZoneKey)|\(presentationKey)"
     }
 
@@ -110,10 +140,34 @@ struct GridView: View {
         Date().date
     }
 
-    private func colorForYour365Day(_ cell: Your365Cell, counts: [Int]) -> Color {
+    private static func makeMappedDays(
+        calendar: CustomCalendar,
+        dates: [Date],
+        today: Date,
+        your365Presentation: Your365Presentation?
+    ) -> [(date: Date, color: Color)] {
+        let counts = calendar.entries.values.map { $0.count }
+        let scale = precomputeRobustDotScale(for: counts)
+        return dates.map {
+            let presentation = your365Presentation?.cellsByDate[$0]
+
+            if let presentation {
+                return (date: $0, color: colorForYour365Day(presentation, calendar: calendar, today: today, precomputedScale: scale))
+            }
+
+            return (date: $0, color: colorForDay($0, calendar: calendar, today: today, precomputedScale: scale))
+        }
+    }
+
+    private static func colorForYour365Day(
+        _ cell: Your365Cell,
+        calendar: CustomCalendar,
+        today: Date,
+        precomputedScale: Double
+    ) -> Color {
         switch cell.state {
         case .completed, .missed, .todayPending:
-            return colorForDay(cell.date, calendar: calendar, today: today, counts: counts)
+            return colorForDay(cell.date, calendar: calendar, today: today, precomputedScale: precomputedScale)
         case .future:
             return futureDayColor()
         case .notTracked:
