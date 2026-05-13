@@ -184,6 +184,7 @@ struct My_YearApp: App {
                 }
                 .presentationDetents([.medium])
                 .presentationDragIndicator(.hidden)
+                .interactiveDismissDisabled(true)
             }
         }
     }
