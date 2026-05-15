@@ -6,6 +6,14 @@ import Testing
 
 @MainActor
 struct CustomCalendarStoreSnapshotTests {
+    @Test func startsInLoadingStateBeforeInitialAsyncFetchCompletes() {
+        let plannedSnapshots = PlannedSnapshots([[], []], delays: [0, 300_000_000])
+        let store = makeStore(fetchCalendarsLoader: plannedSnapshots.loader)
+
+        #expect(store.snapshot.isLoading)
+        #expect(store.snapshot.calendars.isEmpty)
+    }
+
     @Test func addEntryPublishesFreshCalendarsWithFreshVersion() async throws {
         let store = makeStore()
         try await waitUntilLoaded(store)
@@ -41,9 +49,10 @@ struct CustomCalendarStoreSnapshotTests {
     @Test func staleReloadCannotOverwriteNewerMutation() async throws {
         let plannedSnapshots = PlannedSnapshots([
             [],
+            [],
             [makeCalendar(id: fixedID(1), name: "A")],
             [makeCalendar(id: fixedID(1), name: "A"), makeCalendar(id: fixedID(2), name: "B")],
-        ], delays: [0, 300_000_000, 20_000_000])
+        ], delays: [0, 0, 300_000_000, 20_000_000])
 
         let store = makeStore(fetchCalendarsLoader: plannedSnapshots.loader)
         try await waitUntilLoaded(store)

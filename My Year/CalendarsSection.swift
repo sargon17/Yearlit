@@ -74,30 +74,39 @@ struct CalendarsSection: View {
                                 .slide()
                         }
 
-                        // Add Calendar Button
-                        VStack {
-                            Spacer()
-                            VStack(spacing: 16) {
-                                Image(systemName: "plus")
-                                    .font(.system(size: 42))
-                                    .foregroundStyle(Color("text-tertiary"))
-                                Text("Add Calendar")
-                                    .font(.headline)
-                                    .foregroundColor(Color("text-primary"))
+                        if snapshot.isLoading && activeCalendars.isEmpty {
+                            ProgressView()
+                                .tint(Color("text-tertiary"))
+                                .frame(width: width)
+                                .containerRelativeFrame(.horizontal, count: 1, spacing: 0)
+                                .slide()
+                                .id("calendar_loading")
+                        } else {
+                            // Add Calendar Button
+                            VStack {
+                                Spacer()
+                                VStack(spacing: 16) {
+                                    Image(systemName: "plus")
+                                        .font(.system(size: 42))
+                                        .foregroundStyle(Color("text-tertiary"))
+                                    Text("Add Calendar")
+                                        .font(.headline)
+                                        .foregroundColor(Color("text-primary"))
+                                }
+                                .containerRelativeFrame(.horizontal, count: 1, spacing: 0)
+                                Spacer()
                             }
-                            .containerRelativeFrame(.horizontal, count: 1, spacing: 0)
-                            Spacer()
-                        }
-                        .frame(width: width)
-                        .slide()
-                        .id("add_calendar")
-                        .onTapGesture {
-                            router.showScreen(.sheet) { _ in
-                                CreateCalendarView { newCalendar in
-                                    store.addCalendar(newCalendar)
-                                    position.scrollTo(id: newCalendar.id.uuidString)
-                                    router.dismissScreen()
-                                    addPositiveEvent(.createdCalendar)
+                            .frame(width: width)
+                            .slide()
+                            .id("add_calendar")
+                            .onTapGesture {
+                                router.showScreen(.sheet) { _ in
+                                    CreateCalendarView { newCalendar in
+                                        store.addCalendar(newCalendar)
+                                        position.scrollTo(id: newCalendar.id.uuidString)
+                                        router.dismissScreen()
+                                        addPositiveEvent(.createdCalendar)
+                                    }
                                 }
                             }
                         }

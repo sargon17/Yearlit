@@ -869,7 +869,12 @@ public final class CustomCalendarStore: ObservableObject {
         migrationRunner = dependencies.runMigration
         let initialVersion = Self.loadDataVersion()
         latestPersistedDataVersion = initialVersion
-        snapshot = CustomCalendarStoreSnapshot(dataVersion: initialVersion)
+        let initialCalendars = (try? fetchCalendarsLoader(container)) ?? []
+        snapshot = CustomCalendarStoreSnapshot(
+            calendars: initialCalendars,
+            isLoading: true,
+            dataVersion: initialVersion
+        )
         loadCalendars(showLoadingIndicator: true, targetVersion: initialVersion, runMigration: true)
     }
 
