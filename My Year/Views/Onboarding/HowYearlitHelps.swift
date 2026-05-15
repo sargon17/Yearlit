@@ -35,7 +35,7 @@ struct HowYearlitHelps: View {
             VStack(alignment: .leading, spacing: 8) {
                 Spacer()
                 Text("How Yearlit Helps You")
-                    .font(AppFont.mono(24, weight: .black))
+                    .font(AppFont.pixelCircle(24))
                     .foregroundStyle(.textPrimary)
 
                 // To make habits stick, keep them:

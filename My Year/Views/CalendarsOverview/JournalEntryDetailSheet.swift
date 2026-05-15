@@ -29,7 +29,7 @@ struct JournalEntryDetailSheet: View {
                 HStack(alignment: .top, spacing: 12) {
                     VStack(alignment: .leading, spacing: 6) {
                         Text(Self.dateFormatter.string(from: entry.timestamp))
-                            .font(AppFont.mono(28, weight: .bold))
+                            .font(AppFont.pixelCircle(28))
                             .foregroundStyle(.textPrimary)
 
                         HStack(spacing: 8) {

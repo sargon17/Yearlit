@@ -20,7 +20,7 @@ struct TimelinePreferenceChoiceSheet: View {
             floatingHabitImage
 
             Text("Your year starts the day you do.")
-              .font(AppFont.mono(22, weight: .black))
+              .font(AppFont.pixelCircle(22))
               .foregroundStyle(.textPrimary)
               .multilineTextAlignment(.leading)
               .fixedSize(horizontal: false, vertical: true)

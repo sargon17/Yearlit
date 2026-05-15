@@ -36,7 +36,7 @@ struct WhatItIs: View {
             VStack(alignment: .leading, spacing: 8) {
                 Spacer()
                 Text("Yearlit")
-                    .font(AppFont.mono(36, weight: .black))
+                    .font(AppFont.pixelCircle(36))
                     .foregroundStyle(.qsOrange)
 
                 VStack(alignment: .leading) {

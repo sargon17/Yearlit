@@ -1,8 +1,8 @@
 import RevenueCat
 import RevenueCatUI
 import SharedModels
-import SwiftfulRouting
 import SwiftUI
+import SwiftfulRouting
 import UserNotifications
 import WidgetKit
 
@@ -70,14 +70,17 @@ struct CustomCalendarView: View {
     selectedYear: Int
   ) -> CalendarDisplayState {
     let activeCalendar = snapshot.calendar(id: calendar.id) ?? calendar
-    let timelineMode = TimelinePreferenceStore
+    let timelineMode =
+      TimelinePreferenceStore
       .mode(rawValue: timelinePreferenceRawValue)
       .effectiveMode(for: activeCalendar.cadence)
     let isShowingYour365 = activeCalendar.cadence == .daily && timelineMode == .your365
-    let calendarYearGridDates = activeCalendar.cadence == .weekly
+    let calendarYearGridDates =
+      activeCalendar.cadence == .weekly
       ? getYearWeekDatesArray(for: selectedYear)
       : getYearDatesArray(for: selectedYear)
-    let your365Snapshot = isShowingYour365
+    let your365Snapshot =
+      isShowingYour365
       ? activeCalendar.makeYour365Snapshot(
         completedDates: your365CompletedDates(for: activeCalendar),
         today: today
@@ -140,7 +143,8 @@ struct CustomCalendarView: View {
     // TODO: Implement clearEntries(calendarId:) in CustomCalendarStore to enable clearing before filling.
     store.clearEntries(calendarId: activeCalendar.id)
 
-    let sourceDates = state.isShowingYour365
+    let sourceDates =
+      state.isShowingYour365
       ? state.your365Snapshot?.cells.map(\.date) ?? []
       : state.calendarYearGridDates
 
@@ -379,11 +383,11 @@ struct CustomCalendarView: View {
             VStack(alignment: .leading, spacing: 0) {
               HStack(alignment: .firstTextBaseline, spacing: 8) {
                 Text(activeCalendar.name.capitalized)
-                  .font(AppFont.mono(36))
+                  .font(AppFont.sans(36))
+                  .fontWeight(.black)
                   .lineLimit(2)
                   .minimumScaleFactor(0.5)
                   .foregroundColor(Color("text-primary"))
-                  .fontWeight(.black)
                   .onTapGesture {
                     router.showScreen(.sheet) { _ in
                       EditCalendarView(

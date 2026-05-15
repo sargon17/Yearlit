@@ -251,7 +251,7 @@ struct IdentityFirst: View {
                 Spacer()
 
                 Text("Don’t just set goals")
-                    .font(AppFont.mono(24, weight: .black))
+                    .font(AppFont.pixelCircle(24))
                     .foregroundStyle(.textPrimary)
 
                 VStack(alignment: .leading) {

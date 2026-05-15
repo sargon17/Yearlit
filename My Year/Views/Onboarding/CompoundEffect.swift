@@ -141,7 +141,7 @@ struct CompoundEffect: View {
             VStack(alignment: .leading, spacing: 8) {
                 Spacer()
                 Text("The Compound Effect")
-                    .font(AppFont.mono(24, weight: .black))
+                    .font(AppFont.pixelCircle(24))
                     .foregroundStyle(.textPrimary)
 
                 VStack(alignment: .leading) {

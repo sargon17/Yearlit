@@ -112,7 +112,7 @@ struct CreateFirstHabit: View {
                 Spacer()
 
                 Text("Set your first habit.")
-                    .font(AppFont.mono(24, weight: .black))
+                    .font(AppFont.pixelCircle(24))
                     .foregroundStyle(.textPrimary)
 
                 // To make habits stick, keep them:

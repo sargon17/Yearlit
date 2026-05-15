@@ -82,7 +82,7 @@ struct MoodTrackingCalendar: View {
             VStack(spacing: 10) {
                 HStack(alignment: .center, spacing: 6) {
                     Text(Calendar.current.component(.year, from: Date()).description)
-                        .font(AppFont.mono(68))
+                        .font(AppFont.pixelCircle(68))
                         .foregroundColor(Color("text-primary"))
                         .fontWeight(.black)
 
@@ -90,7 +90,7 @@ struct MoodTrackingCalendar: View {
 
                     let percent = Double(store.currentDayNumber) / Double(store.numberOfDaysInYear)
                     Text(String(format: "%.1f%%", percent * 100))
-                        .font(AppFont.mono(38))
+                        .font(AppFont.pixelCircle(38))
                         .foregroundColor(Color("text-tertiary"))
                         .fontWeight(.regular)
                 }
@@ -115,7 +115,7 @@ struct MoodTrackingCalendar: View {
                                 ? "\(store.numberOfDaysInYear - store.currentDayNumber)"
                                 : "\(store.currentDayNumber)"
                         )
-                        .font(AppFont.mono(38))
+                        .font(AppFont.pixelCircle(38))
                         .foregroundColor(Color("text-primary"))
                         .fontWeight(.bold)
                         .contentTransition(.numericText())

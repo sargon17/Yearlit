@@ -159,7 +159,7 @@ extension AboutThisProject {
             VStack(alignment: .leading, spacing: 32) {
                 Text("Hi, I’m Mykhaylo.")
                     .foregroundStyle(.textPrimary)
-                    .font(AppFont.mono(24, weight: .bold))
+                    .font(AppFont.pixelCircle(24))
                 Text(
                     "I’m the person behind Yearlit — designer, builder, and fellow struggler when it comes to staying consistent."
                 )
@@ -183,7 +183,7 @@ extension AboutThisProject {
             VStack(alignment: .leading, spacing: 18) {
                 Text("Why I’m Building Yearlit")
                     .foregroundStyle(.textPrimary)
-                    .font(AppFont.mono(24, weight: .bold))
+                    .font(AppFont.pixelCircle(24))
                 Text("I’ve always believed consistency is a kind of superpower.")
                     .fontWeight(.semibold)
                 Text("It’s the quiet force that turns small, ordinary actions into extraordinary results over time.")
@@ -213,7 +213,7 @@ extension AboutThisProject {
             VStack(alignment: .leading, spacing: 18) {
                 Text("A Work in Progress")
                     .foregroundStyle(.textPrimary)
-                    .font(AppFont.mono(24, weight: .bold))
+                    .font(AppFont.pixelCircle(24))
                 Text("Yearlit is still growing — just like the people who use it.")
                     .italic()
                 Text("It’s not perfect, and I’m okay with that.")

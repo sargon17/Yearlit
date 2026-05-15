@@ -151,7 +151,7 @@ extension OnboardingView {
                         .frame(maxWidth: .infinity)
                         .padding()
                         .foregroundColor(.textPrimary)
-                        .font(AppFont.mono(18, weight: .bold))
+                        .font(AppFont.pixelCircle(18))
                         .clipShape(RoundedRectangle(cornerRadius: 4))
                         .accessibilityIdentifier("skip")
                 }
@@ -195,7 +195,7 @@ extension OnboardingView {
                         .frame(maxWidth: .infinity)
                         .padding()
                         .foregroundColor(foregroundColor)
-                        .font(AppFont.mono(18, weight: .bold))
+                        .font(AppFont.pixelCircle(18))
                         .clipShape(RoundedRectangle(cornerRadius: 4))
                         .accessibilityIdentifier("next_slide")
                 }

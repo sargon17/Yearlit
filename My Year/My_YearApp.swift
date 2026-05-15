@@ -8,185 +8,185 @@
 import RevenueCat
 import SharedModels
 import SwiftDate
-import SwiftfulRouting
 import SwiftUI
+import SwiftfulRouting
 import UserNotifications
 
 // MARK: - App Delegate for Notification Handling
 
 class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCenterDelegate {
-    func application(
-        _: UIApplication,
-        didFinishLaunchingWithOptions _: [UIApplication.LaunchOptionsKey: Any]? = nil
-    ) -> Bool {
-        // Set notification delegate
-        UNUserNotificationCenter.current().delegate = self
+  func application(
+    _: UIApplication,
+    didFinishLaunchingWithOptions _: [UIApplication.LaunchOptionsKey: Any]? = nil
+  ) -> Bool {
+    // Set notification delegate
+    UNUserNotificationCenter.current().delegate = self
 
-        // Setup notification categories
-        setupNotificationCategories()
+    // Setup notification categories
+    setupNotificationCategories()
 
-        return true
+    return true
+  }
+
+  /// Handle notification actions (Log Now, Snooze, and default tap)
+  func userNotificationCenter(
+    _: UNUserNotificationCenter,
+    didReceive response: UNNotificationResponse,
+    withCompletionHandler completionHandler: @escaping () -> Void
+  ) {
+    // Handle default tap action (user tapped notification) - open calendar
+    if response.actionIdentifier == UNNotificationDefaultActionIdentifier {
+      let userInfo = response.notification.request.content.userInfo
+      if let calendarIdString = userInfo["calendarId"] as? String,
+        let calendarId = UUID(uuidString: calendarIdString)
+      {
+        // Open deep link to calendar
+        let deepLinkURL = URL(string: "my-year://calendar/\(calendarId.uuidString)")!
+        UIApplication.shared.open(deepLinkURL)
+        print("📱 Opening calendar from notification: \(calendarIdString)")
+      }
+    } else {
+      // Handle action buttons (Log Now, Snooze)
+      Task { @MainActor in
+        handleNotificationAction(response, store: CustomCalendarStore.shared)
+      }
     }
 
-    /// Handle notification actions (Log Now, Snooze, and default tap)
-    func userNotificationCenter(
-        _: UNUserNotificationCenter,
-        didReceive response: UNNotificationResponse,
-        withCompletionHandler completionHandler: @escaping () -> Void
-    ) {
-        // Handle default tap action (user tapped notification) - open calendar
-        if response.actionIdentifier == UNNotificationDefaultActionIdentifier {
-            let userInfo = response.notification.request.content.userInfo
-            if let calendarIdString = userInfo["calendarId"] as? String,
-               let calendarId = UUID(uuidString: calendarIdString)
-            {
-                // Open deep link to calendar
-                let deepLinkURL = URL(string: "my-year://calendar/\(calendarId.uuidString)")!
-                UIApplication.shared.open(deepLinkURL)
-                print("📱 Opening calendar from notification: \(calendarIdString)")
-            }
-        } else {
-            // Handle action buttons (Log Now, Snooze)
-            Task { @MainActor in
-                handleNotificationAction(response, store: CustomCalendarStore.shared)
-            }
-        }
+    completionHandler()
+  }
 
-        completionHandler()
+  /// Handle notification when app is in foreground
+  func userNotificationCenter(
+    _: UNUserNotificationCenter,
+    willPresent notification: UNNotification,
+    withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void
+  ) {
+    Task { @MainActor in
+      let userInfo = notification.request.content.userInfo
+      let snapshot = CustomCalendarStore.shared.snapshot
+      if let calendarIdString = userInfo["calendarId"] as? String,
+        let calendarId = UUID(uuidString: calendarIdString),
+        let calendar = snapshot.calendar(id: calendarId),
+        calendar.suppressWhenCompleted,
+        shouldSuppressNotification(for: calendar, store: CustomCalendarStore.shared)
+      {
+        print("🔕 Suppressed notification for \(calendar.name) - already completed today")
+        completionHandler([])
+        return
+      }
+
+      completionHandler([.banner, .sound, .badge])
     }
-
-    /// Handle notification when app is in foreground
-    func userNotificationCenter(
-        _: UNUserNotificationCenter,
-        willPresent notification: UNNotification,
-        withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void
-    ) {
-        Task { @MainActor in
-            let userInfo = notification.request.content.userInfo
-            let snapshot = CustomCalendarStore.shared.snapshot
-            if let calendarIdString = userInfo["calendarId"] as? String,
-               let calendarId = UUID(uuidString: calendarIdString),
-               let calendar = snapshot.calendar(id: calendarId),
-               calendar.suppressWhenCompleted,
-               shouldSuppressNotification(for: calendar, store: CustomCalendarStore.shared)
-            {
-                print("🔕 Suppressed notification for \(calendar.name) - already completed today")
-                completionHandler([])
-                return
-            }
-
-            completionHandler([.banner, .sound, .badge])
-        }
-    }
+  }
 }
 
 @main
 // swiftlint:disable:next type_name
 struct My_YearApp: App {
-    @UIApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
+  @UIApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
 
-    // * Onboarding Manager
-    @StateObject private var onboarding = OnboardingManager()
-    @StateObject private var featureRequest = FeatureRequestManager(
-        config: AppConfig.wishConfiguration
+  // * Onboarding Manager
+  @StateObject private var onboarding = OnboardingManager()
+  @StateObject private var featureRequest = FeatureRequestManager(
+    config: AppConfig.wishConfiguration
+  )
+  @State private var isOnboardingPresented = false
+
+  #if DEBUG
+    static let isDebugMode = true
+  #else
+    static let isDebugMode = false
+  #endif
+
+  init() {
+    AppFont.registerFonts()
+    Purchases.configure(withAPIKey: AppConfig.revenueCatAPIKey)
+    AppStorageMigration.run()
+
+    // * Reviews Promt Manager
+    print("start review prompter")
+    ReviewPrompter.shared.rules = .init(
+      minEvents: 3,
+      cooldownDays: 30,
+      oncePerVersion: true
     )
-    @State private var isOnboardingPresented = false
 
-    #if DEBUG
-        static let isDebugMode = true
-    #else
-        static let isDebugMode = false
-    #endif
+    let appearance = UINavigationBarAppearance()
+    appearance.configureWithTransparentBackground()
 
-    init() {
-        AppFont.registerFonts()
-        Purchases.configure(withAPIKey: AppConfig.revenueCatAPIKey)
-        AppStorageMigration.run()
+    // Large title → Geist Pixel Circle
+    appearance.largeTitleTextAttributes = [
+      .font: AppFont.uiFont(.pixelCircle, size: 56),
+      .foregroundColor: UIColor.label
+    ]
 
-        // * Reviews Promt Manager
-        print("start review prompter")
-        ReviewPrompter.shared.rules = .init(
-            minEvents: 3,
-            cooldownDays: 30,
-            oncePerVersion: true
-        )
+    // Inline title → Geist Pixel Circle
+    appearance.titleTextAttributes = [
+      .font: AppFont.uiFont(.mono, size: 18),
+      .foregroundColor: UIColor.label
+    ]
 
-        let appearance = UINavigationBarAppearance()
-        appearance.configureWithTransparentBackground()
+    UINavigationBar.appearance().standardAppearance = appearance
+    UINavigationBar.appearance().scrollEdgeAppearance = appearance
+    UINavigationBar.appearance().compactAppearance = appearance
+  }
 
-        // Large title → Geist Mono
-        appearance.largeTitleTextAttributes = [
-            .font: AppFont.uiFont(.mono, size: 34, weight: .heavy),
-            .foregroundColor: UIColor.label,
-        ]
+  static let cachedDates: [Date] = getYearDatesArray()
 
-        // Inline title → Geist Mono
-        appearance.titleTextAttributes = [
-            .font: AppFont.uiFont(.mono, size: 18, weight: .bold),
-            .foregroundColor: UIColor.label,
-        ]
+  var body: some Scene {
+    WindowGroup {
+      RouterView(addNavigationStack: false, addModuleSupport: true) { _ in
+        ContentView()
+          .tint(.textSecondary)
+      }
+      .environment(\.dates, Self.cachedDates)
+      .onOpenURL { url in
+        guard url.scheme == "my-year" else { return }
 
-        UINavigationBar.appearance().standardAppearance = appearance
-        UINavigationBar.appearance().scrollEdgeAppearance = appearance
-        UINavigationBar.appearance().compactAppearance = appearance
-    }
+        switch url.host {
+        case "clear":
+          let store = ValuationStore.shared
+          store.clearAllValuations()
+        case "quick-add":
+          let idString = url.pathComponents.dropFirst().first
+          guard let idString, let calendarId = UUID(uuidString: idString) else { return }
 
-    static let cachedDates: [Date] = getYearDatesArray()
+          let store = CustomCalendarStore.shared
+          let calendars = CustomCalendarStore.fetchCalendarsSnapshot()
+          guard let calendar = calendars.first(where: { $0.id == calendarId }) else { return }
 
-    var body: some Scene {
-        WindowGroup {
-            RouterView(addNavigationStack: false, addModuleSupport: true) { _ in
-                ContentView()
-                    .tint(.textSecondary)
-            }
-            .environment(\.dates, Self.cachedDates)
-            .onOpenURL { url in
-                guard url.scheme == "my-year" else { return }
-
-                switch url.host {
-                case "clear":
-                    let store = ValuationStore.shared
-                    store.clearAllValuations()
-                case "quick-add":
-                    let idString = url.pathComponents.dropFirst().first
-                    guard let idString, let calendarId = UUID(uuidString: idString) else { return }
-
-                    let store = CustomCalendarStore.shared
-                    let calendars = CustomCalendarStore.fetchCalendarsSnapshot()
-                    guard let calendar = calendars.first(where: { $0.id == calendarId }) else { return }
-
-                    quickEntry(calendar: calendar, date: Date(), calendarStore: store)
-                default:
-                    break
-                }
-            }
-            .environmentObject(onboarding)
-            .environmentObject(featureRequest)
-            .fullScreenCover(isPresented: $isOnboardingPresented) {
-                OnboardingView {
-                    onboarding.markAsSeen()
-                    isOnboardingPresented = false
-                }
-            }
-            .onAppear {
-                isOnboardingPresented = !onboarding.hasSeenOnboarding
-                onboarding.persistDefaultTimelinePreferenceIfNeeded()
-            }
-            .onChange(of: onboarding.hasSeenOnboarding) { _, _ in
-                isOnboardingPresented = !onboarding.hasSeenOnboarding
-                onboarding.persistDefaultTimelinePreferenceIfNeeded()
-            }
+          quickEntry(calendar: calendar, date: Date(), calendarStore: store)
+        default:
+          break
         }
+      }
+      .environmentObject(onboarding)
+      .environmentObject(featureRequest)
+      .fullScreenCover(isPresented: $isOnboardingPresented) {
+        OnboardingView {
+          onboarding.markAsSeen()
+          isOnboardingPresented = false
+        }
+      }
+      .onAppear {
+        isOnboardingPresented = !onboarding.hasSeenOnboarding
+        onboarding.persistDefaultTimelinePreferenceIfNeeded()
+      }
+      .onChange(of: onboarding.hasSeenOnboarding) { _, _ in
+        isOnboardingPresented = !onboarding.hasSeenOnboarding
+        onboarding.persistDefaultTimelinePreferenceIfNeeded()
+      }
     }
+  }
 }
 
 struct DatesKey: EnvironmentKey {
-    static let defaultValue: [Date] = []
+  static let defaultValue: [Date] = []
 }
 
 extension EnvironmentValues {
-    var dates: [Date] {
-        get { self[DatesKey.self] }
-        set { self[DatesKey.self] = newValue }
-    }
+  var dates: [Date] {
+    get { self[DatesKey.self] }
+    set { self[DatesKey.self] = newValue }
+  }
 }

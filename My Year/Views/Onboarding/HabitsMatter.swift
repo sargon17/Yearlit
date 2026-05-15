@@ -22,7 +22,7 @@ struct HabitsMatter: View {
                 Spacer()
 
                 Text("Why Habits Matter")
-                    .font(AppFont.mono(24, weight: .black))
+                    .font(AppFont.pixelCircle(24))
                     .foregroundStyle(.textPrimary)
 
                 VStack(alignment: .leading) {

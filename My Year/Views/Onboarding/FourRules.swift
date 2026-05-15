@@ -12,7 +12,7 @@ struct FourRules: View {
                 Spacer()
 
                 Text("The 4 Rules of Good Habits")
-                    .font(AppFont.mono(24, weight: .black))
+                    .font(AppFont.pixelCircle(24))
                     .foregroundStyle(.textPrimary)
 
                 // To make habits stick, keep them:

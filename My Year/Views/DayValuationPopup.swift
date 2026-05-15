@@ -45,7 +45,7 @@ struct DayValuationPopup: View {
                 HStack {
                     VStack(alignment: .leading, spacing: 4) {
                         Text("How was your day?")
-                            .font(AppFont.mono(32, weight: .black))
+                            .font(AppFont.pixelCircle(32))
                             .foregroundStyle(.textPrimary)
 
                         Text(formattedDate)

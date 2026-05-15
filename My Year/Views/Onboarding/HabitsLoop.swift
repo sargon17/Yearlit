@@ -13,7 +13,7 @@ struct HabitsLoop: View {
                 Spacer()
 
                 Text("The Habit Loop")
-                    .font(AppFont.mono(24, weight: .black))
+                    .font(AppFont.pixelCircle(24))
                     .foregroundStyle(.textPrimary)
 
                 VStack(alignment: .leading) {
