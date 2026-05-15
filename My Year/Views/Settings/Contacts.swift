@@ -14,7 +14,7 @@ struct Contacts: View {
                     "Don’t keep it to yourself. The fastest way to make this app better for you is to tell me what’s on your mind."
                 )
             }
-            .font(.system(size: 11, design: .monospaced))
+            .font(AppFont.mono(11))
             .foregroundColor(.secondary)
             Button {
                 if let url = URL(string: "mailto:mykhaylo.tymofyeyev@gmail.com") {

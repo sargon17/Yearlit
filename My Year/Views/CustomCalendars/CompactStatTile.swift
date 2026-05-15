@@ -31,14 +31,14 @@ struct CompactStatTile: View {
         HStack {
             VStack(alignment: .leading, spacing: 2) {
                 Text(title)
-                    .font(.system(size: 10, design: .monospaced))
+                    .font(AppFont.mono(10))
                     .foregroundColor(Color.textSecondary)
                     .lineLimit(1)
                     .fixedSize(horizontal: false, vertical: true)
 
                 HStack(alignment: .firstTextBaseline, spacing: 6) {
                     Text(verbatim: value)
-                        .font(.system(size: size.fontSize, design: .monospaced))
+                        .font(AppFont.mono(size.fontSize))
                         .fontWeight(.black)
                         .foregroundColor(accentColor)
                         .minimumScaleFactor(0.5)

@@ -379,7 +379,7 @@ struct CustomCalendarView: View {
             VStack(alignment: .leading, spacing: 0) {
               HStack(alignment: .firstTextBaseline, spacing: 8) {
                 Text(activeCalendar.name.capitalized)
-                  .font(.system(size: 36, design: .monospaced))
+                  .font(AppFont.mono(36))
                   .lineLimit(2)
                   .minimumScaleFactor(0.5)
                   .foregroundColor(Color("text-primary"))
@@ -443,19 +443,19 @@ struct CustomCalendarView: View {
                   VStack(alignment: .leading, spacing: 2) {
                     if let title = displayState.your365HeaderTitle {
                       Text(title)
-                        .font(.system(size: 12, design: .monospaced))
+                        .font(AppFont.mono(12))
                         .foregroundColor(Color("text-tertiary"))
                     }
                   }
                 } else {
                   Button(action: { showingYearPicker = true }) {
                     Text("\(valuationStore.year.description)")
-                      .font(.system(size: 12, design: .monospaced))
+                      .font(AppFont.mono(12))
                       .foregroundColor(Color("text-tertiary"))
                   }
 
                   Text("•")
-                    .font(.system(size: 4, weight: .black, design: .monospaced))
+                    .font(AppFont.mono(4, weight: .black))
                     .foregroundColor(Color("text-tertiary"))
                     .padding(.horizontal, 2)
                 }
@@ -467,17 +467,17 @@ struct CustomCalendarView: View {
                   {
                     let reminderTime = String(format: "%02d:%02d", hour, minute)
                     Image(systemName: "bell")
-                      .font(.system(size: 12, design: .monospaced))
+                      .font(AppFont.mono(12))
                       .foregroundColor(Color("text-tertiary"))
                     Text(reminderTime)
-                      .font(.system(size: 12, design: .monospaced))
+                      .font(AppFont.mono(12))
                       .foregroundColor(Color("text-tertiary"))
                   } else {
                     Image(systemName: "bell.slash")
-                      .font(.system(size: 12, design: .monospaced))
+                      .font(AppFont.mono(12))
                       .foregroundColor(Color("text-tertiary"))
                     Text("Off")
-                      .font(.system(size: 12, design: .monospaced))
+                      .font(AppFont.mono(12))
                       .foregroundColor(Color("text-tertiary"))
                   }
                 }

@@ -105,25 +105,25 @@ struct HorizontalYearGrid: View {
             HStack(spacing: 6) {
                 if family == .systemLarge || family == .systemMedium {
                     Text(LocalDayCalendar.calendar.component(.year, from: referenceDate).description)
-                        .font(.system(size: 12, design: .monospaced))
+                        .font(AppFont.mono(12))
                         .foregroundColor(renderingMode.isMonochrome ? .primary : Color("text-primary"))
                         .fontWeight(.heavy)
 
                     Text("/")
-                        .font(.system(size: 12, design: .monospaced))
+                        .font(AppFont.mono(12))
                         .foregroundColor(renderingMode.isMonochrome ? .secondary : Color("text-tertiary"))
                 }
 
                 let percent = Double(currentDayNumber) / Double(numberOfDaysInYear)
                 Text(String(format: "%.1f%%", percent * 100))
-                    .font(.system(size: 9, design: .monospaced))
+                    .font(AppFont.mono(9))
                     .foregroundColor(renderingMode.isMonochrome ? .secondary : .textSecondary)
                     .fontWeight(.black)
 
                 Spacer()
 
                 Text(LocalizedCountText.daysLeft(numberOfDaysInYear - currentDayNumber, locale: locale))
-                    .font(.system(size: 9, design: .monospaced))
+                    .font(AppFont.mono(9))
                     .foregroundColor(renderingMode.isMonochrome ? .secondary : .textTertiary)
             }
 

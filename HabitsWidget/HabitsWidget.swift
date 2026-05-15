@@ -230,7 +230,7 @@ struct HorizontalCalendarGrid: View {
             HStack(spacing: 6) {
                 if let calendar = calendar {
                     Text(calendar.name)
-                        .font(.system(size: 12, design: .monospaced))
+                        .font(AppFont.mono(12))
                         .foregroundColor(renderingMode.isMonochrome ? .primary : Color("text-primary"))
                         .fontWeight(.heavy)
                         .lineLimit(1)
@@ -457,7 +457,7 @@ struct NumberOfDaysView: View {
                 .foregroundColor(renderingMode.isMonochrome ? WidgetStyle.monochromeSecondaryColor() : Color("text-tertiary"))
         }
         .foregroundColor(renderingMode.isMonochrome ? WidgetStyle.monochromePrimaryColor() : Color("text-primary"))
-        .font(.system(size: 9, design: .monospaced))
+        .font(AppFont.mono(9))
         .contentTransition(.numericText())
     }
 }
@@ -486,7 +486,7 @@ struct TodaysCountView: View {
         }
         .lineLimit(1)
         .foregroundColor(renderingMode.isMonochrome ? WidgetStyle.monochromePrimaryColor() : Color("text-primary"))
-        .font(.system(size: 9, design: .monospaced))
+        .font(AppFont.mono(9))
         .contentTransition(.numericText())
     }
 }

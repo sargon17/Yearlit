@@ -82,7 +82,7 @@ struct MoodTrackingCalendar: View {
             VStack(spacing: 10) {
                 HStack(alignment: .center, spacing: 6) {
                     Text(Calendar.current.component(.year, from: Date()).description)
-                        .font(.system(size: 68, design: .monospaced))
+                        .font(AppFont.mono(68))
                         .foregroundColor(Color("text-primary"))
                         .fontWeight(.black)
 
@@ -90,7 +90,7 @@ struct MoodTrackingCalendar: View {
 
                     let percent = Double(store.currentDayNumber) / Double(store.numberOfDaysInYear)
                     Text(String(format: "%.1f%%", percent * 100))
-                        .font(.system(size: 38, design: .monospaced))
+                        .font(AppFont.mono(38))
                         .foregroundColor(Color("text-tertiary"))
                         .fontWeight(.regular)
                 }
@@ -105,7 +105,7 @@ struct MoodTrackingCalendar: View {
 
                     HStack(alignment: .lastTextBaseline, spacing: 2) {
                         Text(showRemainingDays ? "Left: " : "Passed: ")
-                            .font(.system(size: 12, design: .monospaced))
+                            .font(AppFont.mono(12))
                             .foregroundColor(Color("text-tertiary"))
                             .fontWeight(.regular)
                             .opacity(isLabelVisible ? 1 : 0)
@@ -115,7 +115,7 @@ struct MoodTrackingCalendar: View {
                                 ? "\(store.numberOfDaysInYear - store.currentDayNumber)"
                                 : "\(store.currentDayNumber)"
                         )
-                        .font(.system(size: 38, design: .monospaced))
+                        .font(AppFont.mono(38))
                         .foregroundColor(Color("text-primary"))
                         .fontWeight(.bold)
                         .contentTransition(.numericText())

@@ -116,7 +116,7 @@ struct StreakWidgetEntryView: View {
                 }
             }
             .foregroundColor(secondaryTextColor)
-            .font(.system(size: 10, design: .monospaced))
+            .font(AppFont.mono(10))
 
             WidgetSeparator(renderingMode: renderingMode)
                 .padding(.horizontal, -16)
@@ -126,13 +126,13 @@ struct StreakWidgetEntryView: View {
 
             if streakValue > 0 {
                 Text("\(streakValue)")
-                    .font(.system(size: 48, design: .monospaced))
+                    .font(AppFont.mono(48))
                     .foregroundColor(accentColor)
                     .fontWeight(.heavy)
                     .widgetAccentable(renderingMode.isMonochrome)
             } else {
                 Text("It's never late to start a new streak!")
-                    .font(.system(size: 12, design: .monospaced))
+                    .font(AppFont.mono(12))
                     .foregroundColor(primaryTextColor)
             }
         }

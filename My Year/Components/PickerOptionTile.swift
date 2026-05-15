@@ -28,7 +28,7 @@ struct PickerOptionContent: View {
                 .foregroundStyle(isSelected ? accentColor : .textSecondary)
 
             Text(title)
-                .font(.system(size: 10, design: .monospaced))
+                .font(AppFont.mono(10))
                 .foregroundStyle(isSelected ? accentColor : .textSecondary)
                 .lineLimit(1)
                 .minimumScaleFactor(0.8)

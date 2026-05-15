@@ -2,6 +2,28 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<key>UIAppFonts</key>
+	<array>
+		<string>Geist-Thin.ttf</string>
+		<string>Geist-UltraLight.ttf</string>
+		<string>Geist-Light.ttf</string>
+		<string>Geist-Regular.ttf</string>
+		<string>Geist-Medium.ttf</string>
+		<string>Geist-SemiBold.ttf</string>
+		<string>Geist-Bold.ttf</string>
+		<string>Geist-Black.ttf</string>
+		<string>Geist-UltraBlack.ttf</string>
+		<string>GeistMono-Thin.ttf</string>
+		<string>GeistMono-UltraLight.ttf</string>
+		<string>GeistMono-Light.ttf</string>
+		<string>GeistMono-Regular.ttf</string>
+		<string>GeistMono-Medium.ttf</string>
+		<string>GeistMono-SemiBold.ttf</string>
+		<string>GeistMono-Bold.ttf</string>
+		<string>GeistMono-Black.ttf</string>
+		<string>GeistMono-UltraBlack.ttf</string>
+		<string>GeistPixel-Circle.ttf</string>
+	</array>
 	<key>ITSAppUsesNonExemptEncryption</key>
 	<false/>
 	<key>NSExtension</key>

@@ -156,7 +156,7 @@ extension NotificationSettingsSheet {
         let shape = RoundedRectangle(cornerRadius: 4)
 
         return Text(text)
-            .font(.system(size: 8, design: .monospaced))
+            .font(AppFont.mono(8))
             .padding(.horizontal, 6)
             .padding(.vertical, 2)
             .background(

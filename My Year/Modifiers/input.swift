@@ -17,7 +17,7 @@ struct InputModifier: ViewModifier {
             .sameLevelBorder(radius: radius, color: .black)
             .outerSameLevelShadow(radius: radius)
             .foregroundColor(color)
-            .font(.system(size: fontSize, weight: .regular, design: .monospaced))
+            .font(AppFont.mono(fontSize, weight: .regular))
             .patternStyle()
             .cornerRadius(radius)
     }

@@ -58,7 +58,7 @@ struct YearCardShareView: View {
     private var header: some View {
         VStack(alignment: .leading, spacing: 6) {
             Text(calendar.name.capitalized)
-                .font(.system(size: 18, design: .monospaced))
+                .font(AppFont.mono(18))
                 .foregroundColor(Color("text-primary"))
                 .fontWeight(.black)
                 .lineLimit(2)
@@ -72,7 +72,7 @@ struct YearCardShareView: View {
                 .padding(.horizontal, -28)
             HStack {
                 Text("Statistics")
-                    .font(.system(size: 16, design: .monospaced))
+                    .font(AppFont.mono(16))
                     .foregroundColor(Color("text-primary"))
                     .fontWeight(.black)
                 Spacer()

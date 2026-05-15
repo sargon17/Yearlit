@@ -251,7 +251,7 @@ struct IdentityFirst: View {
                 Spacer()
 
                 Text("Don’t just set goals")
-                    .font(.system(size: 24, weight: .black, design: .monospaced))
+                    .font(AppFont.mono(24, weight: .black))
                     .foregroundStyle(.textPrimary)
 
                 VStack(alignment: .leading) {
@@ -261,7 +261,7 @@ struct IdentityFirst: View {
                     Text("👉 ‘I’m a learner’")
                 }
                 .multilineTextAlignment(.leading)
-                .font(.system(size: 14, design: .monospaced))
+                .font(AppFont.mono(14))
                 .foregroundStyle(.secondary)
             }
         }

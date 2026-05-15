@@ -30,7 +30,7 @@ struct SettingsView: View {
                     .listRowInsets(EdgeInsets())
             }
             .scrollContentBackground(.hidden)
-            .font(.system(size: 12, design: .monospaced))
+            .font(AppFont.mono(12))
             .foregroundColor(Color("text-secondary"))
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)

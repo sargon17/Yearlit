@@ -27,7 +27,7 @@ struct CalendarsSection: View {
             HStack {
                 HStack(spacing: 6) {
                     Text("Yearlit")
-                        .font(.system(size: 14, weight: .bold, design: .monospaced))
+                        .font(AppFont.mono(14, weight: .bold))
                     if isPremium(customerInfo: customerInfo) {
                         Image(systemName: "checkmark.seal")
                             .font(.system(size: 12, weight: .bold))

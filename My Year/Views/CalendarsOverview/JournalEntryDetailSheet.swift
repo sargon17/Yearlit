@@ -29,12 +29,12 @@ struct JournalEntryDetailSheet: View {
                 HStack(alignment: .top, spacing: 12) {
                     VStack(alignment: .leading, spacing: 6) {
                         Text(Self.dateFormatter.string(from: entry.timestamp))
-                            .font(.system(size: 28, weight: .bold, design: .monospaced))
+                            .font(AppFont.mono(28, weight: .bold))
                             .foregroundStyle(.textPrimary)
 
                         HStack(spacing: 8) {
                             Text("Mood journal /")
-                                .font(.system(size: 12, design: .monospaced))
+                                .font(AppFont.mono(12))
                                 .foregroundStyle(.textTertiary)
 
                             RoundedRectangle(cornerRadius: 2)

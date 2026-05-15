@@ -14,7 +14,7 @@ struct DevCredits: View {
             }
             .foregroundColor(Color("text-tertiary"))
         }
-        .font(.system(size: 9, design: .monospaced))
+        .font(AppFont.mono(9))
         .foregroundColor(Color("text-tertiary").opacity(0.5))
         .multilineTextAlignment(.center)
     }

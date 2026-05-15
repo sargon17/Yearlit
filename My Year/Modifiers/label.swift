@@ -22,7 +22,7 @@ struct LabelModifier: ViewModifier {
 
     func body(content: Content) -> some View {
         content
-            .font(.system(size: 12, design: .monospaced).weight(.semibold))
+            .font(AppFont.mono(12, weight: .semibold))
             .foregroundStyle(type.color)
     }
 }

@@ -267,7 +267,7 @@ struct CreateCalendarView: View {
                                 }
                                 Spacer()
                                 Image(systemName: "chevron.right")
-                                    .font(.system(size: 12, design: .monospaced))
+                                    .font(AppFont.mono(12))
                                     .foregroundStyle(.textTertiary)
                             }
                             .padding(.horizontal)

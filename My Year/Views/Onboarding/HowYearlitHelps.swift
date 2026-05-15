@@ -35,7 +35,7 @@ struct HowYearlitHelps: View {
             VStack(alignment: .leading, spacing: 8) {
                 Spacer()
                 Text("How Yearlit Helps You")
-                    .font(.system(size: 24, weight: .black, design: .monospaced))
+                    .font(AppFont.mono(24, weight: .black))
                     .foregroundStyle(.textPrimary)
 
                 // To make habits stick, keep them:
@@ -45,7 +45,7 @@ struct HowYearlitHelps: View {
                     Text("📊 Spot patterns at a glance")
                 }
                 .multilineTextAlignment(.leading)
-                .font(.system(size: 14, design: .monospaced))
+                .font(AppFont.mono(14))
                 .foregroundStyle(.secondary)
             }
         }

@@ -67,7 +67,7 @@ extension CalendarsOverviewsItem {
     var ui: some View {
         VStack(alignment: .leading, spacing: 12) {
             Text(calendar.name.capitalized)
-                .font(.system(size: 14, design: .monospaced))
+                .font(AppFont.mono(14))
                 .fontWeight(.bold)
                 .foregroundColor(.textPrimary)
                 .lineLimit(1)
@@ -78,7 +78,7 @@ extension CalendarsOverviewsItem {
                 .aspectRatio(latestGridAspectRatio, contentMode: .fit)
 
             Text("[\(calendar.trackingType.description)]".lowercased())
-                .font(.system(size: 10, design: .monospaced))
+                .font(AppFont.mono(10))
                 .foregroundColor(.textTertiary)
                 .lineLimit(1)
                 .minimumScaleFactor(0.5)

@@ -23,25 +23,25 @@ struct SubscriptionStatusSection: View {
             Section(header: Text("Subscription")) {
                 VStack(alignment: .leading, spacing: 6) {
                     Text("You are on PRO.")
-                        .font(.system(size: 13, weight: .bold, design: .monospaced))
+                        .font(AppFont.mono(13, weight: .bold))
                         .foregroundColor(.textPrimary)
                     Text("Thanks for supporting Yearlit.")
-                        .font(.system(size: 12, design: .monospaced))
+                        .font(AppFont.mono(12))
                         .foregroundColor(.textSecondary)
 
                     if let expirationDate = entitlement.expirationDate {
                         if isLifetime(entitlement: entitlement, expirationDate: expirationDate) {
                             Text("Renews: lifetime")
-                                .font(.system(size: 12, design: .monospaced))
+                                .font(AppFont.mono(12))
                                 .foregroundColor(.textSecondary)
                         } else {
                             Text("Renews: \(dateFormatter.string(from: expirationDate))")
-                                .font(.system(size: 12, design: .monospaced))
+                                .font(AppFont.mono(12))
                                 .foregroundColor(.textSecondary)
                         }
                     } else {
                         Text("Renews: lifetime")
-                            .font(.system(size: 12, design: .monospaced))
+                            .font(AppFont.mono(12))
                             .foregroundColor(.textSecondary)
                     }
                 }

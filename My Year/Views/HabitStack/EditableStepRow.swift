@@ -27,7 +27,7 @@ struct EditableStepRow: View {
                         action: onMoveUp,
                         label: {
                             Image(systemName: "chevron.up")
-                                .font(.system(size: 14, weight: .semibold, design: .monospaced))
+                                .font(AppFont.mono(14, weight: .semibold))
                                 .foregroundStyle(canMoveUp ? .textSecondary : .textTertiary)
                         }
                     )
@@ -38,7 +38,7 @@ struct EditableStepRow: View {
                         action: onMoveDown,
                         label: {
                             Image(systemName: "chevron.down")
-                                .font(.system(size: 14, weight: .semibold, design: .monospaced))
+                                .font(AppFont.mono(14, weight: .semibold))
                                 .foregroundStyle(canMoveDown ? .textSecondary : .textTertiary)
                         }
                     )
@@ -49,7 +49,7 @@ struct EditableStepRow: View {
                         role: .destructive, action: onDelete,
                         label: {
                             Image(systemName: "trash")
-                                .font(.system(size: 14, weight: .semibold, design: .monospaced))
+                                .font(AppFont.mono(14, weight: .semibold))
                                 .foregroundStyle(.moodTerrible)
                         }
                     )
@@ -80,7 +80,7 @@ struct EditableStepRow: View {
 
                 if calendars.isEmpty {
                     Label("Link calendars once you create them.", systemImage: "calendar.badge.plus")
-                        .font(.system(size: 12, design: .monospaced))
+                        .font(AppFont.mono(12))
                         .foregroundStyle(.textTertiary)
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .padding(.horizontal)

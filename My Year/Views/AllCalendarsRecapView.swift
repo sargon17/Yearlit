@@ -46,7 +46,7 @@ struct AllCalendarsRecapView: View {
                         VStack(alignment: .leading, spacing: 0) {
                             HStack(alignment: .firstTextBaseline, spacing: 8) {
                                 Text("Overview")
-                                    .font(.system(size: 36, design: .monospaced))
+                                    .font(AppFont.mono(36))
                                     .lineLimit(2)
                                     .minimumScaleFactor(0.5)
                                     .foregroundColor(Color("text-primary"))
@@ -57,7 +57,7 @@ struct AllCalendarsRecapView: View {
                             HStack(spacing: 4) {
                                 Button(action: { showingYearPicker = true }) {
                                     Text("\(valuationStore.year.description)")
-                                        .font(.system(size: 12, design: .monospaced))
+                                        .font(AppFont.mono(12))
                                         .foregroundColor(Color("text-tertiary"))
                                 }
                             }

@@ -20,7 +20,7 @@ struct TimelinePreferenceChoiceSheet: View {
             floatingHabitImage
 
             Text("Your year starts the day you do.")
-              .font(.system(size: 22, weight: .black, design: .monospaced))
+              .font(AppFont.mono(22, weight: .black))
               .foregroundStyle(.textPrimary)
               .multilineTextAlignment(.leading)
               .fixedSize(horizontal: false, vertical: true)
@@ -28,25 +28,25 @@ struct TimelinePreferenceChoiceSheet: View {
             Text(
               "Habits rarely begin on January 1st. Your 365 gives each daily habit its own year, starting on day one."
             )
-            .font(.system(size: 14, design: .monospaced))
+            .font(AppFont.mono(14))
             .foregroundStyle(.textSecondary)
             .multilineTextAlignment(.leading)
             .fixedSize(horizontal: false, vertical: true)
 
             Text("No empty months. No feeling late. Just the year you’re actually building.")
-              .font(.system(size: 14, design: .monospaced))
+              .font(AppFont.mono(14))
               .foregroundStyle(.textSecondary)
               .multilineTextAlignment(.leading)
               .fixedSize(horizontal: false, vertical: true)
 
             VStack(alignment: .leading, spacing: 8) {
               Text("Recommended")
-                .font(.system(size: 11, weight: .bold, design: .monospaced))
+                .font(AppFont.mono(11, weight: .bold))
                 .foregroundStyle(.textTertiary)
                 .textCase(.uppercase)
 
               Text("Use the new view to make every completed day feel like visible proof you showed up.")
-                .font(.system(size: 14, design: .monospaced))
+                .font(AppFont.mono(14))
                 .foregroundStyle(.textSecondary)
                 .multilineTextAlignment(.leading)
                 .fixedSize(horizontal: false, vertical: true)
@@ -143,7 +143,7 @@ struct TimelinePreferenceChoiceSheet: View {
     style: ModeButtonStyle
   ) -> some View {
     Text(title)
-      .font(.system(size: style.titleSize, weight: .bold, design: .monospaced))
+      .font(AppFont.mono(style.titleSize, weight: .bold))
       .foregroundStyle(style.foregroundColor)
       .underline(style == .link)
       .padding(.horizontal, style.horizontalPadding)

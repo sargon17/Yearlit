@@ -12,7 +12,7 @@ struct FourRules: View {
                 Spacer()
 
                 Text("The 4 Rules of Good Habits")
-                    .font(.system(size: 24, weight: .black, design: .monospaced))
+                    .font(AppFont.mono(24, weight: .black))
                     .foregroundStyle(.textPrimary)
 
                 // To make habits stick, keep them:
@@ -21,7 +21,7 @@ struct FourRules: View {
                     Text("Obvious, Attractive, Easy & Satisfying")
                 }
                 .multilineTextAlignment(.leading)
-                .font(.system(size: 14, design: .monospaced))
+                .font(AppFont.mono(14))
                 .foregroundStyle(.secondary)
             }
         }
@@ -110,13 +110,13 @@ private struct BentoCard: View {
                             Spacer()
                             HStack(spacing: 4) {
                                 Text(item.title)
-                                    .font(.system(size: 14, weight: .black, design: .monospaced))
+                                    .font(AppFont.mono(14, weight: .black))
                                     .minimumScaleFactor(0.8)
                                     .lineLimit(1)
                             }
 
                             Text(item.text)
-                                .font(.system(size: 10, weight: .regular, design: .monospaced))
+                                .font(AppFont.mono(10, weight: .regular))
                         }
                         .foregroundStyle(try! Garnish.contrastingShade(of: item.color))
                         .padding()

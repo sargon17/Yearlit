@@ -138,7 +138,7 @@ struct CalendarShareSheet: View {
                         Image(systemName: "square.and.arrow.up")
                         Text("Share")
                     }
-                    .font(.system(size: 14, design: .monospaced))
+                    .font(AppFont.mono(14))
                     .foregroundColor(.textPrimary)
                     .padding(.vertical, 10)
                     .frame(maxWidth: .infinity)
@@ -151,7 +151,7 @@ struct CalendarShareSheet: View {
                         Image(systemName: "square.and.arrow.down")
                         Text("Save to Photos")
                     }
-                    .font(.system(size: 14, design: .monospaced))
+                    .font(AppFont.mono(14))
                     .foregroundColor(.textPrimary)
                     .padding(.vertical, 10)
                     .frame(maxWidth: .infinity)
@@ -312,7 +312,7 @@ struct CalendarShareSheet: View {
                     .font(.system(size: 20))
                     .foregroundColor(.textPrimary)
                 Text("Premium")
-                    .font(.system(size: 14, design: .monospaced))
+                    .font(AppFont.mono(14))
                     .foregroundColor(.textPrimary)
             }
         }

@@ -104,7 +104,7 @@ struct ExponentialGraph: View {
 
                 // * Data label
                 Text("37×")
-                    .font(.system(size: 11, design: .monospaced))
+                    .font(AppFont.mono(11))
                     .foregroundStyle(.secondary)
                     .position(x: w - pad - 22, y: pad + 6)
             }
@@ -141,7 +141,7 @@ struct CompoundEffect: View {
             VStack(alignment: .leading, spacing: 8) {
                 Spacer()
                 Text("The Compound Effect")
-                    .font(.system(size: 24, weight: .black, design: .monospaced))
+                    .font(AppFont.mono(24, weight: .black))
                     .foregroundStyle(.textPrimary)
 
                 VStack(alignment: .leading) {
@@ -149,7 +149,7 @@ struct CompoundEffect: View {
                     Text("Tiny actions → Massive change.")
                 }
                 .multilineTextAlignment(.leading)
-                .font(.system(size: 14, design: .monospaced))
+                .font(AppFont.mono(14))
                 .foregroundStyle(.secondary)
             }
         }

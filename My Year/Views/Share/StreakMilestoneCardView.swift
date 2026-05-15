@@ -64,13 +64,13 @@ struct StreakMilestoneCardView: View {
     private var header: some View {
         VStack(alignment: .leading, spacing: 4) {
             Text(calendar.name.capitalized)
-                .font(.system(size: 16, design: .monospaced))
+                .font(AppFont.mono(16))
                 .foregroundColor(foregroundColor)
                 .fontWeight(.black)
                 .lineLimit(1)
                 .minimumScaleFactor(0.7)
             Text(copy.header)
-                .font(.system(size: 12, design: .monospaced))
+                .font(AppFont.mono(12))
                 .foregroundColor(secondaryTextColor)
         }
     }
@@ -78,18 +78,18 @@ struct StreakMilestoneCardView: View {
     private var streakBlock: some View {
         VStack(alignment: .leading, spacing: 6) {
             Text(copy.kicker)
-                .font(.system(size: 10, design: .monospaced))
+                .font(AppFont.mono(10))
                 .foregroundColor(secondaryTextColor)
             Text("\(milestone)")
-                .font(.system(size: 48, design: .monospaced))
+                .font(AppFont.mono(48))
                 .foregroundColor(foregroundColor)
                 .fontWeight(.black)
             Text(copy.label)
-                .font(.system(size: 12, design: .monospaced))
+                .font(AppFont.mono(12))
                 .foregroundColor(secondaryTextColor)
             if kind == .streak, currentStreak > milestone {
                 Text(currentStreakSummary)
-                    .font(.system(size: 12, design: .monospaced))
+                    .font(AppFont.mono(12))
                     .foregroundColor(secondaryTextColor)
             }
         }
@@ -103,10 +103,10 @@ struct StreakMilestoneCardView: View {
         HStack {
             Spacer()
             Text("tracked using")
-                .font(.system(size: 12, design: .monospaced))
+                .font(AppFont.mono(12))
                 .foregroundColor(secondaryTextColor)
                 + Text(" yearlit")
-                .font(.system(size: 12, design: .monospaced))
+                .font(AppFont.mono(12))
                 .foregroundColor(foregroundColor)
 
             Image("icon")

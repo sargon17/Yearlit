@@ -45,11 +45,11 @@ struct DayValuationPopup: View {
                 HStack {
                     VStack(alignment: .leading, spacing: 4) {
                         Text("How was your day?")
-                            .font(.system(size: 32, weight: .black, design: .monospaced))
+                            .font(AppFont.mono(32, weight: .black))
                             .foregroundStyle(.textPrimary)
 
                         Text(formattedDate)
-                            .font(.system(size: 16, weight: .regular, design: .monospaced))
+                            .font(AppFont.mono(16, weight: .regular))
                             .foregroundStyle(.textSecondary)
                     }
 
@@ -105,7 +105,7 @@ struct DayValuationPopup: View {
                         VStack(spacing: 12) {
                             HStack {
                                 Text("Journal")
-                                    .font(.system(size: 12, design: .monospaced))
+                                    .font(AppFont.mono(12))
                                     .foregroundStyle(.textTertiary)
                                 Spacer()
                             }

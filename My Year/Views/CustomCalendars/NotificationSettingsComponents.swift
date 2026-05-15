@@ -281,7 +281,7 @@ struct AdditionalRemindersSection: View {
             case .saved:
                 Button(action: addAdditionalReminderTime) {
                     Image(systemName: "plus")
-                        .font(.system(size: 16, design: .monospaced))
+                        .font(AppFont.mono(16))
                         .foregroundStyle(.textTertiary)
                         .frame(width: 24, height: 24)
                 }
@@ -299,7 +299,7 @@ struct AdditionalRemindersSection: View {
     private var lockedRow: some View {
         HStack(spacing: 8) {
             Image(systemName: "lock.fill")
-                .font(.system(size: 12, design: .monospaced))
+                .font(AppFont.mono(12))
                 .foregroundStyle(.textTertiary)
             Text("Upgrade to Premium to add more times.")
                 .font(.footnote)
@@ -347,7 +347,7 @@ struct AdditionalRemindersSection: View {
             case .saved:
                 Button(role: .destructive) { removeTime(time) } label: {
                     Image(systemName: "minus")
-                        .font(.system(size: 16, design: .monospaced))
+                        .font(AppFont.mono(16))
                         .foregroundStyle(.red.secondary)
                         .frame(width: 24, height: 24)
                 }
@@ -399,7 +399,7 @@ struct PrivacySection: View {
                         }
                     }
                     .pickerStyle(.segmented)
-                    .font(.system(size: 12, design: .monospaced))
+                    .font(AppFont.mono(12))
                     .padding(.horizontal, 6)
                 }
                 .padding(.vertical, 12)

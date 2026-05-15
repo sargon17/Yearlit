@@ -36,7 +36,7 @@ struct WhatItIs: View {
             VStack(alignment: .leading, spacing: 8) {
                 Spacer()
                 Text("Yearlit")
-                    .font(.system(size: 36, weight: .black, design: .monospaced))
+                    .font(AppFont.mono(36, weight: .black))
                     .foregroundStyle(.qsOrange)
 
                 VStack(alignment: .leading) {
@@ -45,7 +45,7 @@ struct WhatItIs: View {
                     Text("Watch your chain grow.")
                 }
                 .multilineTextAlignment(.leading)
-                .font(.system(size: 14, design: .monospaced))
+                .font(AppFont.mono(14))
                 .foregroundStyle(.secondary)
             }
         }

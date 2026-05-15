@@ -92,7 +92,7 @@ struct CreateFirstHabit: View {
                                 }
                                 Spacer()
                                 Image(systemName: "chevron.right")
-                                    .font(.system(size: 12, design: .monospaced))
+                                    .font(AppFont.mono(12))
                                     .foregroundStyle(.textTertiary)
                             }
                             .padding(.horizontal)
@@ -112,7 +112,7 @@ struct CreateFirstHabit: View {
                 Spacer()
 
                 Text("Set your first habit.")
-                    .font(.system(size: 24, weight: .black, design: .monospaced))
+                    .font(AppFont.mono(24, weight: .black))
                     .foregroundStyle(.textPrimary)
 
                 // To make habits stick, keep them:
@@ -122,7 +122,7 @@ struct CreateFirstHabit: View {
                     Text("Step 3: Start today")
                 }
                 .multilineTextAlignment(.leading)
-                .font(.system(size: 14, design: .monospaced))
+                .font(AppFont.mono(14))
                 .foregroundStyle(.secondary)
             }
         }

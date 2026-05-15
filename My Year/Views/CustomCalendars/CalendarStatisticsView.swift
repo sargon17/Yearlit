@@ -79,7 +79,7 @@ struct CalendarStatisticsView: View {
                 CustomSeparator()
                 HStack {
                     Text("Statistics")
-                        .font(.system(size: 36, design: .monospaced))
+                        .font(AppFont.mono(36))
                         .foregroundColor(Color("text-primary"))
                         .fontWeight(.black)
                         .padding(.horizontal)
@@ -324,12 +324,12 @@ struct StatisticItem: View {
         VStack(spacing: 0) {
             HStack(alignment: .center) {
                 Text(title)
-                    .font(.system(size: 12, design: .monospaced))
+                    .font(AppFont.mono(12))
                     .foregroundColor(Color.textSecondary)
 
                 Spacer()
                 Text(verbatim: value)
-                    .font(.system(size: 64, design: .monospaced))
+                    .font(AppFont.mono(64))
                     .foregroundColor(Color(accentColor))
                     .fontWeight(.black)
                     .padding(.bottom, -20)
@@ -338,7 +338,7 @@ struct StatisticItem: View {
 
                 if let unit = unit {
                     Text(verbatim: unit == .currency ? (currencySymbol ?? "$") : unit.rawValue)
-                        .font(.system(size: 12, design: .monospaced))
+                        .font(AppFont.mono(12))
                         .foregroundColor(Color("text-tertiary"))
                         .padding(.top, -10)
                 }
@@ -384,11 +384,11 @@ private func labeledValueRow(
 ) -> some View {
     HStack(alignment: .center) {
         Text(title)
-            .font(.system(size: 12, design: .monospaced))
+            .font(AppFont.mono(12))
             .foregroundColor(Color.textSecondary)
         Spacer()
         Text(verbatim: value)
-            .font(.system(size: 24, design: .monospaced))
+            .font(AppFont.mono(24))
             .foregroundColor(accentColor)
             .fontWeight(.black)
             .minimumScaleFactor(0.5)
@@ -416,7 +416,7 @@ private func weekdayRibbon(
                 .frame(maxWidth: .greatestFiniteMagnitude, minHeight: 30)
                 .overlay(
                     Text(weekdayName(d).prefix(1))
-                        .font(.system(size: 8, design: .monospaced))
+                        .font(AppFont.mono(8))
                         .foregroundColor(labelColor)
                         .padding(.top, 12), alignment: .top
                 )
@@ -436,7 +436,7 @@ private func monthlyBars(
     VStack(spacing: 6) {
         HStack {
             Text("Monthly Breakdown")
-                .font(.system(size: 12, design: .monospaced))
+                .font(AppFont.mono(12))
                 .foregroundColor(Color.textSecondary)
             Spacer()
         }.padding(.bottom, 8)
@@ -467,7 +467,7 @@ struct PremiumGate<Content: View>: View {
         VStack(spacing: 8) {
             HStack {
                 Text(title)
-                    .font(.system(size: 12, design: .monospaced))
+                    .font(AppFont.mono(12))
                     .foregroundColor(Color.textSecondary)
                 Spacer()
             }
@@ -476,12 +476,12 @@ struct PremiumGate<Content: View>: View {
             } else {
                 HStack {
                     Text("Unlock with Premium")
-                        .font(.system(size: 12, design: .monospaced))
+                        .font(AppFont.mono(12))
                         .foregroundColor(Color("text-tertiary"))
                     Spacer()
                     Button(action: self.onUpgrade) {
                         Text("Upgrade")
-                            .font(.system(size: 12, design: .monospaced))
+                            .font(AppFont.mono(12))
                             .padding(.horizontal, 10)
                             .padding(.vertical, 6)
                             .background(Color("surface-secondary").opacity(0.5))
@@ -501,11 +501,11 @@ private func sectionHeader(_ title: LocalizedStringKey, premium: Bool = false) -
 
     HStack {
         Text(title)
-            .font(.system(size: 14, design: .monospaced))
+            .font(AppFont.mono(14))
             .foregroundColor(Color.textPrimary)
         if premium {
             Text("PRO")
-                .font(.system(size: 8, design: .monospaced))
+                .font(AppFont.mono(8))
                 .padding(.horizontal, 6)
                 .padding(.vertical, 2)
                 .background(

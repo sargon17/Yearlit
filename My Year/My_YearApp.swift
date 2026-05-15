@@ -99,6 +99,7 @@ struct My_YearApp: App {
     #endif
 
     init() {
+        AppFont.registerFonts()
         Purchases.configure(withAPIKey: AppConfig.revenueCatAPIKey)
         AppStorageMigration.run()
 
@@ -113,15 +114,15 @@ struct My_YearApp: App {
         let appearance = UINavigationBarAppearance()
         appearance.configureWithTransparentBackground()
 
-        // Large title → SF monospaced
+        // Large title → Geist Mono
         appearance.largeTitleTextAttributes = [
-            .font: UIFont.monospacedSystemFont(ofSize: 34, weight: .heavy),
+            .font: AppFont.uiFont(.mono, size: 34, weight: .heavy),
             .foregroundColor: UIColor.label,
         ]
 
-        // Inline title → SF monospaced
+        // Inline title → Geist Mono
         appearance.titleTextAttributes = [
-            .font: UIFont.monospacedSystemFont(ofSize: 18, weight: .bold),
+            .font: AppFont.uiFont(.mono, size: 18, weight: .bold),
             .foregroundColor: UIColor.label,
         ]
 

@@ -26,10 +26,10 @@ struct ShareCardFooter: View {
         HStack {
             Spacer()
             Text("tracked using")
-                .font(.system(size: 12, design: .monospaced))
+                .font(AppFont.mono(12))
                 .foregroundColor(Color("text-tertiary"))
                 + Text(" yearlit")
-                .font(.system(size: 12, design: .monospaced))
+                .font(AppFont.mono(12))
                 .foregroundColor(Color("text-primary"))
 
             Image("icon")
@@ -47,12 +47,12 @@ struct ShareCompactStatTile: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 2) {
             Text(title)
-                .font(.system(size: 10, design: .monospaced))
+                .font(AppFont.mono(10))
                 .foregroundColor(.textSecondary)
                 .lineLimit(1)
                 .minimumScaleFactor(0.7)
             Text(verbatim: value)
-                .font(.system(size: 24, design: .monospaced))
+                .font(AppFont.mono(24))
                 .foregroundColor(accentColor)
                 .fontWeight(.black)
                 .lineLimit(1)

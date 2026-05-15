@@ -46,7 +46,7 @@ struct ContentView: View {
                 refreshStreakProtectionReminders(store: store)
             }
             .toolbarBackground(.hidden, for: .navigationBar)
-            .font(.system(.body, design: .monospaced))
+            .font(AppFont.mono(17))
     }
 }
 

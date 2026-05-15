@@ -30,7 +30,7 @@ struct JournalEntriesSheet: View {
             ScrollView {
                 VStack(spacing: 0) {
                     Text("All your journal notes in one place.")
-                        .font(.system(size: 12, design: .monospaced))
+                        .font(AppFont.mono(12))
                         .foregroundColor(.textTertiary)
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .padding(.horizontal)
@@ -42,7 +42,7 @@ struct JournalEntriesSheet: View {
 
                     if journalEntries.isEmpty {
                         Text("No journal entries yet.")
-                            .font(.system(size: 14, design: .monospaced))
+                            .font(AppFont.mono(14))
                             .foregroundColor(.textTertiary)
                             .frame(maxWidth: .infinity, alignment: .leading)
                             .padding()
@@ -59,12 +59,12 @@ struct JournalEntriesSheet: View {
 
                                             VStack(alignment: .leading, spacing: 6) {
                                                 Text(Self.dateFormatter.string(from: entry.timestamp))
-                                                    .font(.system(size: 12, design: .monospaced))
+                                                    .font(AppFont.mono(12))
                                                     .foregroundStyle(.textTertiary)
 
                                                 if let note = entry.note {
                                                     Text(note)
-                                                        .font(.system(size: 14, design: .monospaced))
+                                                        .font(AppFont.mono(14))
                                                         .foregroundStyle(.textPrimary)
                                                         .frame(maxWidth: .infinity, alignment: .leading)
                                                         .lineLimit(3)

@@ -159,7 +159,7 @@ extension AboutThisProject {
             VStack(alignment: .leading, spacing: 32) {
                 Text("Hi, I’m Mykhaylo.")
                     .foregroundStyle(.textPrimary)
-                    .font(.system(size: 24, weight: .bold, design: .monospaced))
+                    .font(AppFont.mono(24, weight: .bold))
                 Text(
                     "I’m the person behind Yearlit — designer, builder, and fellow struggler when it comes to staying consistent."
                 )
@@ -172,7 +172,7 @@ extension AboutThisProject {
                     + Text(" it")
             }
             .multilineTextAlignment(.leading)
-            .font(.system(size: 14, design: .monospaced))
+            .font(AppFont.mono(14))
             .foregroundStyle(.textSecondary)
             .lineSpacing(4)
         }
@@ -183,7 +183,7 @@ extension AboutThisProject {
             VStack(alignment: .leading, spacing: 18) {
                 Text("Why I’m Building Yearlit")
                     .foregroundStyle(.textPrimary)
-                    .font(.system(size: 24, weight: .bold, design: .monospaced))
+                    .font(AppFont.mono(24, weight: .bold))
                 Text("I’ve always believed consistency is a kind of superpower.")
                     .fontWeight(.semibold)
                 Text("It’s the quiet force that turns small, ordinary actions into extraordinary results over time.")
@@ -202,7 +202,7 @@ extension AboutThisProject {
                 Text("It’s for anyone who’s ever wanted to follow through, but found it hard to keep going.")
             }
             .multilineTextAlignment(.leading)
-            .font(.system(size: 14, design: .monospaced))
+            .font(AppFont.mono(14))
             .foregroundStyle(.textSecondary)
             .lineSpacing(4)
         }
@@ -213,7 +213,7 @@ extension AboutThisProject {
             VStack(alignment: .leading, spacing: 18) {
                 Text("A Work in Progress")
                     .foregroundStyle(.textPrimary)
-                    .font(.system(size: 24, weight: .bold, design: .monospaced))
+                    .font(AppFont.mono(24, weight: .bold))
                 Text("Yearlit is still growing — just like the people who use it.")
                     .italic()
                 Text("It’s not perfect, and I’m okay with that.")
@@ -231,7 +231,7 @@ extension AboutThisProject {
                     .italic()
             }
             .multilineTextAlignment(.leading)
-            .font(.system(size: 14, design: .monospaced))
+            .font(AppFont.mono(14))
             .foregroundStyle(.textSecondary)
             .lineSpacing(4)
         }

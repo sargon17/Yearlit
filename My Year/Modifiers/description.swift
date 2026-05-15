@@ -4,7 +4,7 @@ struct DescriptionModifier: ViewModifier {
     func body(content: Content) -> some View {
         content
             .font(
-                .system(size: 11, design: .monospaced)
+                AppFont.mono(11)
                     .weight(.regular)
             )
             .foregroundStyle(.textTertiary)

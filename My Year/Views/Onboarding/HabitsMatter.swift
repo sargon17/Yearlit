@@ -22,7 +22,7 @@ struct HabitsMatter: View {
                 Spacer()
 
                 Text("Why Habits Matter")
-                    .font(.system(size: 24, weight: .black, design: .monospaced))
+                    .font(AppFont.mono(24, weight: .black))
                     .foregroundStyle(.textPrimary)
 
                 VStack(alignment: .leading) {
@@ -31,7 +31,7 @@ struct HabitsMatter: View {
                     Text("Small changes → Big results.")
                 }
                 .multilineTextAlignment(.leading)
-                .font(.system(size: 14, design: .monospaced))
+                .font(AppFont.mono(14))
                 .foregroundStyle(.secondary)
             }
         }

@@ -13,7 +13,7 @@ struct HabitsLoop: View {
                 Spacer()
 
                 Text("The Habit Loop")
-                    .font(.system(size: 24, weight: .black, design: .monospaced))
+                    .font(AppFont.mono(24, weight: .black))
                     .foregroundStyle(.textPrimary)
 
                 VStack(alignment: .leading) {
@@ -23,7 +23,7 @@ struct HabitsLoop: View {
                     Text("4. Reward")
                 }
                 .multilineTextAlignment(.leading)
-                .font(.system(size: 14, design: .monospaced))
+                .font(AppFont.mono(14))
                 .foregroundStyle(.secondary)
             }
             .background(.surfaceMuted)
@@ -98,7 +98,7 @@ private struct StepLabel: View {
 
     var body: some View {
         Text(text)
-            .font(.system(size: 14, weight: .semibold, design: .monospaced))
+            .font(AppFont.mono(14, weight: .semibold))
             .foregroundStyle(.textPrimary)
     }
 }

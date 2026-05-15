@@ -24,7 +24,7 @@ struct MinimalGridShareView: View {
     private var header: some View {
         VStack(alignment: .leading, spacing: 4) {
             Text(data.calendar.name.capitalized)
-                .font(.system(size: 18, design: .monospaced))
+                .font(AppFont.mono(18))
                 .foregroundColor(Color("text-primary"))
                 .fontWeight(.black)
                 .lineLimit(1)
@@ -59,13 +59,13 @@ struct StreakFocusShareView: View {
     private var header: some View {
         VStack(alignment: .leading, spacing: 4) {
             Text(data.calendar.name.capitalized)
-                .font(.system(size: 16, design: .monospaced))
+                .font(AppFont.mono(16))
                 .foregroundColor(Color("text-primary"))
                 .fontWeight(.black)
                 .lineLimit(1)
                 .minimumScaleFactor(0.7)
             Text(data.calendar.cadence == .weekly ? "Weekly Streak Focus" : "Streak Focus")
-                .font(.system(size: 12, design: .monospaced))
+                .font(AppFont.mono(12))
                 .foregroundColor(Color("text-tertiary"))
         }
     }
@@ -80,10 +80,10 @@ struct StreakFocusShareView: View {
     private func streakTile(title: String, value: Int) -> some View {
         VStack(alignment: .leading, spacing: 4) {
             Text(title)
-                .font(.system(size: 10, design: .monospaced))
+                .font(AppFont.mono(10))
                 .foregroundColor(.textSecondary)
             Text("\(value)")
-                .font(.system(size: 36, design: .monospaced))
+                .font(AppFont.mono(36))
                 .foregroundColor(data.accentColor)
                 .fontWeight(.black)
         }
@@ -123,11 +123,11 @@ struct PerformanceShareView: View {
                 if data.calendar.cadence == .daily, let bestWeekday = data.bestWeekday {
                     HStack {
                         Text("Best Weekday")
-                            .font(.system(size: 10, design: .monospaced))
+                            .font(AppFont.mono(10))
                             .foregroundColor(.textSecondary)
                         Spacer()
                         Text(shareWeekdayName(bestWeekday))
-                            .font(.system(size: 18, design: .monospaced))
+                            .font(AppFont.mono(18))
                             .foregroundColor(data.accentColor)
                             .fontWeight(.black)
                     }
@@ -146,13 +146,13 @@ struct PerformanceShareView: View {
     private var header: some View {
         VStack(alignment: .leading, spacing: 4) {
             Text(data.calendar.name.capitalized)
-                .font(.system(size: 16, design: .monospaced))
+                .font(AppFont.mono(16))
                 .foregroundColor(Color("text-primary"))
                 .fontWeight(.black)
                 .lineLimit(1)
                 .minimumScaleFactor(0.7)
             Text("Performance")
-                .font(.system(size: 12, design: .monospaced))
+                .font(AppFont.mono(12))
                 .foregroundColor(Color("text-tertiary"))
         }
     }
