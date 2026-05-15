@@ -5,6 +5,7 @@ struct TimelinePreferenceChoiceSheet: View {
   let onSelect: (CalendarTimelineMode) -> Void
 
   @Environment(\.colorScheme) private var colorScheme
+  @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
   var body: some View {
     NavigationStack {
@@ -16,6 +17,8 @@ struct TimelinePreferenceChoiceSheet: View {
           Spacer(minLength: 24)
 
           VStack(alignment: .leading, spacing: 16) {
+            floatingHabitImage
+
             Text("Your year starts the day you do.")
               .font(.system(size: 22, weight: .black, design: .monospaced))
               .foregroundStyle(.textPrimary)
@@ -78,6 +81,34 @@ struct TimelinePreferenceChoiceSheet: View {
       .navigationBarTitleDisplayMode(.large)
     }
     .interactiveDismissDisabled(true)
+  }
+
+  private var floatingHabitImage: some View {
+    HStack {
+      Image("union 1")
+        .renderingMode(.template)
+        .resizable()
+        .scaledToFit()
+        .frame(width: 96, height: 96, alignment: .leading)
+        .accessibilityHidden(true)
+        .foregroundStyle(Color.textPrimary)
+
+      Image("union 2")
+        .renderingMode(.template)
+        .resizable()
+        .scaledToFit()
+        .frame(width: 96, height: 96, alignment: .leading)
+        .accessibilityHidden(true)
+        .foregroundStyle(Color.qsOrange)
+
+      Image("union 3")
+        .renderingMode(.template)
+        .resizable()
+        .scaledToFit()
+        .frame(width: 96, height: 96, alignment: .leading)
+        .accessibilityHidden(true)
+        .foregroundStyle(Color.textPrimary)
+    }
   }
 
   @ViewBuilder
