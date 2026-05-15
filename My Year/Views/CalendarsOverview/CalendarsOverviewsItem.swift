@@ -138,7 +138,17 @@ extension CalendarsOverviewsItem {
         let daySeedKey = dayKey(for: todayStart)
         let schemeKey = colorScheme == .dark ? "dark" : "light"
         let timeZoneKey = TimeZone.autoupdatingCurrent.identifier
-        return "\(calendar.id.uuidString)|\(snapshot.dataVersion)|\(calendar.cadence.rawValue)|\(daySeedKey)|\(latestSlotsCount)|\(schemeKey)|\(timeZoneKey)"
+        let hydrationKey = snapshot.isLoading ? "loading" : "hydrated"
+        return [
+            calendar.id.uuidString,
+            "\(snapshot.dataVersion)",
+            hydrationKey,
+            calendar.cadence.rawValue,
+            daySeedKey,
+            "\(latestSlotsCount)",
+            schemeKey,
+            timeZoneKey
+        ].joined(separator: "|")
     }
 
     private func buildLatestSlotColors() -> [Color] {

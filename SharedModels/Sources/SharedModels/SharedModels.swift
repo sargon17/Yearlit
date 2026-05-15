@@ -827,13 +827,16 @@ public struct CustomCalendarStoreSnapshot {
 public struct CustomCalendarStoreDependencies {
     public let fetchCalendars: @Sendable (ModelContainer) throws -> [CustomCalendar]
     public let runMigration: @Sendable (ModelContainer) -> Void
+    public let fetchCalendarShells: @Sendable (ModelContainer) throws -> [CustomCalendar]
 
     public init(
         fetchCalendars: @escaping @Sendable (ModelContainer) throws -> [CustomCalendar],
-        runMigration: @escaping @Sendable (ModelContainer) -> Void
+        runMigration: @escaping @Sendable (ModelContainer) -> Void,
+        fetchCalendarShells: (@Sendable (ModelContainer) throws -> [CustomCalendar])? = nil
     ) {
         self.fetchCalendars = fetchCalendars
         self.runMigration = runMigration
+        self.fetchCalendarShells = fetchCalendarShells ?? fetchCalendars
     }
 }
 
@@ -847,6 +850,7 @@ public final class CustomCalendarStore: ObservableObject {
     private let container: ModelContainer
     private let fetchCalendarsLoader: @Sendable (ModelContainer) throws -> [CustomCalendar]
     private let migrationRunner: @Sendable (ModelContainer) -> Void
+    private let fetchCalendarShellsLoader: @Sendable (ModelContainer) throws -> [CustomCalendar]
     private let reloadLock = NSLock()
     private let versionLock = NSLock()
     private var latestReloadToken = UUID()
@@ -862,14 +866,18 @@ public final class CustomCalendarStore: ObservableObject {
             },
             runMigration: { container in
                 LegacyDataMigrator.migrateIfNeeded(container: container)
+            },
+            fetchCalendarShells: { container in
+                try Self.fetchCalendarShells(container: container)
             }
         )
         self.container = container
         fetchCalendarsLoader = dependencies.fetchCalendars
         migrationRunner = dependencies.runMigration
+        fetchCalendarShellsLoader = dependencies.fetchCalendarShells
         let initialVersion = Self.loadDataVersion()
         latestPersistedDataVersion = initialVersion
-        let initialCalendars = (try? fetchCalendarsLoader(container)) ?? []
+        let initialCalendars = (try? fetchCalendarShellsLoader(container)) ?? []
         snapshot = CustomCalendarStoreSnapshot(
             calendars: initialCalendars,
             isLoading: true,
@@ -1439,6 +1447,26 @@ public final class CustomCalendarStore: ObservableObject {
         reloadLock.lock()
         defer { reloadLock.unlock() }
         return latestReloadToken
+    }
+
+    private nonisolated static func fetchCalendarShells(container: ModelContainer) throws -> [CustomCalendar] {
+        let context = makeContext(container: container)
+        let descriptor = FetchDescriptor<HabitCalendarEntity>(
+            sortBy: [SortDescriptor(\HabitCalendarEntity.order)]
+        )
+        let calendarEntities = try context.fetch(descriptor)
+        let deduplicatedCalendars = calendarEntities.reduce(into: [UUID: CustomCalendar]()) { result, entity in
+            let calendar = entity.toCustomCalendar(entries: [:])
+            if let existing = result[calendar.id] {
+                if calendar.order < existing.order {
+                    result[calendar.id] = calendar
+                }
+            } else {
+                result[calendar.id] = calendar
+            }
+        }
+
+        return normalizedCalendarOrder(Array(deduplicatedCalendars.values))
     }
 
     private nonisolated static func fetchCalendars(container: ModelContainer) throws -> [CustomCalendar] {

@@ -362,10 +362,12 @@ struct CustomCalendarView: View {
     let selectedYear = valuationStore.selectedYear
     let displayState = makeDisplayState(snapshot: snapshot, selectedYear: selectedYear)
     let activeCalendar = displayState.activeCalendar
+    let isStoreLoading = snapshot.isLoading
     let statsTaskId = [
       calendar.id.uuidString,
       "\(selectedYear)",
       "\(dataVersion)",
+      isStoreLoading ? "loading" : "hydrated",
       displayState.timelineMode.rawValue,
       statsRefreshToken.uuidString
     ].joined(separator: "|")
@@ -659,6 +661,7 @@ struct CustomCalendarView: View {
       }
     }
     .task(id: statsTaskId) {
+      guard !isStoreLoading else { return }
       let token = statsRefreshToken
       let statsToday = today
       let statsCurrentPeriodReferenceDate = displayState.currentPeriodReferenceDate
@@ -670,7 +673,7 @@ struct CustomCalendarView: View {
           currentPeriodReferenceDate: statsCurrentPeriodReferenceDate
         )
       }.value
-      if token == statsRefreshToken {
+      if token == statsRefreshToken, !store.snapshot.isLoading {
         statsBundle = bundle
       }
     }

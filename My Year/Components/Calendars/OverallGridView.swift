@@ -40,7 +40,7 @@ struct OverallGridView: View {
                 (availableHeight - (dotSize * CGFloat(rows))) / CGFloat(max(1, rows - 1))
             )
             let dataVersion = snapshot.dataVersion
-            let sig = cacheSignature(dataVersion: dataVersion, year: year)
+            let sig = cacheSignature(dataVersion: dataVersion, isLoading: snapshot.isLoading, year: year)
             VStack(spacing: verticalSpacing) {
                 ForEach(0 ..< rows, id: \.self) { row in
                     HStack(spacing: horizontalSpacing) {
@@ -74,11 +74,21 @@ struct OverallGridView: View {
         }
     }
 
-    private func cacheSignature(dataVersion: Int, year: Int) -> String {
+    private func cacheSignature(dataVersion: Int, isLoading: Bool, year: Int) -> String {
         let schemeKey = colorScheme == .dark ? "dark" : "light"
         let daySeedKey = dayKey(for: LocalDayCalendar.startOfDay(for: today))
         let timeZoneKey = TimeZone.autoupdatingCurrent.identifier
-        return "overall-grid|v2|\(year)|\(dataVersion)|\(schemeKey)|\(daySeedKey)|\(timeZoneKey)"
+        let hydrationKey = isLoading ? "loading" : "hydrated"
+        return [
+            "overall-grid",
+            "v2",
+            "\(year)",
+            "\(dataVersion)",
+            hydrationKey,
+            schemeKey,
+            daySeedKey,
+            timeZoneKey
+        ].joined(separator: "|")
     }
 
     private func mappedDays(from zByDay: [Double]) -> [(date: Date, color: Color)] {

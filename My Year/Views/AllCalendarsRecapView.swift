@@ -30,7 +30,14 @@ struct AllCalendarsRecapView: View {
         let dataVersion = snapshot.dataVersion
         let today = Date()
         let daySeedKey = dayKey(for: LocalDayCalendar.startOfDay(for: today))
-        let statsTaskId = "\(selectedYear)|\(dataVersion)|\(daySeedKey)|\(statsRefreshToken.uuidString)"
+        let hydrationKey = snapshot.isLoading ? "loading" : "hydrated"
+        let statsTaskId = [
+            "\(selectedYear)",
+            "\(dataVersion)",
+            hydrationKey,
+            daySeedKey,
+            statsRefreshToken.uuidString
+        ].joined(separator: "|")
 
         ScrollView {
             VStack(spacing: 10) {
@@ -151,14 +158,15 @@ struct AllCalendarsRecapView: View {
             }
         }
         .task(id: statsTaskId) {
+            guard !snapshot.isLoading else { return }
             let token = statsRefreshToken
             let currentSnapshot = await MainActor.run { store.snapshot }
-            guard currentSnapshot.dataVersion == dataVersion else { return }
+            guard currentSnapshot.dataVersion == dataVersion, !currentSnapshot.isLoading else { return }
             if let derived = await OverviewDerivedSnapshotService.shared.snapshot(
                 storeSnapshot: currentSnapshot,
                 year: selectedYear,
                 today: today
-            ), token == statsRefreshToken {
+            ), token == statsRefreshToken, !store.snapshot.isLoading {
                 statsBundle = derived.statsBundle
             }
         }

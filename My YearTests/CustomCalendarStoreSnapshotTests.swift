@@ -14,6 +14,30 @@ struct CustomCalendarStoreSnapshotTests {
         #expect(store.snapshot.calendars.isEmpty)
     }
 
+    @Test func initialSnapshotUsesShellThenHydratesFullCalendars() async throws {
+        let date = makeDate(year: 2026, month: 1, day: 1)
+        let entry = CalendarEntry(date: date, count: 1, completed: true)
+        let key = DayKeyFormatter.shared.string(from: date)
+        let shell = makeCalendar(id: fixedID(1), name: "Run")
+        var hydrated = shell
+        hydrated.entries = [key: entry]
+
+        let store = makeStore(
+            fetchCalendarsLoader: { _ in [hydrated] },
+            fetchCalendarShellsLoader: { _ in [shell] }
+        )
+
+        #expect(store.snapshot.isLoading)
+        #expect(store.snapshot.calendars.first?.entries.isEmpty == true)
+
+        try await waitUntilLoaded(store) { snapshot in
+            snapshot.calendars.first?.entry(for: date)?.completed == true
+        }
+
+        #expect(!store.snapshot.isLoading)
+        #expect(store.snapshot.calendars.first?.entry(for: date)?.completed == true)
+    }
+
     @Test func addEntryPublishesFreshCalendarsWithFreshVersion() async throws {
         let store = makeStore()
         try await waitUntilLoaded(store)
@@ -91,7 +115,8 @@ struct CustomCalendarStoreSnapshotTests {
     private func makeStore(
         fetchCalendarsLoader: @escaping @Sendable (ModelContainer) throws -> [CustomCalendar] = { container in
             CustomCalendarStore.fetchCalendarsSnapshot(container: container)
-        }
+        },
+        fetchCalendarShellsLoader: (@Sendable (ModelContainer) throws -> [CustomCalendar])? = nil
     ) -> CustomCalendarStore {
         let configuration = ModelConfiguration(isStoredInMemoryOnly: true)
         let container = try! ModelContainer(
@@ -107,7 +132,8 @@ struct CustomCalendarStoreSnapshotTests {
             container: container,
             dependencies: CustomCalendarStoreDependencies(
                 fetchCalendars: fetchCalendarsLoader,
-                runMigration: { _ in }
+                runMigration: { _ in },
+                fetchCalendarShells: fetchCalendarShellsLoader
             )
         )
     }
