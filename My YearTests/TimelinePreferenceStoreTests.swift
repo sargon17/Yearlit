@@ -26,6 +26,26 @@ struct TimelinePreferenceStoreTests {
         #expect(TimelinePreferenceStore.mode(defaults: defaults) == .calendarYear)
     }
 
+    @Test func rawValueParsingDefaultsToYour365ForMissingOrInvalidValues() {
+        #expect(TimelinePreferenceStore.mode(rawValue: nil) == .your365)
+        #expect(TimelinePreferenceStore.mode(rawValue: "") == .your365)
+        #expect(TimelinePreferenceStore.mode(rawValue: "invalid") == .your365)
+        #expect(
+            TimelinePreferenceStore.mode(rawValue: CalendarTimelineMode.calendarYear.rawValue) == .calendarYear
+        )
+    }
+
+    @Test func invalidStoredModeDefaultsToYour365AndDoesNotCountAsStored() {
+        let defaults = makeDefaults()
+        defer { tearDownDefaults(defaults) }
+
+        defaults.set("invalid", forKey: TimelinePreferenceStore.timelineModeKey)
+
+        #expect(TimelinePreferenceStore.storedMode(defaults: defaults) == nil)
+        #expect(TimelinePreferenceStore.mode(defaults: defaults) == .your365)
+        #expect(!TimelinePreferenceStore.hasStoredMode(defaults: defaults))
+    }
+
     @Test func weeklyCadenceAlwaysUsesCalendarYear() {
         #expect(CalendarTimelineMode.your365.effectiveMode(for: .weekly) == .calendarYear)
         #expect(CalendarTimelineMode.calendarYear.effectiveMode(for: .weekly) == .calendarYear)

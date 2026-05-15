@@ -13,8 +13,13 @@ public enum TimelinePreferenceStore {
         return CalendarTimelineMode(rawValue: rawValue)
     }
 
+    public static func mode(rawValue: String?) -> CalendarTimelineMode {
+        guard let rawValue, let mode = CalendarTimelineMode(rawValue: rawValue) else { return .your365 }
+        return mode
+    }
+
     public static func mode(defaults: UserDefaults = appGroupDefaults) -> CalendarTimelineMode {
-        storedMode(defaults: defaults) ?? .your365
+        mode(rawValue: defaults.string(forKey: timelineModeKey))
     }
 
     public static func setMode(_ mode: CalendarTimelineMode, defaults: UserDefaults = appGroupDefaults) {

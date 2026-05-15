@@ -44,71 +44,72 @@ struct CustomCalendarView: View {
 
   @AppStorage("runtimeDebugEnabled") private var runtimeDebugEnabled: Bool = false
   @AppStorage("wandFillForce") private var wandFillForce: Double = 0.5
+  @AppStorage(TimelinePreferenceStore.timelineModeKey, store: TimelinePreferenceStore.appGroupDefaults)
+  private var timelinePreferenceRawValue: String = ""
 
   @State private var today: Date = Calendar.current.startOfDay(for: Date())
   @Environment(\.scenePhase) private var scenePhase
 
-  private var yearDates: [Date] {
-    getYearDatesArray(for: valuationStore.selectedYear)
+  private struct CalendarDisplayState {
+    let activeCalendar: CustomCalendar
+    let timelineMode: CalendarTimelineMode
+    let isShowingYour365: Bool
+    let your365Snapshot: Your365Snapshot?
+    let calendarYearGridDates: [Date]
+    let visibleGridDates: [Date]
+    let your365HeaderTitle: String?
+    let currentPeriodReferenceDate: Date?
   }
 
-  private var timelinePreference: CalendarTimelineMode {
-    TimelinePreferenceStore.mode().effectiveMode(for: activeCalendar.cadence)
+  private var displayState: CalendarDisplayState {
+    makeDisplayState(snapshot: store.snapshot, selectedYear: valuationStore.selectedYear)
   }
 
-  private var isShowingYour365: Bool {
-    activeCalendar.cadence == .daily && timelinePreference == .your365
-  }
+  private func makeDisplayState(
+    snapshot: CustomCalendarStoreSnapshot,
+    selectedYear: Int
+  ) -> CalendarDisplayState {
+    let activeCalendar = snapshot.calendar(id: calendar.id) ?? calendar
+    let timelineMode = TimelinePreferenceStore
+      .mode(rawValue: timelinePreferenceRawValue)
+      .effectiveMode(for: activeCalendar.cadence)
+    let isShowingYour365 = activeCalendar.cadence == .daily && timelineMode == .your365
+    let calendarYearGridDates = activeCalendar.cadence == .weekly
+      ? getYearWeekDatesArray(for: selectedYear)
+      : getYearDatesArray(for: selectedYear)
+    let your365Snapshot = isShowingYour365
+      ? activeCalendar.makeYour365Snapshot(
+        completedDates: your365CompletedDates(for: activeCalendar),
+        today: today
+      )
+      : nil
+    let visibleGridDates = your365Snapshot?.cells.map(\.date) ?? calendarYearGridDates
+    let your365HeaderTitle: String? = {
+      guard let snapshot = your365Snapshot else { return nil }
+      if activeCalendar.isWithinFirstYear(today: today),
+        let todayCell = snapshot.todayCell
+      {
+        return "Day \(todayCell.dayNumber) of your 365"
+      }
+      return "Latest 365 days"
+    }()
+    let currentPeriodReferenceDate: Date? = {
+      if isShowingYour365 {
+        return your365Snapshot?.todayCell?.date ?? today
+      }
+      return calendarYearGridDates.first { Calendar.current.isDate($0, inSameDayAs: today) }
+    }()
 
-  @State private var your365Snapshot: Your365Snapshot? = nil
-
-  private var isYour365FirstYear: Bool {
-    guard isShowingYour365 else { return false }
-    return activeCalendar.isWithinFirstYear(today: today)
-  }
-
-  private var calendarYearGridDates: [Date] {
-    if activeCalendar.cadence == .weekly {
-      return getYearWeekDatesArray(for: valuationStore.selectedYear)
-    }
-    return yearDates
-  }
-
-  private var visibleGridDates: [Date] {
-    your365Snapshot?.cells.map(\.date) ?? calendarYearGridDates
-  }
-
-  private var your365HeaderTitle: String? {
-    guard let snapshot = your365Snapshot else { return nil }
-    if activeCalendar.isWithinFirstYear(today: today),
-      let todayCell = snapshot.todayCell
-    {
-      return "Day \(todayCell.dayNumber) of your 365"
-    }
-    return "Latest 365 days"
-  }
-
-  private var currentPeriodReferenceDate: Date? {
-    if isShowingYour365 {
-      return your365Snapshot?.todayCell?.date ?? today
-    }
-    return calendarYearGridDates.first { Calendar.current.isDate($0, inSameDayAs: today) }
-  }
-
-  private func recomputeYour365() {
-    guard isShowingYour365 else {
-      your365Snapshot = nil
-      return
-    }
-    let completedDates = your365CompletedDates(for: activeCalendar)
-    your365Snapshot = activeCalendar.makeYour365Snapshot(
-      completedDates: completedDates,
-      today: today
+    return CalendarDisplayState(
+      activeCalendar: activeCalendar,
+      timelineMode: timelineMode,
+      isShowingYour365: isShowingYour365,
+      your365Snapshot: your365Snapshot,
+      calendarYearGridDates: calendarYearGridDates,
+      visibleGridDates: visibleGridDates,
+      your365HeaderTitle: your365HeaderTitle,
+      currentPeriodReferenceDate: currentPeriodReferenceDate
     )
-  }
-
-  private var activeCalendar: CustomCalendar {
-    store.snapshot.calendar(id: calendar.id) ?? calendar
   }
 
   @State private var showingEditSheet: Bool = false
@@ -133,17 +134,15 @@ struct CustomCalendarView: View {
   }()
 
   private func fillRandomEntries() {
+    let state = displayState
+    let activeCalendar = state.activeCalendar
+
     // TODO: Implement clearEntries(calendarId:) in CustomCalendarStore to enable clearing before filling.
     store.clearEntries(calendarId: activeCalendar.id)
 
-    let sourceDates: [Date]
-    if activeCalendar.cadence == .weekly {
-      sourceDates = getYearWeekDatesArray(for: valuationStore.selectedYear)
-    } else if isShowingYour365 {
-      sourceDates = your365Snapshot?.cells.map(\.date) ?? []
-    } else {
-      sourceDates = calendarYearGridDates
-    }
+    let sourceDates = state.isShowingYour365
+      ? state.your365Snapshot?.cells.map(\.date) ?? []
+      : state.calendarYearGridDates
 
     for date in sourceDates {
       if date <= today, Double.random(in: 0.0...1.0) < wandFillForce {
@@ -169,6 +168,7 @@ struct CustomCalendarView: View {
   private func handleDayTap(_ date: Date) {
     guard !date.isInFuture else { return }
 
+    let activeCalendar = displayState.activeCalendar
     if activeCalendar.trackingType != .binary {
       isEntryEditSheetPresented = true
       router.showScreen(
@@ -198,7 +198,9 @@ struct CustomCalendarView: View {
   }
 
   private func handleQuickAdd() {
-    let entryDate = currentPeriodReferenceDate ?? Date()
+    let state = displayState
+    let activeCalendar = state.activeCalendar
+    let entryDate = state.currentPeriodReferenceDate ?? Date()
     quickEntry(
       calendar: activeCalendar,
       date: entryDate,
@@ -276,7 +278,7 @@ struct CustomCalendarView: View {
         milestone: decision.milestone,
         currentStreak: currentStreak,
         kind: .streak,
-        dates: visibleGridDates,
+        dates: displayState.visibleGridDates,
         allowsStopShowing: true,
         showedUpPeriodKey: nil
       )
@@ -334,7 +336,7 @@ struct CustomCalendarView: View {
   private func milestoneDates(for kind: ShowedUpMilestoneKind, referenceDate: Date) -> [Date] {
     switch kind {
     case .allTime:
-      return calendarYearGridDates
+      return displayState.calendarYearGridDates
     case .currentMonth:
       let referenceYear = LocalDayCalendar.calendar.component(.year, from: referenceDate)
       return getYearDatesArray(for: referenceYear).filter {
@@ -358,8 +360,15 @@ struct CustomCalendarView: View {
     let snapshot = store.snapshot
     let dataVersion = snapshot.dataVersion
     let selectedYear = valuationStore.selectedYear
-    let statsTaskId =
-      "\(calendar.id.uuidString)|\(selectedYear)|\(dataVersion)|\(statsRefreshToken.uuidString)"
+    let displayState = makeDisplayState(snapshot: snapshot, selectedYear: selectedYear)
+    let activeCalendar = displayState.activeCalendar
+    let statsTaskId = [
+      calendar.id.uuidString,
+      "\(selectedYear)",
+      "\(dataVersion)",
+      displayState.timelineMode.rawValue,
+      statsRefreshToken.uuidString
+    ].joined(separator: "|")
     ScrollView {
       VStack(spacing: 10) {
         // Stats header
@@ -400,8 +409,8 @@ struct CustomCalendarView: View {
                 }
 
                 let currentYear = Calendar.current.component(.year, from: Date())
-                if isShowingYour365 || valuationStore.selectedYear == currentYear {
-                  let quickAddDate = currentPeriodReferenceDate ?? currentDayDate
+                if displayState.isShowingYour365 || valuationStore.selectedYear == currentYear {
+                  let quickAddDate = displayState.currentPeriodReferenceDate ?? currentDayDate
                   let isCompletedToday =
                     store.getEntry(
                       calendarId: activeCalendar.id,
@@ -428,9 +437,9 @@ struct CustomCalendarView: View {
               }
 
               HStack(spacing: 10) {
-                if isShowingYour365 {
+                if displayState.isShowingYour365 {
                   VStack(alignment: .leading, spacing: 2) {
-                    if let title = your365HeaderTitle {
+                    if let title = displayState.your365HeaderTitle {
                       Text(title)
                         .font(.system(size: 12, design: .monospaced))
                         .foregroundColor(Color("text-tertiary"))
@@ -491,15 +500,14 @@ struct CustomCalendarView: View {
 
         GridView(
           calendar: activeCalendar,
-          store: store,
           handleDayTap: handleDayTap,
-          dates: visibleGridDates,
-          year: valuationStore.selectedYear,
-          your365Presentation: your365Snapshot.map { GridView.Your365Presentation(snapshot: $0) }
+          dates: displayState.visibleGridDates,
+          today: today,
+          your365Presentation: displayState.your365Snapshot.map { GridView.Your365Presentation(snapshot: $0) }
         )
         .frame(height: UIScreen.main.bounds.height * 0.55)
 
-        let currentPeriodLogCount: Int? = currentPeriodReferenceDate.map {
+        let currentPeriodLogCount: Int? = displayState.currentPeriodReferenceDate.map {
           entry(for: activeCalendar, date: $0)?.count ?? 0
         }
 
@@ -533,7 +541,7 @@ struct CustomCalendarView: View {
                   milestone: milestone,
                   currentStreak: currentStreak(for: activeCalendar),
                   kind: .streak,
-                  dates: visibleGridDates,
+                  dates: displayState.visibleGridDates,
                   allowsStopShowing: false,
                   showedUpPeriodKey: nil
                 )
@@ -552,7 +560,7 @@ struct CustomCalendarView: View {
                   milestone: milestone,
                   currentStreak: currentStreak(for: activeCalendar),
                   kind: .showedUp,
-                  dates: visibleGridDates,
+                  dates: displayState.visibleGridDates,
                   allowsStopShowing: false,
                   showedUpPeriodKey: ShowedUpMilestones.periodKey(for: .allTime)
                 )
@@ -563,7 +571,7 @@ struct CustomCalendarView: View {
                 CalendarShareSheet(
                   calendar: activeCalendar,
                   year: valuationStore.selectedYear,
-                  dates: visibleGridDates,
+                  dates: displayState.visibleGridDates,
                   statsBundle: statsBundle,
                   isPremium: isPremium(customerInfo: customerInfo)
                 )
@@ -629,7 +637,6 @@ struct CustomCalendarView: View {
         self.customerInfo = info
       }
       today = Calendar.current.startOfDay(for: Date())
-      recomputeYour365()
       if lastObservedDataVersion != store.snapshot.dataVersion {
         lastObservedDataVersion = store.snapshot.dataVersion
         statsRefreshToken = UUID()
@@ -641,12 +648,10 @@ struct CustomCalendarView: View {
       if newToday != today {
         today = newToday
       }
-      recomputeYour365()
     }
     .onChange(of: store.snapshot.dataVersion) { _, newValue in
       lastObservedDataVersion = newValue
       statsRefreshToken = UUID()
-      recomputeYour365()
       if isEntryEditSheetPresented {
         scheduleMilestoneCheck()
       } else {
@@ -655,12 +660,14 @@ struct CustomCalendarView: View {
     }
     .task(id: statsTaskId) {
       let token = statsRefreshToken
+      let statsToday = today
+      let statsCurrentPeriodReferenceDate = displayState.currentPeriodReferenceDate
       let bundle = await Task.detached(priority: .userInitiated) {
         computeCalendarStatsBundle(
           calendar: activeCalendar,
           year: selectedYear,
-          todayLocal: today,
-          currentPeriodReferenceDate: currentPeriodReferenceDate
+          todayLocal: statsToday,
+          currentPeriodReferenceDate: statsCurrentPeriodReferenceDate
         )
       }.value
       if token == statsRefreshToken {

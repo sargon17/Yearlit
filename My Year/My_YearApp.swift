@@ -91,7 +91,6 @@ struct My_YearApp: App {
         config: AppConfig.wishConfiguration
     )
     @State private var isOnboardingPresented = false
-    @State private var isTimelinePreferenceSheetPresented = false
 
     #if DEBUG
         static let isDebugMode = true
@@ -166,28 +165,17 @@ struct My_YearApp: App {
                 OnboardingView {
                     onboarding.markAsSeen()
                     isOnboardingPresented = false
-                    updateTimelinePreferenceSheetPresentation()
                 }
             }
             .onAppear {
                 isOnboardingPresented = !onboarding.hasSeenOnboarding
-                updateTimelinePreferenceSheetPresentation()
+                onboarding.persistDefaultTimelinePreferenceIfNeeded()
             }
             .onChange(of: onboarding.hasSeenOnboarding) { _, _ in
                 isOnboardingPresented = !onboarding.hasSeenOnboarding
-                updateTimelinePreferenceSheetPresentation()
-            }
-            .fullScreenCover(isPresented: $isTimelinePreferenceSheetPresented) {
-                TimelinePreferenceChoiceSheet { mode in
-                    TimelinePreferenceStore.setMode(mode)
-                    isTimelinePreferenceSheetPresented = false
-                }
+                onboarding.persistDefaultTimelinePreferenceIfNeeded()
             }
         }
-    }
-
-    private func updateTimelinePreferenceSheetPresentation() {
-        isTimelinePreferenceSheetPresented = onboarding.hasSeenOnboarding && !TimelinePreferenceStore.hasStoredMode()
     }
 }
 
