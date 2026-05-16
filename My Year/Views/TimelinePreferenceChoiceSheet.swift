@@ -162,7 +162,7 @@ private enum ModeButtonStyle: Equatable {
     case .primary:
       return .brandInverted
     case .link:
-      return .textSecondary
+      return .textTertiary
     }
   }
 
