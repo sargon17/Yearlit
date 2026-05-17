@@ -16,9 +16,10 @@ struct CalendarsSection: View {
 
   @Environment(\.router) private var router
 
-  @State private var position = ScrollPosition(edge: .leading)
+  @State private var position = ScrollPosition(idType: String.self)
   @State private var pendingCalendarId: String?
   @State private var isTimelinePreferenceSheetPresented = false
+  @State private var hasTrackedRecapView = false
 
   var body: some View {
     let snapshot = store.snapshot
@@ -139,6 +140,12 @@ struct CalendarsSection: View {
         .scrollIndicators(.hidden)
         .scrollPosition($position)
         .scrollContentBackground(.hidden)
+        .onAppear {
+          trackRecapViewIfNeeded(for: position.viewID(type: String.self))
+        }
+        .onChange(of: position.viewID(type: String.self)) { _, newValue in
+          trackRecapViewIfNeeded(for: newValue)
+        }
       }
       .navigationBarTitleDisplayMode(.inline)
       .onOpenURL { url in
@@ -228,5 +235,11 @@ struct CalendarsSection: View {
       await Task.yield()
       position.scrollTo(id: id)
     }
+  }
+
+  private func trackRecapViewIfNeeded(for viewID: String?) {
+    guard viewID == "recap", !hasTrackedRecapView else { return }
+    hasTrackedRecapView = true
+    Analytics.shared.track(.recapViewViewed)
   }
 }
