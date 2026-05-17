@@ -42,20 +42,12 @@ final class Analytics {
     guard !queuedEvents.isEmpty else { return }
 
     for event in queuedEvents {
-      let properties = event.properties.mapValues { value in
-        switch value {
-        case let .string(value): .string(value)
-        case let .int(value): .int(value)
-        case let .double(value): .double(value)
-        case let .bool(value): .bool(value)
-        }
-      }
-      let merged = state.standardProperties().merging(properties) { _, new in new }
-
       guard let analyticsEvent = AnalyticsEvent(rawValue: event.name) else {
         continue
       }
 
+      let properties = Self.convertWidgetProperties(event.properties)
+      let merged = state.standardProperties().merging(properties) { _, new in new }
       client.track(analyticsEvent, properties: merged)
     }
   }
@@ -74,5 +66,28 @@ final class Analytics {
   func markFirstPeriodCompleted() {
     UserDefaults.standard.set(true, forKey: "analytics.has_completed_first_period")
     updatePersonProperties()
+  }
+
+  private static func convertWidgetProperties(
+    _ properties: [String: WidgetAnalyticsPropertyValue]
+  ) -> [String: AnalyticsPropertyValue] {
+    properties.reduce(into: [:]) { result, entry in
+      result[entry.key] = convertWidgetPropertyValue(entry.value)
+    }
+  }
+
+  private static func convertWidgetPropertyValue(
+    _ value: WidgetAnalyticsPropertyValue
+  ) -> AnalyticsPropertyValue {
+    switch value {
+    case let .string(value):
+      return .string(value)
+    case let .int(value):
+      return .int(value)
+    case let .double(value):
+      return .double(value)
+    case let .bool(value):
+      return .bool(value)
+    }
   }
 }
