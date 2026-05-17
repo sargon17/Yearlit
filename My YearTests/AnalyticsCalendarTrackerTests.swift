@@ -94,7 +94,9 @@ struct AnalyticsCalendarTrackerTests {
 
   private func makeDefaults() -> UserDefaults {
     let suiteName = "analytics.tests.\(UUID().uuidString)"
-    let defaults = UserDefaults(suiteName: suiteName)!
+    guard let defaults = UserDefaults(suiteName: suiteName) else {
+      fatalError("Failed to create test defaults suite")
+    }
     defaults.removePersistentDomain(forName: suiteName)
     return defaults
   }
