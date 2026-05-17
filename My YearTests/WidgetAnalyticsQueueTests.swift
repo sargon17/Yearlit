@@ -57,6 +57,18 @@ struct WidgetAnalyticsQueueTests {
         #expect(queue.drain().count == 1)
     }
 
+    @Test func dropsEventsWhenAppGroupDefaultsUnavailable() {
+        let queue = WidgetAnalyticsQueue(defaults: nil)
+
+        queue.enqueueTimelineLoaded(properties: [
+            "widget_kind": .string("year"),
+            "widget_family": .string("systemSmall"),
+            "has_calendar": .bool(false)
+        ])
+
+        #expect(queue.drain().isEmpty)
+    }
+
     private func makeDefaults() -> UserDefaults {
         let suiteName = "WidgetAnalyticsQueueTests.\(UUID().uuidString)"
         let defaults = UserDefaults(suiteName: suiteName)!

@@ -242,6 +242,7 @@ struct YearWidgetEntryView: View {
         )
         .containerBackground(backgroundColor, for: .widget)
         .widgetAccentable(false)
+        .widgetURL(URL(string: "my-year://?source=widget&widget_kind=year&widget_action=open_app"))
     }
 }
 
@@ -256,7 +257,6 @@ struct YearWidget: Widget {
         .description("Track your year's progress with a beautiful visualization.")
         .supportedFamilies([.systemSmall, .systemMedium, .systemLarge])
         .contentMarginsDisabled()
-        .widgetURL(URL(string: "my-year://?source=widget&widget_kind=year&widget_action=open_app"))
     }
 }
 

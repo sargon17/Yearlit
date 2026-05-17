@@ -98,14 +98,14 @@ public struct WidgetAnalyticsEvent: Codable, Equatable {
 public final class WidgetAnalyticsQueue {
     public static let shared = WidgetAnalyticsQueue()
 
-    private let defaults: UserDefaults
+    private let defaults: UserDefaults?
     private let storageKey = "widget.analytics.queue.v1"
     private let encoder = JSONEncoder()
     private let decoder = JSONDecoder()
     private let retention: TimeInterval = 60 * 60 * 24 * 7
 
     public init(defaults: UserDefaults? = UserDefaults(suiteName: "group.sargon17.My-Year")) {
-        self.defaults = defaults ?? .standard
+        self.defaults = defaults
         encoder.dateEncodingStrategy = .iso8601
         decoder.dateDecodingStrategy = .iso8601
     }
@@ -127,12 +127,16 @@ public final class WidgetAnalyticsQueue {
     }
 
     public func drain() -> [WidgetAnalyticsEvent] {
+        guard let defaults else { return [] }
+
         let events = load().filter { Date().timeIntervalSince($0.timestamp) <= retention }
         defaults.removeObject(forKey: storageKey)
         return events
     }
 
     private func enqueue(_ event: WidgetAnalyticsEvent) {
+        guard let defaults else { return }
+
         var events = load().filter { Date().timeIntervalSince($0.timestamp) <= retention }
         if Self.shouldDedupe(event) {
             let dedupeKey = Self.deduplicationKey(for: event)
@@ -143,6 +147,7 @@ public final class WidgetAnalyticsQueue {
     }
 
     private func load() -> [WidgetAnalyticsEvent] {
+        guard let defaults else { return [] }
         guard let data = defaults.data(forKey: storageKey),
             let events = try? decoder.decode([WidgetAnalyticsEvent].self, from: data)
         else {
