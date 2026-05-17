@@ -47,7 +47,12 @@ struct CalendarsOverview: View {
                 Button(action: {
                     router.showScreen(.sheet) { _ in
                         CreateCalendarView { newCalendar in
+                            let isFirstCalendar = store.snapshot.calendars.isEmpty
                             store.addCalendar(newCalendar)
+                            CalendarAnalyticsTracker.shared.trackCalendarCreated(
+                                calendar: newCalendar,
+                                isFirstCalendar: isFirstCalendar
+                            )
                             scrollPosition.scrollTo(id: newCalendar.id.uuidString)
 
                             router.dismissScreen()

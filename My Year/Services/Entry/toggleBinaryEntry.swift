@@ -9,14 +9,29 @@ import SwiftUI
 func toggleBinaryEntry(
     calendarId: UUID,
     date: Date,
-    calendarStore: CustomCalendarStore
+    calendarStore: CustomCalendarStore,
+    source: CalendarAnalyticsSource = .unknown
 ) -> CalendarEntry? {
-    if calendarStore.getEntry(calendarId: calendarId, date: date) == nil {
-        let newEntry = defaultEntry(date: date, trackingType: .binary)
-        calendarStore.addEntry(calendarId: calendarId, entry: newEntry)
-        return newEntry
+    let calendar = calendarStore.snapshot.calendar(id: calendarId)
+    let oldEntry = calendarStore.getEntry(calendarId: calendarId, date: date)
+    let newEntry: CalendarEntry?
+    if oldEntry == nil {
+        let createdEntry = defaultEntry(date: date, trackingType: .binary)
+        calendarStore.addEntry(calendarId: calendarId, entry: createdEntry)
+        newEntry = createdEntry
+    } else {
+        calendarStore.deleteEntry(calendarId: calendarId, date: date)
+        newEntry = nil
     }
 
-    calendarStore.deleteEntry(calendarId: calendarId, date: date)
-    return nil
+    if let calendar {
+        CalendarAnalyticsTracker.shared.trackEntryMutation(
+            calendar: calendar,
+            oldEntry: oldEntry,
+            newEntry: newEntry,
+            source: source
+        )
+    }
+
+    return newEntry
 }

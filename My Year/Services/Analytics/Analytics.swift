@@ -61,10 +61,7 @@ final class Analytics {
   }
 
   func markFirstCheckinCompleted() {
-    guard !state.hasCompletedFirstCheckin else {
-      updatePersonProperties()
-      return
-    }
+    guard !state.hasCompletedFirstCheckin else { return }
 
     state.markFirstCheckinCompleted()
     track(.firstCheckinCompleted)
@@ -72,6 +69,8 @@ final class Analytics {
   }
 
   func markFirstPeriodCompleted() {
+    guard !state.hasCompletedFirstPeriod else { return }
+
     state.markFirstPeriodCompleted()
     updatePersonProperties()
   }

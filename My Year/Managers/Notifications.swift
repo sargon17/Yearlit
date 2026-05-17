@@ -995,6 +995,7 @@ public func handleNotificationAction(
 @MainActor
 private func handleQuickLog(for calendar: CustomCalendar, store: CustomCalendarStore) {
     let today = Date()
+    let oldEntry = store.getEntry(calendarId: calendar.id, date: today)
 
     // Create entry based on tracking type
     let entry: CalendarEntry
@@ -1015,6 +1016,12 @@ private func handleQuickLog(for calendar: CustomCalendar, store: CustomCalendarS
     }
 
     store.addEntry(calendarId: calendar.id, entry: entry)
+    CalendarAnalyticsTracker.shared.trackEntryMutation(
+        calendar: calendar,
+        oldEntry: oldEntry,
+        newEntry: entry,
+        source: .notification
+    )
     print("✅ Quick logged entry for \(calendar.name)")
 }
 

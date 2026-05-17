@@ -34,8 +34,15 @@ struct DayEntryEditSheet: View {
     }
 
     private func saveEntry() {
+        let existingEntry = store.getEntry(calendarId: calendar.id, date: date)
         let newEntry = CalendarEntry(date: date, count: entryCount, completed: entryCompleted)
         store.addEntry(calendarId: calendar.id, entry: newEntry)
+        CalendarAnalyticsTracker.shared.trackEntryMutation(
+            calendar: calendar,
+            oldEntry: existingEntry,
+            newEntry: newEntry,
+            source: .editSheet
+        )
         onSave?()
         dismiss()
     }

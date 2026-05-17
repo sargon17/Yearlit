@@ -294,6 +294,11 @@ struct EditCalendarView: View {
               let updatedCalendar = makeUpdatedCalendar(isArchived: isArchived)
               scheduleNotifications(for: updatedCalendar, store: CustomCalendarStore.shared)
               onSave(updatedCalendar)
+              CalendarAnalyticsTracker.shared.trackArchiveStateChange(
+                calendar: updatedCalendar,
+                source: .editCalendar,
+                isArchived: updatedCalendar.isArchived
+              )
               dismiss()
             }) {
               Text(isArchived ? "Unarchive Calendar" : "Archive Calendar")
@@ -378,6 +383,13 @@ struct EditCalendarView: View {
           let updatedCalendar = makeUpdatedCalendar()
           scheduleNotifications(for: updatedCalendar, store: CustomCalendarStore.shared)
           onSave(updatedCalendar)
+          if calendar.isArchived != updatedCalendar.isArchived {
+            CalendarAnalyticsTracker.shared.trackArchiveStateChange(
+              calendar: updatedCalendar,
+              source: .editCalendar,
+              isArchived: updatedCalendar.isArchived
+            )
+          }
           dismiss()
         }
         .disabled(name.isEmpty)

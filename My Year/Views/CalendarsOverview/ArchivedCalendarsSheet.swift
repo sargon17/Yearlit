@@ -39,6 +39,11 @@ struct ArchivedCalendarsSheet: View {
                     updatedCalendar.isArchived = false
                     withAnimation(.spring(response: 0.35, dampingFraction: 0.85)) {
                       store.updateCalendar(updatedCalendar)
+                      CalendarAnalyticsTracker.shared.trackArchiveStateChange(
+                        calendar: updatedCalendar,
+                        source: .unknown,
+                        isArchived: updatedCalendar.isArchived
+                      )
                     }
                   }
                   .transition(.opacity.combined(with: .scale(scale: 0.98)))
