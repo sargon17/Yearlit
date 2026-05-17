@@ -10,7 +10,7 @@ struct Your365CompletedDatesTests {
             "2026-01-02": CalendarEntry(date: makeDate(year: 2026, month: 1, day: 2), count: 1, completed: false),
         ])
 
-        #expect(your365CompletedDates(for: calendar) == [makeDate(year: 2026, month: 1, day: 1)])
+        #expect(calendar.your365CompletedDates() == [makeDate(year: 2026, month: 1, day: 1)])
     }
 
     @Test func counterCalendarsTreatPositiveCountsAsCompleted() {
@@ -19,7 +19,7 @@ struct Your365CompletedDatesTests {
             "2026-01-02": CalendarEntry(date: makeDate(year: 2026, month: 1, day: 2), count: 0, completed: false),
         ])
 
-        #expect(your365CompletedDates(for: calendar) == [makeDate(year: 2026, month: 1, day: 1)])
+        #expect(calendar.your365CompletedDates() == [makeDate(year: 2026, month: 1, day: 1)])
     }
 
     @Test func multipleDailyCalendarsStillRequireCompletionFlag() {
@@ -28,7 +28,7 @@ struct Your365CompletedDatesTests {
             "2026-01-02": CalendarEntry(date: makeDate(year: 2026, month: 1, day: 2), count: 3, completed: true),
         ])
 
-        #expect(your365CompletedDates(for: calendar) == [makeDate(year: 2026, month: 1, day: 2)])
+        #expect(calendar.your365CompletedDates() == [makeDate(year: 2026, month: 1, day: 2)])
     }
 
     private func makeCalendar(

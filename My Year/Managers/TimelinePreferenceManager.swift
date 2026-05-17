@@ -15,6 +15,7 @@ final class TimelinePreferenceManager: ObservableObject {
   func setMode(_ mode: CalendarTimelineMode) {
     self.mode = mode
     TimelinePreferenceStore.setMode(mode)
+    WidgetReload.scheduleHabitWidgetsReload()
   }
 
   func refresh() {
