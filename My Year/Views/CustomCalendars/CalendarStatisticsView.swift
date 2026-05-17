@@ -186,6 +186,9 @@ struct CalendarStatisticsView: View {
 
             router.showScreen(.sheet) { _ in
               PaywallView()
+                .onAppear {
+                  Analytics.shared.trackPaywallViewed(trigger: .statsGate)
+                }
             }
 
             Task {
@@ -205,6 +208,9 @@ struct CalendarStatisticsView: View {
 
             router.showScreen(.sheet) { _ in
               PaywallView()
+                .onAppear {
+                  Analytics.shared.trackPaywallViewed(trigger: .statsGate)
+                }
             }
 
             Task {
@@ -233,6 +239,9 @@ struct CalendarStatisticsView: View {
 
               router.showScreen(.sheet) { _ in
                 PaywallView()
+                  .onAppear {
+                    Analytics.shared.trackPaywallViewed(trigger: .statsGate)
+                  }
               }
 
               Task {
@@ -253,6 +262,9 @@ struct CalendarStatisticsView: View {
 
             router.showScreen(.sheet) { _ in
               PaywallView()
+                .onAppear {
+                  Analytics.shared.trackPaywallViewed(trigger: .statsGate)
+                }
             }
 
             Task {
@@ -301,6 +313,9 @@ struct CalendarStatisticsView: View {
 
           router.showScreen(.sheet) { _ in
             PaywallView()
+              .onAppear {
+                Analytics.shared.trackPaywallViewed(trigger: .statsGate)
+              }
           }
 
           Task {

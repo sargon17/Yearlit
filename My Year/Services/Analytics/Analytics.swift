@@ -36,6 +36,25 @@ final class Analytics {
     client.track(event, properties: merged)
   }
 
+  func trackPaywallViewed(trigger: PaywallTrigger) {
+    track(
+      .paywallViewed,
+      properties: [
+        "paywall_trigger": .string(trigger.rawValue),
+        "paywall_variant": .string("default")
+      ]
+    )
+  }
+
+  func trackShareSheetViewed(type: ShareType) {
+    track(
+      .shareSheetViewed,
+      properties: [
+        "share_type": .string(type.rawValue)
+      ]
+    )
+  }
+
   func updatePersonProperties(_ properties: [String: AnalyticsPropertyValue] = [:]) {
     let merged = state.standardProperties().merging(properties) { _, new in new }
     client.setPersonProperties(merged)

@@ -70,6 +70,7 @@ struct CalendarShareSheet: View {
     @State private var isPaywallPresented: Bool = false
     @State private var showingSaveAlert: Bool = false
     @State private var saveAlertMessage: String = ""
+    @State private var didTrackShareSheetViewed: Bool = false
     private var your365Snapshot: Your365Snapshot? {
         guard calendar.cadence == .daily else { return nil }
         return calendar.makeYour365Snapshot(
@@ -112,6 +113,14 @@ struct CalendarShareSheet: View {
                     activityItems: [image, shareMessage],
                     applicationActivities: nil
                 )
+                .onAppear {
+                    guard !didTrackShareSheetViewed else { return }
+                    didTrackShareSheetViewed = true
+                    Analytics.shared.trackShareSheetViewed(type: .calendar)
+                }
+                .onDisappear {
+                    didTrackShareSheetViewed = false
+                }
             }
         }
         .alert("Save Image", isPresented: $showingSaveAlert) {
@@ -121,6 +130,9 @@ struct CalendarShareSheet: View {
         }
         .sheet(isPresented: $isPaywallPresented) {
             PaywallView()
+                .onAppear {
+                    Analytics.shared.trackPaywallViewed(trigger: .shareGate)
+                }
         }
     }
 

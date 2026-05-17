@@ -20,6 +20,7 @@ struct MilestoneCelebrationSheet: View {
     @State private var showingSaveAlert: Bool = false
     @State private var saveAlertMessage: String = ""
     @State private var isCardVisible: Bool = false
+    @State private var didTrackShareSheetViewed: Bool = false
     @StateObject private var motion = MotionTiltManager()
 
     private let stopAction = MilestoneCelebrationStopAction()
@@ -85,6 +86,14 @@ struct MilestoneCelebrationSheet: View {
                     activityItems: [image, shareMessage],
                     applicationActivities: nil
                 )
+                .onAppear {
+                    guard !didTrackShareSheetViewed else { return }
+                    didTrackShareSheetViewed = true
+                    Analytics.shared.trackShareSheetViewed(type: .recap)
+                }
+                .onDisappear {
+                    didTrackShareSheetViewed = false
+                }
             }
         }
         .alert("Save Image", isPresented: $showingSaveAlert) {

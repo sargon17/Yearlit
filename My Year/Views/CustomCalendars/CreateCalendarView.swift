@@ -136,6 +136,9 @@ struct CreateCalendarView: View {
     if !userCanCreateCalendar() {
       router.showScreen(.sheet) { _ in
         PaywallView(displayCloseButton: true)
+          .onAppear {
+            Analytics.shared.trackPaywallViewed(trigger: .calendarLimit)
+          }
       }
     } else {
       createCalendar()
@@ -350,6 +353,9 @@ struct CreateCalendarView: View {
           if !userCanCreateCalendar() {
             router.showScreen(.sheet) { _ in
               PaywallView(displayCloseButton: false)
+                .onAppear {
+                  Analytics.shared.trackPaywallViewed(trigger: .calendarLimit)
+                }
             }
           } else {
             createCalendar()

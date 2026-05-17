@@ -90,6 +90,9 @@ struct DevSupportSection: View {
                 Button {
                     router.showScreen(.sheet) { _ in
                         PaywallView()
+                            .onAppear {
+                                Analytics.shared.trackPaywallViewed(trigger: .settingsSupport)
+                            }
                     }
                 } label: {
                     Label("Get PRO", systemImage: "star")
