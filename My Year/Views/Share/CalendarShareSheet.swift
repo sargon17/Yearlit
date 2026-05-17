@@ -9,6 +9,7 @@ enum CalendarShareTemplate: String, CaseIterable, Identifiable {
     case minimalGrid
     case streakFocus
     case performance
+    case your365
 
     var id: String {
         rawValue
@@ -24,6 +25,8 @@ enum CalendarShareTemplate: String, CaseIterable, Identifiable {
             return "Streak Focus"
         case .performance:
             return "Performance"
+        case .your365:
+            return "Your 365"
         }
     }
 
@@ -37,6 +40,8 @@ enum CalendarShareTemplate: String, CaseIterable, Identifiable {
             return "Streaks + grid strip"
         case .performance:
             return "Trends and progress"
+        case .your365:
+            return "Personal habit-year card"
         }
     }
 
@@ -44,7 +49,7 @@ enum CalendarShareTemplate: String, CaseIterable, Identifiable {
         switch self {
         case .performance:
             return true
-        case .yearCard, .minimalGrid, .streakFocus:
+        case .yearCard, .minimalGrid, .streakFocus, .your365:
             return false
         }
     }
@@ -65,6 +70,13 @@ struct CalendarShareSheet: View {
     @State private var isPaywallPresented: Bool = false
     @State private var showingSaveAlert: Bool = false
     @State private var saveAlertMessage: String = ""
+    private var your365Snapshot: Your365Snapshot? {
+        guard calendar.cadence == .daily else { return nil }
+        return calendar.makeYour365Snapshot(
+            completedDates: your365CompletedDates(for: calendar),
+            today: Date()
+        )
+    }
 
     private let sharePointSize = CGSize(width: 360, height: 450)
     private let shareScale: CGFloat = 3
@@ -114,7 +126,7 @@ struct CalendarShareSheet: View {
 
     private var cardPager: some View {
         TabView(selection: $selectedTemplate) {
-            ForEach(CalendarShareTemplate.allCases) { template in
+            ForEach(availableShareTemplates(for: calendar, today: Date())) { template in
                 cardView(for: template)
                     .aspectRatio(4 / 5, contentMode: .fit)
                     .shadow(color: .black.opacity(0.25), radius: 20, x: 0, y: 10)
@@ -188,11 +200,15 @@ struct CalendarShareSheet: View {
     private var shareMessage: String {
         let calendarName = calendar.name.capitalized
         let period = calendar.cadence == .weekly ? "weekly" : "daily"
+        if selectedTemplate == .your365 {
+            return "Here's my Your 365 progress for \(calendarName)!\n\ntracked using yearlit by @tymofyeyev "
+        }
         return "Here's my \(period) \(calendarName) progress!\n\ntracked using yearlit by @tymofyeyev "
     }
 
     private var effectiveTemplate: CalendarShareTemplate {
-        selectedTemplate
+        let templates = availableShareTemplates(for: calendar, today: Date())
+        return templates.contains(selectedTemplate) ? selectedTemplate : .yearCard
     }
 
     private var cardData: ShareCardData {
@@ -200,6 +216,8 @@ struct CalendarShareSheet: View {
             calendar: calendar,
             year: year,
             dates: dates,
+            your365Snapshot: your365Snapshot,
+            isYour365FirstYear: calendar.isWithinFirstYear(today: Date()),
             stats: resolvedStats,
             completionRateTrailingLongWindow: resolvedCompletionRateTrailingLongWindow,
             averageProgressTrailingShortWindow: resolvedAverageProgressTrailingShortWindow,
@@ -291,6 +309,8 @@ struct CalendarShareSheet: View {
                 return AnyView(StreakFocusShareView(data: cardData))
             case .performance:
                 return AnyView(PerformanceShareView(data: cardData))
+            case .your365:
+                return AnyView(Your365ShareView(data: cardData))
             }
         }()
 
@@ -353,5 +373,23 @@ struct CalendarShareSheet: View {
         guard year == currentYear else { return 0 }
         let today = Calendar.current.startOfDay(for: Date())
         return entry(for: calendar, date: today)?.count ?? 0
+    }
+}
+
+func availableShareTemplates(for calendar: CustomCalendar, today: Date) -> [CalendarShareTemplate] {
+    let your365Snapshot = calendar.cadence == .daily
+        ? calendar.makeYour365Snapshot(
+            completedDates: your365CompletedDates(for: calendar),
+            today: today
+        )
+        : nil
+
+    return CalendarShareTemplate.allCases.filter { template in
+        switch template {
+        case .your365:
+            return your365Snapshot != nil
+        case .yearCard, .minimalGrid, .streakFocus, .performance:
+            return true
+        }
     }
 }

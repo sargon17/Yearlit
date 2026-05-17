@@ -157,3 +157,73 @@ struct PerformanceShareView: View {
         }
     }
 }
+
+struct Your365ShareView: View {
+    let data: ShareCardData
+
+    var body: some View {
+        ShareCardContainer {
+            VStack(alignment: .leading, spacing: 10) {
+                header
+
+                CustomSeparator()
+                    .padding(.horizontal, -28)
+
+                if let snapshot = data.your365Snapshot {
+                    ShareCalendarGridView(snapshot: snapshot, accentColor: data.accentColor)
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+
+                    statRow(snapshot: snapshot)
+                } else {
+                    unavailableState
+                }
+
+                CustomSeparator()
+                    .padding(.horizontal, -28)
+                ShareCardFooter()
+            }
+        }
+    }
+
+    private var header: some View {
+        VStack(alignment: .leading, spacing: 4) {
+            Text(data.your365Title)
+                .font(AppFont.mono(18))
+                .foregroundColor(Color("text-primary"))
+                .fontWeight(.black)
+                .lineLimit(2)
+                .minimumScaleFactor(0.7)
+
+            Text(data.your365Subtitle)
+                .font(AppFont.mono(12))
+                .foregroundColor(Color("text-tertiary"))
+                .lineLimit(1)
+                .minimumScaleFactor(0.7)
+        }
+    }
+
+    private func statRow(snapshot: Your365Snapshot) -> some View {
+        HStack(spacing: 12) {
+            ShareCompactStatTile(
+                title: "Completed",
+                value: "\(snapshot.cells.filter { $0.state == .completed }.count)",
+                accentColor: data.accentColor
+            )
+            ShareCompactStatTile(
+                title: "Today",
+                value: snapshot.todayCell.map { "\($0.dayNumber)" } ?? "—",
+                accentColor: data.accentColor
+            )
+        }
+    }
+
+    private var unavailableState: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            Text("Your 365 is available for daily calendars only.")
+                .font(AppFont.mono(13))
+                .foregroundColor(Color("text-secondary"))
+                .fixedSize(horizontal: false, vertical: true)
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
+    }
+}
