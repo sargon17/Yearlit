@@ -763,12 +763,22 @@ struct HabitQuickAddIntent: AppIntent {
             return .result()
         }
 
-        await MainActor.run {
-            store.quickLogEntry(calendarId: calendarId, date: Date())
-
+        let quickLogSucceeded = await MainActor.run {
+            let didSave = store.quickLogEntry(calendarId: calendarId, date: Date())
             let impactFeedbackgenerator = UIImpactFeedbackGenerator(style: .medium)
             impactFeedbackgenerator.prepare()
             impactFeedbackgenerator.impactOccurred()
+            return didSave
+        }
+
+        guard quickLogSucceeded else {
+            WidgetAnalyticsQueue.shared.enqueueQuickAddPerformed(properties: [
+                "widget_kind": .string(WidgetAnalyticsKind.habits.rawValue),
+                "cadence": .string(calendar.cadence.rawValue),
+                "tracking_type": .string(calendar.trackingType.rawValue),
+                "result": .string("failed")
+            ])
+            return .result()
         }
 
         WidgetAnalyticsQueue.shared.enqueueQuickAddPerformed(properties: [

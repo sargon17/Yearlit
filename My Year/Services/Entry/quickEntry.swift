@@ -7,5 +7,5 @@ func quickEntry(
     date: Date,
     calendarStore: CustomCalendarStore
 ) {
-    calendarStore.quickLogEntry(calendarId: calendar.id, date: date)
+    _ = calendarStore.quickLogEntry(calendarId: calendar.id, date: date)
 }

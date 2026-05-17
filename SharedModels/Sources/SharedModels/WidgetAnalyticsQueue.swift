@@ -134,8 +134,10 @@ public final class WidgetAnalyticsQueue {
 
     private func enqueue(_ event: WidgetAnalyticsEvent) {
         var events = load().filter { Date().timeIntervalSince($0.timestamp) <= retention }
-        let dedupeKey = Self.deduplicationKey(for: event)
-        events.removeAll { Self.deduplicationKey(for: $0) == dedupeKey }
+        if Self.shouldDedupe(event) {
+            let dedupeKey = Self.deduplicationKey(for: event)
+            events.removeAll { Self.deduplicationKey(for: $0) == dedupeKey }
+        }
         events.append(event)
         defaults.set(encode(events), forKey: storageKey)
     }
@@ -151,6 +153,10 @@ public final class WidgetAnalyticsQueue {
 
     private func encode(_ events: [WidgetAnalyticsEvent]) -> Data {
         (try? encoder.encode(events)) ?? Data()
+    }
+
+    private static func shouldDedupe(_ event: WidgetAnalyticsEvent) -> Bool {
+        event.name == "widget_timeline_loaded"
     }
 
     private static func deduplicationKey(for event: WidgetAnalyticsEvent) -> String {

@@ -1122,10 +1122,11 @@ public final class CustomCalendarStore: ObservableObject {
         }
     }
 
-    public func quickLogEntry(calendarId: UUID, date: Date = Date()) {
+    @discardableResult
+    public func quickLogEntry(calendarId: UUID, date: Date = Date()) -> Bool {
         do {
             let context = makeContext()
-            guard let calendarEntity = fetchCalendarEntity(id: calendarId, in: context) else { return }
+            guard let calendarEntity = fetchCalendarEntity(id: calendarId, in: context) else { return false }
 
             let cadence = CalendarCadence(rawValue: calendarEntity.cadenceRawValue) ?? .daily
             let trackingType = TrackingType(rawValue: calendarEntity.trackingTypeRawValue) ?? .binary
@@ -1184,8 +1185,10 @@ public final class CustomCalendarStore: ObservableObject {
             }
 
             try finishHabitMutationReloadingCalendars(in: context)
+            return true
         } catch {
             NSLog("Failed to quick log entry: \(error)")
+            return false
         }
     }
 
