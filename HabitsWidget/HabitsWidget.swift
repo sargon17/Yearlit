@@ -301,7 +301,9 @@ struct HorizontalCalendarGrid: View {
             GeometryReader { geometry in
                 let padding: CGFloat = 0
                 let your365Snapshot = your365Snapshot(today: referenceDate)
-                let your365CellsByDate = Dictionary(uniqueKeysWithValues: your365Snapshot?.cells.map { ($0.date, $0) } ?? [])
+                let your365CellsByDate: [Date: Your365Cell] = Dictionary(
+                    uniqueKeysWithValues: your365Snapshot?.cells.map { ($0.date, $0) } ?? []
+                )
                 let dates = datesForFamily(today: referenceDate, your365Snapshot: your365Snapshot)
                 let totalDays = dates.count
                 let availableWidth = geometry.size.width - (padding * 2)
