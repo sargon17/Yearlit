@@ -14,6 +14,7 @@ struct ContentView: View {
     @State private var lastCleanupVersion: Int = -1
     @State private var cleanupTask: Task<Void, Never>?
     @Environment(\.scenePhase) private var scenePhase
+    @EnvironmentObject private var onboarding: OnboardingManager
 
     var body: some View {
         let snapshot = store.snapshot
@@ -40,10 +41,19 @@ struct ContentView: View {
                 // Initial cleanup on app launch
                 await checkForNotificationsOfNonExistingCalendars(store: store)
                 refreshStreakProtectionReminders(store: store)
+                await refreshRetentionNotificationsIfNeeded(onboardingSeen: onboarding.hasSeenOnboarding)
             }
             .onChange(of: scenePhase) { _, newPhase in
                 guard newPhase == .active else { return }
                 refreshStreakProtectionReminders(store: store)
+                Task {
+                    await refreshRetentionNotificationsIfNeeded(onboardingSeen: onboarding.hasSeenOnboarding)
+                }
+            }
+            .onChange(of: onboarding.hasSeenOnboarding) { _, hasSeenOnboarding in
+                Task {
+                    await refreshRetentionNotificationsIfNeeded(onboardingSeen: hasSeenOnboarding)
+                }
             }
             .toolbarBackground(.hidden, for: .navigationBar)
             .font(AppFont.mono(17))
@@ -52,4 +62,5 @@ struct ContentView: View {
 
 #Preview {
     ContentView()
+        .environmentObject(OnboardingManager())
 }
