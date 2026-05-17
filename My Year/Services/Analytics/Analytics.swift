@@ -1,4 +1,5 @@
 import Foundation
+import SharedModels
 
 @MainActor
 final class Analytics {
@@ -34,6 +35,29 @@ final class Analytics {
   func track(_ event: AnalyticsEvent, properties: [String: AnalyticsPropertyValue] = [:]) {
     let merged = state.standardProperties().merging(properties) { _, new in new }
     client.track(event, properties: merged)
+  }
+
+  func flushQueuedWidgetEvents() {
+    let queuedEvents = WidgetAnalyticsQueue.shared.drain()
+    guard !queuedEvents.isEmpty else { return }
+
+    for event in queuedEvents {
+      let properties = event.properties.mapValues { value in
+        switch value {
+        case let .string(value): .string(value)
+        case let .int(value): .int(value)
+        case let .double(value): .double(value)
+        case let .bool(value): .bool(value)
+        }
+      }
+      let merged = state.standardProperties().merging(properties) { _, new in new }
+
+      guard let analyticsEvent = AnalyticsEvent(rawValue: event.name) else {
+        continue
+      }
+
+      client.track(analyticsEvent, properties: merged)
+    }
   }
 
   func updatePersonProperties(_ properties: [String: AnalyticsPropertyValue] = [:]) {

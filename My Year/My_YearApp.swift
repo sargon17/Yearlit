@@ -105,6 +105,7 @@ struct My_YearApp: App {
     Purchases.configure(withAPIKey: AppConfig.revenueCatAPIKey)
     AppStorageMigration.run()
     Analytics.shared.configure()
+    Analytics.shared.flushQueuedWidgetEvents()
     Purchases.shared.getCustomerInfo { info, _ in
       Task { @MainActor in
         AnalyticsState.shared.updatePremiumStatus(customerInfo: info)
@@ -150,6 +151,11 @@ struct My_YearApp: App {
       .environment(\.dates, Self.cachedDates)
       .onOpenURL { url in
         guard url.scheme == "my-year" else { return }
+        let queryItems = URLComponents(url: url, resolvingAgainstBaseURL: false)?.queryItems ?? []
+        let source = queryItems.first(where: { $0.name == "source" })?.value
+        let widgetKind = queryItems.first(where: { $0.name == "widget_kind" })?.value
+        let widgetAction = queryItems.first(where: { $0.name == "widget_action" })?.value
+        let isWidgetSource = source == "widget"
 
         switch url.host {
         case "clear":
@@ -163,8 +169,41 @@ struct My_YearApp: App {
           let calendars = CustomCalendarStore.fetchCalendarsSnapshot()
           guard let calendar = calendars.first(where: { $0.id == calendarId }) else { return }
 
+          if isWidgetSource {
+            Analytics.shared.track(
+              .widgetQuickAddOpened,
+              properties: [
+                "widget_kind": .string(widgetKind ?? "unknown"),
+                "widget_action": .string(widgetAction ?? "quick_add"),
+                "destination": .string("quick_add")
+              ]
+            )
+            Analytics.shared.track(
+              .widgetOpenedApp,
+              properties: [
+                "widget_kind": .string(widgetKind ?? "unknown"),
+                "widget_action": .string(widgetAction ?? "quick_add"),
+                "destination": .string("quick_add")
+              ]
+            )
+          }
+
           quickEntry(calendar: calendar, date: Date(), calendarStore: store)
+          if isWidgetSource {
+            Analytics.shared.flushQueuedWidgetEvents()
+          }
         default:
+          if isWidgetSource {
+            Analytics.shared.track(
+              .widgetOpenedApp,
+              properties: [
+                "widget_kind": .string(widgetKind ?? "unknown"),
+                "widget_action": .string(widgetAction ?? "open_app"),
+                "destination": .string("home")
+              ]
+            )
+            Analytics.shared.flushQueuedWidgetEvents()
+          }
           break
         }
       }
@@ -193,6 +232,7 @@ struct My_YearApp: App {
       }
       .onChange(of: scenePhase) { _, phase in
         guard phase == .active else { return }
+        Analytics.shared.flushQueuedWidgetEvents()
         Analytics.shared.track(.appOpened)
       }
     }

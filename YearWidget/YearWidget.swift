@@ -19,8 +19,17 @@ struct Provider: TimelineProvider {
         completion(entry)
     }
 
-    func getTimeline(in _: Context, completion: @escaping (Timeline<Entry>) -> Void) {
+    func getTimeline(in context: Context, completion: @escaping (Timeline<Entry>) -> Void) {
         let entry = SimpleEntry(date: Date())
+
+        if !context.isPreview {
+            WidgetAnalyticsQueue.shared.enqueueTimelineLoaded(properties: [
+                "widget_kind": .string(WidgetAnalyticsKind.year.rawValue),
+                "widget_family": .string(widgetFamilyName(context.family)),
+                "has_calendar": .bool(false),
+                "timeline_mode": .string(CalendarTimelineMode.calendarYear.rawValue)
+            ])
+        }
 
         // Update at midnight
         let calendar = Calendar.current
@@ -28,6 +37,15 @@ struct Provider: TimelineProvider {
 
         let timeline = Timeline(entries: [entry], policy: .after(tomorrow))
         completion(timeline)
+    }
+}
+
+private func widgetFamilyName(_ family: WidgetFamily) -> String {
+    switch family {
+    case .systemSmall: return WidgetAnalyticsFamily.systemSmall.rawValue
+    case .systemMedium: return WidgetAnalyticsFamily.systemMedium.rawValue
+    case .systemLarge: return WidgetAnalyticsFamily.systemLarge.rawValue
+    default: return WidgetAnalyticsFamily.other.rawValue
     }
 }
 
@@ -238,6 +256,7 @@ struct YearWidget: Widget {
         .description("Track your year's progress with a beautiful visualization.")
         .supportedFamilies([.systemSmall, .systemMedium, .systemLarge])
         .contentMarginsDisabled()
+        .widgetURL(URL(string: "my-year://?source=widget&widget_kind=year&widget_action=open_app"))
     }
 }
 

@@ -101,6 +101,21 @@ Allowed `paywall_trigger` values: `onboarding`, `calendar_limit`, `share_gate`, 
 
 Allowed `share_type` values: `calendar`, `recap`, `unknown`.
 
+## Widget analytics
+
+Widget analytics are a coarse proxy for adoption and usage. `widget_timeline_loaded` measures that WidgetKit asked the extension for a timeline entry in a non-preview context. It is not an impression count.
+
+| Event | Fires when | Notes |
+| --- | --- | --- |
+| `widget_timeline_loaded` | A widget timeline is generated outside preview/snapshot flows. | Include `widget_kind`, `widget_family`, `has_calendar`, and coarse configuration fields where available. Allowed `widget_kind` values: `year`, `habits`, `streak`. Allowed `widget_family` values: `systemSmall`, `systemMedium`, `systemLarge`, `other`. |
+| `widget_opened_app` | The app opens from a widget deep link. | Include `widget_kind`, `widget_action`, and `destination`. Do not include calendar IDs, calendar names, or user-entered text. |
+| `widget_quick_add_performed` | The Habits widget AppIntent successfully runs. | Include `widget_kind`, `cadence`, `tracking_type`, and `result`. |
+| `widget_quick_add_opened` | The iOS 16 quick-add fallback deep link opens the app. | Include `widget_kind`, `widget_action`, and `destination`. |
+
+Allowed `widget_action` values: `open_app`, `open_calendar`, `quick_add`.
+
+Allowed `destination` values: `home`, `calendar`, `quick_add`.
+
 ## Explicitly out of scope for #79 v1
 
 - Session replay
@@ -109,6 +124,5 @@ Allowed `share_type` values: `calendar`, `recap`, `unknown`.
 - Acquisition source/campaign attribution
 - Detailed onboarding step analytics (#87)
 - Custom paywall/deep paywall funnel (#88)
-- Widget analytics (#89)
 - Milestone celebration exposure/funnel
 - Mood values
