@@ -13,6 +13,7 @@ final class NotificationRefreshCoordinator {
     private let store: CustomCalendarStore
     private var lastCleanupVersion: Int = -1
     private var cleanupTask: Task<Void, Never>?
+    private var retentionRefreshTask: Task<Void, Never>?
 
     init(store: CustomCalendarStore? = nil) {
         self.store = store ?? CustomCalendarStore.shared
@@ -20,19 +21,18 @@ final class NotificationRefreshCoordinator {
 
     deinit {
         cleanupTask?.cancel()
+        retentionRefreshTask?.cancel()
     }
 
     func appLaunched(onboardingSeen: Bool) async {
         await checkForNotificationsOfNonExistingCalendars(store: store)
         refreshStreakProtectionReminders(store: store)
-        await refreshRetentionNotificationsIfNeeded(onboardingSeen: onboardingSeen)
+        queueRetentionRefresh(onboardingSeen: onboardingSeen)
     }
 
     func appBecameActive(onboardingSeen: Bool) {
         refreshStreakProtectionReminders(store: store)
-        Task {
-            await refreshRetentionNotificationsIfNeeded(onboardingSeen: onboardingSeen)
-        }
+        queueRetentionRefresh(onboardingSeen: onboardingSeen)
     }
 
     func calendarDataVersionChanged(to newVersion: Int) {
@@ -51,7 +51,17 @@ final class NotificationRefreshCoordinator {
     }
 
     func onboardingSeenChanged(to onboardingSeen: Bool) {
-        Task {
+        queueRetentionRefresh(onboardingSeen: onboardingSeen)
+    }
+
+    func notificationAuthorizationChanged(onboardingSeen: Bool) {
+        queueRetentionRefresh(onboardingSeen: onboardingSeen)
+    }
+
+    private func queueRetentionRefresh(onboardingSeen: Bool) {
+        retentionRefreshTask?.cancel()
+        retentionRefreshTask = Task {
+            guard !Task.isCancelled else { return }
             await refreshRetentionNotificationsIfNeeded(onboardingSeen: onboardingSeen)
         }
     }

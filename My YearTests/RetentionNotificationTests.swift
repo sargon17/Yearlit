@@ -47,6 +47,6 @@ struct RetentionNotificationTests {
 
         let date = try #require(calendar.date(from: DateComponents(year: 2026, month: 5, day: 7, hour: 23, minute: 59)))
 
-        #expect(retentionLocalDayKey(for: date, calendar: calendar) == "2026-5-7")
+        #expect(retentionLocalDayKey(for: date, calendar: calendar) == "2026-05-07")
     }
 }

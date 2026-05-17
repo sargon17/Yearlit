@@ -32,6 +32,9 @@ struct ContentView: View {
             .onChange(of: onboarding.hasSeenOnboarding) { _, hasSeenOnboarding in
                 notificationCoordinator.onboardingSeenChanged(to: hasSeenOnboarding)
             }
+            .onReceive(NotificationCenter.default.publisher(for: .notificationAuthorizationChanged)) { _ in
+                notificationCoordinator.notificationAuthorizationChanged(onboardingSeen: onboarding.hasSeenOnboarding)
+            }
             .toolbarBackground(.hidden, for: .navigationBar)
             .font(AppFont.mono(17))
     }
