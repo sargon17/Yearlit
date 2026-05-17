@@ -125,6 +125,12 @@ struct HorizontalCalendarGrid: View {
         let normalizedToday = normalizedBucketDate(for: today)
 
         if let cell = your365CellsByDate[normalized] {
+            if cell.state == .completed,
+               let calendar,
+               let entry = calendar.entry(for: normalized) {
+                return completedColor(for: entry)
+            }
+
             return colorForYour365Cell(cell)
         }
 
@@ -701,4 +707,156 @@ struct HabitQuickAddIntent: AppIntent {
 
         return .result()
     }
+}
+
+#Preview("Daily Calendar Year") {
+    previewWidget(
+        calendar: previewDailyCalendar(),
+        timelineMode: .calendarYear,
+        referenceDate: previewDate(year: 2026, month: 1, day: 11),
+        currentStreak: 7,
+        todayCount: 1,
+        isCurrentPeriodCompleted: false,
+        family: .systemLarge
+    )
+}
+
+#Preview("Daily Your 365 First Year") {
+    previewWidget(
+        calendar: previewDailyCalendar(),
+        timelineMode: .your365,
+        referenceDate: previewDate(year: 2026, month: 1, day: 11),
+        currentStreak: 7,
+        todayCount: 1,
+        isCurrentPeriodCompleted: false,
+        family: .systemLarge
+    )
+}
+
+#Preview("Daily Your 365 Mature") {
+    previewWidget(
+        calendar: previewMatureCalendar(),
+        timelineMode: .your365,
+        referenceDate: previewDate(year: 2026, month: 2, day: 1),
+        currentStreak: 186,
+        todayCount: 1,
+        isCurrentPeriodCompleted: true,
+        family: .systemLarge
+    )
+}
+
+#Preview("Weekly Unchanged") {
+    previewWidget(
+        calendar: previewWeeklyCalendar(),
+        timelineMode: .your365,
+        referenceDate: previewDate(year: 2026, month: 1, day: 11),
+        currentStreak: 7,
+        todayCount: 1,
+        isCurrentPeriodCompleted: false,
+        family: .systemLarge
+    )
+}
+
+private func previewWidget(
+    calendar: CustomCalendar,
+    timelineMode: CalendarTimelineMode,
+    referenceDate: Date,
+    currentStreak: Int,
+    todayCount: Int,
+    isCurrentPeriodCompleted: Bool,
+    family: WidgetFamily
+) -> some View {
+    let renderingMode = WidgetStyle.RenderingMode.fullColor
+    let backgroundColor = WidgetStyle.widgetBackgroundColor(for: .light, renderingMode: renderingMode)
+    let primaryTextColor = WidgetStyle.primaryTextColor(for: .light, renderingMode: renderingMode)
+
+    return HorizontalCalendarGrid(
+        family: family,
+        calendar: calendar,
+        timelineMode: timelineMode,
+        referenceDate: referenceDate,
+        currentStreak: currentStreak,
+        todayCount: todayCount,
+        isCurrentPeriodCompleted: isCurrentPeriodCompleted,
+        backgroundColor: backgroundColor,
+        textPrimaryColor: primaryTextColor,
+        inactiveRatio: WidgetStyle.futureDotFillRatio,
+        renderingMode: renderingMode
+    )
+    .frame(width: 360, height: 260)
+    .padding()
+    .background(backgroundColor)
+}
+
+private func previewDailyCalendar() -> CustomCalendar {
+    CustomCalendar(
+        name: "Daily Habit",
+        color: "qs-blue",
+        cadence: .daily,
+        trackingType: .counter,
+        trackingStartedAt: previewDate(year: 2026, month: 1, day: 1),
+        dailyTarget: 3,
+        entries: previewEntries()
+    )
+}
+
+private func previewMatureCalendar() -> CustomCalendar {
+    CustomCalendar(
+        name: "Mature Habit",
+        color: "qs-green",
+        cadence: .daily,
+        trackingType: .multipleDaily,
+        trackingStartedAt: previewDate(year: 2024, month: 1, day: 1),
+        dailyTarget: 3,
+        entries: previewEntries()
+    )
+}
+
+private func previewWeeklyCalendar() -> CustomCalendar {
+    CustomCalendar(
+        name: "Weekly Habit",
+        color: "qs-orange",
+        cadence: .weekly,
+        trackingType: .binary,
+        trackingStartedAt: previewDate(year: 2026, month: 1, day: 1),
+        dailyTarget: 1,
+        entries: previewWeeklyEntries()
+    )
+}
+
+private func previewEntries() -> [Date: CalendarEntry] {
+    [
+        previewDate(year: 2026, month: 1, day: 1): CalendarEntry(
+            date: previewDate(year: 2026, month: 1, day: 1),
+            count: 2,
+            completed: true
+        ),
+        previewDate(year: 2026, month: 1, day: 2): CalendarEntry(
+            date: previewDate(year: 2026, month: 1, day: 2),
+            count: 1,
+            completed: false
+        ),
+        previewDate(year: 2026, month: 1, day: 3): CalendarEntry(
+            date: previewDate(year: 2026, month: 1, day: 3),
+            count: 3,
+            completed: true
+        )
+    ]
+}
+
+private func previewWeeklyEntries() -> [Date: CalendarEntry] {
+    [
+        previewDate(year: 2026, month: 1, day: 5): CalendarEntry(
+            date: previewDate(year: 2026, month: 1, day: 5),
+            count: 1,
+            completed: true
+        )
+    ]
+}
+
+private func previewDate(year: Int, month: Int, day: Int) -> Date {
+    var calendar = Calendar(identifier: .gregorian)
+    calendar.locale = Locale(identifier: "en_US_POSIX")
+    calendar.timeZone = .autoupdatingCurrent
+    return calendar.date(from: DateComponents(year: year, month: month, day: day)) ?? Date()
 }
