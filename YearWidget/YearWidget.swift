@@ -260,15 +260,6 @@ struct YearWidget: Widget {
     }
 }
 
-private func widgetFamilyName(_ family: WidgetFamily) -> String {
-    switch family {
-    case .systemSmall: return WidgetAnalyticsFamily.systemSmall.rawValue
-    case .systemMedium: return WidgetAnalyticsFamily.systemMedium.rawValue
-    case .systemLarge: return WidgetAnalyticsFamily.systemLarge.rawValue
-    default: return WidgetAnalyticsFamily.other.rawValue
-    }
-}
-
 private func inactiveDayColor(base: Color, overlay: Color, ratio: Double) -> Color {
     WidgetStyle.inactiveDotColor(surface: base, text: overlay, ratio: ratio)
 }
