@@ -576,7 +576,7 @@ struct CustomCalendarView: View {
                 CalendarShareSheet(
                   calendar: activeCalendar,
                   year: valuationStore.selectedYear,
-                  dates: displayState.visibleGridDates,
+                  dates: displayState.calendarYearGridDates,
                   statsBundle: statsBundle,
                   isPremium: isPremium(customerInfo: customerInfo)
                 )
