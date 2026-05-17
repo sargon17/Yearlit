@@ -42,6 +42,42 @@ struct Request: Codable, Identifiable {
     let project: String // riferimento a un id di projects
     let computedStatus: RequestStatus
 
+    init(
+        _id: String,
+        _creationTime: Double,
+        text: String,
+        description: String?,
+        clientId: String,
+        upvoteCount: Int?,
+        status: String,
+        project: String,
+        computedStatus: RequestStatus
+    ) {
+        self._id = _id
+        self._creationTime = _creationTime
+        self.text = text
+        self.description = description
+        self.clientId = clientId
+        self.upvoteCount = upvoteCount
+        self.status = status
+        self.project = project
+        self.computedStatus = computedStatus
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        _id = try container.decode(String.self, forKey: ._id)
+        _creationTime = try container.decode(Double.self, forKey: ._creationTime)
+        text = try container.decode(String.self, forKey: .text)
+        description = try container.decodeIfPresent(String.self, forKey: .description)
+        clientId = try container.decode(String.self, forKey: .clientId)
+        upvoteCount = try container.decodeIfPresent(Int.self, forKey: .upvoteCount)
+        status = try container.decode(String.self, forKey: .status)
+        project = try container.decode(String.self, forKey: .project)
+        computedStatus = try container.decodeIfPresent(RequestStatus.self, forKey: .computedStatus)
+            ?? RequestStatus.fallback(id: status)
+    }
+
     /// SwiftUI identity
     var id: String {
         _id
@@ -143,6 +179,19 @@ struct RequestStatus: Codable, Identifiable {
 
     var id: String {
         _id
+    }
+
+    static func fallback(id: String) -> RequestStatus {
+        RequestStatus(
+            _id: "wish-fallback-status",
+            _creationTime: 0,
+            name: id,
+            displayName: "Requests",
+            description: nil,
+            project: nil,
+            type: .custom,
+            color: nil
+        )
     }
 }
 

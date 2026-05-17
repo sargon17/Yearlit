@@ -1,9 +1,9 @@
-import SwiftUI
+import Foundation
 
 extension HTTP {
     static func delete(endpoint: String, headers: [String: String] = [:]) async throws {
         guard let url = URL(string: endpoint) else {
-            throw GetError.error1
+            throw HTTP.GetError.invalidURL
         }
         var request = URLRequest(url: url)
         request.httpMethod = "DELETE"
@@ -11,12 +11,15 @@ extension HTTP {
             request.setValue(value, forHTTPHeaderField: key)
         }
 
-        let (_, res) = try await URLSession.shared.data(for: request)
+        let (data, res) = try await URLSession.shared.data(for: request)
 
-        guard let response = res as? HTTPURLResponse,
-              (200 ... 299).contains(response.statusCode)
-        else {
-            throw GetError.error2
+        guard let response = res as? HTTPURLResponse else {
+            throw HTTP.GetError.invalidResponse
+        }
+
+        guard (200 ... 299).contains(response.statusCode) else {
+            let body = String(data: data, encoding: .utf8)
+            throw HTTP.GetError.badStatus(response.statusCode, body)
         }
     }
 }
