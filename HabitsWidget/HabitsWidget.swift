@@ -232,7 +232,7 @@ struct HorizontalCalendarGrid: View {
             return colorForYour365Cell(cell)
         }
 
-        normalized == normalizedBucketDate(for: today)
+        return normalized == normalizedBucketDate(for: today)
             ? activeDayColor(base: backgroundColor, overlay: textPrimaryColor)
             : missedDayColor(base: backgroundColor, overlay: textPrimaryColor)
     }
