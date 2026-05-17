@@ -94,8 +94,8 @@ Owned by #92.
 
 | Event | Notes |
 | --- | --- |
-| `paywall_viewed` | Fires only when the paywall UI actually appears. Include `paywall_trigger` and `paywall_variant`. |
-| `share_sheet_viewed` | Fires when a share sheet is opened. Include `share_type`. Do not send stats in v1. |
+| `paywall_viewed` | Fires only when the paywall UI actually appears. Include `paywall_trigger` and `paywall_variant: default`. |
+| `share_sheet_viewed` | Fires when a share sheet is opened. Include `share_type`. Do not send stats, names, notes, or share content in v1. |
 
 Allowed `paywall_trigger` values: `onboarding`, `calendar_limit`, `share_gate`, `stats_gate`, `notification_gate`, `settings_support`, `unknown`.
 

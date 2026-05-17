@@ -8,6 +8,9 @@ struct OnboardingPaywall: View {
         ZStack {
             VStack {
                 PaywallView()
+                    .onAppear {
+                        Analytics.shared.trackPaywallViewed(trigger: .onboarding)
+                    }
             }
             .clipped()
         }

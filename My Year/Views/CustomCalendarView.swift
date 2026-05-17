@@ -631,6 +631,9 @@ struct CustomCalendarView: View {
     }
     .sheet(isPresented: $isPaywallPresented) {
       PaywallView()
+        .onAppear {
+          Analytics.shared.trackPaywallViewed(trigger: .statsGate)
+        }
     }
     .alert(item: $calendarError) { error in
       Alert(
