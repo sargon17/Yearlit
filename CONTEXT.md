@@ -40,6 +40,30 @@ _Avoid_: Fake calendar, sample calendar
 A hidden production-accessible mode for trusted developer-only tooling.
 _Avoid_: Debug mode, secret mode
 
+**Calendar**:
+A user-created tracker for repeated progress across days or weeks. A Calendar may track binary completion, numeric counts, or a target count.
+_Avoid_: Habit or Goal when referring to the stored product object
+
+**Check-in**:
+The first logged progress for a Calendar period, such as checking off a day, recording a count, or adding progress toward a target.
+_Avoid_: Entry when speaking about user-facing behavior
+
+**Period**:
+The day or week a Calendar is tracking, depending on its cadence.
+_Avoid_: Day when the Calendar may be weekly
+
+**Period completed**:
+A Period reaches the Calendar's completion criteria. Binary Calendars complete when checked off. Target Calendars complete when the target count is reached. Counter Calendars do not have completion semantics unless a target is added.
+_Avoid_: Day completed for weekly-capable behavior
+
+**Mood Tracking**:
+The optional feature where users record whether a day felt terrible, bad, neutral, good, or excellent, with optional journal text.
+_Avoid_: Tracking mood values in analytics unless explicitly scoped
+
+**Recap View**:
+The optional year-level reflective view summarizing progress across Calendars.
+_Avoid_: Overview when naming events or code-facing analytics
+
 ## Relationships
 
 - A **Calendar** can reach many **Milestones**.
