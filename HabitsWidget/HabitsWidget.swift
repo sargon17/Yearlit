@@ -444,7 +444,6 @@ struct HorizontalCalendarGrid: View {
         guard let calendar else { return false }
         return calendar.cadence == .daily
             && !calendar.isArchived
-            && family != .systemSmall
             && timelineMode.effectiveMode(for: calendar.cadence) == .your365
     }
 
@@ -755,6 +754,18 @@ struct HabitQuickAddIntent: AppIntent {
         todayCount: 1,
         isCurrentPeriodCompleted: false,
         family: .systemLarge
+    )
+}
+
+#Preview("Daily Your 365 Small") {
+    previewWidget(
+        calendar: previewDailyCalendar(),
+        timelineMode: .your365,
+        referenceDate: previewDate(year: 2026, month: 1, day: 11),
+        currentStreak: 7,
+        todayCount: 1,
+        isCurrentPeriodCompleted: false,
+        family: .systemSmall
     )
 }
 
