@@ -103,8 +103,8 @@ struct CalendarsSection: View {
               .onTapGesture {
                 router.showScreen(.sheet) { _ in
                   CreateCalendarView { newCalendar in
+                    pendingCalendarId = newCalendar.id.uuidString
                     store.addCalendar(newCalendar)
-                    position.scrollTo(id: newCalendar.id.uuidString)
                     router.dismissScreen()
                     addPositiveEvent(.createdCalendar)
                   }
@@ -144,10 +144,8 @@ struct CalendarsSection: View {
       .onOpenURL { url in
         handleCalendarDeepLink(url)
       }
-      .onReceive(store.$snapshot) { _ in
-        if let pendingCalendarId {
-          scrollToCalendarIfAvailable(pendingCalendarId)
-        }
+      .onChange(of: snapshot.activeCalendars.map(\.id)) { _, _ in
+        scrollToPendingCalendarIfAvailable()
       }
 
       .onAppear {
@@ -216,9 +214,18 @@ struct CalendarsSection: View {
     scrollToCalendarIfAvailable(idString)
   }
 
+  private func scrollToPendingCalendarIfAvailable() {
+    guard let pendingCalendarId else { return }
+    scrollToCalendarIfAvailable(pendingCalendarId)
+  }
+
   private func scrollToCalendarIfAvailable(_ id: String) {
     guard store.snapshot.activeCalendars.contains(where: { $0.id.uuidString == id }) else { return }
     pendingCalendarId = nil
-    position.scrollTo(id: id)
+
+    Task { @MainActor in
+      await Task.yield()
+      position.scrollTo(id: id)
+    }
   }
 }
