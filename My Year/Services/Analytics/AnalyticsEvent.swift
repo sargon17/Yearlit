@@ -26,7 +26,7 @@ enum AnalyticsEvent: String, CaseIterable {
   case shareSheetViewed = "share_sheet_viewed"
 }
 
-enum PaywallTrigger: String {
+enum PaywallTrigger: String, CaseIterable {
   case onboarding
   case calendarLimit = "calendar_limit"
   case shareGate = "share_gate"
@@ -36,7 +36,7 @@ enum PaywallTrigger: String {
   case unknown
 }
 
-enum ShareType: String {
+enum ShareType: String, CaseIterable {
   case calendar
   case recap
   case unknown

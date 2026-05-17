@@ -30,6 +30,7 @@ struct AnalyticsTests {
     let expectedKeys = Set(AnalyticsCatalog.standardPropertyKeys)
 
     #expect(actualKeys == expectedKeys)
+    #expect(expectedKeys.isDisjoint(with: AnalyticsCatalog.forbiddenSensitivePropertyKeys))
 
     let document = try String(contentsOfFile: Self.analyticsEventsDocPath, encoding: .utf8)
     for key in AnalyticsCatalog.standardPropertyKeys {
@@ -130,7 +131,13 @@ struct AnalyticsTests {
     return regex.firstMatch(in: value, range: range) != nil
   }
 
-  private static let analyticsEventsDocPath = "/home/agent/workspace/docs/analytics-events.md"
+  private static let analyticsEventsDocPath: String = {
+    let fileURL = URL(fileURLWithPath: #filePath)
+    let repoRoot = fileURL
+      .deletingLastPathComponent()
+      .deletingLastPathComponent()
+    return repoRoot.appendingPathComponent("docs/analytics-events.md").path
+  }()
 }
 
 @MainActor
