@@ -22,6 +22,11 @@ enum AnalyticsEvent: String, CaseIterable {
   case recapViewViewed = "recap_view_viewed"
   case calendarsOverviewViewed = "calendars_overview_viewed"
 
+  case widgetTimelineLoaded = "widget_timeline_loaded"
+  case widgetOpenedApp = "widget_opened_app"
+  case widgetQuickAddPerformed = "widget_quick_add_performed"
+  case widgetQuickAddOpened = "widget_quick_add_opened"
+
   case paywallViewed = "paywall_viewed"
   case shareSheetViewed = "share_sheet_viewed"
 }

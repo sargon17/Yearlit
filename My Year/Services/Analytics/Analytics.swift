@@ -1,4 +1,5 @@
 import Foundation
+import SharedModels
 
 @MainActor
 final class Analytics {
@@ -55,6 +56,21 @@ final class Analytics {
     )
   }
 
+  func flushQueuedWidgetEvents() {
+    let queuedEvents = WidgetAnalyticsQueue.shared.drain()
+    guard !queuedEvents.isEmpty else { return }
+
+    for event in queuedEvents {
+      guard let analyticsEvent = AnalyticsEvent(rawValue: event.name) else {
+        continue
+      }
+
+      let properties = Self.convertWidgetProperties(event.properties)
+      let merged = state.standardProperties().merging(properties) { _, new in new }
+      client.track(analyticsEvent, properties: merged)
+    }
+  }
+
   func updatePersonProperties(_ properties: [String: AnalyticsPropertyValue] = [:]) {
     let merged = state.standardProperties().merging(properties) { _, new in new }
     client.setPersonProperties(merged)
@@ -73,5 +89,28 @@ final class Analytics {
 
     state.markFirstPeriodCompleted()
     updatePersonProperties()
+  }
+
+  private static func convertWidgetProperties(
+    _ properties: [String: WidgetAnalyticsPropertyValue]
+  ) -> [String: AnalyticsPropertyValue] {
+    properties.reduce(into: [:]) { result, entry in
+      result[entry.key] = convertWidgetPropertyValue(entry.value)
+    }
+  }
+
+  private static func convertWidgetPropertyValue(
+    _ value: WidgetAnalyticsPropertyValue
+  ) -> AnalyticsPropertyValue {
+    switch value {
+    case let .string(value):
+      return .string(value)
+    case let .int(value):
+      return .int(value)
+    case let .double(value):
+      return .double(value)
+    case let .bool(value):
+      return .bool(value)
+    }
   }
 }

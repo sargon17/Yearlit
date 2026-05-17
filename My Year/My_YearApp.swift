@@ -105,6 +105,7 @@ struct My_YearApp: App {
     Purchases.configure(withAPIKey: AppConfig.revenueCatAPIKey)
     AppStorageMigration.run()
     Analytics.shared.configure()
+    Analytics.shared.flushQueuedWidgetEvents()
     Purchases.shared.getCustomerInfo { info, _ in
       Task { @MainActor in
         AnalyticsState.shared.updatePremiumStatus(customerInfo: info)
@@ -155,21 +156,12 @@ struct My_YearApp: App {
         case "clear":
           let store = ValuationStore.shared
           store.clearAllValuations()
+        case "calendar":
+          handleWidgetOpenURL(url)
         case "quick-add":
-          let idString = url.pathComponents.dropFirst().first
-          guard let idString, let calendarId = UUID(uuidString: idString) else { return }
-
-          let store = CustomCalendarStore.shared
-          let calendars = CustomCalendarStore.fetchCalendarsSnapshot()
-          guard let calendar = calendars.first(where: { $0.id == calendarId }) else { return }
-
-          quickEntry(
-            calendar: calendar,
-            date: Date(),
-            calendarStore: store,
-            source: .quickAddDeeplink
-          )
+          handleWidgetQuickAddURL(url)
         default:
+          handleWidgetOpenURL(url)
           break
         }
       }
@@ -198,6 +190,7 @@ struct My_YearApp: App {
       }
       .onChange(of: scenePhase) { _, phase in
         guard phase == .active else { return }
+        Analytics.shared.flushQueuedWidgetEvents()
         Analytics.shared.track(.appOpened)
       }
     }
@@ -210,6 +203,59 @@ struct My_YearApp: App {
   private func updateTimelinePreferencePresentation() {
     isTimelinePreferenceSheetPresented = onboarding.hasSeenOnboarding && !TimelinePreferenceStore.hasStoredMode()
   }
+}
+
+@MainActor
+private func handleWidgetOpenURL(_ url: URL) {
+  guard let widgetContext = WidgetDeepLinkAnalytics.context(from: url) else { return }
+
+  Analytics.shared.track(
+    .widgetOpenedApp,
+    properties: [
+      "widget_kind": .string(widgetContext.widgetKind),
+      "widget_action": .string(widgetContext.widgetAction),
+      "destination": .string(widgetContext.destination)
+    ]
+  )
+  Analytics.shared.flushQueuedWidgetEvents()
+}
+
+@MainActor
+func handleWidgetQuickAddURL(_ url: URL) {
+  let widgetContext = WidgetDeepLinkAnalytics.context(from: url)
+  if let widgetContext {
+    Analytics.shared.track(
+      .widgetQuickAddOpened,
+      properties: [
+        "widget_kind": .string(widgetContext.widgetKind),
+        "widget_action": .string(widgetContext.widgetAction),
+        "destination": .string(widgetContext.destination)
+      ]
+    )
+    Analytics.shared.track(
+      .widgetOpenedApp,
+      properties: [
+        "widget_kind": .string(widgetContext.widgetKind),
+        "widget_action": .string(widgetContext.widgetAction),
+        "destination": .string(widgetContext.destination)
+      ]
+    )
+    Analytics.shared.flushQueuedWidgetEvents()
+  }
+
+  let idString = url.pathComponents.dropFirst().first
+  guard let idString, let calendarId = UUID(uuidString: idString) else { return }
+
+  let store = CustomCalendarStore.shared
+  let calendars = CustomCalendarStore.fetchCalendarsSnapshot()
+  guard let calendar = calendars.first(where: { $0.id == calendarId }) else { return }
+
+  quickEntry(
+    calendar: calendar,
+    date: Date(),
+    calendarStore: store,
+    source: .quickAddDeeplink
+  )
 }
 
 struct DatesKey: EnvironmentKey {

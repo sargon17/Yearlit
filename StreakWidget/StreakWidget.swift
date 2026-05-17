@@ -38,7 +38,7 @@ struct Provider: AppIntentTimelineProvider {
         )
     }
 
-    func timeline(for configuration: ConfigurationAppIntent, in _: Context) async -> Timeline<SimpleEntry> {
+    func timeline(for configuration: ConfigurationAppIntent, in context: Context) async -> Timeline<SimpleEntry> {
         let currentDate = Date()
         let calendar = resolvedCalendar(for: configuration)
         let streakData = calendar.map { WidgetStreak.currentStreak(calendar: $0) }
@@ -49,6 +49,18 @@ struct Provider: AppIntentTimelineProvider {
             streak: streakData?.streak ?? 0,
             isAtRisk: streakData?.isAtRisk ?? false
         )
+
+        if !context.isPreview {
+            WidgetAnalyticsQueue.shared.enqueueTimelineLoaded(properties: [
+                "widget_kind": .string(WidgetAnalyticsKind.streak.rawValue),
+                "widget_family": .string(widgetFamilyName(context.family)),
+                "has_calendar": .bool(calendar != nil),
+                "cadence": .string(calendar?.cadence.rawValue ?? "unknown"),
+                "tracking_type": .string(calendar?.trackingType.analyticsValue ?? "unknown"),
+                "has_current_streak": .bool((streakData?.streak ?? 0) > 0),
+                "is_at_risk": .bool(streakData?.isAtRisk ?? false)
+            ])
+        }
 
         let nextUpdate = Calendar.current.startOfDay(
             for: Calendar.current.date(byAdding: .day, value: 1, to: currentDate) ?? currentDate
@@ -89,8 +101,13 @@ struct StreakWidgetEntryView: View {
         let streakValue = entry.streak
         let isAtRisk = entry.isAtRisk
         let destinationURL = entry.calendar.map { calendar in
-            URL(string: "my-year://calendar/\(calendar.id.uuidString)")
-        } ?? nil
+            widgetDeepLink(
+                host: "calendar",
+                calendarId: calendar.id.uuidString,
+                widgetKind: WidgetAnalyticsKind.streak.rawValue,
+                widgetAction: "open_calendar"
+            )
+        }
 
         VStack(alignment: .leading, spacing: 6) {
             VStack {
@@ -169,4 +186,35 @@ struct StreakWidget: Widget {
         streak: 0,
         isAtRisk: false
     )
+}
+
+private func widgetFamilyName(_ family: WidgetFamily) -> String {
+    switch family {
+    case .systemSmall: return WidgetAnalyticsFamily.systemSmall.rawValue
+    case .systemMedium: return WidgetAnalyticsFamily.systemMedium.rawValue
+    case .systemLarge: return WidgetAnalyticsFamily.systemLarge.rawValue
+    default: return WidgetAnalyticsFamily.other.rawValue
+    }
+}
+
+private func widgetDeepLink(
+    host: String,
+    calendarId: String?,
+    widgetKind: String,
+    widgetAction: String
+) -> URL {
+    var components = URLComponents()
+    components.scheme = "my-year"
+    components.host = host
+    components.queryItems = [
+        URLQueryItem(name: "source", value: "widget"),
+        URLQueryItem(name: "widget_kind", value: widgetKind),
+        URLQueryItem(name: "widget_action", value: widgetAction)
+    ]
+
+    if let calendarId {
+        components.path = "/\(calendarId)"
+    }
+
+    return components.url ?? URL(string: "my-year://")!
 }

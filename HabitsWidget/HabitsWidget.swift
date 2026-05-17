@@ -20,11 +20,22 @@ struct Provider: AppIntentTimelineProvider {
         makeEntry(for: configuration, date: Date())
     }
 
-    func timeline(for configuration: ConfigurationAppIntent, in _: Context) async -> Timeline<
+    func timeline(for configuration: ConfigurationAppIntent, in context: Context) async -> Timeline<
         SimpleEntry
     > {
         let currentDate = Date()
         let entry = makeEntry(for: configuration, date: currentDate)
+
+        if !context.isPreview {
+            WidgetAnalyticsQueue.shared.enqueueTimelineLoaded(properties: [
+                "widget_kind": .string(WidgetAnalyticsKind.habits.rawValue),
+                "widget_family": .string(widgetFamilyName(context.family)),
+                "has_calendar": .bool(entry.calendar != nil),
+                "cadence": .string(entry.calendar?.cadence.rawValue ?? "unknown"),
+                "tracking_type": .string(entry.calendar?.trackingType.analyticsValue ?? "unknown"),
+                "timeline_mode": .string(entry.timelineMode.rawValue)
+            ])
+        }
 
         // Update at midnight
         let calendar = Calendar.current
@@ -280,7 +291,14 @@ struct HorizontalCalendarGrid: View {
                             .frame(width: 24, height: 24)
                         } else {
                             // Fallback for iOS 16 and earlier - will open the app
-                            Link(destination: URL(string: "my-year://quick-add/\(calendar.id.uuidString)")!) {
+                            Link(
+                                destination: widgetDeepLink(
+                                    host: "quick-add",
+                                    calendarId: calendar.id.uuidString,
+                                    widgetKind: WidgetAnalyticsKind.habits.rawValue,
+                                    widgetAction: "quick_add"
+                                )
+                            ) {
                                 QuickAddButtonContent(
                                     calendar: calendar,
                                     isCurrentPeriodCompleted: isCurrentPeriodCompleted,
@@ -638,8 +656,13 @@ struct HabitsWidgetEntryView: View {
 
     var body: some View {
         let destinationURL = entry.calendar.map { calendar in
-            URL(string: "my-year://calendar/\(calendar.id.uuidString)")
-        } ?? nil
+            widgetDeepLink(
+                host: "calendar",
+                calendarId: calendar.id.uuidString,
+                widgetKind: WidgetAnalyticsKind.habits.rawValue,
+                widgetAction: "open_calendar"
+            )
+        }
         let renderingMode = WidgetStyle.RenderingMode(widgetRenderingMode)
         let backgroundColor = WidgetStyle.widgetBackgroundColor(for: colorScheme, renderingMode: renderingMode)
         let primaryTextColor = WidgetStyle.primaryTextColor(for: colorScheme, renderingMode: renderingMode)
@@ -717,19 +740,87 @@ struct HabitQuickAddIntent: AppIntent {
         let store = await MainActor.run { CustomCalendarStore.shared }
 
         guard let calendarId = UUID(uuidString: calendarId) else {
+            WidgetAnalyticsQueue.shared.enqueueQuickAddPerformed(properties: [
+                "widget_kind": .string(WidgetAnalyticsKind.habits.rawValue),
+                "cadence": .string("unknown"),
+                "tracking_type": .string("unknown"),
+                "result": .string("invalid_calendar")
+            ])
             return .result()
         }
 
-        await MainActor.run {
-            store.quickLogEntry(calendarId: calendarId, date: Date())
+        let calendar = await MainActor.run {
+            CustomCalendarStore.fetchCalendarsSnapshot().first(where: { $0.id == calendarId })
+        }
 
+        guard let calendar else {
+            WidgetAnalyticsQueue.shared.enqueueQuickAddPerformed(properties: [
+                "widget_kind": .string(WidgetAnalyticsKind.habits.rawValue),
+                "cadence": .string("unknown"),
+                "tracking_type": .string("unknown"),
+                "result": .string("invalid_calendar")
+            ])
+            return .result()
+        }
+
+        let quickLogSucceeded = await MainActor.run {
+            let didSave = store.quickLogEntry(calendarId: calendarId, date: Date())
             let impactFeedbackgenerator = UIImpactFeedbackGenerator(style: .medium)
             impactFeedbackgenerator.prepare()
             impactFeedbackgenerator.impactOccurred()
+            return didSave
         }
+
+        guard quickLogSucceeded else {
+            WidgetAnalyticsQueue.shared.enqueueQuickAddPerformed(properties: [
+                "widget_kind": .string(WidgetAnalyticsKind.habits.rawValue),
+                "cadence": .string(calendar.cadence.rawValue),
+                "tracking_type": .string(calendar.trackingType.analyticsValue),
+                "result": .string("failed")
+            ])
+            return .result()
+        }
+
+        WidgetAnalyticsQueue.shared.enqueueQuickAddPerformed(properties: [
+            "widget_kind": .string(WidgetAnalyticsKind.habits.rawValue),
+            "cadence": .string(calendar.cadence.rawValue),
+            "tracking_type": .string(calendar.trackingType.analyticsValue),
+            "result": .string("success")
+        ])
 
         return .result()
     }
+}
+
+private func widgetFamilyName(_ family: WidgetFamily) -> String {
+    switch family {
+    case .systemSmall: return WidgetAnalyticsFamily.systemSmall.rawValue
+    case .systemMedium: return WidgetAnalyticsFamily.systemMedium.rawValue
+    case .systemLarge: return WidgetAnalyticsFamily.systemLarge.rawValue
+    default: return WidgetAnalyticsFamily.other.rawValue
+    }
+}
+
+private func widgetDeepLink(
+    host: String,
+    calendarId: String?,
+    widgetKind: String,
+    widgetAction: String
+) -> URL {
+    var components = URLComponents()
+    components.scheme = "my-year"
+    components.host = host
+    components.queryItems = [
+        URLQueryItem(name: "source", value: "widget"),
+        URLQueryItem(name: "widget_kind", value: widgetKind),
+        URLQueryItem(name: "widget_action", value: widgetAction)
+    ]
+
+    if let calendarId {
+        components.path = "/\(calendarId)"
+    }
+
+    return components.url ?? URL(string: "my-year://")!
 }
 
 #Preview("Daily Calendar Year") {
