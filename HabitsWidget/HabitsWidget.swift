@@ -32,7 +32,7 @@ struct Provider: AppIntentTimelineProvider {
                 "widget_family": .string(widgetFamilyName(context.family)),
                 "has_calendar": .bool(entry.calendar != nil),
                 "cadence": .string(entry.calendar?.cadence.rawValue ?? "unknown"),
-                "tracking_type": .string(entry.calendar?.trackingType.rawValue ?? "unknown"),
+                "tracking_type": .string(entry.calendar?.trackingType.analyticsValue ?? "unknown"),
                 "timeline_mode": .string(entry.timelineMode.rawValue)
             ])
         }
@@ -775,7 +775,7 @@ struct HabitQuickAddIntent: AppIntent {
             WidgetAnalyticsQueue.shared.enqueueQuickAddPerformed(properties: [
                 "widget_kind": .string(WidgetAnalyticsKind.habits.rawValue),
                 "cadence": .string(calendar.cadence.rawValue),
-                "tracking_type": .string(calendar.trackingType.rawValue),
+                "tracking_type": .string(calendar.trackingType.analyticsValue),
                 "result": .string("failed")
             ])
             return .result()
@@ -784,7 +784,7 @@ struct HabitQuickAddIntent: AppIntent {
         WidgetAnalyticsQueue.shared.enqueueQuickAddPerformed(properties: [
             "widget_kind": .string(WidgetAnalyticsKind.habits.rawValue),
             "cadence": .string(calendar.cadence.rawValue),
-            "tracking_type": .string(calendar.trackingType.rawValue),
+            "tracking_type": .string(calendar.trackingType.analyticsValue),
             "result": .string("success")
         ])
 

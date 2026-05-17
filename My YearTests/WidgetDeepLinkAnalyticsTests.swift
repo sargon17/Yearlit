@@ -28,4 +28,28 @@ struct WidgetDeepLinkAnalyticsTests {
 
     #expect(WidgetDeepLinkAnalytics.context(from: url) == nil)
   }
+
+  @Test func quickAddFallbackTracksBeforeCalendarValidation() {
+    let client = RecordingAnalyticsClient()
+    Analytics.shared.replaceClient(client)
+
+    defer { Analytics.shared.replaceClient(NoopAnalyticsClient()) }
+
+    let url = URL(string: "my-year://quick-add/not-a-uuid?source=widget&widget_kind=habits&widget_action=quick_add")!
+
+    handleWidgetQuickAddURL(url)
+
+    #expect(client.trackedEvents.map { $0.0 } == [.widgetQuickAddOpened, .widgetOpenedApp])
+  }
+}
+
+private final class RecordingAnalyticsClient: AnalyticsClient {
+  private(set) var trackedEvents: [(AnalyticsEvent, [String: AnalyticsPropertyValue])] = []
+
+  func track(_ event: AnalyticsEvent, properties: [String: AnalyticsPropertyValue]) {
+    trackedEvents.append((event, properties))
+  }
+
+  func identify(distinctId _: String, properties _: [String: AnalyticsPropertyValue]) {}
+  func setPersonProperties(_ properties: [String: AnalyticsPropertyValue]) {}
 }

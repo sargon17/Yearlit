@@ -529,6 +529,17 @@ public enum TrackingType: String, Codable, CaseIterable {
         }
     }
 
+    public var analyticsValue: String {
+        switch self {
+        case .binary:
+            return "binary"
+        case .counter:
+            return "counter"
+        case .multipleDaily:
+            return "multiple_daily"
+        }
+    }
+
     public var detailDescription: String {
         switch self {
         case .binary:

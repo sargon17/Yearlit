@@ -122,6 +122,8 @@ Allowed `cadence` values: `daily`, `weekly`, `unknown`.
 
 Allowed `tracking_type` values: `binary`, `counter`, `multiple_daily`, `unknown`.
 
+`TrackingType.multipleDaily` is serialized as `multiple_daily` in analytics payloads. The Swift enum case name stays `multipleDaily`; only the analytics wire value is normalized.
+
 Allowed `timeline_mode` values: `your365`, `calendarYear`, `unknown`.
 
 ## Explicitly out of scope for #79 v1

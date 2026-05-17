@@ -56,7 +56,7 @@ struct Provider: AppIntentTimelineProvider {
                 "widget_family": .string(widgetFamilyName(context.family)),
                 "has_calendar": .bool(calendar != nil),
                 "cadence": .string(calendar?.cadence.rawValue ?? "unknown"),
-                "tracking_type": .string(calendar?.trackingType.rawValue ?? "unknown"),
+                "tracking_type": .string(calendar?.trackingType.analyticsValue ?? "unknown"),
                 "has_current_streak": .bool((streakData?.streak ?? 0) > 0),
                 "is_at_risk": .bool(streakData?.isAtRisk ?? false)
             ])
