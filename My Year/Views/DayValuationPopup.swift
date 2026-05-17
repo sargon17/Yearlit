@@ -133,6 +133,12 @@ struct DayValuationPopup: View {
                             if showNoteEditor {
                                 guard let selectedMood else { return }
                                 store.setValuation(selectedMood, for: date, note: noteText)
+                                Analytics.shared.track(
+                                    .moodLogged,
+                                    properties: [
+                                        "has_note": .bool(!noteText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+                                    ]
+                                )
                                 dismiss()
                             } else {
                                 dismiss()

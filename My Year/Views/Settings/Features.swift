@@ -11,10 +11,32 @@ struct Features: View {
         (My_YearApp.isDebugMode && runtimeDebugEnabled) || isDeveloperModeEnabled
     }
 
+    private var moodTrackingBinding: Binding<Bool> {
+        Binding(
+            get: { isMoodTrackingEnabled },
+            set: { newValue in
+                guard newValue != isMoodTrackingEnabled else { return }
+                isMoodTrackingEnabled = newValue
+                Analytics.shared.track(.moodTrackingEnabledChanged, properties: ["enabled": .bool(newValue)])
+            }
+        )
+    }
+
+    private var recapViewBinding: Binding<Bool> {
+        Binding(
+            get: { isRecapViewEnabled },
+            set: { newValue in
+                guard newValue != isRecapViewEnabled else { return }
+                isRecapViewEnabled = newValue
+                Analytics.shared.track(.recapViewEnabledChanged, properties: ["enabled": .bool(newValue)])
+            }
+        )
+    }
+
     var body: some View {
         Section(header: Text("Features")) {
-            Toggle("Enable Mood Tracking", isOn: $isMoodTrackingEnabled)
-            Toggle("Enable Recap View", isOn: $isRecapViewEnabled)
+            Toggle("Enable Mood Tracking", isOn: moodTrackingBinding)
+            Toggle("Enable Recap View", isOn: recapViewBinding)
 
             #if DEBUG
                 Toggle("Enable Runtime Debug", isOn: $runtimeDebugEnabled)

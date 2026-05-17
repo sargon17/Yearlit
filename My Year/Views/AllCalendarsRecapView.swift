@@ -18,6 +18,7 @@ struct AllCalendarsRecapView: View {
     @State private var tempSelectedYear: Int = Calendar.current.component(.year, from: Date())
     @State private var statsRefreshToken = UUID()
     @State private var lastObservedDataVersion: Int = 0
+    @State private var hasTrackedView = false
 
     private let availableYears: [Int] = {
         let currentYear: Int = Calendar.current.component(.year, from: Date())
@@ -141,6 +142,9 @@ struct AllCalendarsRecapView: View {
             Purchases.shared.getCustomerInfo { info, _ in
                 self.customerInfo = info
             }
+            guard !hasTrackedView else { return }
+            hasTrackedView = true
+            Analytics.shared.track(.recapViewViewed)
             if lastObservedDataVersion != snapshot.dataVersion {
                 lastObservedDataVersion = snapshot.dataVersion
                 statsRefreshToken = UUID()

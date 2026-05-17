@@ -1,7 +1,7 @@
 import RevenueCat
 import SharedModels
-import SwiftUI
 import SwiftfulRouting
+import SwiftUI
 
 struct CalendarsSection: View {
   @State private var customerInfo: CustomerInfo?
@@ -193,6 +193,7 @@ struct CalendarsSection: View {
           .font(.system(size: 16))
       }
       Button(action: {
+        Analytics.shared.track(.calendarsOverviewViewed)
         router.showScreen(.sheet) { _ in
           CalendarsOverview(store: store, valuationStore: valuationStore, scrollPosition: $position)
         }
