@@ -130,7 +130,6 @@ struct HorizontalCalendarGrid: View {
                let entry = calendar.entry(for: normalized) {
                 return completedColor(for: entry, today: today)
             }
-
             return colorForYour365Cell(cell)
         }
 
@@ -481,7 +480,6 @@ struct HorizontalCalendarGrid: View {
             return inactiveDayColor(base: backgroundColor, overlay: textPrimaryColor, ratio: inactiveRatio)
         }
     }
-
     private func completedColor(for entry: CalendarEntry, today: Date) -> Color {
         guard let calendar else {
             return missedDayColor(base: backgroundColor, overlay: textPrimaryColor)
