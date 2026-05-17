@@ -1,3 +1,4 @@
+import SharedModels
 import SwiftUI
 
 struct MinimalGridShareView: View {
