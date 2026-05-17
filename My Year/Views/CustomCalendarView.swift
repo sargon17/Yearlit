@@ -40,13 +40,11 @@ struct CustomCalendarView: View {
   @Environment(\.colorScheme) var colorScheme
   let calendar: CustomCalendar
   @StateObject private var store: CustomCalendarStore = .shared
+  @ObservedObject private var timelinePreference = TimelinePreferenceManager.shared
   @ObservedObject private var valuationStore: ValuationStore = .shared
 
   @AppStorage("runtimeDebugEnabled") private var runtimeDebugEnabled: Bool = false
   @AppStorage("wandFillForce") private var wandFillForce: Double = 0.5
-  @AppStorage(TimelinePreferenceStore.timelineModeKey, store: TimelinePreferenceStore.appGroupDefaults)
-  private var timelinePreferenceRawValue: String = ""
-
   @State private var today: Date = Calendar.current.startOfDay(for: Date())
   @Environment(\.scenePhase) private var scenePhase
 
@@ -71,8 +69,8 @@ struct CustomCalendarView: View {
   ) -> CalendarDisplayState {
     let activeCalendar = snapshot.calendar(id: calendar.id) ?? calendar
     let timelineMode =
-      TimelinePreferenceStore
-      .mode(rawValue: timelinePreferenceRawValue)
+      timelinePreference
+      .mode
       .effectiveMode(for: activeCalendar.cadence)
     let isShowingYour365 = activeCalendar.cadence == .daily && timelineMode == .your365
     let calendarYearGridDates =
@@ -511,6 +509,7 @@ struct CustomCalendarView: View {
           today: today,
           your365Presentation: displayState.your365Snapshot.map { GridView.Your365Presentation(snapshot: $0) }
         )
+        .id(displayState.timelineMode.rawValue)
         .frame(height: UIScreen.main.bounds.height * 0.55)
 
         let currentPeriodLogCount: Int? = displayState.currentPeriodReferenceDate.map {
