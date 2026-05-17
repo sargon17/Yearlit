@@ -16,6 +16,8 @@ struct YearCardShareView: View {
             calendar: calendar,
             year: year,
             dates: dates,
+            your365Snapshot: nil,
+            isYour365FirstYear: false,
             stats: stats,
             completionRateTrailingLongWindow: completionRateTrailingLongWindow,
             averageProgressTrailingShortWindow: 0,

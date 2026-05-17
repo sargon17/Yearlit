@@ -6,4 +6,5 @@ enum AppStorageKeys {
     static let showedUpMilestoneCelebrationsEnabled = "showedUpMilestoneCelebrationsEnabled"
     static let recapMilestoneCelebrationsEnabled = "recapMilestoneCelebrationsEnabled"
     static let onboardingSeenV1 = "onboarding.seen.v1"
+    static let retentionLastRescheduleLocalDay = "notifications.retention.lastRescheduleLocalDay"
 }

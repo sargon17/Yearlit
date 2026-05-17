@@ -32,6 +32,14 @@ _Avoid_: Monthly milestone, yearly milestone
 The app-level area where a user changes global Yearlit behavior.
 _Avoid_: Preferences
 
+**Marketing demo calendar**:
+A normal calendar used by the developer to produce shareable marketing screenshots.
+_Avoid_: Fake calendar, sample calendar
+
+**Developer mode**:
+A hidden production-accessible mode for trusted developer-only tooling.
+_Avoid_: Debug mode, secret mode
+
 ## Relationships
 
 - A **Calendar** can reach many **Milestones**.
@@ -51,6 +59,16 @@ _Avoid_: Preferences
 - When enabled, **Streak milestone celebrations** use the schedule: 3, 7, 14, 30, 50, 100, then every 100 successful periods in a row.
 - When enabled, **Showed-up milestone celebrations** use the schedule: 10, 25, 50, 100, 250, 500, then every 500 successful periods.
 - By default, the master switch is on, **Streak milestone celebrations** are on, **Showed-up milestone celebrations** are on, and **Recap milestone celebrations** are off.
+- A **Marketing demo calendar** is stored and behaves like any other Calendar.
+- **Developer mode** can expose **Marketing demo calendar** tools in production, but only after deliberate hidden activation.
+- **Developer mode** only reveals developer-only tools; it does not change normal calendar, paywall, notification, milestone, or tracking behavior by itself.
+- **Developer mode** is enabled by tapping the app icon in the Settings footer ten times.
+- Once enabled, **Developer mode** persists across app launches until manually disabled.
+- When **Developer mode** is enabled, Calendar detail screens show the same wand-fill action used in debug builds.
+- The wand-fill action keeps the same behavior in production **Developer mode** as in debug builds, including clearing and randomly refilling entries.
+- Enabling **Developer mode** gives subtle confirmation rather than interrupting normal Settings use.
+- **Developer mode** controls live near the wand-fill settings in Settings.
+- In production **Developer mode**, wand-fill settings are visible without enabling runtime debug.
 
 ## Example dialogue
 
@@ -61,3 +79,4 @@ _Avoid_: Preferences
 
 - "Switch milestones off" was resolved to mean disabling **Milestone celebrations**, not deleting or pausing **Milestone** detection/history.
 - "Customize milestones" was resolved to mean changing **Milestone celebration settings**, while keeping milestone detection intact.
+- "Fake calendar" was resolved to **Marketing demo calendar**: normal calendar content used by the developer for marketing screenshots.

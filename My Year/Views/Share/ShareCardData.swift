@@ -5,6 +5,8 @@ struct ShareCardData {
     let calendar: CustomCalendar
     let year: Int
     let dates: [Date]
+    let your365Snapshot: Your365Snapshot?
+    let isYour365FirstYear: Bool
     let stats: CalendarStats
     let completionRateTrailingLongWindow: Double
     let averageProgressTrailingShortWindow: Double
@@ -47,5 +49,23 @@ struct ShareCardData {
 
     var streakUnitPlural: String {
         calendar.cadence == .weekly ? "weeks" : "days"
+    }
+
+    var your365Title: LocalizedStringKey {
+        isYour365FirstYear ? "Your 365" : "Latest 365 Days"
+    }
+
+    var your365Subtitle: String {
+        guard let snapshot = your365Snapshot else { return "" }
+        if isYour365FirstYear {
+            if let todayCell = snapshot.todayCell {
+                return "Day \(todayCell.dayNumber) of your 365"
+            }
+        }
+        return "Started \(formattedStartDate(snapshot.trackingStartedAt))"
+    }
+
+    private func formattedStartDate(_ date: Date) -> String {
+        date.formatted(date: .abbreviated, time: .omitted)
     }
 }

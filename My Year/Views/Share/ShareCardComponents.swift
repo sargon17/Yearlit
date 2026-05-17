@@ -73,6 +73,15 @@ struct ShareCalendarGridView: View {
         }
     }
 
+    init(snapshot: Your365Snapshot, accentColor: Color) {
+        mappedDays = snapshot.cells.map { cell in
+            (
+                date: cell.date,
+                color: colorForYour365Cell(cell, accentColor: accentColor)
+            )
+        }
+    }
+
     var body: some View {
         GeometryReader { geometry in
             let dotSize: CGFloat = 10
@@ -104,6 +113,21 @@ struct ShareCalendarGridView: View {
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
+    }
+}
+
+private func colorForYour365Cell(_ cell: Your365Cell, accentColor: Color) -> Color {
+    switch cell.state {
+    case .completed:
+        return accentColor
+    case .todayPending:
+        return activeDayColor()
+    case .missed:
+        return missedDayColor()
+    case .future:
+        return futureDayColor()
+    case .notTracked:
+        return Color("text-tertiary").opacity(0.18)
     }
 }
 

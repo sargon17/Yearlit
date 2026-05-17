@@ -37,4 +37,10 @@ struct NotificationIdDerivationTests {
         #expect(deriveCalendarId(notificationIdentifier: "not-a-uuid", userInfoCalendarId: nil) == nil)
         #expect(deriveCalendarId(notificationIdentifier: "short", userInfoCalendarId: nil) == nil)
     }
+
+    @Test func ignoresAppLevelRetentionIdentifiers() {
+        for stage in RetentionNotificationStage.allCases {
+            #expect(deriveCalendarId(notificationIdentifier: stage.identifier, userInfoCalendarId: nil) == nil)
+        }
+    }
 }
