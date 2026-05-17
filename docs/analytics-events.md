@@ -116,6 +116,14 @@ Allowed `widget_action` values: `open_app`, `open_calendar`, `quick_add`.
 
 Allowed `destination` values: `home`, `calendar`, `quick_add`.
 
+Allowed `result` values: `success`, `failed`, `invalid_calendar`.
+
+Allowed `cadence` values: `daily`, `weekly`, `unknown`.
+
+Allowed `tracking_type` values: `binary`, `counter`, `multiple_daily`, `unknown`.
+
+Allowed `timeline_mode` values: `your365`, `calendarYear`, `unknown`.
+
 ## Explicitly out of scope for #79 v1
 
 - Session replay

@@ -150,17 +150,24 @@ struct My_YearApp: App {
       }
       .environment(\.dates, Self.cachedDates)
       .onOpenURL { url in
-        guard url.scheme == "my-year" else { return }
-        let queryItems = URLComponents(url: url, resolvingAgainstBaseURL: false)?.queryItems ?? []
-        let source = queryItems.first(where: { $0.name == "source" })?.value
-        let widgetKind = queryItems.first(where: { $0.name == "widget_kind" })?.value
-        let widgetAction = queryItems.first(where: { $0.name == "widget_action" })?.value
-        let isWidgetSource = source == "widget"
+        let widgetContext = WidgetDeepLinkAnalytics.context(from: url)
 
         switch url.host {
         case "clear":
           let store = ValuationStore.shared
           store.clearAllValuations()
+        case "calendar":
+          if let widgetContext {
+            Analytics.shared.track(
+              .widgetOpenedApp,
+              properties: [
+                "widget_kind": .string(widgetContext.widgetKind),
+                "widget_action": .string(widgetContext.widgetAction),
+                "destination": .string(widgetContext.destination)
+              ]
+            )
+            Analytics.shared.flushQueuedWidgetEvents()
+          }
         case "quick-add":
           let idString = url.pathComponents.dropFirst().first
           guard let idString, let calendarId = UUID(uuidString: idString) else { return }
@@ -169,37 +176,37 @@ struct My_YearApp: App {
           let calendars = CustomCalendarStore.fetchCalendarsSnapshot()
           guard let calendar = calendars.first(where: { $0.id == calendarId }) else { return }
 
-          if isWidgetSource {
+          if let widgetContext {
             Analytics.shared.track(
               .widgetQuickAddOpened,
               properties: [
-                "widget_kind": .string(widgetKind ?? "unknown"),
-                "widget_action": .string(widgetAction ?? "quick_add"),
-                "destination": .string("quick_add")
+                "widget_kind": .string(widgetContext.widgetKind),
+                "widget_action": .string(widgetContext.widgetAction),
+                "destination": .string(widgetContext.destination)
               ]
             )
             Analytics.shared.track(
               .widgetOpenedApp,
               properties: [
-                "widget_kind": .string(widgetKind ?? "unknown"),
-                "widget_action": .string(widgetAction ?? "quick_add"),
-                "destination": .string("quick_add")
+                "widget_kind": .string(widgetContext.widgetKind),
+                "widget_action": .string(widgetContext.widgetAction),
+                "destination": .string(widgetContext.destination)
               ]
             )
           }
 
           quickEntry(calendar: calendar, date: Date(), calendarStore: store)
-          if isWidgetSource {
+          if widgetContext != nil {
             Analytics.shared.flushQueuedWidgetEvents()
           }
         default:
-          if isWidgetSource {
+          if let widgetContext {
             Analytics.shared.track(
               .widgetOpenedApp,
               properties: [
-                "widget_kind": .string(widgetKind ?? "unknown"),
-                "widget_action": .string(widgetAction ?? "open_app"),
-                "destination": .string("home")
+                "widget_kind": .string(widgetContext.widgetKind),
+                "widget_action": .string(widgetContext.widgetAction),
+                "destination": .string(widgetContext.destination)
               ]
             )
             Analytics.shared.flushQueuedWidgetEvents()

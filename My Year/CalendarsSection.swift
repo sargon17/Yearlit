@@ -206,20 +206,6 @@ struct CalendarsSection: View {
 
   private func handleCalendarDeepLink(_ url: URL) {
     guard url.scheme == "my-year", url.host == "calendar" else { return }
-    let queryItems = URLComponents(url: url, resolvingAgainstBaseURL: false)?.queryItems ?? []
-    if queryItems.first(where: { $0.name == "source" })?.value == "widget" {
-      let widgetKind = queryItems.first(where: { $0.name == "widget_kind" })?.value ?? "unknown"
-      let widgetAction = queryItems.first(where: { $0.name == "widget_action" })?.value ?? "open_calendar"
-      Analytics.shared.track(
-        .widgetOpenedApp,
-        properties: [
-          "widget_kind": .string(widgetKind),
-          "widget_action": .string(widgetAction),
-          "destination": .string("calendar")
-        ]
-      )
-    }
-
     let idString = url.pathComponents.dropFirst().first
     guard let idString else { return }
 
