@@ -90,6 +90,7 @@ struct My_YearApp: App {
   @StateObject private var featureRequest = FeatureRequestManager(
     config: AppConfig.wishConfiguration
   )
+  @Environment(\.scenePhase) private var scenePhase
   @State private var isOnboardingPresented = false
   @State private var isTimelinePreferenceSheetPresented = false
 
@@ -103,6 +104,12 @@ struct My_YearApp: App {
     AppFont.registerFonts()
     Purchases.configure(withAPIKey: AppConfig.revenueCatAPIKey)
     AppStorageMigration.run()
+    Analytics.shared.configure()
+    Purchases.shared.getCustomerInfo { info, _ in
+      Task { @MainActor in
+        AnalyticsState.shared.updatePremiumStatus(customerInfo: info)
+      }
+    }
 
     // * Reviews Promt Manager
     print("start review prompter")
@@ -183,6 +190,10 @@ struct My_YearApp: App {
       }
       .onChange(of: onboarding.hasSeenOnboarding) { _, _ in
         updateOnboardingPresentation()
+      }
+      .onChange(of: scenePhase) { _, phase in
+        guard phase == .active else { return }
+        Analytics.shared.track(.appOpened)
       }
     }
   }

@@ -7,6 +7,18 @@ struct WishConfiguration {
 }
 
 enum AppConfig {
+  static let postHogConfiguration: PostHogConfiguration = {
+    let token = Bundle.main.object(forInfoDictionaryKey: "POSTHOG_PROJECT_TOKEN") as? String
+    let host = Bundle.main.object(forInfoDictionaryKey: "POSTHOG_HOST") as? String
+    let enabledInDebug = Bundle.main.object(forInfoDictionaryKey: "POSTHOG_ENABLED") as? String == "YES"
+
+    return PostHogConfiguration(
+      projectToken: token?.trimmingCharacters(in: .whitespacesAndNewlines),
+      host: host?.trimmingCharacters(in: .whitespacesAndNewlines).nilIfEmpty ?? "https://us.i.posthog.com",
+      enabledInDebug: enabledInDebug
+    )
+  }()
+
   static let revenueCatAPIKey: String = {
     guard
       let key = Bundle.main.object(forInfoDictionaryKey: "REVENUECAT_API_KEY") as? String,
@@ -44,4 +56,10 @@ enum AppConfig {
       apiKey: apiKey
     )
   }()
+}
+
+private extension String {
+  var nilIfEmpty: String? {
+    isEmpty ? nil : self
+  }
 }
