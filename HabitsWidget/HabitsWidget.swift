@@ -128,7 +128,7 @@ struct HorizontalCalendarGrid: View {
             if cell.state == .completed,
                let calendar,
                let entry = calendar.entry(for: normalized) {
-                return completedColor(for: entry)
+                return completedColor(for: entry, today: today)
             }
 
             return colorForYour365Cell(cell)
@@ -187,7 +187,7 @@ struct HorizontalCalendarGrid: View {
             switch calendar.trackingType {
             case .binary:
                 return entry.completed
-                    ? completedColor(for: entry)
+                    ? completedColor(for: entry, today: today)
                     : emptyDotColor(for: normalized, today: today, your365CellsByDate: your365CellsByDate)
             case .counter:
                 if entry.count > 0 {
@@ -444,6 +444,7 @@ struct HorizontalCalendarGrid: View {
         guard let calendar else { return false }
         return calendar.cadence == .daily
             && !calendar.isArchived
+            && family != .systemSmall
             && timelineMode.effectiveMode(for: calendar.cadence) == .your365
     }
 
@@ -481,9 +482,33 @@ struct HorizontalCalendarGrid: View {
         }
     }
 
-    private func completedColor(for entry: CalendarEntry) -> Color {
+    private func completedColor(for entry: CalendarEntry, today: Date) -> Color {
         guard let calendar else {
             return missedDayColor(base: backgroundColor, overlay: textPrimaryColor)
+        }
+
+        if renderingMode.isMonochrome {
+            let normalizedToday = normalizedBucketDate(for: today)
+            let normalizedEntryDate = normalizedBucketDate(for: entry.date)
+
+            switch calendar.trackingType {
+            case .binary:
+                return normalizedEntryDate == normalizedToday
+                    ? WidgetStyle.monochromeAccentColor()
+                    : WidgetStyle.monochromePrimaryColor()
+            case .counter:
+                let ratio = max(0.35, counterDotFillRatio(count: entry.count, counts: calendar.entries.values.map { $0.count }))
+
+                return normalizedEntryDate == normalizedToday
+                    ? WidgetStyle.monochromeAccentColor().opacity(ratio)
+                    : WidgetStyle.monochromePrimaryColor().opacity(ratio)
+            case .multipleDaily:
+                let opacity = max(0.35, multipleDailyDotFillRatio(count: entry.count, dailyTarget: calendar.dailyTarget))
+
+                return normalizedEntryDate == normalizedToday
+                    ? WidgetStyle.monochromeAccentColor().opacity(opacity)
+                    : WidgetStyle.monochromePrimaryColor().opacity(opacity)
+            }
         }
 
         switch calendar.trackingType {
