@@ -41,3 +41,55 @@ enum ShareType: String {
   case recap
   case unknown
 }
+
+enum AnalyticsCatalog {
+  static let standardPropertyKeys: [String] = [
+    "days_since_install",
+    "app_version",
+    "build_number",
+    "app_locale_language",
+    "is_premium",
+    "premium_status_known",
+    "mood_tracking_enabled",
+    "recap_view_enabled",
+    "milestone_celebrations_enabled",
+    "streak_milestone_celebrations_enabled",
+    "showed_up_milestone_celebrations_enabled",
+    "recap_milestone_celebrations_enabled",
+    "calendar_count",
+    "active_calendar_count",
+    "archived_calendar_count",
+    "daily_calendar_count",
+    "weekly_calendar_count",
+    "binary_calendar_count",
+    "counter_calendar_count",
+    "target_calendar_count",
+    "calendar_with_reminder_count",
+    "has_reminders_enabled",
+    "has_completed_first_checkin",
+    "has_completed_first_period"
+  ]
+
+  static let forbiddenSensitivePropertyKeys: [String] = [
+    "calendar_name",
+    "calendar_names",
+    "habit_name",
+    "habit_names",
+    "goal_text",
+    "journal_note",
+    "journal_notes",
+    "mood_note",
+    "mood_note_text",
+    "notification_text"
+  ]
+
+  static let forbiddenSensitiveContentCategories: [String] = [
+    "calendar names",
+    "habit names",
+    "goal text",
+    "journal notes",
+    "mood note text",
+    "notification text",
+    "any other user-entered sensitive content"
+  ]
+}

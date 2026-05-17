@@ -6,6 +6,16 @@ Yearlit analytics exists to answer product and marketing questions without colle
 
 Never send these values to analytics:
 
+- `calendar_name`
+- `calendar_names`
+- `habit_name`
+- `habit_names`
+- `goal_text`
+- `journal_note`
+- `journal_notes`
+- `mood_note`
+- `mood_note_text`
+- `notification_text`
 - Calendar names
 - Habit names
 - Goal text
@@ -46,6 +56,35 @@ Every app-owned event should include the standard analytics snapshot:
 - `has_completed_first_period`
 
 The same non-sensitive state may be set as PostHog person properties.
+
+## Catalog hardening
+
+Allowed `paywall_trigger` values: `onboarding`, `calendar_limit`, `share_gate`, `stats_gate`, `notification_gate`, `settings_support`, `unknown`.
+
+Allowed `share_type` values: `calendar`, `recap`, `unknown`.
+
+Forbidden sensitive content categories:
+
+- calendar names
+- habit names
+- goal text
+- journal notes
+- mood note text
+- notification text
+- any other user-entered sensitive content
+
+Forbidden property names:
+
+- `calendar_name`
+- `calendar_names`
+- `habit_name`
+- `habit_names`
+- `goal_text`
+- `journal_note`
+- `journal_notes`
+- `mood_note`
+- `mood_note_text`
+- `notification_text`
 
 ## Base lifecycle events
 
