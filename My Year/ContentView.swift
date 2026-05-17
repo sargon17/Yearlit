@@ -11,8 +11,7 @@ import SwiftUI
 
 struct ContentView: View {
     @ObservedObject private var store = CustomCalendarStore.shared
-    @State private var lastCleanupVersion: Int = -1
-    @State private var cleanupTask: Task<Void, Never>?
+    @State private var notificationCoordinator = NotificationRefreshCoordinator()
     @Environment(\.scenePhase) private var scenePhase
     @EnvironmentObject private var onboarding: OnboardingManager
 
@@ -21,39 +20,17 @@ struct ContentView: View {
 
         AppRouter()
             .onChange(of: snapshot.dataVersion) { _, newVersion in
-                // Debounce cleanup to avoid excessive IPC calls
-                cleanupTask?.cancel()
-                cleanupTask = Task {
-                    // Wait 2 seconds to batch multiple rapid changes
-                    try? await Task.sleep(for: .seconds(2))
-
-                    // Check if still needed and not cancelled
-                    guard !Task.isCancelled,
-                          lastCleanupVersion != newVersion
-                    else { return }
-
-                    lastCleanupVersion = newVersion
-                    await checkForNotificationsOfNonExistingCalendars(store: store)
-                    refreshStreakProtectionReminders(store: store)
-                }
+                notificationCoordinator.calendarDataVersionChanged(to: newVersion)
             }
             .task {
-                // Initial cleanup on app launch
-                await checkForNotificationsOfNonExistingCalendars(store: store)
-                refreshStreakProtectionReminders(store: store)
-                await refreshRetentionNotificationsIfNeeded(onboardingSeen: onboarding.hasSeenOnboarding)
+                await notificationCoordinator.appLaunched(onboardingSeen: onboarding.hasSeenOnboarding)
             }
             .onChange(of: scenePhase) { _, newPhase in
                 guard newPhase == .active else { return }
-                refreshStreakProtectionReminders(store: store)
-                Task {
-                    await refreshRetentionNotificationsIfNeeded(onboardingSeen: onboarding.hasSeenOnboarding)
-                }
+                notificationCoordinator.appBecameActive(onboardingSeen: onboarding.hasSeenOnboarding)
             }
             .onChange(of: onboarding.hasSeenOnboarding) { _, hasSeenOnboarding in
-                Task {
-                    await refreshRetentionNotificationsIfNeeded(onboardingSeen: hasSeenOnboarding)
-                }
+                notificationCoordinator.onboardingSeenChanged(to: hasSeenOnboarding)
             }
             .toolbarBackground(.hidden, for: .navigationBar)
             .font(AppFont.mono(17))
