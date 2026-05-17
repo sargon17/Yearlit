@@ -33,17 +33,4 @@ xcodebuild build \
   -project "${PROJECT}" \
   -scheme "${SCHEME}" \
   -destination "${destination}" \
-  -derivedDataPath "${DERIVED_DATA_PATH}" || {
-    status=$?
-    if [[ "${destination}" == platform=iOS,* ]]; then
-      echo "Device build failed; retrying with generic iOS destination."
-      xcodebuild build \
-        -project "${PROJECT}" \
-        -scheme "${SCHEME}" \
-        -destination "generic/platform=iOS" \
-        -derivedDataPath "${DERIVED_DATA_PATH}"
-      exit $?
-    fi
-
-    exit "${status}"
-  }
+  -derivedDataPath "${DERIVED_DATA_PATH}"

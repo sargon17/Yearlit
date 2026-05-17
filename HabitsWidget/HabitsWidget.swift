@@ -824,34 +824,30 @@ private func previewWeeklyCalendar() -> CustomCalendar {
     )
 }
 
-private func previewEntries() -> [Date: CalendarEntry] {
-    [
-        previewDate(year: 2026, month: 1, day: 1): CalendarEntry(
-            date: previewDate(year: 2026, month: 1, day: 1),
-            count: 2,
-            completed: true
-        ),
-        previewDate(year: 2026, month: 1, day: 2): CalendarEntry(
-            date: previewDate(year: 2026, month: 1, day: 2),
-            count: 1,
-            completed: false
-        ),
-        previewDate(year: 2026, month: 1, day: 3): CalendarEntry(
-            date: previewDate(year: 2026, month: 1, day: 3),
-            count: 3,
-            completed: true
-        )
-    ]
+private func previewEntries() -> [String: CalendarEntry] {
+    Dictionary(uniqueKeysWithValues: [
+        previewEntry(year: 2026, month: 1, day: 1, count: 2, completed: true),
+        previewEntry(year: 2026, month: 1, day: 2, count: 1, completed: false),
+        previewEntry(year: 2026, month: 1, day: 3, count: 3, completed: true)
+    ])
 }
 
-private func previewWeeklyEntries() -> [Date: CalendarEntry] {
-    [
-        previewDate(year: 2026, month: 1, day: 5): CalendarEntry(
-            date: previewDate(year: 2026, month: 1, day: 5),
-            count: 1,
-            completed: true
+private func previewWeeklyEntries() -> [String: CalendarEntry] {
+    Dictionary(uniqueKeysWithValues: [
+        previewEntry(year: 2026, month: 1, day: 5, count: 1, completed: true)
+    ])
+}
+
+private func previewEntry(year: Int, month: Int, day: Int, count: Int, completed: Bool) -> (String, CalendarEntry) {
+    let date = previewDate(year: year, month: month, day: day)
+    return (
+        DayKeyFormatter.shared.string(from: date),
+        CalendarEntry(
+            date: date,
+            count: count,
+            completed: completed
         )
-    ]
+    )
 }
 
 private func previewDate(year: Int, month: Int, day: Int) -> Date {
