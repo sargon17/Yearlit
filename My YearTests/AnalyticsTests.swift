@@ -5,10 +5,10 @@ import Testing
 @MainActor
 struct AnalyticsTests {
   @Test func trackMergesStandardSnapshotAndEventProperties() {
-    resetAnalyticsDefaults()
-    defer { resetAnalyticsDefaults() }
+    let defaults = makeTestDefaults()
+    defer { cleanupTestDefaults(defaults) }
 
-    let analytics = makeAnalytics()
+    let analytics = makeAnalytics(defaults: defaults)
     let spy = SpyAnalyticsClient()
     analytics.replaceClient(spy)
 
@@ -22,10 +22,10 @@ struct AnalyticsTests {
   }
 
   @Test func standardSnapshotPropertyKeysAreStableAndDocumented() throws {
-    resetAnalyticsDefaults()
-    defer { resetAnalyticsDefaults() }
+    let defaults = makeTestDefaults()
+    defer { cleanupTestDefaults(defaults) }
 
-    let state = makeState()
+    let state = makeState(defaults: defaults)
     let actualKeys = Set(state.standardProperties().keys)
     let expectedKeys = Set(AnalyticsCatalog.standardPropertyKeys)
 
@@ -47,10 +47,10 @@ struct AnalyticsTests {
   }
 
   @Test func firstCheckinCompletionIsOnlyTrackedOnce() {
-    resetAnalyticsDefaults()
-    defer { resetAnalyticsDefaults() }
+    let defaults = makeTestDefaults()
+    defer { cleanupTestDefaults(defaults) }
 
-    let analytics = makeAnalytics()
+    let analytics = makeAnalytics(defaults: defaults)
     let spy = SpyAnalyticsClient()
     analytics.replaceClient(spy)
 
@@ -111,15 +111,27 @@ struct AnalyticsTests {
   }
 
   private func makeState() -> AnalyticsState {
-    AnalyticsState(defaults: UserDefaults.standard)
+    makeState(defaults: makeTestDefaults())
   }
 
-  private func resetAnalyticsDefaults() {
-    let defaults = UserDefaults.standard
-    defaults.removeObject(forKey: "analytics.has_completed_first_checkin")
-    defaults.removeObject(forKey: "analytics.has_completed_first_period")
-    defaults.removeObject(forKey: "analytics.distinct_id")
-    defaults.removeObject(forKey: "analytics.install_date")
+  private func makeAnalytics(defaults: UserDefaults) -> Analytics {
+    Analytics(state: makeState(defaults: defaults))
+  }
+
+  private func makeState(defaults: UserDefaults) -> AnalyticsState {
+    AnalyticsState(defaults: defaults)
+  }
+
+  private func makeTestDefaults() -> UserDefaults {
+    let suiteName = "AnalyticsTests.\(UUID().uuidString)"
+    let defaults = UserDefaults(suiteName: suiteName)!
+    defaults.removePersistentDomain(forName: suiteName)
+    return defaults
+  }
+
+  private func cleanupTestDefaults(_ defaults: UserDefaults) {
+    guard let suiteName = defaults.suiteName else { return }
+    defaults.removePersistentDomain(forName: suiteName)
   }
 
   private func isLowercaseSnakeCase(_ value: String) -> Bool {

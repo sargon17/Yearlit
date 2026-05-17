@@ -61,18 +61,18 @@ final class Analytics {
   }
 
   func markFirstCheckinCompleted() {
-    guard !UserDefaults.standard.bool(forKey: "analytics.has_completed_first_checkin") else {
+    guard !state.hasCompletedFirstCheckin else {
       updatePersonProperties()
       return
     }
 
-    UserDefaults.standard.set(true, forKey: "analytics.has_completed_first_checkin")
+    state.markFirstCheckinCompleted()
     track(.firstCheckinCompleted)
     updatePersonProperties()
   }
 
   func markFirstPeriodCompleted() {
-    UserDefaults.standard.set(true, forKey: "analytics.has_completed_first_period")
+    state.markFirstPeriodCompleted()
     updatePersonProperties()
   }
 }

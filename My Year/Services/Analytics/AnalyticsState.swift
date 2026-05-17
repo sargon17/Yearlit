@@ -9,6 +9,8 @@ final class AnalyticsState {
   private let defaults: UserDefaults
   private let installDateKey = "analytics.install_date"
   private let distinctIDKey = "analytics.distinct_id"
+  private let firstCheckinCompletedKey = "analytics.has_completed_first_checkin"
+  private let firstPeriodCompletedKey = "analytics.has_completed_first_period"
 
   private(set) var isPremiumUser = false
   private(set) var premiumStatusKnown = false
@@ -49,6 +51,22 @@ final class AnalyticsState {
     Analytics.shared.updatePersonProperties()
   }
 
+  var hasCompletedFirstCheckin: Bool {
+    defaults.bool(forKey: firstCheckinCompletedKey)
+  }
+
+  func markFirstCheckinCompleted() {
+    defaults.set(true, forKey: firstCheckinCompletedKey)
+  }
+
+  var hasCompletedFirstPeriod: Bool {
+    defaults.bool(forKey: firstPeriodCompletedKey)
+  }
+
+  func markFirstPeriodCompleted() {
+    defaults.set(true, forKey: firstPeriodCompletedKey)
+  }
+
   func standardProperties() -> [String: AnalyticsPropertyValue] {
     let snapshot = CustomCalendarStore.shared.snapshot
     let activeCalendars = snapshot.activeCalendars
@@ -77,8 +95,8 @@ final class AnalyticsState {
       "target_calendar_count": .int(activeCalendars.filter { $0.trackingType == .multipleDaily }.count),
       "calendar_with_reminder_count": .int(activeCalendars.filter(\.recurringReminderEnabled).count),
       "has_reminders_enabled": .bool(activeCalendars.contains(where: \.recurringReminderEnabled)),
-      "has_completed_first_checkin": .bool(defaults.bool(forKey: "analytics.has_completed_first_checkin")),
-      "has_completed_first_period": .bool(defaults.bool(forKey: "analytics.has_completed_first_period"))
+      "has_completed_first_checkin": .bool(hasCompletedFirstCheckin),
+      "has_completed_first_period": .bool(hasCompletedFirstPeriod)
     ]
   }
 }
