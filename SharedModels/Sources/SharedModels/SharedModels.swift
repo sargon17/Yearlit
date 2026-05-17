@@ -755,6 +755,22 @@ public struct Your365Snapshot: Codable, Hashable {
 }
 
 public extension CustomCalendar {
+    func your365CompletedDates() -> Set<Date> {
+        Set(
+            entries.values.compactMap { entry in
+                // Counter calendars persist `completed == false` even when `count > 0`.
+                switch trackingType {
+                case .binary:
+                    return entry.completed ? entry.date : nil
+                case .counter:
+                    return entry.count > 0 ? entry.date : nil
+                case .multipleDaily:
+                    return entry.completed ? entry.date : nil
+                }
+            }
+        )
+    }
+
     /// Returns true while today is still within the first 365 days of tracking.
     func isWithinFirstYear(today: Date) -> Bool {
         let trackingStart = LocalDayCalendar.startOfDay(for: trackingStartedAt)

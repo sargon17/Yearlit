@@ -47,11 +47,13 @@ struct Provider: AppIntentTimelineProvider {
         let calendar = resolvedCalendar(for: configuration)
         let streakData = calendar.map { WidgetStreak.currentStreak(calendar: $0) }
         let todayEntry = calendar?.entry(for: date)
+        let timelineMode = TimelinePreferenceStore.mode()
 
         return SimpleEntry(
             date: date,
             configuration: configuration,
             calendar: calendar,
+            timelineMode: timelineMode,
             currentStreak: streakData?.streak ?? 0,
             todayCount: todayEntry?.count ?? 0,
             isCurrentPeriodCompleted: todayEntry?.completed ?? false
@@ -63,6 +65,7 @@ struct SimpleEntry: TimelineEntry {
     let date: Date
     let configuration: ConfigurationAppIntent
     let calendar: CustomCalendar?
+    let timelineMode: CalendarTimelineMode
     let currentStreak: Int
     let todayCount: Int
     let isCurrentPeriodCompleted: Bool
@@ -72,6 +75,7 @@ struct HorizontalCalendarGrid: View {
     let dotSize: CGFloat
     let family: WidgetFamily
     let calendar: CustomCalendar?
+    let timelineMode: CalendarTimelineMode
     let referenceDate: Date
     let currentStreak: Int
     let todayCount: Int
@@ -85,6 +89,7 @@ struct HorizontalCalendarGrid: View {
     init(
         family: WidgetFamily,
         calendar: CustomCalendar?,
+        timelineMode: CalendarTimelineMode,
         referenceDate: Date,
         currentStreak: Int,
         todayCount: Int,
@@ -96,6 +101,7 @@ struct HorizontalCalendarGrid: View {
     ) {
         self.family = family
         self.calendar = calendar
+        self.timelineMode = timelineMode
         self.referenceDate = referenceDate
         self.currentStreak = currentStreak
         self.todayCount = todayCount
@@ -117,6 +123,11 @@ struct HorizontalCalendarGrid: View {
     private func colorForDay(_ date: Date, today: Date) -> Color {
         let normalized = normalizedBucketDate(for: date)
         let normalizedToday = normalizedBucketDate(for: today)
+
+        if let snapshot = your365Snapshot(today: today),
+           let cell = snapshot.cells.first(where: { $0.date == normalized }) {
+            return colorForYour365Cell(cell)
+        }
 
         if renderingMode.isMonochrome {
             if normalized > normalizedToday {
@@ -212,6 +223,11 @@ struct HorizontalCalendarGrid: View {
     }
 
     private func emptyDotColor(for normalized: Date, today: Date) -> Color {
+        if let snapshot = your365Snapshot(today: today),
+           let cell = snapshot.cells.first(where: { $0.date == normalized }) {
+            return colorForYour365Cell(cell)
+        }
+
         normalized == normalizedBucketDate(for: today)
             ? activeDayColor(base: backgroundColor, overlay: textPrimaryColor)
             : missedDayColor(base: backgroundColor, overlay: textPrimaryColor)
@@ -328,6 +344,10 @@ struct HorizontalCalendarGrid: View {
             }
         }
 
+        if let snapshot = your365Snapshot(today: today) {
+            return snapshot.cells.map(\.date)
+        }
+
         switch family {
         case .systemSmall:
             return recentDates(from: today, days: 35)
@@ -403,6 +423,52 @@ struct HorizontalCalendarGrid: View {
         }
 
         return dates
+    }
+
+    private func your365Snapshot(today: Date) -> Your365Snapshot? {
+        guard shouldUseYour365Grid(), let calendar else { return nil }
+        return calendar.makeYour365Snapshot(completedDates: calendar.your365CompletedDates(), today: today)
+    }
+
+    private func shouldUseYour365Grid() -> Bool {
+        guard let calendar else { return false }
+        return calendar.cadence == .daily
+            && !calendar.isArchived
+            && timelineMode.effectiveMode(for: calendar.cadence) == .your365
+    }
+
+    private func colorForYour365Cell(_ cell: Your365Cell) -> Color {
+        if renderingMode.isMonochrome {
+            switch cell.state {
+            case .completed:
+                return WidgetStyle.monochromePrimaryColor()
+            case .todayPending:
+                return WidgetStyle.monochromeAccentColor()
+            case .missed:
+                return WidgetStyle.monochromePastDotColor()
+            case .future:
+                return WidgetStyle.monochromeFutureDotColor()
+            case .notTracked:
+                return WidgetStyle.monochromePastDotColor().opacity(0.65)
+            }
+        }
+
+        guard let calendar else {
+            return missedDayColor(base: backgroundColor, overlay: textPrimaryColor)
+        }
+
+        switch cell.state {
+        case .completed:
+            return Color(calendar.color)
+        case .todayPending:
+            return activeDayColor(base: backgroundColor, overlay: textPrimaryColor)
+        case .missed:
+            return missedDayColor(base: backgroundColor, overlay: textPrimaryColor)
+        case .future:
+            return futureDayColor(base: backgroundColor, overlay: textPrimaryColor, ratio: inactiveRatio)
+        case .notTracked:
+            return inactiveDayColor(base: backgroundColor, overlay: textPrimaryColor, ratio: inactiveRatio)
+        }
     }
 }
 
@@ -533,6 +599,7 @@ struct HabitsWidgetEntryView: View {
             HorizontalCalendarGrid(
                 family: family,
                 calendar: entry.calendar,
+                timelineMode: entry.timelineMode,
                 referenceDate: entry.date,
                 currentStreak: entry.currentStreak,
                 todayCount: entry.todayCount,
@@ -548,6 +615,7 @@ struct HabitsWidgetEntryView: View {
             HorizontalCalendarGrid(
                 family: family,
                 calendar: entry.calendar,
+                timelineMode: entry.timelineMode,
                 referenceDate: entry.date,
                 currentStreak: entry.currentStreak,
                 todayCount: entry.todayCount,
