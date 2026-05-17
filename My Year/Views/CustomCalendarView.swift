@@ -43,8 +43,9 @@ struct CustomCalendarView: View {
   @ObservedObject private var timelinePreference = TimelinePreferenceManager.shared
   @ObservedObject private var valuationStore: ValuationStore = .shared
 
-  @AppStorage("runtimeDebugEnabled") private var runtimeDebugEnabled: Bool = false
-  @AppStorage("wandFillForce") private var wandFillForce: Double = 0.5
+  @AppStorage(AppStorageKeys.runtimeDebugEnabled) private var runtimeDebugEnabled: Bool = false
+  @AppStorage(AppStorageKeys.wandFillForce) private var wandFillForce: Double = 0.5
+  @AppStorage(AppStorageKeys.isDeveloperModeEnabled) private var isDeveloperModeEnabled: Bool = false
   @State private var today: Date = Calendar.current.startOfDay(for: Date())
   @Environment(\.scenePhase) private var scenePhase
 
@@ -404,7 +405,7 @@ struct CustomCalendarView: View {
 
                 let currentDayDate = valuationStore.dateForDay(valuationStore.currentDayNumber - 1)
 
-                if My_YearApp.isDebugMode && runtimeDebugEnabled {
+                if (My_YearApp.isDebugMode && runtimeDebugEnabled) || isDeveloperModeEnabled {
                   Button(action: fillRandomEntries) {
                     Image(systemName: "wand.and.stars")
                       .foregroundColor(Color(activeCalendar.color))

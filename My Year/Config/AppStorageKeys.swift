@@ -1,6 +1,9 @@
 enum AppStorageKeys {
     static let isMoodTrackingEnabled = "isMoodTrackingEnabled"
     static let isRecapViewEnabled = "isRecapViewEnabled"
+    static let isDeveloperModeEnabled = "isDeveloperModeEnabled"
+    static let runtimeDebugEnabled = "runtimeDebugEnabled"
+    static let wandFillForce = "wandFillForce"
     static let milestoneCelebrationsEnabled = "milestoneCelebrationsEnabled"
     static let streakMilestoneCelebrationsEnabled = "streakMilestoneCelebrationsEnabled"
     static let showedUpMilestoneCelebrationsEnabled = "showedUpMilestoneCelebrationsEnabled"

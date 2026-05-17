@@ -23,11 +23,7 @@ struct SettingsView: View {
 
                 DevSupportSection(customerInfo: customerInfo)
 
-                DevCredits()
-                    .padding(.top, 8)
-                    .frame(maxWidth: .infinity, alignment: .center)
-                    .listRowBackground(Color.clear)
-                    .listRowInsets(EdgeInsets())
+                DeveloperFooterView()
             }
             .scrollContentBackground(.hidden)
             .font(AppFont.mono(12))
@@ -41,6 +37,42 @@ struct SettingsView: View {
                 customerInfo = info
             }
         }
+    }
+}
+
+private struct DeveloperFooterView: View {
+    @AppStorage(AppStorageKeys.isDeveloperModeEnabled) private var isDeveloperModeEnabled: Bool = false
+    @State private var developerModeTapCount: Int = 0
+
+    private func handleIconTap() {
+        guard !isDeveloperModeEnabled else { return }
+
+        developerModeTapCount += 1
+        if developerModeTapCount >= 10 {
+            isDeveloperModeEnabled = true
+            developerModeTapCount = 0
+            Task {
+                await hapticFeedback(.light)
+            }
+        }
+    }
+
+    var body: some View {
+        VStack(spacing: 8) {
+            Image("icon")
+                .resizable()
+                .scaledToFit()
+                .frame(width: 36, height: 36)
+                .onTapGesture {
+                    handleIconTap()
+                }
+
+            DevCredits()
+        }
+        .padding(.top, 8)
+        .frame(maxWidth: .infinity, alignment: .center)
+        .listRowBackground(Color.clear)
+        .listRowInsets(EdgeInsets())
     }
 }
 
