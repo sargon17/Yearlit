@@ -120,12 +120,11 @@ struct HorizontalCalendarGrid: View {
         }
     }
 
-    private func colorForDay(_ date: Date, today: Date) -> Color {
+    private func colorForDay(_ date: Date, today: Date, your365CellsByDate: [Date: Your365Cell]) -> Color {
         let normalized = normalizedBucketDate(for: date)
         let normalizedToday = normalizedBucketDate(for: today)
 
-        if let snapshot = your365Snapshot(today: today),
-           let cell = snapshot.cells.first(where: { $0.date == normalized }) {
+        if let cell = your365CellsByDate[normalized] {
             return colorForYour365Cell(cell)
         }
 
@@ -182,24 +181,24 @@ struct HorizontalCalendarGrid: View {
             switch calendar.trackingType {
             case .binary:
                 return entry.completed
-                    ? Color(calendar.color)
-                    : emptyDotColor(for: normalized, today: today)
+                    ? completedColor(for: entry)
+                    : emptyDotColor(for: normalized, today: today, your365CellsByDate: your365CellsByDate)
             case .counter:
                 if entry.count > 0 {
                     let ratio = counterDotFillRatio(count: entry.count, counts: calendar.entries.values.map { $0.count })
                     return WidgetStyle.blendedColor(base: backgroundColor, overlay: Color(calendar.color), ratio: ratio)
                 }
-                return emptyDotColor(for: normalized, today: today)
+                return emptyDotColor(for: normalized, today: today, your365CellsByDate: your365CellsByDate)
             case .multipleDaily:
                 if entry.count > 0 {
                     let opacity = multipleDailyDotFillRatio(count: entry.count, dailyTarget: calendar.dailyTarget)
                     return Color(calendar.color).opacity(opacity)
                 }
-                return emptyDotColor(for: normalized, today: today)
+                return emptyDotColor(for: normalized, today: today, your365CellsByDate: your365CellsByDate)
             }
         }
 
-        return emptyDotColor(for: normalized, today: today)
+        return emptyDotColor(for: normalized, today: today, your365CellsByDate: your365CellsByDate)
     }
 
     private func isAccentedDay(_ date: Date, today: Date) -> Bool {
@@ -222,9 +221,8 @@ struct HorizontalCalendarGrid: View {
         }
     }
 
-    private func emptyDotColor(for normalized: Date, today: Date) -> Color {
-        if let snapshot = your365Snapshot(today: today),
-           let cell = snapshot.cells.first(where: { $0.date == normalized }) {
+    private func emptyDotColor(for normalized: Date, today: Date, your365CellsByDate: [Date: Your365Cell]) -> Color {
+        if let cell = your365CellsByDate[normalized] {
             return colorForYour365Cell(cell)
         }
 
@@ -296,7 +294,9 @@ struct HorizontalCalendarGrid: View {
 
             GeometryReader { geometry in
                 let padding: CGFloat = 0
-                let dates = datesForFamily(today: referenceDate)
+                let your365Snapshot = your365Snapshot(today: referenceDate)
+                let your365CellsByDate = Dictionary(uniqueKeysWithValues: your365Snapshot?.cells.map { ($0.date, $0) } ?? [])
+                let dates = datesForFamily(today: referenceDate, your365Snapshot: your365Snapshot)
                 let totalDays = dates.count
                 let availableWidth = geometry.size.width - (padding * 2)
                 let availableHeight = geometry.size.height - (padding * 2)
@@ -314,7 +314,11 @@ struct HorizontalCalendarGrid: View {
                                 let day = row * layout.columns + col
                                 if day < totalDays {
                                     WidgetGridDot(
-                                        color: colorForDay(dates[day], today: referenceDate),
+                                        color: colorForDay(
+                                            dates[day],
+                                            today: referenceDate,
+                                            your365CellsByDate: your365CellsByDate
+                                        ),
                                         dotSize: dotSize,
                                         accentable: isAccentedDay(dates[day], today: referenceDate)
                                     )
@@ -332,7 +336,7 @@ struct HorizontalCalendarGrid: View {
         .background(backgroundColor)
     }
 
-    private func datesForFamily(today: Date) -> [Date] {
+    private func datesForFamily(today: Date, your365Snapshot: Your365Snapshot?) -> [Date] {
         if let calendar, calendar.cadence == .weekly {
             switch family {
             case .systemSmall:
@@ -344,7 +348,7 @@ struct HorizontalCalendarGrid: View {
             }
         }
 
-        if let snapshot = your365Snapshot(today: today) {
+        if let snapshot = your365Snapshot {
             return snapshot.cells.map(\.date)
         }
 
@@ -468,6 +472,23 @@ struct HorizontalCalendarGrid: View {
             return futureDayColor(base: backgroundColor, overlay: textPrimaryColor, ratio: inactiveRatio)
         case .notTracked:
             return inactiveDayColor(base: backgroundColor, overlay: textPrimaryColor, ratio: inactiveRatio)
+        }
+    }
+
+    private func completedColor(for entry: CalendarEntry) -> Color {
+        guard let calendar else {
+            return missedDayColor(base: backgroundColor, overlay: textPrimaryColor)
+        }
+
+        switch calendar.trackingType {
+        case .binary:
+            return Color(calendar.color)
+        case .counter:
+            let ratio = counterDotFillRatio(count: entry.count, counts: calendar.entries.values.map { $0.count })
+            return WidgetStyle.blendedColor(base: backgroundColor, overlay: Color(calendar.color), ratio: ratio)
+        case .multipleDaily:
+            let opacity = multipleDailyDotFillRatio(count: entry.count, dailyTarget: calendar.dailyTarget)
+            return Color(calendar.color).opacity(opacity)
         }
     }
 }
