@@ -6,11 +6,14 @@ func updateCounterEntry(
     calendarId: UUID,
     date: Date,
     calendarStore: CustomCalendarStore,
-    addValue: Int
+    addValue: Int,
+    source: CalendarAnalyticsSource = .unknown
 ) {
+    let calendar = calendarStore.snapshot.calendar(id: calendarId)
+    let oldEntry = calendarStore.getEntry(calendarId: calendarId, date: date)
     var newEntry: CalendarEntry
 
-    if let entry = calendarStore.getEntry(calendarId: calendarId, date: date) {
+    if let entry = oldEntry {
         let newValue = entry.count + addValue
         let isCompleted = newValue > 0
         newEntry = CalendarEntry(
@@ -23,4 +26,12 @@ func updateCounterEntry(
     }
 
     calendarStore.addEntry(calendarId: calendarId, entry: newEntry)
+    if let calendar {
+        CalendarAnalyticsTracker.shared.trackEntryMutation(
+            calendar: calendar,
+            oldEntry: oldEntry,
+            newEntry: newEntry,
+            source: source
+        )
+    }
 }

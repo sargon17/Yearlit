@@ -6,12 +6,14 @@ func updateMultipleDailyEntry(
     calendar: CustomCalendar,
     date: Date,
     calendarStore: CustomCalendarStore,
-    addValue: Int
+    addValue: Int,
+    source: CalendarAnalyticsSource = .unknown
 ) {
+    let oldEntry = calendarStore.getEntry(calendarId: calendar.id, date: date)
     var newEntry: CalendarEntry
     let calendarId = calendar.id
 
-    if let entry = calendarStore.getEntry(calendarId: calendarId, date: date) {
+    if let entry = oldEntry {
         let newValue = entry.count + addValue
         let isCompleted = newValue >= calendar.dailyTarget
 
@@ -29,4 +31,10 @@ func updateMultipleDailyEntry(
     }
 
     calendarStore.addEntry(calendarId: calendarId, entry: newEntry)
+    CalendarAnalyticsTracker.shared.trackEntryMutation(
+        calendar: calendar,
+        oldEntry: oldEntry,
+        newEntry: newEntry,
+        source: source
+    )
 }

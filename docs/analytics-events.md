@@ -62,13 +62,13 @@ Owned by #90.
 | Event | Notes |
 | --- | --- |
 | `calendar_created` | Include `cadence`, `tracking_type`, `has_reminder_enabled`, `has_backfilled_history`, `is_first_calendar`. |
-| `calendar_archived` | Include `source`, `cadence`, `tracking_type`. |
-| `calendar_unarchived` | Include `source`, `cadence`, `tracking_type`. |
-| `checkin_completed` | First transition from no progress to progress for a period. Include `cadence`, `tracking_type`, `period`, `source`. |
+| `calendar_archived` | Include `source`, `cadence`, `tracking_type`. Allowed sources: `drag_action`, `edit_calendar`, `unknown`. |
+| `calendar_unarchived` | Include `source`, `cadence`, `tracking_type`. Allowed sources: `drag_action`, `edit_calendar`, `unknown`. |
+| `checkin_completed` | First transition from no progress to progress for a period. Include `cadence`, `tracking_type`, `period`, `source`. Allowed sources: `calendar`, `notification`, `quick_add_deeplink`, `edit_sheet`, `unknown`. |
 | `first_checkin_completed` | First check-in once per install/user identity. |
-| `checkin_removed` | Progress removed from a period. |
-| `period_completed` | Binary/target period reaches completion criteria. Counter calendars do not emit this in v1. |
-| `period_uncompleted` | Completed period becomes incomplete. |
+| `checkin_removed` | Progress removed from a period. Include `cadence`, `tracking_type`, `period`, `source`. |
+| `period_completed` | Binary/target period reaches completion criteria. Counter calendars do not emit this in v1. Include `cadence`, `tracking_type`, `period`, `source`. |
+| `period_uncompleted` | Completed period becomes incomplete. Include `cadence`, `tracking_type`, `period`, `source`. |
 
 Allowed check-in `source` values: `calendar`, `notification`, `quick_add_deeplink`, `edit_sheet`, `unknown`.
 

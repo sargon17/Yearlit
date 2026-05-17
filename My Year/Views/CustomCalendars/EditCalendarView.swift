@@ -294,6 +294,11 @@ struct EditCalendarView: View {
               let updatedCalendar = makeUpdatedCalendar(isArchived: isArchived)
               scheduleNotifications(for: updatedCalendar, store: CustomCalendarStore.shared)
               onSave(updatedCalendar)
+              CalendarAnalyticsTracker.shared.trackArchiveStateChange(
+                calendar: updatedCalendar,
+                source: .editCalendar,
+                isArchived: updatedCalendar.isArchived
+              )
               dismiss()
             }) {
               Text(isArchived ? "Unarchive Calendar" : "Archive Calendar")
@@ -369,17 +374,24 @@ struct EditCalendarView: View {
         }
       }
       ToolbarItem(placement: .confirmationAction) {
-        Button("Save") {
-          let trimmedName = name.trimmingCharacters(in: .whitespacesAndNewlines)
-          guard !trimmedName.isEmpty && trimmedName.count <= 50 else {
-            calendarError = .invalidName
-            return
+          Button("Save") {
+            let trimmedName = name.trimmingCharacters(in: .whitespacesAndNewlines)
+            guard !trimmedName.isEmpty && trimmedName.count <= 50 else {
+              calendarError = .invalidName
+              return
+            }
+            let updatedCalendar = makeUpdatedCalendar()
+            scheduleNotifications(for: updatedCalendar, store: CustomCalendarStore.shared)
+            onSave(updatedCalendar)
+            if calendar.isArchived != updatedCalendar.isArchived {
+              CalendarAnalyticsTracker.shared.trackArchiveStateChange(
+                calendar: updatedCalendar,
+                source: .editCalendar,
+                isArchived: updatedCalendar.isArchived
+              )
+            }
+            dismiss()
           }
-          let updatedCalendar = makeUpdatedCalendar()
-          scheduleNotifications(for: updatedCalendar, store: CustomCalendarStore.shared)
-          onSave(updatedCalendar)
-          dismiss()
-        }
         .disabled(name.isEmpty)
       }
     }

@@ -104,7 +104,12 @@ struct CalendarsSection: View {
                 router.showScreen(.sheet) { _ in
                   CreateCalendarView { newCalendar in
                     pendingCalendarId = newCalendar.id.uuidString
+                    let isFirstCalendar = store.snapshot.calendars.isEmpty
                     store.addCalendar(newCalendar)
+                    CalendarAnalyticsTracker.shared.trackCalendarCreated(
+                      calendar: newCalendar,
+                      isFirstCalendar: isFirstCalendar
+                    )
                     router.dismissScreen()
                     addPositiveEvent(.createdCalendar)
                   }

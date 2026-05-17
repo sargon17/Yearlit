@@ -51,7 +51,12 @@ struct CreateFirstHabit: View {
             streakProtectionThreshold: streakProtectionThreshold
         )
 
+        let isFirstCalendar = store.snapshot.calendars.isEmpty
         store.addCalendar(calendar)
+        CalendarAnalyticsTracker.shared.trackCalendarCreated(
+            calendar: calendar,
+            isFirstCalendar: isFirstCalendar
+        )
         scheduleNotifications(for: calendar, store: store)
 
         onNext()

@@ -163,7 +163,12 @@ struct My_YearApp: App {
           let calendars = CustomCalendarStore.fetchCalendarsSnapshot()
           guard let calendar = calendars.first(where: { $0.id == calendarId }) else { return }
 
-          quickEntry(calendar: calendar, date: Date(), calendarStore: store)
+          quickEntry(
+            calendar: calendar,
+            date: Date(),
+            calendarStore: store,
+            source: .quickAddDeeplink
+          )
         default:
           break
         }

@@ -42,13 +42,15 @@ final class Analytics {
   }
 
   func markFirstCheckinCompleted() {
-    UserDefaults.standard.set(true, forKey: "analytics.has_completed_first_checkin")
+    guard !state.hasCompletedFirstCheckin else { return }
+    state.setHasCompletedFirstCheckin(true)
     track(.firstCheckinCompleted)
     updatePersonProperties()
   }
 
   func markFirstPeriodCompleted() {
-    UserDefaults.standard.set(true, forKey: "analytics.has_completed_first_period")
+    guard !state.hasCompletedFirstPeriod else { return }
+    state.setHasCompletedFirstPeriod(true)
     updatePersonProperties()
   }
 }

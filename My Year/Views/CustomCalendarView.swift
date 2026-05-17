@@ -191,7 +191,12 @@ struct CustomCalendarView: View {
         )
       }
     } else if activeCalendar.trackingType == .binary {
-      _ = toggleBinaryEntry(calendarId: activeCalendar.id, date: date, calendarStore: store)
+      _ = toggleBinaryEntry(
+        calendarId: activeCalendar.id,
+        date: date,
+        calendarStore: store,
+        source: .calendar
+      )
       scheduleMilestoneCheck()
     }
     checkIfReachedThreeDays(activeCalendar)
@@ -207,7 +212,8 @@ struct CustomCalendarView: View {
     quickEntry(
       calendar: activeCalendar,
       date: entryDate,
-      calendarStore: store
+      calendarStore: store,
+      source: .calendar
     )
 
     checkIfReachedThreeDays(activeCalendar)

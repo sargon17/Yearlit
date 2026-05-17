@@ -45,6 +45,11 @@ struct ContextOrDragModifier: ViewModifier {
         scheduleNotifications(for: updatedCalendar, store: store)
         withAnimation(.spring(response: 0.35, dampingFraction: 0.85)) {
             store.updateCalendar(updatedCalendar)
+            CalendarAnalyticsTracker.shared.trackArchiveStateChange(
+                calendar: updatedCalendar,
+                source: .dragAction,
+                isArchived: updatedCalendar.isArchived
+            )
         }
     }
 }
