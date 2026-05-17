@@ -66,6 +66,8 @@ struct HabitHistorySection: View {
   }
 
   private var maxDate: Date {
-    min(earliestEntryDate ?? HabitHistoryDateResolver.today(cadence: cadence), HabitHistoryDateResolver.today(cadence: cadence))
+    let today = HabitHistoryDateResolver.today(cadence: cadence)
+    guard let earliestEntryDate else { return today }
+    return min(earliestEntryDate, today)
   }
 }

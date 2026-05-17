@@ -91,6 +91,7 @@ struct My_YearApp: App {
     config: AppConfig.wishConfiguration
   )
   @State private var isOnboardingPresented = false
+  @State private var isTimelinePreferenceSheetPresented = false
 
   #if DEBUG
     static let isDebugMode = true
@@ -162,21 +163,36 @@ struct My_YearApp: App {
       }
       .environmentObject(onboarding)
       .environmentObject(featureRequest)
-      .fullScreenCover(isPresented: $isOnboardingPresented) {
+      .fullScreenCover(isPresented: $isOnboardingPresented, onDismiss: {
+        updateTimelinePreferencePresentation()
+      }) {
         OnboardingView {
           onboarding.markAsSeen()
           isOnboardingPresented = false
         }
       }
+      .fullScreenCover(isPresented: $isTimelinePreferenceSheetPresented) {
+        TimelinePreferenceChoiceSheet { mode in
+          TimelinePreferenceManager.shared.setMode(mode)
+          isTimelinePreferenceSheetPresented = false
+        }
+      }
       .onAppear {
-        isOnboardingPresented = !onboarding.hasSeenOnboarding
-        onboarding.persistDefaultTimelinePreferenceIfNeeded()
+        updateOnboardingPresentation()
+        updateTimelinePreferencePresentation()
       }
       .onChange(of: onboarding.hasSeenOnboarding) { _, _ in
-        isOnboardingPresented = !onboarding.hasSeenOnboarding
-        onboarding.persistDefaultTimelinePreferenceIfNeeded()
+        updateOnboardingPresentation()
       }
     }
+  }
+
+  private func updateOnboardingPresentation() {
+    isOnboardingPresented = !onboarding.hasSeenOnboarding
+  }
+
+  private func updateTimelinePreferencePresentation() {
+    isTimelinePreferenceSheetPresented = onboarding.hasSeenOnboarding && !TimelinePreferenceStore.hasStoredMode()
   }
 }
 

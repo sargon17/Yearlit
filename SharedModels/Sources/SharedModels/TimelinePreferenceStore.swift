@@ -5,7 +5,13 @@ public enum TimelinePreferenceStore {
     public static let timelineModeKey = "timeline.mode.v1"
 
     public static var appGroupDefaults: UserDefaults {
-        UserDefaults(suiteName: appGroupId) ?? .standard
+        guard let defaults = UserDefaults(suiteName: appGroupId) else {
+            assertionFailure("Unable to create app-group UserDefaults for \(appGroupId)")
+            // Keep the app usable if the app group is unavailable, while surfacing the setup issue in debug builds.
+            return .standard
+        }
+
+        return defaults
     }
 
     public static func storedMode(defaults: UserDefaults = appGroupDefaults) -> CalendarTimelineMode? {
