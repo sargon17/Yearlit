@@ -27,7 +27,7 @@ struct Provider: TimelineProvider {
                 "widget_kind": .string(WidgetAnalyticsKind.year.rawValue),
                 "widget_family": .string(widgetFamilyName(context.family)),
                 "has_calendar": .bool(false),
-                "timeline_mode": .string("calendar_year")
+                "timeline_mode": .string("calendarYear")
             ])
         }
 
