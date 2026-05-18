@@ -121,7 +121,7 @@ struct IdentityFirst: View {
     let onNext: () -> Void
 
     var body: some View {
-        OnboardingView.OnboardingSlide(onNext: onNext) {
+        OnboardingStepContainer {
             ZStack {
                 GeometryReader { proxy in
                     let height = proxy.size.height
@@ -246,7 +246,7 @@ struct IdentityFirst: View {
                     )
                 }
             }
-        } lower: {
+        } content: {
             VStack(alignment: .leading, spacing: 8) {
                 Spacer()
 
@@ -264,6 +264,8 @@ struct IdentityFirst: View {
                 .font(AppFont.mono(14))
                 .foregroundStyle(.secondary)
             }
+        } actions: {
+            OnboardingView.ForwardButton(title: "Next", onTap: onNext)
         }
     }
 }

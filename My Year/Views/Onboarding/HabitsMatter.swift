@@ -4,7 +4,7 @@ struct HabitsMatter: View {
     let onNext: () -> Void
 
     var body: some View {
-        OnboardingView.OnboardingSlide(onNext: onNext) {
+        OnboardingStepContainer {
             ZStack {
                 Image("onboarding_2")
                     .resizable()
@@ -17,7 +17,7 @@ struct HabitsMatter: View {
                     endPoint: .bottom
                 )
             }
-        } lower: {
+        } content: {
             VStack(alignment: .leading, spacing: 8) {
                 Spacer()
 
@@ -34,6 +34,8 @@ struct HabitsMatter: View {
                 .font(AppFont.mono(14))
                 .foregroundStyle(.secondary)
             }
+        } actions: {
+            OnboardingView.ForwardButton(title: "Next", onTap: onNext)
         }
     }
 }

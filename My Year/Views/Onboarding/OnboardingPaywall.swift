@@ -14,19 +14,13 @@ struct OnboardingPaywall: View {
             }
             .clipped()
         }
-        .overlay(
-            HStack {
-                Spacer()
-                Button(action: {
-                    onNext()
-                }) {
-                    Image(systemName: "xmark")
-                        .foregroundColor(.textSecondary)
-                        .padding(8)
-                }
+        .overlay(alignment: .topTrailing) {
+            Button(action: onNext) {
+                Image(systemName: "xmark")
+                    .foregroundColor(.textSecondary)
+                    .padding(8)
             }
-            .padding(),
-            alignment: .topTrailing
-        )
+            .padding()
+        }
     }
 }

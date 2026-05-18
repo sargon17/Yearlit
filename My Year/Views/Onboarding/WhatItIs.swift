@@ -4,7 +4,7 @@ struct WhatItIs: View {
     let onNext: () -> Void
 
     var body: some View {
-        OnboardingView.OnboardingSlide(onNext: onNext) {
+        OnboardingStepContainer {
             GeometryReader { geometry in
                 let height = geometry.size.height
                 let width = geometry.size.width
@@ -32,7 +32,7 @@ struct WhatItIs: View {
                         .shadow(color: .black, radius: 4, x: 0, y: 5)
                 }
             }
-        } lower: {
+        } content: {
             VStack(alignment: .leading, spacing: 8) {
                 Spacer()
                 Text("Yearlit")
@@ -48,6 +48,8 @@ struct WhatItIs: View {
                 .font(AppFont.mono(14))
                 .foregroundStyle(.secondary)
             }
+        } actions: {
+            OnboardingView.ForwardButton(title: "Next", onTap: onNext)
         }
     }
 }
