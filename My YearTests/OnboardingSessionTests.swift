@@ -186,12 +186,63 @@ struct OnboardingSessionTests {
         #expect(coordinator.currentStep == .notificationPermission)
     }
 
+    @Test func reviewSkipTracksSkippedActionOnce() {
+        let analytics = SpyAnalytics()
+        let coordinator = OnboardingCoordinator(onFinish: {}, analytics: analytics)
+
+        coordinator.reviewRequestSkipped()
+        coordinator.reviewRequestSkipped()
+
+        #expect(analytics.actions == [.reviewSkipped])
+        #expect(analytics.events.map(\.event) == [
+            .onboardingStepViewed,
+            .onboardingActionPerformed,
+            .onboardingStepViewed
+        ])
+    }
+
     @Test func notificationSkipAdvancesWithoutRecordingDecline() {
         let coordinator = OnboardingCoordinator(onFinish: {})
 
         coordinator.notificationPermissionSkipped()
 
         #expect(!coordinator.session.didRequestNotifications)
+        #expect(coordinator.currentStep == .readyWidgets)
+    }
+
+    @Test func notificationRequestTracksOnceAfterAsyncCallbackAdvancesFlow() async {
+        let analytics = SpyAnalytics()
+        let requester = NotificationRequesterStub()
+        let coordinator = OnboardingCoordinator(
+            onFinish: {},
+            analytics: analytics,
+            notificationRequester: requester.request
+        )
+
+        coordinator.notificationPermissionRequested()
+        coordinator.notificationPermissionRequested()
+
+        #expect(coordinator.isRequestingNotifications)
+        #expect(requester.requestCount == 1)
+
+        requester.complete(.success(true))
+        await Task.yield()
+
+        #expect(!coordinator.isRequestingNotifications)
+        #expect(coordinator.session.didRequestNotifications)
+        #expect(coordinator.currentStep == .readyWidgets)
+        #expect(analytics.actions == [.notificationsRequested])
+        #expect(analytics.events.map(\.event) == [
+            .onboardingStepViewed,
+            .onboardingActionPerformed,
+            .onboardingStepViewed
+        ])
+
+        requester.complete(.success(true))
+        await Task.yield()
+
+        #expect(requester.requestCount == 1)
+        #expect(analytics.actions == [.notificationsRequested])
         #expect(coordinator.currentStep == .readyWidgets)
     }
 
@@ -374,6 +425,20 @@ struct OnboardingSessionTests {
                 }
                 return OnboardingAction(rawValue: action)
             }
+        }
+    }
+
+    private final class NotificationRequesterStub {
+        private(set) var requestCount = 0
+        private var completion: ((Result<Bool, Error>) -> Void)?
+
+        func request(_ completion: @escaping (Result<Bool, Error>) -> Void) {
+            requestCount += 1
+            self.completion = completion
+        }
+
+        func complete(_ result: Result<Bool, Error>) {
+            completion?(result)
         }
     }
 }

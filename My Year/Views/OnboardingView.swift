@@ -10,12 +10,18 @@ final class OnboardingCoordinator: ObservableObject {
 
   private let onFinish: () -> Void
   private let analytics: OnboardingAnalyticsTracking
+  private let notificationRequester: (@escaping (Result<Bool, Error>) -> Void) -> Void
   private var firstDotCalendar: CustomCalendar?
   private var trackedOnboardingActions: Set<OnboardingAction> = []
 
-  init(onFinish: @escaping () -> Void, analytics: OnboardingAnalyticsTracking = Analytics.shared) {
+  init(
+    onFinish: @escaping () -> Void,
+    analytics: OnboardingAnalyticsTracking = Analytics.shared,
+    notificationRequester: @escaping (@escaping (Result<Bool, Error>) -> Void) -> Void = requestNotificationPermissions
+  ) {
     self.onFinish = onFinish
     self.analytics = analytics
+    self.notificationRequester = notificationRequester
     currentStep = .emotionalHook
     session = OnboardingSession()
     trackStepView(.emotionalHook)
@@ -80,7 +86,7 @@ final class OnboardingCoordinator: ObservableObject {
   func notificationPermissionRequested() {
     guard !isRequestingNotifications else { return }
     isRequestingNotifications = true
-    requestNotificationPermissions { [weak self] _ in
+    notificationRequester { [weak self] _ in
       Task { @MainActor in
         guard let self else { return }
         self.session.didRequestNotifications = true
