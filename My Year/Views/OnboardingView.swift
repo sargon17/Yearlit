@@ -1,5 +1,5 @@
 import Garnish
-import RevenueCatUI
+import SharedModels
 import SwiftUI
 
 @MainActor
@@ -24,11 +24,12 @@ final class OnboardingCoordinator: ObservableObject {
     }
 
     func tinyHabitContinueTapped() {
-        session.didCompleteFirstDot = false
+        createTinyHabitCalendarIfNeeded()
         currentStep = .firstDot
     }
 
     func firstDotCompleted() {
+        logFirstDotIfNeeded()
         session.didCompleteFirstDot = true
         currentStep = .preReviewGate
     }
@@ -44,13 +45,18 @@ final class OnboardingCoordinator: ObservableObject {
     }
 
     func reviewRequestCompleted() {
+        addPositiveEvent(.completedOnboarding)
         session.didRequestReview = true
         currentStep = .notificationPermission
     }
 
     func notificationPermissionCompleted() {
-        session.didRequestNotifications = true
-        currentStep = .readyWidgets
+        requestNotificationPermissions { _ in
+            Task { @MainActor in
+                self.session.didRequestNotifications = true
+                self.currentStep = .readyWidgets
+            }
+        }
     }
 
     func readyWidgetsCompleted() {
@@ -59,6 +65,44 @@ final class OnboardingCoordinator: ObservableObject {
 
     func paywallClosed() {
         onFinish()
+    }
+
+    private func createTinyHabitCalendarIfNeeded() {
+        guard session.tinyHabitCalendarId == nil else { return }
+
+        let calendar = CustomCalendar(
+            name: session.selectedTinyHabitName,
+            color: "qs-amber",
+            cadence: .daily,
+            trackingType: .binary,
+            trackingStartedAt: Date(),
+            dailyTarget: 1,
+            entries: [:],
+            isArchived: false,
+            recurringReminderEnabled: false,
+            reminderTime: nil,
+            reminderWeekday: nil,
+            unit: nil,
+            defaultRecordValue: nil,
+            currencySymbol: nil,
+            reminderTimeZone: TimeZone.current.identifier,
+            notificationPrivacyMode: .full,
+            suppressWhenCompleted: true,
+            additionalReminderTimes: [],
+            streakProtectionEnabled: true,
+            streakProtectionThreshold: 5
+        )
+
+        session.tinyHabitCalendarId = calendar.id
+        CustomCalendarStore.shared.addCalendar(calendar)
+        scheduleNotifications(for: calendar, store: CustomCalendarStore.shared)
+    }
+
+    private func logFirstDotIfNeeded() {
+        guard let calendarId = session.tinyHabitCalendarId else { return }
+        guard !session.didCompleteFirstDot else { return }
+        let entry = defaultEntry(date: Date(), trackingType: .binary)
+        CustomCalendarStore.shared.addEntry(calendarId: calendarId, entry: entry)
     }
 
     private func route(from step: OnboardingStep) {
@@ -104,6 +148,7 @@ enum OnboardingStep: String, CaseIterable, Identifiable {
 
 struct OnboardingSession {
     var selectedTinyHabitName: String = "Daily Training"
+    var tinyHabitCalendarId: UUID?
     var didCompleteFirstDot = false
     var didAcceptReviewGate = false
     var didRequestReview = false
@@ -271,39 +316,38 @@ struct TinyHabitSelectionView: View {
 
     var body: some View {
         OnboardingStepContainer {
-            Color.clear
-        } content: {
-            VStack(alignment: .leading, spacing: 8) {
-                Spacer()
+            VStack(alignment: .leading, spacing: 12) {
                 Text("Choose one tiny habit.")
                     .font(AppFont.pixelCircle(24))
                     .foregroundStyle(.textPrimary)
                 Text("Keep it small enough to do today.")
                     .font(AppFont.mono(14))
                     .foregroundStyle(.secondary)
-            }
-        } actions: {
-            VStack(alignment: .leading, spacing: 12) {
-                ForEach(habits, id: \.self) { habit in
-                    Button {
-                        onHabitSelected(habit)
-                    } label: {
-                        HStack {
-                            Text(habit)
-                            Spacer()
-                            if habit == selectedHabit {
-                                Image(systemName: "checkmark")
+
+                VStack(alignment: .leading, spacing: 12) {
+                    ForEach(habits, id: \.self) { habit in
+                        Button {
+                            onHabitSelected(habit)
+                        } label: {
+                            HStack {
+                                Text(habit)
+                                Spacer()
+                                if habit == selectedHabit {
+                                    Image(systemName: "checkmark")
+                                }
                             }
+                            .padding()
+                            .foregroundStyle(.textPrimary)
+                            .sameLevelBorder(radius: 4, color: habit == selectedHabit ? .brand : .surfaceMuted)
                         }
-                        .padding()
-                        .foregroundStyle(.textPrimary)
-                        .sameLevelBorder(radius: 4, color: habit == selectedHabit ? .brand : .surfaceMuted)
+                        .buttonStyle(.plain)
                     }
-                    .buttonStyle(.plain)
                 }
-                OnboardingView.ForwardButton(title: "Continue", onTap: onContinue)
             }
-            .padding(.bottom, 8)
+        } content: {
+            EmptyView()
+        } actions: {
+            OnboardingView.ForwardButton(title: "Continue", onTap: onContinue)
         }
     }
 }
@@ -313,10 +357,9 @@ struct FirstDotView: View {
 
     var body: some View {
         OnboardingStepContainer {
-            Color.clear
+            EmptyView()
         } content: {
             VStack(alignment: .leading, spacing: 8) {
-                Spacer()
                 Text("Make the first dot.")
                     .font(AppFont.pixelCircle(24))
                     .foregroundStyle(.textPrimary)
@@ -374,7 +417,6 @@ struct ReviewRequestView: View {
             }
         } actions: {
             OnboardingView.ForwardButton(title: "Continue", onTap: {
-                addPositiveEvent(.completedOnboarding)
                 onContinue()
             })
         }
@@ -399,11 +441,7 @@ struct NotificationPermissionView: View {
             }
         } actions: {
             OnboardingView.ForwardButton(title: "Request permissions", onTap: {
-                requestNotificationPermissions { _ in
-                    Task { @MainActor in
-                        onContinue()
-                    }
-                }
+                onContinue()
             })
         }
     }
