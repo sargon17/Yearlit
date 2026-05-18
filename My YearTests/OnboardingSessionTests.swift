@@ -306,6 +306,21 @@ struct OnboardingSessionTests {
         }
     }
 
+    @Test func onboardingStepCatalogUsesLowercaseSnakeCaseRawValues() {
+        #expect(OnboardingStep.allCases.map(\.rawValue) == [
+            "emotional_hook",
+            "app_explanation",
+            "identity_commitment",
+            "tiny_habit_selection",
+            "first_dot",
+            "pre_review_gate",
+            "review_request",
+            "notification_permission",
+            "ready_widgets",
+            "paywall"
+        ])
+    }
+
     private func makeCalendar(
         name: String,
         isArchived: Bool = false,
