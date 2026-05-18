@@ -1,8 +1,8 @@
 import Foundation
 import SharedModels
 
+@MainActor
 protocol OnboardingAnalyticsTracking {
-  func track(_ event: AnalyticsEvent, properties: [String: AnalyticsPropertyValue])
   func trackOnboardingStepViewed(stepId: String)
   func trackOnboardingAction(_ action: OnboardingAction)
 }

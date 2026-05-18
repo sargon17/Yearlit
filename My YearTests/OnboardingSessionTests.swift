@@ -404,16 +404,12 @@ struct OnboardingSessionTests {
     private final class SpyAnalytics: OnboardingAnalyticsTracking {
         private(set) var events: [(event: AnalyticsEvent, properties: [String: AnalyticsPropertyValue])] = []
 
-        func track(_ event: AnalyticsEvent, properties: [String: AnalyticsPropertyValue]) {
-            events.append((event: event, properties: properties))
-        }
-
         func trackOnboardingStepViewed(stepId: String) {
-            track(.onboardingStepViewed, properties: ["step_id": .string(stepId)])
+            events.append((event: .onboardingStepViewed, properties: ["step_id": .string(stepId)]))
         }
 
         func trackOnboardingAction(_ action: OnboardingAction) {
-            track(.onboardingActionPerformed, properties: ["action": .string(action.rawValue)])
+            events.append((event: .onboardingActionPerformed, properties: ["action": .string(action.rawValue)]))
         }
 
         var actions: [OnboardingAction] {
