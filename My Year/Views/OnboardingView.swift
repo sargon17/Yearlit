@@ -8,6 +8,7 @@ final class OnboardingCoordinator: ObservableObject {
     @Published var session: OnboardingSession
 
     private let onFinish: () -> Void
+    private var firstDotCalendar: CustomCalendar?
 
     init(onFinish: @escaping () -> Void) {
         self.onFinish = onFinish
@@ -97,12 +98,14 @@ final class OnboardingCoordinator: ObservableObject {
         let activeCalendars = store.snapshot.activeCalendars
         if let existingCalendar = activeCalendars.first {
             session.tinyHabitCalendarId = existingCalendar.id
+            firstDotCalendar = existingCalendar
             return
         }
 
         let calendar = OnboardingFirstCalendarFactory.makeCalendar(title: selectedHabit, today: Date())
 
         session.tinyHabitCalendarId = calendar.id
+        firstDotCalendar = calendar
         store.addCalendar(calendar)
         CalendarAnalyticsTracker.shared.trackCalendarCreated(
             calendar: calendar,
@@ -111,11 +114,18 @@ final class OnboardingCoordinator: ObservableObject {
     }
 
     private func resolvedFirstCalendar(in snapshot: CustomCalendarStoreSnapshot) -> CustomCalendar? {
+        if let cachedCalendar = firstDotCalendar {
+            if let calendarId = session.tinyHabitCalendarId, cachedCalendar.id == calendarId {
+                return cachedCalendar
+            }
+        }
+
         let activeCalendars = snapshot.activeCalendars
 
         if let calendarId = session.tinyHabitCalendarId,
             let calendar = activeCalendars.first(where: { $0.id == calendarId })
         {
+            firstDotCalendar = calendar
             return calendar
         }
 
@@ -124,6 +134,7 @@ final class OnboardingCoordinator: ObservableObject {
         }
 
         session.tinyHabitCalendarId = fallbackCalendar.id
+        firstDotCalendar = fallbackCalendar
         return fallbackCalendar
     }
 

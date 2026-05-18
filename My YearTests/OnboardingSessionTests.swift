@@ -122,6 +122,34 @@ struct OnboardingSessionTests {
         #expect(coordinator.session.didCompleteFirstDot)
     }
 
+    @Test func firstDotCreatePathKeepsCalendarResolvableBeforeStoreRefresh() {
+        let coordinator = OnboardingCoordinator(onFinish: {})
+        let store = CustomCalendarStore.shared
+        let originalCalendars = store.snapshot.activeCalendars
+
+        for calendar in originalCalendars {
+            store.deleteCalendar(id: calendar.id)
+        }
+        defer {
+            for calendar in originalCalendars {
+                store.addCalendar(calendar)
+            }
+        }
+
+        coordinator.continueTapped()
+        coordinator.continueTapped()
+        coordinator.identityCommitmentChanged(.reader)
+        coordinator.continueTapped()
+        coordinator.habitSelectionChanged("Read 2 pages")
+        coordinator.tinyHabitContinueTapped()
+
+        let resolved = coordinator.resolvedFirstCalendarForView(in: store.snapshot)
+
+        #expect(coordinator.currentStep == .firstDot)
+        #expect(coordinator.session.tinyHabitCalendarId != nil)
+        #expect(resolved?.id == coordinator.session.tinyHabitCalendarId)
+    }
+
     private func makeCalendar(
         name: String,
         isArchived: Bool = false,
