@@ -31,7 +31,7 @@ func updateMultipleDailyEntry(
     }
 
     calendarStore.addEntry(calendarId: calendarId, entry: newEntry)
-    CalendarAnalyticsTracker.shared.trackEntryMutation(
+    CalendarAnalyticsTracker.shared.trackEntryMutationDeferred(
         calendar: calendar,
         oldEntry: oldEntry,
         newEntry: newEntry,

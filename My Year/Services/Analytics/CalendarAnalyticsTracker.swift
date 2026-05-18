@@ -44,6 +44,23 @@ final class CalendarAnalyticsTracker {
     analytics.track(event, properties: archiveProperties(calendar, source: source))
   }
 
+  func trackEntryMutationDeferred(
+    calendar: CustomCalendar,
+    oldEntry: CalendarEntry?,
+    newEntry: CalendarEntry?,
+    source: CalendarAnalyticsSource
+  ) {
+    Task { @MainActor in
+      try? await Task.sleep(nanoseconds: 200_000_000)
+      trackEntryMutation(
+        calendar: calendar,
+        oldEntry: oldEntry,
+        newEntry: newEntry,
+        source: source
+      )
+    }
+  }
+
   func trackEntryMutation(
     calendar: CustomCalendar,
     oldEntry: CalendarEntry?,

@@ -49,6 +49,12 @@ struct CustomCalendarView: View {
   @State private var today: Date = Calendar.current.startOfDay(for: Date())
   @Environment(\.scenePhase) private var scenePhase
 
+  private struct OptimisticEntryOverride {
+    let calendarId: UUID
+    let dayKey: String
+    let entry: CalendarEntry?
+  }
+
   private struct CalendarDisplayState {
     let activeCalendar: CustomCalendar
     let timelineMode: CalendarTimelineMode
@@ -68,7 +74,7 @@ struct CustomCalendarView: View {
     snapshot: CustomCalendarStoreSnapshot,
     selectedYear: Int
   ) -> CalendarDisplayState {
-    let activeCalendar = snapshot.calendar(id: calendar.id) ?? calendar
+    let activeCalendar = applyingOptimisticEntryOverrides(to: snapshot.calendar(id: calendar.id) ?? calendar)
     let timelineMode =
       timelinePreference
       .mode
@@ -125,6 +131,7 @@ struct CustomCalendarView: View {
   @State private var lastObservedDataVersion: Int = 0
   @State private var pendingMilestoneCheck: Bool = false
   @State private var isEntryEditSheetPresented: Bool = false
+  @State private var optimisticEntryOverrides: [String: OptimisticEntryOverride] = [:]
 
   private let milestoneCelebrationPolicy = MilestoneCelebrationPolicy.shared
 
@@ -168,40 +175,71 @@ struct CustomCalendarView: View {
     }
   }
 
+  private func applyingOptimisticEntryOverrides(to calendar: CustomCalendar) -> CustomCalendar {
+    var calendar = calendar
+    for override in optimisticEntryOverrides.values where override.calendarId == calendar.id {
+      if let entry = override.entry {
+        calendar.entries[override.dayKey] = entry
+      } else {
+        calendar.entries.removeValue(forKey: override.dayKey)
+      }
+    }
+    return calendar
+  }
+
+  private func setOptimisticEntryOverride(calendar: CustomCalendar, date: Date, entry: CalendarEntry?) {
+    let dayKey = calendar.entryKey(for: date)
+    optimisticEntryOverrides["\(calendar.id.uuidString)|\(dayKey)"] = OptimisticEntryOverride(
+      calendarId: calendar.id,
+      dayKey: dayKey,
+      entry: entry
+    )
+  }
+
   private func handleDayTap(_ date: Date) {
     guard !date.isInFuture else { return }
 
     let activeCalendar = displayState.activeCalendar
-    if activeCalendar.trackingType != .binary {
-      isEntryEditSheetPresented = true
-      router.showScreen(
-        .sheetConfig(config: shortSheetConfig)
-      ) { _ in
-        DayEntryEditSheet(
-          calendar: activeCalendar,
+
+    if activeCalendar.trackingType == .binary {
+      let newEntry = activeCalendar.entry(for: date) == nil
+        ? defaultEntry(date: date, trackingType: .binary)
+        : nil
+      setOptimisticEntryOverride(calendar: activeCalendar, date: date, entry: newEntry)
+
+      Task { @MainActor in
+        await hapticFeedback()
+        _ = toggleBinaryEntry(
+          calendarId: activeCalendar.id,
           date: date,
-          store: store,
-          onSave: {
-            scheduleMilestoneCheck()
-          },
-          onDismiss: {
-            isEntryEditSheetPresented = false
-            evaluateMilestonesIfNeeded(calendarId: activeCalendar.id)
-          }
+          calendarStore: store,
+          source: .calendar
         )
+        scheduleMilestoneCheck()
+        checkIfReachedThreeDays(activeCalendar)
       }
-    } else if activeCalendar.trackingType == .binary {
-      _ = toggleBinaryEntry(
-        calendarId: activeCalendar.id,
-        date: date,
-        calendarStore: store,
-        source: .calendar
-      )
-      scheduleMilestoneCheck()
+      return
     }
-    checkIfReachedThreeDays(activeCalendar)
+
     Task {
       await hapticFeedback()
+    }
+    isEntryEditSheetPresented = true
+    router.showScreen(
+      .sheetConfig(config: shortSheetConfig)
+    ) { _ in
+      DayEntryEditSheet(
+        calendar: activeCalendar,
+        date: date,
+        store: store,
+        onSave: {
+          scheduleMilestoneCheck()
+        },
+        onDismiss: {
+          isEntryEditSheetPresented = false
+          evaluateMilestonesIfNeeded(calendarId: activeCalendar.id)
+        }
+      )
     }
   }
 
@@ -209,18 +247,18 @@ struct CustomCalendarView: View {
     let state = displayState
     let activeCalendar = state.activeCalendar
     let entryDate = state.currentPeriodReferenceDate ?? Date()
-    quickEntry(
-      calendar: activeCalendar,
-      date: entryDate,
-      calendarStore: store,
-      source: .calendar
-    )
 
-    checkIfReachedThreeDays(activeCalendar)
-    scheduleMilestoneCheck()
-
-    Task {
+    Task { @MainActor in
       await hapticFeedback()
+      quickEntry(
+        calendar: activeCalendar,
+        date: entryDate,
+        calendarStore: store,
+        source: .calendar
+      )
+
+      checkIfReachedThreeDays(activeCalendar)
+      scheduleMilestoneCheck()
     }
   }
 
@@ -666,6 +704,7 @@ struct CustomCalendarView: View {
     }
     .onChange(of: store.snapshot.dataVersion) { _, newValue in
       lastObservedDataVersion = newValue
+      optimisticEntryOverrides.removeAll()
       statsRefreshToken = UUID()
       if isEntryEditSheetPresented {
         scheduleMilestoneCheck()

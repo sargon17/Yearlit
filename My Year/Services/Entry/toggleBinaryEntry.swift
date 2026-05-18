@@ -25,7 +25,7 @@ func toggleBinaryEntry(
     }
 
     if let calendar {
-        CalendarAnalyticsTracker.shared.trackEntryMutation(
+        CalendarAnalyticsTracker.shared.trackEntryMutationDeferred(
             calendar: calendar,
             oldEntry: oldEntry,
             newEntry: newEntry,

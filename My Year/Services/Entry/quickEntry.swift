@@ -11,7 +11,7 @@ func quickEntry(
   let oldEntry = calendarStore.getEntry(calendarId: calendar.id, date: date)
   _ = calendarStore.quickLogEntry(calendarId: calendar.id, date: date)
   let newEntry = calendarStore.getEntry(calendarId: calendar.id, date: date)
-  CalendarAnalyticsTracker.shared.trackEntryMutation(
+  CalendarAnalyticsTracker.shared.trackEntryMutationDeferred(
     calendar: calendar,
     oldEntry: oldEntry,
     newEntry: newEntry,

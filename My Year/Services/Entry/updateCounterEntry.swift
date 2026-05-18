@@ -27,7 +27,7 @@ func updateCounterEntry(
 
     calendarStore.addEntry(calendarId: calendarId, entry: newEntry)
     if let calendar {
-        CalendarAnalyticsTracker.shared.trackEntryMutation(
+        CalendarAnalyticsTracker.shared.trackEntryMutationDeferred(
             calendar: calendar,
             oldEntry: oldEntry,
             newEntry: newEntry,
