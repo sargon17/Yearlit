@@ -82,6 +82,7 @@ final class OnboardingCoordinator: ObservableObject {
     }
 
     func notificationPermissionSkipped() {
+        guard !isRequestingNotifications else { return }
         session.didRequestNotifications = false
         currentStep = .readyWidgets
     }
@@ -523,18 +524,18 @@ struct PreReviewGateView: View {
         } content: {
             VStack(alignment: .leading, spacing: 8) {
                 Spacer()
-                Text("Want to help?")
+                Text("How did that first dot feel?")
                     .font(AppFont.pixelCircle(24))
                     .foregroundStyle(.textPrimary)
-                Text("A quick review helps more than you think.")
+                Text("Pick the closest answer.")
                     .font(AppFont.mono(14))
                     .foregroundStyle(.secondary)
             }
         } actions: {
             VStack(spacing: 12) {
-                OnboardingView.ForwardButton(title: "Feeling great", onTap: onPositive)
-                OnboardingView.ForwardButton(title: "Not really", onTap: onNotNow)
-                OnboardingView.ForwardButton(title: "Skip", onTap: onSkip)
+                OnboardingView.ForwardButton(title: "Great", onTap: onPositive)
+                OnboardingView.ForwardButton(title: "Fine", onTap: onNotNow)
+                OnboardingView.ForwardButton(title: "Not now", onTap: onSkip)
             }
         }
     }
@@ -591,7 +592,11 @@ struct NotificationPermissionView: View {
                     onTap: onTurnOnReminders,
                     disabled: isRequestingNotifications
                 )
-                OnboardingView.ForwardButton(title: "Not now", onTap: onNotNow)
+                OnboardingView.ForwardButton(
+                    title: "Not now",
+                    onTap: onNotNow,
+                    disabled: isRequestingNotifications
+                )
             }
         }
     }
