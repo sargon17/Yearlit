@@ -69,6 +69,7 @@ final class OnboardingCoordinator: ObservableObject {
 
     private func createTinyHabitCalendarIfNeeded() {
         guard session.tinyHabitCalendarId == nil else { return }
+        let isFirstCalendar = CustomCalendarStore.shared.snapshot.calendars.filter { !$0.isArchived }.isEmpty
 
         let calendar = CustomCalendar(
             name: session.selectedTinyHabitName,
@@ -95,6 +96,10 @@ final class OnboardingCoordinator: ObservableObject {
 
         session.tinyHabitCalendarId = calendar.id
         CustomCalendarStore.shared.addCalendar(calendar)
+        CalendarAnalyticsTracker.shared.trackCalendarCreated(
+            calendar: calendar,
+            isFirstCalendar: isFirstCalendar
+        )
         scheduleNotifications(for: calendar, store: CustomCalendarStore.shared)
     }
 
@@ -114,19 +119,19 @@ final class OnboardingCoordinator: ObservableObject {
         case .identityCommitment:
             currentStep = .tinyHabitSelection
         case .tinyHabitSelection:
-            currentStep = .firstDot
+            tinyHabitContinueTapped()
         case .firstDot:
-            currentStep = .preReviewGate
+            firstDotCompleted()
         case .preReviewGate:
             currentStep = session.didAcceptReviewGate ? .reviewRequest : .notificationPermission
         case .reviewRequest:
-            currentStep = .notificationPermission
+            reviewRequestCompleted()
         case .notificationPermission:
-            currentStep = .readyWidgets
+            notificationPermissionCompleted()
         case .readyWidgets:
-            currentStep = .paywall
+            readyWidgetsCompleted()
         case .paywall:
-            onFinish()
+            paywallClosed()
         }
     }
 }
