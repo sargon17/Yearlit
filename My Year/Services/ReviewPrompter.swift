@@ -58,6 +58,11 @@ final class ReviewPrompter {
         }
     }
 
+    @MainActor
+    func requestReviewNow(from viewController: UIViewController? = nil) {
+        requestReview(in: viewController ?? topMostViewController())
+    }
+
     // SwiftUI convenience.
     #if canImport(SwiftUI)
         func considerPromptSwiftUI(fallbackAppID: String? = nil) {
@@ -125,6 +130,22 @@ final class ReviewPrompter {
         // you can deep‑link after a small delay. Use with care to avoid being pushy.
         DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
             self.openWriteReviewPage(appID: appID, from: viewController)
+        }
+    }
+
+    @MainActor
+    private func requestReview(in viewController: UIViewController?) {
+        if #available(iOS 14.0, *), let scene = reviewScene(from: viewController) {
+            if #available(iOS 18.0, *) {
+                AppStore.requestReview(in: scene)
+            } else {
+                SKStoreReviewController.requestReview(in: scene)
+            }
+            return
+        }
+
+        if #unavailable(iOS 14.0) {
+            SKStoreReviewController.requestReview()
         }
     }
 

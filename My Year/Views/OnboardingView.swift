@@ -6,6 +6,7 @@ import SwiftUI
 final class OnboardingCoordinator: ObservableObject {
     @Published private(set) var currentStep: OnboardingStep
     @Published var session: OnboardingSession
+    @Published private(set) var isRequestingNotifications = false
 
     private let onFinish: () -> Void
     private var firstDotCalendar: CustomCalendar?
@@ -57,29 +58,37 @@ final class OnboardingCoordinator: ObservableObject {
         currentStep = .preReviewGate
     }
 
-    func preReviewGateAccepted() {
-        session.didAcceptReviewGate = true
-        currentStep = .reviewRequest
+    func preReviewGateAnswered(_ answer: PreReviewGateAnswer?) {
+        session.preReviewGateWasPositive = answer?.isPositive == true
+        currentStep = session.preReviewGateWasPositive ? .reviewRequest : .notificationPermission
     }
 
-    func preReviewGateSkipped() {
-        session.didAcceptReviewGate = false
-        currentStep = .notificationPermission
-    }
-
-    func reviewRequestCompleted() {
-        addPositiveEvent(.completedOnboarding)
+    func reviewRequestAnswered() {
         session.didRequestReview = true
+        addPositiveEvent(.completedOnboarding)
         currentStep = .notificationPermission
     }
 
-    func notificationPermissionCompleted() {
+    func notificationPermissionRequested() {
+        guard !isRequestingNotifications else { return }
+        isRequestingNotifications = true
         requestNotificationPermissions { _ in
             Task { @MainActor in
                 self.session.didRequestNotifications = true
+                self.isRequestingNotifications = false
                 self.currentStep = .readyWidgets
             }
         }
+    }
+
+    func notificationPermissionSkipped() {
+        session.didRequestNotifications = false
+        currentStep = .readyWidgets
+    }
+
+    func reviewRequestSkipped() {
+        session.didRequestReview = false
+        currentStep = .notificationPermission
     }
 
     func readyWidgetsCompleted() {
@@ -161,11 +170,11 @@ final class OnboardingCoordinator: ObservableObject {
         case .firstDot:
             break
         case .preReviewGate:
-            currentStep = session.didAcceptReviewGate ? .reviewRequest : .notificationPermission
+            currentStep = session.preReviewGateWasPositive ? .reviewRequest : .notificationPermission
         case .reviewRequest:
-            reviewRequestCompleted()
+            reviewRequestAnswered()
         case .notificationPermission:
-            notificationPermissionCompleted()
+            notificationPermissionRequested()
         case .readyWidgets:
             readyWidgetsCompleted()
         case .paywall:
@@ -194,7 +203,7 @@ struct OnboardingSession {
     var selectedTinyHabitName: String?
     var tinyHabitCalendarId: UUID?
     var didCompleteFirstDot = false
-    var didAcceptReviewGate = false
+    var preReviewGateWasPositive = false
     var didRequestReview = false
     var didRequestNotifications = false
 
@@ -205,6 +214,19 @@ struct OnboardingSession {
         }
 
         selectedIdentityCommitments.append(commitment)
+    }
+}
+
+enum PreReviewGateAnswer: String, CaseIterable, Identifiable {
+    case positive
+    case neutral
+    case negative
+    case skip
+
+    var id: String { rawValue }
+
+    var isPositive: Bool {
+        self == .positive
     }
 }
 
@@ -270,16 +292,23 @@ struct OnboardingView: View {
             )
         case .preReviewGate:
             PreReviewGateView(
-                onReview: coordinator.preReviewGateAccepted,
-                onSkip: coordinator.preReviewGateSkipped
+                onPositive: { coordinator.preReviewGateAnswered(.positive) },
+                onNotNow: { coordinator.preReviewGateAnswered(.neutral) },
+                onSkip: { coordinator.preReviewGateAnswered(.skip) }
             )
         case .reviewRequest:
             ReviewRequestView(
-                onContinue: coordinator.reviewRequestCompleted
+                onLeaveReview: {
+                    ReviewPrompter.shared.requestReviewNow()
+                    coordinator.reviewRequestAnswered()
+                },
+                onNotNow: coordinator.reviewRequestSkipped
             )
         case .notificationPermission:
             NotificationPermissionView(
-                onContinue: coordinator.notificationPermissionCompleted
+                isRequestingNotifications: coordinator.isRequestingNotifications,
+                onTurnOnReminders: coordinator.notificationPermissionRequested,
+                onNotNow: coordinator.notificationPermissionSkipped
             )
         case .readyWidgets:
             ReadyWidgetsView(onContinue: coordinator.readyWidgetsCompleted)
@@ -484,7 +513,8 @@ struct FirstDotView: View {
 }
 
 struct PreReviewGateView: View {
-    let onReview: () -> Void
+    let onPositive: () -> Void
+    let onNotNow: () -> Void
     let onSkip: () -> Void
 
     var body: some View {
@@ -502,7 +532,8 @@ struct PreReviewGateView: View {
             }
         } actions: {
             VStack(spacing: 12) {
-                OnboardingView.ForwardButton(title: "Leave a review", onTap: onReview)
+                OnboardingView.ForwardButton(title: "Feeling great", onTap: onPositive)
+                OnboardingView.ForwardButton(title: "Not really", onTap: onNotNow)
                 OnboardingView.ForwardButton(title: "Skip", onTap: onSkip)
             }
         }
@@ -510,7 +541,8 @@ struct PreReviewGateView: View {
 }
 
 struct ReviewRequestView: View {
-    let onContinue: () -> Void
+    let onLeaveReview: () -> Void
+    let onNotNow: () -> Void
 
     var body: some View {
         OnboardingStepContainer {
@@ -526,15 +558,18 @@ struct ReviewRequestView: View {
                     .foregroundStyle(.secondary)
             }
         } actions: {
-            OnboardingView.ForwardButton(title: "Continue", onTap: {
-                onContinue()
-            })
+            VStack(spacing: 12) {
+                OnboardingView.ForwardButton(title: "Leave a review", onTap: onLeaveReview)
+                OnboardingView.ForwardButton(title: "Not now", onTap: onNotNow)
+            }
         }
     }
 }
 
 struct NotificationPermissionView: View {
-    let onContinue: () -> Void
+    let isRequestingNotifications: Bool
+    let onTurnOnReminders: () -> Void
+    let onNotNow: () -> Void
 
     var body: some View {
         OnboardingStepContainer {
@@ -550,9 +585,14 @@ struct NotificationPermissionView: View {
                     .foregroundStyle(.secondary)
             }
         } actions: {
-            OnboardingView.ForwardButton(title: "Request permissions", onTap: {
-                onContinue()
-            })
+            VStack(spacing: 12) {
+                OnboardingView.ForwardButton(
+                    title: isRequestingNotifications ? "Requesting..." : "Turn on reminders",
+                    onTap: onTurnOnReminders,
+                    disabled: isRequestingNotifications
+                )
+                OnboardingView.ForwardButton(title: "Not now", onTap: onNotNow)
+            }
         }
     }
 }

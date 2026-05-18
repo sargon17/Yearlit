@@ -150,6 +150,74 @@ struct OnboardingSessionTests {
         #expect(resolved?.id == coordinator.session.tinyHabitCalendarId)
     }
 
+    @Test func positivePreReviewGateRoutesToReviewRequest() {
+        let coordinator = OnboardingCoordinator(onFinish: {})
+
+        coordinator.preReviewGateAnswered(.positive)
+
+        #expect(coordinator.session.preReviewGateWasPositive)
+        #expect(coordinator.currentStep == .reviewRequest)
+    }
+
+    @Test func nonPositivePreReviewGateRoutesToNotifications() {
+        let coordinator = OnboardingCoordinator(onFinish: {})
+
+        coordinator.preReviewGateAnswered(.neutral)
+
+        #expect(!coordinator.session.preReviewGateWasPositive)
+        #expect(coordinator.currentStep == .notificationPermission)
+    }
+
+    @Test func skippedPreReviewGateRoutesToNotifications() {
+        let coordinator = OnboardingCoordinator(onFinish: {})
+
+        coordinator.preReviewGateAnswered(.skip)
+
+        #expect(!coordinator.session.preReviewGateWasPositive)
+        #expect(coordinator.currentStep == .notificationPermission)
+    }
+
+    @Test func reviewNotNowAdvancesWithoutMarkingReviewRequested() {
+        let coordinator = OnboardingCoordinator(onFinish: {})
+
+        coordinator.reviewRequestSkipped()
+
+        #expect(!coordinator.session.didRequestReview)
+        #expect(coordinator.currentStep == .notificationPermission)
+    }
+
+    @Test func notificationSkipAdvancesWithoutRecordingDecline() {
+        let coordinator = OnboardingCoordinator(onFinish: {})
+
+        coordinator.notificationPermissionSkipped()
+
+        #expect(!coordinator.session.didRequestNotifications)
+        #expect(coordinator.currentStep == .readyWidgets)
+    }
+
+    @Test func readyWidgetsAdvancesToPaywall() {
+        let coordinator = OnboardingCoordinator(onFinish: {})
+
+        coordinator.readyWidgetsCompleted()
+
+        #expect(coordinator.currentStep == .paywall)
+    }
+
+    @Test func paywallClosedFiresFinishOnlyFromBoundary() {
+        var didFinish = false
+        let coordinator = OnboardingCoordinator(onFinish: {
+            didFinish = true
+        })
+
+        coordinator.readyWidgetsCompleted()
+
+        #expect(!didFinish)
+
+        coordinator.paywallClosed()
+
+        #expect(didFinish)
+    }
+
     private func makeCalendar(
         name: String,
         isArchived: Bool = false,
