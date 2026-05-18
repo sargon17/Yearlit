@@ -111,13 +111,15 @@ final class OnboardingCoordinator: ObservableObject {
     }
 
     private func resolvedFirstCalendar(in snapshot: CustomCalendarStoreSnapshot) -> CustomCalendar? {
+        let activeCalendars = snapshot.activeCalendars
+
         if let calendarId = session.tinyHabitCalendarId,
-            let calendar = snapshot.calendar(id: calendarId)
+            let calendar = activeCalendars.first(where: { $0.id == calendarId })
         {
             return calendar
         }
 
-        guard let fallbackCalendar = snapshot.activeCalendars.first else {
+        guard let fallbackCalendar = activeCalendars.first else {
             return nil
         }
 
@@ -250,7 +252,7 @@ struct OnboardingView: View {
             let isCompletedToday = coordinator.isFirstDotCompletedToday(calendar: firstDotCalendar)
             FirstDotView(
                 calendar: firstDotCalendar,
-                isCompletedToday: isCompletedToday,
+                isCompletedToday: isCompletedToday || coordinator.session.didCompleteFirstDot,
                 canMarkDayOne: firstDotCalendar != nil && !coordinator.session.didCompleteFirstDot,
                 onMarkDayOne: coordinator.firstDotMarkDayOneTapped,
                 onContinue: coordinator.firstDotContinueTapped

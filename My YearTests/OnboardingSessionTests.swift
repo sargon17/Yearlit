@@ -58,6 +58,19 @@ struct OnboardingSessionTests {
         #expect(coordinator.session.tinyHabitCalendarId == calendar.id)
     }
 
+    @Test func firstDotResolverIgnoresArchivedSessionCalendarAndFallsBackToActiveOne() {
+        let coordinator = OnboardingCoordinator(onFinish: {})
+        let archivedCalendar = makeCalendar(name: "Archived", isArchived: true)
+        let activeCalendar = makeCalendar(name: "Active")
+        coordinator.session.tinyHabitCalendarId = archivedCalendar.id
+        let snapshot = CustomCalendarStoreSnapshot(calendars: [archivedCalendar, activeCalendar])
+
+        let resolved = coordinator.resolvedFirstCalendarForView(in: snapshot)
+
+        #expect(resolved?.id == activeCalendar.id)
+        #expect(coordinator.session.tinyHabitCalendarId == activeCalendar.id)
+    }
+
     @Test func firstDotResolverReportsCompletedStateFromTodayEntry() {
         let coordinator = OnboardingCoordinator(onFinish: {})
         let today = Date()
@@ -92,8 +105,26 @@ struct OnboardingSessionTests {
         #expect(entry?.completed == true)
     }
 
+    @Test func firstDotMarkDayOneSetsLocalCompletionState() {
+        let coordinator = OnboardingCoordinator(onFinish: {})
+        let store = CustomCalendarStore.shared
+        let calendar = makeCalendar(name: "Read 2 pages")
+
+        store.addCalendar(calendar)
+        defer {
+            store.deleteCalendar(id: calendar.id)
+        }
+
+        coordinator.session.tinyHabitCalendarId = calendar.id
+
+        coordinator.firstDotMarkDayOneTapped()
+
+        #expect(coordinator.session.didCompleteFirstDot)
+    }
+
     private func makeCalendar(
         name: String,
+        isArchived: Bool = false,
         entries: [String: CalendarEntry] = [:]
     ) -> CustomCalendar {
         CustomCalendar(
@@ -104,7 +135,7 @@ struct OnboardingSessionTests {
             trackingStartedAt: LocalDayCalendar.startOfDay(for: Date()),
             dailyTarget: 1,
             entries: entries,
-            isArchived: false,
+            isArchived: isArchived,
             recurringReminderEnabled: false,
             reminderTime: nil,
             reminderWeekday: nil,
