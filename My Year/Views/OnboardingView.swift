@@ -34,9 +34,25 @@ final class OnboardingCoordinator: ObservableObject {
         currentStep = .firstDot
     }
 
-    func firstDotCompleted() {
-        logFirstDotIfNeeded()
+    func firstDotMarkDayOneTapped() {
+        let store = CustomCalendarStore.shared
+        guard let calendar = resolvedFirstCalendar(in: store.snapshot) else { return }
+        let today = Date()
+        let existingEntry = store.getEntry(calendarId: calendar.id, date: today)
+        guard existingEntry?.completed != true else {
+            session.didCompleteFirstDot = true
+            return
+        }
+
+        let entry = CalendarEntry(date: today, count: 1, completed: true)
+        store.addEntry(calendarId: calendar.id, entry: entry)
         session.didCompleteFirstDot = true
+        Task {
+            await hapticFeedback(.success)
+        }
+    }
+
+    func firstDotContinueTapped() {
         currentStep = .preReviewGate
     }
 
@@ -79,7 +95,8 @@ final class OnboardingCoordinator: ObservableObject {
 
         let store = CustomCalendarStore.shared
         let activeCalendars = store.snapshot.activeCalendars
-        guard activeCalendars.isEmpty else {
+        if let existingCalendar = activeCalendars.first {
+            session.tinyHabitCalendarId = existingCalendar.id
             return
         }
 
@@ -93,11 +110,28 @@ final class OnboardingCoordinator: ObservableObject {
         )
     }
 
-    private func logFirstDotIfNeeded() {
-        guard let calendarId = session.tinyHabitCalendarId else { return }
-        guard !session.didCompleteFirstDot else { return }
-        let entry = defaultEntry(date: Date(), trackingType: .binary)
-        CustomCalendarStore.shared.addEntry(calendarId: calendarId, entry: entry)
+    private func resolvedFirstCalendar(in snapshot: CustomCalendarStoreSnapshot) -> CustomCalendar? {
+        if let calendarId = session.tinyHabitCalendarId,
+            let calendar = snapshot.calendar(id: calendarId)
+        {
+            return calendar
+        }
+
+        guard let fallbackCalendar = snapshot.activeCalendars.first else {
+            return nil
+        }
+
+        session.tinyHabitCalendarId = fallbackCalendar.id
+        return fallbackCalendar
+    }
+
+    func resolvedFirstCalendarForView(in snapshot: CustomCalendarStoreSnapshot) -> CustomCalendar? {
+        resolvedFirstCalendar(in: snapshot)
+    }
+
+    func isFirstDotCompletedToday(calendar: CustomCalendar?, date: Date = Date()) -> Bool {
+        guard let calendar else { return false }
+        return calendar.entry(for: date)?.completed == true
     }
 
     private func route(from step: OnboardingStep) {
@@ -112,7 +146,7 @@ final class OnboardingCoordinator: ObservableObject {
         case .tinyHabitSelection:
             tinyHabitContinueTapped()
         case .firstDot:
-            firstDotCompleted()
+            break
         case .preReviewGate:
             currentStep = session.didAcceptReviewGate ? .reviewRequest : .notificationPermission
         case .reviewRequest:
@@ -211,8 +245,15 @@ struct OnboardingView: View {
                 onContinue: coordinator.tinyHabitContinueTapped
             )
         case .firstDot:
+            let snapshot = CustomCalendarStore.shared.snapshot
+            let firstDotCalendar = coordinator.resolvedFirstCalendarForView(in: snapshot)
+            let isCompletedToday = coordinator.isFirstDotCompletedToday(calendar: firstDotCalendar)
             FirstDotView(
-                onContinue: coordinator.firstDotCompleted
+                calendar: firstDotCalendar,
+                isCompletedToday: isCompletedToday,
+                canMarkDayOne: firstDotCalendar != nil && !coordinator.session.didCompleteFirstDot,
+                onMarkDayOne: coordinator.firstDotMarkDayOneTapped,
+                onContinue: coordinator.firstDotContinueTapped
             )
         case .preReviewGate:
             PreReviewGateView(
@@ -366,22 +407,65 @@ struct TinyHabitSelectionView: View {
 }
 
 struct FirstDotView: View {
+    let calendar: CustomCalendar?
+    let isCompletedToday: Bool
+    let canMarkDayOne: Bool
+    let onMarkDayOne: () -> Void
     let onContinue: () -> Void
+    @State private var animatedCompletion = false
+
+    private var showingProofState: Bool {
+        isCompletedToday || animatedCompletion
+    }
 
     var body: some View {
         OnboardingStepContainer {
-            EmptyView()
+            VStack(spacing: 18) {
+                Circle()
+                    .fill(showingProofState ? Color.brand : Color.surfaceMuted)
+                    .frame(width: 96, height: 96)
+                    .scaleEffect(showingProofState ? 1.04 : 0.9)
+                    .overlay {
+                        Circle()
+                            .strokeBorder(Color.brand, lineWidth: 2)
+                            .opacity(showingProofState ? 1 : 0.25)
+                    }
+                    .shadow(color: Color.brand.opacity(showingProofState ? 0.22 : 0), radius: 16, y: 6)
+
+                if showingProofState {
+                    Text("Proof added")
+                        .font(AppFont.pixelCircle(18))
+                        .foregroundStyle(.textPrimary)
+                }
+            }
+            .padding(.top, 24)
         } content: {
             VStack(alignment: .leading, spacing: 8) {
                 Text("Make the first dot.")
                     .font(AppFont.pixelCircle(24))
                     .foregroundStyle(.textPrimary)
-                Text("A single completed day is enough to start.")
+                Text(showingProofState ? "Day 1 is in place." : "A single completed day is enough to start.")
                     .font(AppFont.mono(14))
                     .foregroundStyle(.secondary)
             }
         } actions: {
-            OnboardingView.ForwardButton(title: "I did it", onTap: onContinue)
+            if showingProofState {
+                OnboardingView.ForwardButton(title: "Continue", onTap: onContinue)
+            } else {
+                OnboardingView.ForwardButton(
+                    title: "Mark Day 1",
+                    onTap: onMarkDayOne,
+                    disabled: !canMarkDayOne || calendar == nil
+                )
+            }
+        }
+        .onChange(of: isCompletedToday) { _, newValue in
+            withAnimation(.easeInOut(duration: 0.22)) {
+                animatedCompletion = newValue
+            }
+        }
+        .onAppear {
+            animatedCompletion = isCompletedToday
         }
     }
 }
