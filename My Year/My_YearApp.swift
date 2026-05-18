@@ -93,6 +93,7 @@ struct My_YearApp: App {
   @Environment(\.scenePhase) private var scenePhase
   @State private var isOnboardingPresented = false
   @State private var isTimelinePreferenceSheetPresented = false
+  @State private var hasTrackedOnboardingStarted = false
 
   #if DEBUG
     static let isDebugMode = true
@@ -184,9 +185,15 @@ struct My_YearApp: App {
       .onAppear {
         updateOnboardingPresentation()
         updateTimelinePreferencePresentation()
+        trackOnboardingStartedIfNeeded()
       }
       .onChange(of: onboarding.hasSeenOnboarding) { _, _ in
         updateOnboardingPresentation()
+      }
+      .onChange(of: isOnboardingPresented) { _, isPresented in
+        if isPresented {
+          trackOnboardingStartedIfNeeded()
+        }
       }
       .onChange(of: scenePhase) { _, phase in
         guard phase == .active else { return }
@@ -202,6 +209,12 @@ struct My_YearApp: App {
 
   private func updateTimelinePreferencePresentation() {
     isTimelinePreferenceSheetPresented = onboarding.hasSeenOnboarding && !TimelinePreferenceStore.hasStoredMode()
+  }
+
+  private func trackOnboardingStartedIfNeeded() {
+    guard isOnboardingPresented, !hasTrackedOnboardingStarted else { return }
+    hasTrackedOnboardingStarted = true
+    Analytics.shared.track(.onboardingStarted)
   }
 }
 

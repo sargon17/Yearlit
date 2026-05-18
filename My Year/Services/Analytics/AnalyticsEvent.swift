@@ -2,6 +2,8 @@ enum AnalyticsEvent: String, CaseIterable {
   case appOpened = "app_opened"
   case onboardingStarted = "onboarding_started"
   case onboardingCompleted = "onboarding_completed"
+  case onboardingStepViewed = "onboarding_step_viewed"
+  case onboardingActionPerformed = "onboarding_action_performed"
 
   case calendarCreated = "calendar_created"
   case calendarArchived = "calendar_archived"
@@ -45,6 +47,23 @@ enum ShareType: String, CaseIterable {
   case calendar
   case recap
   case unknown
+}
+
+enum OnboardingAction: String, CaseIterable {
+  case identityCompleted = "identity_completed"
+  case tinyHabitCreated = "tiny_habit_created"
+  case firstDotMarked = "first_dot_marked"
+  case reviewRequested = "review_requested"
+  case reviewSkipped = "review_skipped"
+  case notificationsRequested = "notifications_requested"
+  case notificationsSkipped = "notifications_skipped"
+  case readyContinued = "ready_continued"
+  case paywallBoundaryReached = "paywall_boundary_reached"
+  case paywallClosed = "paywall_closed"
+}
+
+enum OnboardingStepCatalog {
+  static let stepIDs: [String] = OnboardingStep.allCases.map(\.rawValue)
 }
 
 enum AnalyticsCatalog {

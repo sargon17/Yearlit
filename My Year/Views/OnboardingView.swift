@@ -4,101 +4,116 @@ import SwiftUI
 
 @MainActor
 final class OnboardingCoordinator: ObservableObject {
-    @Published private(set) var currentStep: OnboardingStep
-    @Published var session: OnboardingSession
-    @Published private(set) var isRequestingNotifications = false
+  @Published private(set) var currentStep: OnboardingStep
+  @Published var session: OnboardingSession
+  @Published private(set) var isRequestingNotifications = false
 
-    private let onFinish: () -> Void
-    private var firstDotCalendar: CustomCalendar?
+  private let onFinish: () -> Void
+  private let analytics: OnboardingAnalyticsTracking
+  private var firstDotCalendar: CustomCalendar?
+  private var trackedOnboardingActions: Set<OnboardingAction> = []
 
-    init(onFinish: @escaping () -> Void) {
-        self.onFinish = onFinish
-        currentStep = .emotionalHook
-        session = OnboardingSession()
+  init(onFinish: @escaping () -> Void, analytics: OnboardingAnalyticsTracking = Analytics.shared) {
+    self.onFinish = onFinish
+    self.analytics = analytics
+    currentStep = .emotionalHook
+    session = OnboardingSession()
+    trackStepView(.emotionalHook)
+  }
+
+  func continueTapped() {
+    route(from: currentStep)
+  }
+
+  func identityCommitmentChanged(_ commitment: IdentityCommitment) {
+    session.toggleIdentityCommitment(commitment)
+    session.selectedTinyHabitName = nil
+  }
+
+  func habitSelectionChanged(_ name: String) {
+    session.selectedTinyHabitName = name
+  }
+
+  func tinyHabitContinueTapped() {
+    guard session.selectedTinyHabitName != nil else { return }
+    createTinyHabitCalendarIfNeeded()
+    trackOnboardingAction(.tinyHabitCreated)
+    transition(to: .firstDot)
+  }
+
+  func firstDotMarkDayOneTapped() {
+    let store = CustomCalendarStore.shared
+    guard let calendar = resolvedFirstCalendar(in: store.snapshot) else { return }
+    let today = Date()
+    let existingEntry = store.getEntry(calendarId: calendar.id, date: today)
+    guard existingEntry?.completed != true else {
+      session.didCompleteFirstDot = true
+      trackOnboardingAction(.firstDotMarked)
+      return
     }
 
-    func continueTapped() {
-        route(from: currentStep)
+    let entry = CalendarEntry(date: today, count: 1, completed: true)
+    store.addEntry(calendarId: calendar.id, entry: entry)
+    session.didCompleteFirstDot = true
+    trackOnboardingAction(.firstDotMarked)
+    Task {
+      await hapticFeedback(.success)
     }
+  }
 
-    func identityCommitmentChanged(_ commitment: IdentityCommitment) {
-        session.toggleIdentityCommitment(commitment)
-        session.selectedTinyHabitName = nil
+  func firstDotContinueTapped() {
+    transition(to: .preReviewGate)
+  }
+
+  func preReviewGateAnswered(_ answer: PreReviewGateAnswer?) {
+    session.preReviewGateWasPositive = answer?.isPositive == true
+    transition(to: session.preReviewGateWasPositive ? .reviewRequest : .notificationPermission)
+  }
+
+  func reviewRequestAnswered() {
+    session.didRequestReview = true
+    trackOnboardingAction(.reviewRequested)
+    addPositiveEvent(.completedOnboarding)
+    transition(to: .notificationPermission)
+  }
+
+  func notificationPermissionRequested() {
+    guard !isRequestingNotifications else { return }
+    isRequestingNotifications = true
+    requestNotificationPermissions { [weak self] _ in
+      Task { @MainActor in
+        guard let self else { return }
+        self.session.didRequestNotifications = true
+        self.isRequestingNotifications = false
+        self.trackOnboardingAction(.notificationsRequested)
+        self.transition(to: .readyWidgets)
+      }
     }
+  }
 
-    func habitSelectionChanged(_ name: String) {
-        session.selectedTinyHabitName = name
-    }
+  func notificationPermissionSkipped() {
+    guard !isRequestingNotifications else { return }
+    session.didRequestNotifications = false
+    trackOnboardingAction(.notificationsSkipped)
+    transition(to: .readyWidgets)
+  }
 
-    func tinyHabitContinueTapped() {
-        guard session.selectedTinyHabitName != nil else { return }
-        createTinyHabitCalendarIfNeeded()
-        currentStep = .firstDot
-    }
+  func reviewRequestSkipped() {
+    session.didRequestReview = false
+    trackOnboardingAction(.reviewSkipped)
+    transition(to: .notificationPermission)
+  }
 
-    func firstDotMarkDayOneTapped() {
-        let store = CustomCalendarStore.shared
-        guard let calendar = resolvedFirstCalendar(in: store.snapshot) else { return }
-        let today = Date()
-        let existingEntry = store.getEntry(calendarId: calendar.id, date: today)
-        guard existingEntry?.completed != true else {
-            session.didCompleteFirstDot = true
-            return
-        }
+  func readyWidgetsCompleted() {
+    trackOnboardingAction(.readyContinued)
+    trackOnboardingAction(.paywallBoundaryReached)
+    transition(to: .paywall)
+  }
 
-        let entry = CalendarEntry(date: today, count: 1, completed: true)
-        store.addEntry(calendarId: calendar.id, entry: entry)
-        session.didCompleteFirstDot = true
-        Task {
-            await hapticFeedback(.success)
-        }
-    }
-
-    func firstDotContinueTapped() {
-        currentStep = .preReviewGate
-    }
-
-    func preReviewGateAnswered(_ answer: PreReviewGateAnswer?) {
-        session.preReviewGateWasPositive = answer?.isPositive == true
-        currentStep = session.preReviewGateWasPositive ? .reviewRequest : .notificationPermission
-    }
-
-    func reviewRequestAnswered() {
-        session.didRequestReview = true
-        addPositiveEvent(.completedOnboarding)
-        currentStep = .notificationPermission
-    }
-
-    func notificationPermissionRequested() {
-        guard !isRequestingNotifications else { return }
-        isRequestingNotifications = true
-        requestNotificationPermissions { _ in
-            Task { @MainActor in
-                self.session.didRequestNotifications = true
-                self.isRequestingNotifications = false
-                self.currentStep = .readyWidgets
-            }
-        }
-    }
-
-    func notificationPermissionSkipped() {
-        guard !isRequestingNotifications else { return }
-        session.didRequestNotifications = false
-        currentStep = .readyWidgets
-    }
-
-    func reviewRequestSkipped() {
-        session.didRequestReview = false
-        currentStep = .notificationPermission
-    }
-
-    func readyWidgetsCompleted() {
-        currentStep = .paywall
-    }
-
-    func paywallClosed() {
-        onFinish()
-    }
+  func paywallClosed() {
+    trackOnboardingAction(.paywallClosed)
+    onFinish()
+  }
 
     private func createTinyHabitCalendarIfNeeded() {
         guard session.tinyHabitCalendarId == nil else { return }
@@ -160,18 +175,19 @@ final class OnboardingCoordinator: ObservableObject {
     private func route(from step: OnboardingStep) {
         switch step {
         case .emotionalHook:
-            currentStep = .appExplanation
+            transition(to: .appExplanation)
         case .appExplanation:
-            currentStep = .identityCommitment
+            transition(to: .identityCommitment)
         case .identityCommitment:
             guard !session.selectedIdentityCommitments.isEmpty else { return }
-            currentStep = .tinyHabitSelection
+            trackOnboardingAction(.identityCompleted)
+            transition(to: .tinyHabitSelection)
         case .tinyHabitSelection:
             tinyHabitContinueTapped()
         case .firstDot:
             break
         case .preReviewGate:
-            currentStep = session.preReviewGateWasPositive ? .reviewRequest : .notificationPermission
+            transition(to: session.preReviewGateWasPositive ? .reviewRequest : .notificationPermission)
         case .reviewRequest:
             reviewRequestAnswered()
         case .notificationPermission:
@@ -181,6 +197,21 @@ final class OnboardingCoordinator: ObservableObject {
         case .paywall:
             paywallClosed()
         }
+    }
+
+    private func transition(to step: OnboardingStep) {
+        guard currentStep != step else { return }
+        currentStep = step
+        trackStepView(step)
+    }
+
+    private func trackStepView(_ step: OnboardingStep) {
+        analytics.trackOnboardingStepViewed(stepId: step.rawValue)
+    }
+
+    private func trackOnboardingAction(_ action: OnboardingAction) {
+        guard trackedOnboardingActions.insert(action).inserted else { return }
+        analytics.trackOnboardingAction(action)
     }
 }
 

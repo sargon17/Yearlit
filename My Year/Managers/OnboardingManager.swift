@@ -15,6 +15,7 @@ final class OnboardingManager: ObservableObject {
 
   func markAsSeen() {
     seenV1 = true
+    Analytics.shared.track(.onboardingCompleted)
     persistDefaultTimelinePreferenceIfNeeded()
     objectWillChange.send()
   }

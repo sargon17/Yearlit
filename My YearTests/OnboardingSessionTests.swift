@@ -218,6 +218,94 @@ struct OnboardingSessionTests {
         #expect(didFinish)
     }
 
+    @Test func onboardingCoordinatorTracksLifecycleStepsAndKeyActionsOnce() {
+        let analytics = SpyAnalytics()
+        var didFinish = false
+        let coordinator = OnboardingCoordinator(onFinish: {
+            didFinish = true
+        }, analytics: analytics)
+
+        #expect(analytics.events == [
+            (event: .onboardingStepViewed, properties: ["step_id": .string(OnboardingStep.emotionalHook.rawValue)])
+        ])
+
+        coordinator.continueTapped()
+        coordinator.continueTapped()
+        coordinator.identityCommitmentChanged(.reader)
+        coordinator.continueTapped()
+        coordinator.habitSelectionChanged("Read 2 pages")
+        coordinator.tinyHabitContinueTapped()
+        coordinator.firstDotMarkDayOneTapped()
+        coordinator.firstDotMarkDayOneTapped()
+        coordinator.firstDotContinueTapped()
+        coordinator.preReviewGateAnswered(.positive)
+        coordinator.reviewRequestAnswered()
+        coordinator.reviewRequestAnswered()
+        coordinator.notificationPermissionSkipped()
+        coordinator.notificationPermissionSkipped()
+        coordinator.readyWidgetsCompleted()
+        coordinator.readyWidgetsCompleted()
+        coordinator.paywallClosed()
+        coordinator.paywallClosed()
+
+        #expect(didFinish)
+        #expect(analytics.events.map(\.event) == [
+            .onboardingStepViewed,
+            .onboardingStepViewed,
+            .onboardingStepViewed,
+            .onboardingActionPerformed,
+            .onboardingStepViewed,
+            .onboardingActionPerformed,
+            .onboardingStepViewed,
+            .onboardingActionPerformed,
+            .onboardingStepViewed,
+            .onboardingActionPerformed,
+            .onboardingStepViewed,
+            .onboardingActionPerformed,
+            .onboardingStepViewed,
+            .onboardingActionPerformed,
+            .onboardingStepViewed,
+            .onboardingActionPerformed
+        ])
+        #expect(analytics.actions == [
+            .identityCompleted,
+            .tinyHabitCreated,
+            .firstDotMarked,
+            .reviewRequested,
+            .notificationsSkipped,
+            .readyContinued,
+            .paywallBoundaryReached,
+            .paywallClosed
+        ])
+    }
+
+    @Test func onboardingAnalyticsDocsCoverAllowedValuesAndPrivacyBoundaries() throws {
+        let document = try String(contentsOfFile: Self.analyticsEventsDocPath, encoding: .utf8)
+
+        #expect(document.contains("`onboarding_step_viewed`"))
+        #expect(document.contains("`onboarding_action_performed`"))
+        #expect(document.contains("`step_id`"))
+        #expect(document.contains("`action`"))
+
+        for value in OnboardingStepCatalog.stepIDs {
+            #expect(document.contains("`\(value)`"))
+        }
+
+        for value in OnboardingAction.allCases.map(\.rawValue) {
+            #expect(document.contains("`\(value)`"))
+        }
+
+        for forbidden in [
+            "identity commitment IDs",
+            "tiny habit IDs",
+            "calendar names",
+            "habit names",
+            "notification text"
+        ] {
+            #expect(document.localizedCaseInsensitiveContains(forbidden))
+        }
+    }
+
     private func makeCalendar(
         name: String,
         isArchived: Bool = false,
@@ -245,5 +333,32 @@ struct OnboardingSessionTests {
             streakProtectionEnabled: true,
             streakProtectionThreshold: 5
         )
+    }
+
+    private final class SpyAnalytics: OnboardingAnalyticsTracking {
+        private(set) var events: [(event: AnalyticsEvent, properties: [String: AnalyticsPropertyValue])] = []
+
+        func track(_ event: AnalyticsEvent, properties: [String: AnalyticsPropertyValue]) {
+            events.append((event: event, properties: properties))
+        }
+
+        func trackOnboardingStepViewed(stepId: String) {
+            track(.onboardingStepViewed, properties: ["step_id": .string(stepId)])
+        }
+
+        func trackOnboardingAction(_ action: OnboardingAction) {
+            track(.onboardingActionPerformed, properties: ["action": .string(action.rawValue)])
+        }
+
+        var actions: [OnboardingAction] {
+            events.compactMap { event, properties in
+                guard event == .onboardingActionPerformed,
+                    case let .string(action) = properties["action"]
+                else {
+                    return nil
+                }
+                return OnboardingAction(rawValue: action)
+            }
+        }
     }
 }

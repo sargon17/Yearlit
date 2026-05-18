@@ -94,6 +94,17 @@ Forbidden property names:
 | `onboarding_started` | Onboarding first appears once per install. | Standard properties only. |
 | `onboarding_completed` | Onboarding is marked as seen. | Standard properties only. |
 
+## Onboarding funnel events
+
+Owned by #99.
+
+| Event | Notes |
+| --- | --- |
+| `onboarding_step_viewed` | Fires when the onboarding coordinator transitions to a step that is actually shown. Include only `step_id`. Allowed `step_id` values: `emotional_hook`, `app_explanation`, `identity_commitment`, `tiny_habit_selection`, `first_dot`, `pre_review_gate`, `review_request`, `notification_permission`, `ready_widgets`, `paywall`. |
+| `onboarding_action_performed` | Fires for coarse onboarding actions only. Include only `action`. Allowed `action` values: `identity_completed`, `tiny_habit_created`, `first_dot_marked`, `review_requested`, `review_skipped`, `notifications_requested`, `notifications_skipped`, `ready_continued`, `paywall_boundary_reached`, `paywall_closed`. |
+
+Do not send identity commitment IDs, selected habit strings, calendar IDs, calendar names, habit names, notification text, notes, goal text, or any other user-entered content in these events.
+
 ## Calendar and activation events
 
 Owned by #90.

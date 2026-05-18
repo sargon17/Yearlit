@@ -1,6 +1,12 @@
 import Foundation
 import SharedModels
 
+protocol OnboardingAnalyticsTracking {
+  func track(_ event: AnalyticsEvent, properties: [String: AnalyticsPropertyValue])
+  func trackOnboardingStepViewed(stepId: String)
+  func trackOnboardingAction(_ action: OnboardingAction)
+}
+
 @MainActor
 final class Analytics {
   static let shared = Analytics()
@@ -52,6 +58,24 @@ final class Analytics {
       .shareSheetViewed,
       properties: [
         "share_type": .string(type.rawValue)
+      ]
+    )
+  }
+
+  func trackOnboardingStepViewed(stepId: String) {
+    track(
+      .onboardingStepViewed,
+      properties: [
+        "step_id": .string(stepId)
+      ]
+    )
+  }
+
+  func trackOnboardingAction(_ action: OnboardingAction) {
+    track(
+      .onboardingActionPerformed,
+      properties: [
+        "action": .string(action.rawValue)
       ]
     )
   }
@@ -114,3 +138,5 @@ final class Analytics {
     }
   }
 }
+
+extension Analytics: OnboardingAnalyticsTracking {}
