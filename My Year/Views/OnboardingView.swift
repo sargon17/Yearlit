@@ -19,11 +19,17 @@ final class OnboardingCoordinator: ObservableObject {
         route(from: currentStep)
     }
 
+    func identityCommitmentChanged(_ commitment: IdentityCommitment) {
+        session.toggleIdentityCommitment(commitment)
+        session.selectedTinyHabitName = nil
+    }
+
     func habitSelectionChanged(_ name: String) {
         session.selectedTinyHabitName = name
     }
 
     func tinyHabitContinueTapped() {
+        guard session.selectedTinyHabitName != nil else { return }
         createTinyHabitCalendarIfNeeded()
         currentStep = .firstDot
     }
@@ -69,38 +75,22 @@ final class OnboardingCoordinator: ObservableObject {
 
     private func createTinyHabitCalendarIfNeeded() {
         guard session.tinyHabitCalendarId == nil else { return }
-        let isFirstCalendar = CustomCalendarStore.shared.snapshot.calendars.filter { !$0.isArchived }.isEmpty
+        guard let selectedHabit = session.selectedTinyHabitName else { return }
 
-        let calendar = CustomCalendar(
-            name: session.selectedTinyHabitName,
-            color: "qs-amber",
-            cadence: .daily,
-            trackingType: .binary,
-            trackingStartedAt: Date(),
-            dailyTarget: 1,
-            entries: [:],
-            isArchived: false,
-            recurringReminderEnabled: false,
-            reminderTime: nil,
-            reminderWeekday: nil,
-            unit: nil,
-            defaultRecordValue: nil,
-            currencySymbol: nil,
-            reminderTimeZone: TimeZone.current.identifier,
-            notificationPrivacyMode: .full,
-            suppressWhenCompleted: true,
-            additionalReminderTimes: [],
-            streakProtectionEnabled: true,
-            streakProtectionThreshold: 5
-        )
+        let store = CustomCalendarStore.shared
+        let activeCalendars = store.snapshot.activeCalendars
+        guard activeCalendars.isEmpty else {
+            return
+        }
+
+        let calendar = OnboardingFirstCalendarFactory.makeCalendar(title: selectedHabit, today: Date())
 
         session.tinyHabitCalendarId = calendar.id
-        CustomCalendarStore.shared.addCalendar(calendar)
+        store.addCalendar(calendar)
         CalendarAnalyticsTracker.shared.trackCalendarCreated(
             calendar: calendar,
-            isFirstCalendar: isFirstCalendar
+            isFirstCalendar: true
         )
-        scheduleNotifications(for: calendar, store: CustomCalendarStore.shared)
     }
 
     private func logFirstDotIfNeeded() {
@@ -117,6 +107,7 @@ final class OnboardingCoordinator: ObservableObject {
         case .appExplanation:
             currentStep = .identityCommitment
         case .identityCommitment:
+            guard !session.selectedIdentityCommitments.isEmpty else { return }
             currentStep = .tinyHabitSelection
         case .tinyHabitSelection:
             tinyHabitContinueTapped()
@@ -152,12 +143,22 @@ enum OnboardingStep: String, CaseIterable, Identifiable {
 }
 
 struct OnboardingSession {
-    var selectedTinyHabitName: String = "Daily Training"
+    var selectedIdentityCommitments: [IdentityCommitment] = []
+    var selectedTinyHabitName: String?
     var tinyHabitCalendarId: UUID?
     var didCompleteFirstDot = false
     var didAcceptReviewGate = false
     var didRequestReview = false
     var didRequestNotifications = false
+
+    mutating func toggleIdentityCommitment(_ commitment: IdentityCommitment) {
+        if let index = selectedIdentityCommitments.firstIndex(of: commitment) {
+            selectedIdentityCommitments.remove(at: index)
+            return
+        }
+
+        selectedIdentityCommitments.append(commitment)
+    }
 }
 
 struct OnboardingView: View {
@@ -193,9 +194,18 @@ struct OnboardingView: View {
         case .appExplanation:
             HabitsMatter(onNext: coordinator.continueTapped)
         case .identityCommitment:
-            IdentityFirst(onNext: coordinator.continueTapped)
+            IdentityFirst(
+                selectedCommitments: coordinator.session.selectedIdentityCommitments,
+                onCommitmentTapped: coordinator.identityCommitmentChanged,
+                canContinue: !coordinator.session.selectedIdentityCommitments.isEmpty,
+                onNext: coordinator.continueTapped
+            )
         case .tinyHabitSelection:
+            let habits = coordinator.session.selectedIdentityCommitments.last.map {
+                OnboardingHabitCatalog.habits(for: $0)
+            } ?? []
             TinyHabitSelectionView(
+                habits: habits,
                 selectedHabit: coordinator.session.selectedTinyHabitName,
                 onHabitSelected: coordinator.habitSelectionChanged,
                 onContinue: coordinator.tinyHabitContinueTapped
@@ -312,12 +322,10 @@ extension OnboardingView {
 }
 
 struct TinyHabitSelectionView: View {
-    let selectedHabit: String
+    let habits: [String]
+    let selectedHabit: String?
     let onHabitSelected: (String) -> Void
     let onContinue: () -> Void
-    @Environment(\.colorScheme) var colorScheme
-
-    private let habits = ["Daily Training", "Reading", "Walking", "Mindfulness"]
 
     var body: some View {
         OnboardingStepContainer {
@@ -352,7 +360,7 @@ struct TinyHabitSelectionView: View {
         } content: {
             EmptyView()
         } actions: {
-            OnboardingView.ForwardButton(title: "Continue", onTap: onContinue)
+            OnboardingView.ForwardButton(title: "Create my habit", onTap: onContinue, disabled: selectedHabit == nil)
         }
     }
 }

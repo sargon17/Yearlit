@@ -1,5 +1,17 @@
 import SwiftUI
 
+enum IdentityCommitment: String, CaseIterable, Identifiable, Hashable {
+    case runner = "I am a runner"
+    case reader = "I am a reader"
+    case learner = "I am a learner"
+    case meditator = "I meditate"
+    case strengthTrainer = "I strength train"
+    case healthyEater = "I eat healthy"
+
+    var id: String { rawValue }
+    var title: String { rawValue }
+}
+
 struct TwinkleImage: View {
     let name: String
     let maxWidth: CGFloat
@@ -118,6 +130,9 @@ extension CGPoint {
 }
 
 struct IdentityFirst: View {
+    let selectedCommitments: [IdentityCommitment]
+    let onCommitmentTapped: (IdentityCommitment) -> Void
+    let canContinue: Bool
     let onNext: () -> Void
 
     var body: some View {
@@ -256,16 +271,38 @@ struct IdentityFirst: View {
 
                 VStack(alignment: .leading) {
                     Text("Decide the kind of person you want to be")
-                    Text("👉 ‘I’m a reader’")
-                    Text("👉 ‘I’m a runner’")
-                    Text("👉 ‘I’m a learner’")
+                    Text("Pick one or more commitments.")
                 }
                 .multilineTextAlignment(.leading)
                 .font(AppFont.mono(14))
                 .foregroundStyle(.secondary)
+
+                VStack(alignment: .leading, spacing: 10) {
+                    ForEach(IdentityCommitment.allCases) { commitment in
+                        Button {
+                            onCommitmentTapped(commitment)
+                        } label: {
+                            HStack {
+                                Text(commitment.title)
+                                Spacer()
+                                if selectedCommitments.contains(commitment) {
+                                    Image(systemName: "checkmark")
+                                }
+                            }
+                            .padding()
+                            .foregroundStyle(.textPrimary)
+                            .sameLevelBorder(
+                                radius: 4,
+                                color: selectedCommitments.contains(commitment) ? .brand : .surfaceMuted
+                            )
+                        }
+                        .buttonStyle(.plain)
+                    }
+                }
+                .padding(.top, 8)
             }
         } actions: {
-            OnboardingView.ForwardButton(title: "Next", onTap: onNext)
+            OnboardingView.ForwardButton(title: "Next", onTap: onNext, disabled: !canContinue)
         }
     }
 }
