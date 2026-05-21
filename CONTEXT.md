@@ -64,6 +64,34 @@ _Avoid_: Tracking mood values in analytics unless explicitly scoped
 The optional year-level reflective view summarizing progress across Calendars.
 _Avoid_: Overview when naming events or code-facing analytics
 
+**Onboarding flow**:
+The first-run guided experience that introduces Yearlit, collects setup choices, and may adapt later steps based on earlier answers.
+_Avoid_: Intro slides when referring to the full interactive setup experience
+
+**Onboarding session**:
+The temporary set of answers and setup choices collected while a user is inside the Onboarding flow.
+_Avoid_: Persisted onboarding state, user profile, settings
+
+**Onboarding step**:
+A typed screen in the Onboarding flow, such as a story step, choice step, setup step, permission step, or paywall step.
+_Avoid_: Slide when the screen can be interactive or branching
+
+**Identity commitment**:
+A self-image a user can select during onboarding to shape suggested Tiny habits.
+_Avoid_: Category, persona, habit type
+
+**Tiny habit**:
+A small starter action proposed during onboarding and used to create the user's first Calendar.
+_Avoid_: Goal, task, template when speaking to users
+
+**First dot**:
+The first completed Period shown during onboarding to make the user's first Calendar feel real.
+_Avoid_: Sample dot, fake completion
+
+**First Calendar**:
+The Calendar a user starts during onboarding, or the earliest existing active Calendar if onboarding restarts after setup began.
+_Avoid_: Onboarding calendar, sample calendar
+
 ## Relationships
 
 - A **Calendar** can reach many **Milestones**.
@@ -93,6 +121,16 @@ _Avoid_: Overview when naming events or code-facing analytics
 - Enabling **Developer mode** gives subtle confirmation rather than interrupting normal Settings use.
 - **Developer mode** controls live near the wand-fill settings in Settings.
 - In production **Developer mode**, wand-fill settings are visible without enabling runtime debug.
+- An **Onboarding flow** is made of ordered and branching **Onboarding steps**.
+- An **Onboarding session** belongs to exactly one in-progress **Onboarding flow**.
+- **Onboarding steps** may read and update the **Onboarding session**, but only setup steps that create durable product objects should write to app stores.
+- A user may select and deselect multiple **Identity commitments** during onboarding.
+- The last selected **Identity commitment** produces a short list of candidate **Tiny habits**.
+- The user must have at least one selected **Identity commitment** before continuing to **Tiny habit** selection.
+- The **Onboarding flow** sequence is: emotional hook, app explanation, **Identity commitment**, **Tiny habit** selection, **First dot**, feedback gate, optional review request, notification permission, ready/widgets, paywall, then app entry.
+- Selecting a **Tiny habit** creates the user's **First Calendar**.
+- Marking the **First dot** creates a real **Check-in** for the **First Calendar**.
+- If the **Onboarding flow** restarts after setup began, an existing active **Calendar** is treated as the **First Calendar** instead of creating a duplicate.
 
 ## Example dialogue
 

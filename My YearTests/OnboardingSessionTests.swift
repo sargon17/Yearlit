@@ -186,6 +186,27 @@ struct OnboardingSessionTests {
         #expect(coordinator.currentStep == .notificationPermission)
     }
 
+    @Test func reviewRequestWaitsBeforeAdvancing() async {
+        var requestCount = 0
+        let coordinator = OnboardingCoordinator(
+            onFinish: {},
+            reviewRequester: { requestCount += 1 },
+            reviewPromptDelayNanoseconds: 1_000_000
+        )
+
+        coordinator.reviewRequestStarted()
+
+        #expect(requestCount == 1)
+        #expect(coordinator.isRequestingReview)
+        #expect(coordinator.currentStep == .emotionalHook)
+
+        try? await Task.sleep(nanoseconds: 2_000_000)
+
+        #expect(!coordinator.isRequestingReview)
+        #expect(coordinator.session.didRequestReview)
+        #expect(coordinator.currentStep == .notificationPermission)
+    }
+
     @Test func reviewSkipTracksSkippedActionOnce() {
         let analytics = SpyAnalytics()
         let coordinator = OnboardingCoordinator(onFinish: {}, analytics: analytics)
