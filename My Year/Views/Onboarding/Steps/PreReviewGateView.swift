@@ -1,13 +1,27 @@
-import Garnish
+import SharedModels
 import SwiftUI
 
 struct PreReviewGateView: View {
+  let calendar: CustomCalendar?
+  let completedDates: Set<Date>
   let onPositive: () -> Void
   let onSkip: () -> Void
 
+  private var today: Date {
+    Date()
+  }
+
   var body: some View {
     OnboardingStepContainer {
-      Color.clear
+      if let calendar {
+        OnboardingFirstDotCalendarGrid(
+          calendar: calendar,
+          today: today,
+          completedDates: completedDates,
+          allowsPastAndTodayTaps: false
+        )
+        .background(.surfaceMuted)
+      }
     } content: {
       VStack(alignment: .leading, spacing: 8) {
         OnboardingView.Title("How does your first dot feel?")

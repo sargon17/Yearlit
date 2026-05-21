@@ -44,16 +44,9 @@ struct OnboardingView: View {
     case .firstDot:
       firstDotView
     case .preReviewGate:
-      PreReviewGateView(
-        onPositive: { coordinator.preReviewGateAnswered(.positive) },
-        onSkip: { coordinator.preReviewGateAnswered(.negative) }
-      )
+      preReviewGateView
     case .reviewRequest:
-      ReviewRequestView(
-        isRequestingReview: coordinator.isRequestingReview,
-        onLeaveReview: coordinator.reviewRequestStarted,
-        onNotNow: coordinator.reviewRequestSkipped
-      )
+      reviewRequestView
     case .notificationPermission:
       NotificationPermissionView(
         isRequestingNotifications: coordinator.isRequestingNotifications,
@@ -74,8 +67,7 @@ struct OnboardingView: View {
   }
 
   private var firstDotView: some View {
-    let snapshot = CustomCalendarStore.shared.snapshot
-    let firstDotCalendar = coordinator.resolvedFirstCalendarForView(in: snapshot)
+    let firstDotCalendar = resolvedFirstDotCalendar
     let isCompletedToday = coordinator.isFirstDotCompletedToday(calendar: firstDotCalendar)
 
     return FirstDotView(
@@ -86,5 +78,48 @@ struct OnboardingView: View {
       onDayTapped: coordinator.firstDotDayTapped,
       onContinue: coordinator.firstDotContinueTapped
     )
+  }
+
+  private var preReviewGateView: some View {
+    let firstDotCalendar = resolvedFirstDotCalendar
+
+    return PreReviewGateView(
+      calendar: firstDotCalendar,
+      completedDates: completedDates(in: firstDotCalendar),
+      onPositive: { coordinator.preReviewGateAnswered(.positive) },
+      onSkip: { coordinator.preReviewGateAnswered(.negative) }
+    )
+  }
+
+  private var reviewRequestView: some View {
+    let firstDotCalendar = resolvedFirstDotCalendar
+
+    return ReviewRequestView(
+      calendar: firstDotCalendar,
+      completedDates: completedDates(in: firstDotCalendar),
+      isRequestingReview: coordinator.isRequestingReview,
+      onLeaveReview: coordinator.reviewRequestStarted,
+      onNotNow: coordinator.reviewRequestSkipped
+    )
+  }
+
+  private var resolvedFirstDotCalendar: CustomCalendar? {
+    coordinator.resolvedFirstCalendarForView(in: CustomCalendarStore.shared.snapshot)
+  }
+
+  private func completedDates(in calendar: CustomCalendar?) -> Set<Date> {
+    guard let calendar else { return [] }
+
+    var dates = Set(
+      calendar.entries.values.compactMap { entry in
+        entry.completed ? calendar.bucketDate(for: entry.date) : nil
+      }
+    )
+
+    if coordinator.session.didCompleteFirstDot {
+      dates.insert(calendar.bucketDate(for: Date()))
+    }
+
+    return dates
   }
 }

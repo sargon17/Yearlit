@@ -11,16 +11,14 @@ struct NotificationPermissionView: View {
       Color.clear
     } content: {
       VStack(alignment: .leading, spacing: 8) {
-        Spacer()
-        Text("Turn on reminders.")
-          .font(AppFont.pixelCircle(24))
-          .foregroundStyle(.textPrimary)
-        Text("You can change this later in Settings.")
-          .font(AppFont.mono(14))
-          .foregroundStyle(.secondary)
+        OnboardingView.Title("One last thing.")
+        OnboardingView.Caption("Yearlit can remind you to keep your promise.")
+        OnboardingView.Caption("A gentle daily nudge helps your dots keep growing.")
+          .padding(.bottom)
+        OnboardingView.Caption(" After this, your year is ready.")
       }
     } actions: {
-      VStack(spacing: 12) {
+      VStack(spacing: 2) {
         OnboardingView.ForwardButton(
           title: isRequestingNotifications ? "Requesting..." : "Turn on reminders",
           onTap: onTurnOnReminders,
@@ -29,7 +27,7 @@ struct NotificationPermissionView: View {
         OnboardingView.ForwardButton(
           title: "Not now",
           onTap: onNotNow,
-          style: isRequestingNotifications ? .disabled : .primary
+          style: isRequestingNotifications ? .disabled : .secondary
         )
       }
     }

@@ -8,17 +8,15 @@ struct ReadyWidgetsView: View {
     OnboardingStepContainer {
       Color.clear
     } content: {
-      VStack(alignment: .leading, spacing: 8) {
-        Spacer()
-        Text("Widgets are ready.")
-          .font(AppFont.pixelCircle(24))
-          .foregroundStyle(.textPrimary)
-        Text("Put the habit on your home screen.")
-          .font(AppFont.mono(14))
-          .foregroundStyle(.secondary)
+      VStack(alignment: .leading) {
+        OnboardingView.Title("Everything is ready")
+        OnboardingView.Caption("Your first habit is set.")
+        OnboardingView.Caption("Add a Yearlit widget to keep your promise where you’ll see it.")
+          .padding(.bottom)
+        OnboardingView.Caption("The more visible your habit is, the easier it is to return.")
       }
     } actions: {
-      OnboardingView.ForwardButton(title: "Continue to paywall", onTap: onContinue)
+      OnboardingView.ForwardButton(title: "Continue", onTap: onContinue)
     }
   }
 }
