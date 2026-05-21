@@ -49,7 +49,8 @@ struct TinyHabitSelectionView: View {
         OnboardingView.Caption("Start with something small enough to do even on a hard day.")
       }
     } actions: {
-      OnboardingView.ForwardButton(title: "Create my habit", onTap: onContinue, disabled: selectedHabit == nil)
+      OnboardingView.ForwardButton(
+        title: "Create my habit", onTap: onContinue, style: selectedHabit == nil ? .disabled : .primary)
     }
   }
 }

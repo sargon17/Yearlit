@@ -3,7 +3,6 @@ import SwiftUI
 
 struct PreReviewGateView: View {
   let onPositive: () -> Void
-  let onNotNow: () -> Void
   let onSkip: () -> Void
 
   var body: some View {
@@ -11,19 +10,15 @@ struct PreReviewGateView: View {
       Color.clear
     } content: {
       VStack(alignment: .leading, spacing: 8) {
-        Spacer()
-        Text("How did that first dot feel?")
-          .font(AppFont.pixelCircle(24))
-          .foregroundStyle(.textPrimary)
-        Text("Pick the closest answer.")
-          .font(AppFont.mono(14))
-          .foregroundStyle(.secondary)
+        OnboardingView.Title("How does your first dot feel?")
+        OnboardingView.Caption("You’ve just started your year.")
+        OnboardingView.Caption("Does seeing Day 1 make the habit feel more real?")
       }
     } actions: {
-      VStack(spacing: 12) {
-        OnboardingView.ForwardButton(title: "Great", onTap: onPositive)
-        OnboardingView.ForwardButton(title: "Fine", onTap: onNotNow)
-        OnboardingView.ForwardButton(title: "Not now", onTap: onSkip)
+      VStack(spacing: 2) {
+        OnboardingView.ForwardButton(title: "Feels motivating", onTap: onPositive, style: .secondary)
+        OnboardingView.ForwardButton(title: "It’s clear", onTap: onPositive, style: .secondary)
+        OnboardingView.ForwardButton(title: "Not yet", onTap: onSkip, style: .secondary)
       }
     }
   }

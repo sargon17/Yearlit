@@ -24,9 +24,12 @@ struct ReviewRequestView: View {
         OnboardingView.ForwardButton(
           title: isRequestingReview ? "Opening…" : "Leave a review",
           onTap: onLeaveReview,
-          disabled: isRequestingReview
+          style: isRequestingReview ? .disabled : .primary
         )
-        OnboardingView.ForwardButton(title: "Not now", onTap: onNotNow, disabled: isRequestingReview)
+        OnboardingView.ForwardButton(
+            title: "Not now",
+            onTap: onNotNow,
+            style: isRequestingReview ? .disabled : .primary)
       }
     }
   }

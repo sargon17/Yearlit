@@ -46,8 +46,7 @@ struct OnboardingView: View {
     case .preReviewGate:
       PreReviewGateView(
         onPositive: { coordinator.preReviewGateAnswered(.positive) },
-        onNotNow: { coordinator.preReviewGateAnswered(.neutral) },
-        onSkip: { coordinator.preReviewGateAnswered(.skip) }
+        onSkip: { coordinator.preReviewGateAnswered(.negative) }
       )
     case .reviewRequest:
       ReviewRequestView(

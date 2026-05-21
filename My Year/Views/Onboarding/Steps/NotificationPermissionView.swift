@@ -24,12 +24,12 @@ struct NotificationPermissionView: View {
         OnboardingView.ForwardButton(
           title: isRequestingNotifications ? "Requesting..." : "Turn on reminders",
           onTap: onTurnOnReminders,
-          disabled: isRequestingNotifications
+          style: isRequestingNotifications ? .disabled : .primary
         )
         OnboardingView.ForwardButton(
           title: "Not now",
           onTap: onNotNow,
-          disabled: isRequestingNotifications
+          style: isRequestingNotifications ? .disabled : .primary
         )
       }
     }

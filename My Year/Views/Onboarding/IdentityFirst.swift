@@ -69,7 +69,7 @@ struct IdentityFirst: View {
         OnboardingView.Caption("Yearlit will help you prove it, one day at a time.")
       }
     } actions: {
-      OnboardingView.ForwardButton(title: "Next", onTap: onNext, disabled: !canContinue)
+      OnboardingView.ForwardButton(title: "Next", onTap: onNext, style: !canContinue ? .disabled : .primary)
     }
   }
 }

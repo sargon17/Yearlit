@@ -39,12 +39,10 @@ struct FirstDotView: View {
       }
     } content: {
       VStack(alignment: .leading, spacing: 8) {
-        Text("Make the first dot.")
-          .font(AppFont.pixelCircle(24))
-          .foregroundStyle(.textPrimary)
-        Text(showingProofState ? "Day 1 is in place." : "A single completed day is enough to start.")
-          .font(AppFont.mono(14))
-          .foregroundStyle(.secondary)
+        OnboardingView.Title(showingProofState ? "Proof added." : "Your first dot is waiting.")
+        OnboardingView.Caption(showingProofState ? "One day down." : "You chose who you’re becoming.")
+        OnboardingView.Caption(
+          showingProofState ? "Keep the promise tomorrow." : "Mark today as the first proof.")
       }
     } actions: {
       if showingProofState {
@@ -53,7 +51,7 @@ struct FirstDotView: View {
         OnboardingView.ForwardButton(
           title: "Mark Day 1",
           onTap: markToday,
-          disabled: !canMarkDayOne || calendar == nil
+          style: !canMarkDayOne || calendar == nil ? .disabled : .primary
         )
       }
     }

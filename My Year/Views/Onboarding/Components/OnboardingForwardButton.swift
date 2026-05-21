@@ -1,19 +1,45 @@
 import Garnish
 import SwiftUI
 
+enum OnboardingButtonStyle {
+  case primary
+  case secondary
+  case disabled
+}
+
 extension OnboardingView {
   struct ForwardButton: View {
     let title: LocalizedStringKey
     let onTap: () -> Void
-    var disabled: Bool = false
+    let style: OnboardingButtonStyle
     @Environment(\.colorScheme) var colorScheme
 
+    init(title: LocalizedStringKey, onTap: @escaping () -> Void, style: OnboardingButtonStyle = .primary) {
+      self.title = title
+      self.onTap = onTap
+      self.style = style
+    }
+
     var foregroundColor: Color {
-      disabled ? .textTertiary : .brandInverted
+      switch style {
+      case .primary:
+        return .brandInverted
+      case .secondary:
+        return .textPrimary
+      case .disabled:
+        return .textTertiary.opacity(0.5)
+      }
     }
 
     var backgroundColor: Color {
-      disabled ? .surfaceMuted : .brand
+      switch style {
+      case .primary:
+        return .brand
+      case .secondary:
+        return .surfaceMuted
+      case .disabled:
+        return .surfaceMuted
+      }
     }
 
     var body: some View {
@@ -27,15 +53,9 @@ extension OnboardingView {
             .clipShape(RoundedRectangle(cornerRadius: 4))
         }
         .sameLevelBorder(radius: 4, color: backgroundColor)
-        .disabled(disabled)
+        .disabled(style == .disabled)
       }
       .padding(.all, 2)
-      // .background(
-      //   RoundedRectangle(cornerRadius: 6)
-      //     .foregroundStyle(getVoidColor(colorScheme: colorScheme))
-      // )
-      // .clipped()
-      // .outerSameLevelShadow()
     }
   }
 }
