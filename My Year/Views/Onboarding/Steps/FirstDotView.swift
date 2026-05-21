@@ -11,6 +11,7 @@ struct FirstDotView: View {
   let onContinue: () -> Void
 
   @State private var completedDates: Set<Date> = []
+  @State private var rippleTrigger = 0
 
   private var today: Date {
     Date()
@@ -32,6 +33,7 @@ struct FirstDotView: View {
           calendar: calendar,
           today: today,
           completedDates: completedDates,
+          rippleTrigger: rippleTrigger,
           onDayTapped: toggleDay
         ).background(.surfaceMuted)
       }
@@ -66,6 +68,7 @@ struct FirstDotView: View {
   private func markToday() {
     guard let todayBucket else { return }
     completedDates.insert(todayBucket)
+    triggerRippleFeedback()
     onMarkDayOne()
   }
 
@@ -77,9 +80,24 @@ struct FirstDotView: View {
       completedDates.remove(bucketDate)
     } else {
       completedDates.insert(bucketDate)
+      if bucketDate == todayBucket {
+        triggerRippleFeedback()
+      }
     }
 
     onDayTapped(date)
+  }
+
+  private func triggerRippleFeedback() {
+    rippleTrigger += 1
+
+    Task {
+      await hapticFeedback(.success)
+      try? await Task.sleep(nanoseconds: 140_000_000)
+      await hapticFeedback(.light)
+      try? await Task.sleep(nanoseconds: 180_000_000)
+      await hapticFeedback(.light)
+    }
   }
 
   private func syncCompletedDatesFromCalendar() {
@@ -104,6 +122,7 @@ private struct OnboardingFirstDotCalendarGrid: View {
   let calendar: CustomCalendar
   let today: Date
   let completedDates: Set<Date>
+  let rippleTrigger: Int
   let onDayTapped: (Date) -> Void
 
   private let columns = 10
@@ -131,16 +150,18 @@ private struct OnboardingFirstDotCalendarGrid: View {
           let date = date(for: index, todayIndex: todayIndex)
           let isTappable = index <= todayIndex
 
-          RoundedRectangle(cornerRadius: dotCornerRadius)
-            .fill(color(for: date, index: index, todayIndex: todayIndex))
-            .frame(width: dotSize, height: dotSize)
-            .position(x: x, y: y)
-            .contentShape(Rectangle())
-            .onTapGesture {
-              guard isTappable else { return }
-              onDayTapped(date)
-            }
-            .animation(.easeInOut(duration: 0.28), value: completedDates)
+          OnboardingRippleGridDot(
+            color: color(for: date, index: index, todayIndex: todayIndex),
+            size: dotSize,
+            cornerRadius: dotCornerRadius,
+            rippleTrigger: rippleTrigger,
+            rippleDelay: rippleDelay(row: row, column: column, centerRow: centerRow, centerColumn: centerColumn),
+            isTappable: isTappable
+          ) {
+            onDayTapped(date)
+          }
+          .position(x: x, y: y)
+          .animation(.easeInOut(duration: 0.28), value: completedDates)
         }
       }
       .rotationEffect(.degrees(11), anchor: .center)
@@ -175,7 +196,62 @@ private struct OnboardingFirstDotCalendarGrid: View {
     Calendar.current.date(byAdding: .day, value: index - todayIndex, to: today) ?? today
   }
 
+  private func rippleDelay(row: Int, column: Int, centerRow: Int, centerColumn: Int) -> Double {
+    let distance = hypot(Double(row - centerRow), Double(column - centerColumn))
+    return distance * 0.085
+  }
+
   private func index(row: Int, column: Int) -> Int {
     (row * columns) + column
+  }
+}
+
+private struct OnboardingRippleGridDot: View {
+  let color: Color
+  let size: CGFloat
+  let cornerRadius: CGFloat
+  let rippleTrigger: Int
+  let rippleDelay: Double
+  let isTappable: Bool
+  let onTap: () -> Void
+
+  @State private var isRippling = false
+
+  var body: some View {
+    Button {
+      guard isTappable else { return }
+      onTap()
+    } label: {
+      RoundedRectangle(cornerRadius: cornerRadius)
+        .fill(color)
+        .frame(width: size, height: size)
+        .scaleEffect(isRippling ? 1.16 : 1)
+        .overlay {
+          RoundedRectangle(cornerRadius: cornerRadius)
+            .strokeBorder(Color.brand.opacity(isRippling ? 0.55 : 0), lineWidth: 2)
+            .scaleEffect(isRippling ? 1.28 : 1)
+        }
+        .contentShape(Rectangle())
+    }
+    .buttonStyle(.plain)
+    .disabled(!isTappable)
+    .onChange(of: rippleTrigger) { _, trigger in
+      guard trigger > 0 else { return }
+      startRipple()
+    }
+  }
+
+  private func startRipple() {
+    DispatchQueue.main.asyncAfter(deadline: .now() + rippleDelay) {
+      withAnimation(.easeOut(duration: 0.26)) {
+        isRippling = true
+      }
+
+      DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+        withAnimation(.easeOut(duration: 0.48)) {
+          isRippling = false
+        }
+      }
+    }
   }
 }

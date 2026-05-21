@@ -26,6 +26,7 @@ struct OnboardingStepContainer<Top: View, Content: View, Actions: View>: View {
             top()
 
             OnboardingView.GradientOverlay()
+              .allowsHitTesting(false)
           }
           .frame(maxHeight: .infinity)
 
