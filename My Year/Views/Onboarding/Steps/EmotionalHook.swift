@@ -1,5 +1,3 @@
-import Garnish
-import SharedModels
 import SwiftUI
 
 struct EmotionalHook: View {
@@ -7,21 +5,8 @@ struct EmotionalHook: View {
 
   var body: some View {
     OnboardingStepContainer {
-      VStack {
-        OnboardingView.ForwardButton(
-          title: "Start my year",
-          onTap: {
-            onNext()
-          })
-        OnboardingView.ForwardButton(
-          title: "Start my year",
-          onTap: {
-            onNext()
-          },
-          disabled: true,
-        )
-      }
-      .padding()
+      OnboardingCalendarGridView()
+        .background(.surfaceMuted)
     } content: {
       VStack(alignment: .leading) {
         OnboardingView.Title("Your year starts today")
