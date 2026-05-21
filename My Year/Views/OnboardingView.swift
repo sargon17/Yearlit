@@ -84,6 +84,7 @@ struct OnboardingView: View {
       isCompletedToday: isCompletedToday || coordinator.session.didCompleteFirstDot,
       canMarkDayOne: firstDotCalendar != nil && !coordinator.session.didCompleteFirstDot,
       onMarkDayOne: coordinator.firstDotMarkDayOneTapped,
+      onDayTapped: coordinator.firstDotDayTapped,
       onContinue: coordinator.firstDotContinueTapped
     )
   }

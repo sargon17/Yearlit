@@ -55,27 +55,48 @@ final class OnboardingCoordinator: ObservableObject {
   }
 
   func firstDotMarkDayOneTapped() {
+    setFirstDotDay(Date(), completed: true)
+  }
+
+  func firstDotDayTapped(_ date: Date) {
     let store = CustomCalendarStore.shared
     guard let calendar = resolvedFirstCalendar(in: store.snapshot) else { return }
-    let today = Date()
-    let existingEntry = store.getEntry(calendarId: calendar.id, date: today)
-    guard existingEntry?.completed != true else {
-      session.didCompleteFirstDot = true
-      trackOnboardingAction(.firstDotMarked)
-      return
-    }
+    let todayBucket = calendar.bucketDate(for: Date())
+    let dateBucket = calendar.bucketDate(for: date)
+    guard dateBucket <= todayBucket else { return }
 
-    let entry = CalendarEntry(date: today, count: 1, completed: true)
-    store.addEntry(calendarId: calendar.id, entry: entry)
-    session.didCompleteFirstDot = true
-    trackOnboardingAction(.firstDotMarked)
-    Task {
-      await hapticFeedback(.success)
-    }
+    let isCompleted = store.getEntry(calendarId: calendar.id, date: date)?.completed == true
+    setFirstDotDay(date, completed: !isCompleted)
   }
 
   func firstDotContinueTapped() {
+    let store = CustomCalendarStore.shared
+    guard let calendar = resolvedFirstCalendar(in: store.snapshot) else { return }
+    guard session.didCompleteFirstDot || isFirstDotCompletedToday(calendar: calendar) else { return }
     transition(to: .preReviewGate)
+  }
+
+  private func setFirstDotDay(_ date: Date, completed: Bool) {
+    let store = CustomCalendarStore.shared
+    guard let calendar = resolvedFirstCalendar(in: store.snapshot) else { return }
+
+    if completed {
+      let entry = CalendarEntry(date: date, count: 1, completed: true)
+      store.addEntry(calendarId: calendar.id, entry: entry)
+    } else {
+      store.deleteEntry(calendarId: calendar.id, date: date)
+    }
+
+    if calendar.bucketDate(for: date) == calendar.bucketDate(for: Date()) {
+      session.didCompleteFirstDot = completed
+      if completed {
+        trackOnboardingAction(.firstDotMarked)
+      }
+    }
+
+    Task {
+      await hapticFeedback(completed ? .success : .light)
+    }
   }
 
   func preReviewGateAnswered(_ answer: PreReviewGateAnswer?) {
@@ -154,13 +175,6 @@ final class OnboardingCoordinator: ObservableObject {
     guard let selectedHabit = session.selectedTinyHabitName else { return }
 
     let store = CustomCalendarStore.shared
-    let activeCalendars = store.snapshot.activeCalendars
-    if let existingCalendar = activeCalendars.first {
-      session.tinyHabitCalendarId = existingCalendar.id
-      firstDotCalendar = existingCalendar
-      return
-    }
-
     let calendar = OnboardingFirstCalendarFactory.makeCalendar(title: selectedHabit, today: Date())
 
     session.tinyHabitCalendarId = calendar.id
