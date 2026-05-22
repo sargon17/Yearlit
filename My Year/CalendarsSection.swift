@@ -193,6 +193,18 @@ struct CalendarsSection: View {
             .font(.system(size: 16))
         }
         .accessibilityLabel("Show Timeline Choice Sheet")
+
+        Button(action: {
+          router.showScreen(.sheet) { _ in
+            OnboardingPaywall {
+              router.dismissScreen()
+            }
+          }
+        }) {
+          Image(systemName: "dollarsign.circle")
+            .font(.system(size: 16))
+        }
+        .accessibilityLabel("Show Paywall")
       #endif
 
       Button(action: {
