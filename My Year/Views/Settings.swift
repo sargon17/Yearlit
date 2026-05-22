@@ -17,6 +17,8 @@ struct SettingsView: View {
 
                 PoliciesSection()
 
+                WidgetsSettingsSection()
+
                 Features()
 
                 Contacts()

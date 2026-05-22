@@ -1,12 +1,29 @@
-import Garnish
+import SharedModels
 import SwiftUI
 
 struct ReadyWidgetsView: View {
   let onContinue: () -> Void
+  @Environment(\.colorScheme) private var colorScheme
+
+  private var backgroundColor: Color {
+    WidgetStyle.surfaceMutedColor(for: colorScheme)
+  }
+
+  private var primaryTextColor: Color {
+    WidgetStyle.textPrimaryColor(for: colorScheme)
+  }
 
   var body: some View {
     OnboardingStepContainer {
-      Color.clear
+      WidgetPreviewFrame(family: .medium) {
+        YearProgressWidgetDisplayView(
+          family: .medium,
+          referenceDate: Date(),
+          backgroundColor: backgroundColor,
+          textPrimaryColor: primaryTextColor
+        )
+      }
+      .padding(.horizontal)
     } content: {
       VStack(alignment: .leading) {
         OnboardingView.Title("Everything is ready")
