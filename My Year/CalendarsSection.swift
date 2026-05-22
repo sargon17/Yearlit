@@ -17,12 +17,14 @@ struct CalendarsSection: View {
   @Environment(\.router) private var router
 
   @State private var position = ScrollPosition(idType: String.self)
+  @State private var visibleSlideId: String?
   @State private var pendingCalendarId: String?
   @State private var isTimelinePreferenceSheetPresented = false
   @State private var hasTrackedRecapView = false
 
   var body: some View {
     let snapshot = store.snapshot
+    let slideIds = slideIds(for: snapshot)
 
     VStack(spacing: 0) {
       // custom toolbar
@@ -50,7 +52,9 @@ struct CalendarsSection: View {
           LazyHStack(spacing: 0) {
             // Year Grid
             if isMoodTrackingEnabled {
-              MoodTrackingCalendar()
+              slideContent(id: "mood", slideIds: slideIds) {
+                MoodTrackingCalendar()
+              }
                 .id("mood")
                 .frame(width: width)
                 .containerRelativeFrame(.horizontal, count: 1, spacing: 0)
@@ -58,7 +62,9 @@ struct CalendarsSection: View {
             }
 
             if isRecapViewEnabled {
-              AllCalendarsRecapView()
+              slideContent(id: "recap", slideIds: slideIds) {
+                AllCalendarsRecapView()
+              }
                 .id("recap")
                 .frame(width: width)
                 .containerRelativeFrame(.horizontal, count: 1, spacing: 0)
@@ -69,8 +75,11 @@ struct CalendarsSection: View {
             let activeCalendars = snapshot.activeCalendars
             // Use stable IDs to keep paging aligned when filtering.
             ForEach(activeCalendars, id: \.id) { calendar in
-              CustomCalendarView(calendar: calendar)
-                .id(calendar.id.uuidString)
+              let slideId = calendar.id.uuidString
+              slideContent(id: slideId, slideIds: slideIds) {
+                CustomCalendarView(calendar: calendar)
+              }
+                .id(slideId)
                 .frame(width: width)
                 .containerRelativeFrame(.horizontal, count: 1, spacing: 0)
                 .slide()
@@ -146,10 +155,20 @@ struct CalendarsSection: View {
         .scrollPosition($position)
         .scrollContentBackground(.hidden)
         .onAppear {
-          trackRecapViewIfNeeded(for: position.viewID(type: String.self))
+          let currentId = position.viewID(type: String.self) ?? slideIds.first
+          visibleSlideId = currentId
+          trackRecapViewIfNeeded(for: currentId)
         }
         .onChange(of: position.viewID(type: String.self)) { _, newValue in
+          if let newValue {
+            visibleSlideId = newValue
+          }
           trackRecapViewIfNeeded(for: newValue)
+        }
+        .onChange(of: slideIds) { _, newValue in
+          if visibleSlideId.map({ !newValue.contains($0) }) ?? true {
+            visibleSlideId = newValue.first
+          }
         }
       }
       .navigationBarTitleDisplayMode(.inline)
@@ -173,6 +192,40 @@ struct CalendarsSection: View {
         isTimelinePreferenceSheetPresented = false
       }
     }
+  }
+
+  @ViewBuilder
+  private func slideContent<Content: View>(
+    id: String,
+    slideIds: [String],
+    @ViewBuilder content: () -> Content
+  ) -> some View {
+    if shouldRenderSlide(id: id, slideIds: slideIds) {
+      content()
+    } else {
+      Color.clear
+    }
+  }
+
+  private func shouldRenderSlide(id: String, slideIds: [String]) -> Bool {
+    guard let index = slideIds.firstIndex(of: id) else { return true }
+    guard let visibleSlideId, let visibleIndex = slideIds.firstIndex(of: visibleSlideId) else {
+      return index <= 1
+    }
+    return abs(index - visibleIndex) <= 1
+  }
+
+  private func slideIds(for snapshot: CustomCalendarStoreSnapshot) -> [String] {
+    var ids: [String] = []
+    if isMoodTrackingEnabled {
+      ids.append("mood")
+    }
+    if isRecapViewEnabled {
+      ids.append("recap")
+    }
+    ids.append(contentsOf: snapshot.activeCalendars.map { $0.id.uuidString })
+    ids.append(snapshot.isLoading && snapshot.activeCalendars.isEmpty ? "calendar_loading" : "add_calendar")
+    return ids
   }
 
   var toolbar: some View {
