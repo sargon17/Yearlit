@@ -82,7 +82,7 @@ struct SameLevelBorder: ViewModifier {
         .shadow(
           color: color.mix(with: .black, by: 0.7).opacity(0.5),
           radius: isFlat ? 1 : 2,
-          x: isFlat ? 1 : -4,
+          x: isFlat ? 1 : 4,
           y: isFlat ? 1 : 6
         )
     )
@@ -124,8 +124,8 @@ extension View {
 
 struct OuterSameLevelShadow: ViewModifier {
   let radius: CGFloat
-  private let lightOffset: CGFloat = 0.6
-  private let darkOffset: CGFloat = -0.6
+  private let lightOffset: CGFloat = -0.6
+  private let darkOffset: CGFloat = 0.6
 
   @Environment(\.colorScheme) var colorScheme
 
