@@ -35,7 +35,6 @@ struct EditCalendarView: View {
   @State private var showingNotificationSettings: Bool = false
 
   @FocusState private var isNameFocused: Bool
-  @Environment(\.colorScheme) var colorScheme
   @Environment(\.router) private var router
 
   init(
@@ -225,7 +224,7 @@ struct EditCalendarView: View {
               }
             }
             .padding(.all, 2)
-            .background(getVoidColor(colorScheme: colorScheme))
+            .sameLevelGroupBackground()
           }
         }
 
@@ -259,7 +258,6 @@ struct EditCalendarView: View {
             .sameLevelBorder(isFlat: true)
           }
           .padding(.all, 2)
-          .background(getVoidColor(colorScheme: colorScheme))
         }
 
         HabitHistorySection(
@@ -310,7 +308,6 @@ struct EditCalendarView: View {
             .foregroundStyle(.textSecondary)
           }
           .padding(.all, 2)
-          .background(getVoidColor(colorScheme: colorScheme))
 
           Text(
             isArchived
@@ -336,7 +333,6 @@ struct EditCalendarView: View {
             .foregroundStyle(.surfaceMuted)
           }
           .padding(.all, 2)
-          .background(getVoidColor(colorScheme: colorScheme))
         }
         .alert("Delete Calendar", isPresented: $showingDeleteConfirmation) {
           Button("Cancel", role: .cancel) {}

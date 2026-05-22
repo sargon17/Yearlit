@@ -122,6 +122,31 @@ extension View {
   }
 }
 
+struct SameLevelGroupBackground: ViewModifier {
+  let radius: CGFloat
+
+  @Environment(\.colorScheme) var colorScheme
+
+  init(radius: CGFloat = 6) {
+    self.radius = radius
+  }
+
+  func body(content: Content) -> some View {
+    content
+      .background(
+        RoundedRectangle(cornerRadius: radius)
+          .foregroundStyle(getVoidColor(colorScheme: colorScheme))
+      )
+      .clipped()
+  }
+}
+
+extension View {
+  func sameLevelGroupBackground(radius: CGFloat = 6) -> some View {
+    modifier(SameLevelGroupBackground(radius: radius))
+  }
+}
+
 struct OuterSameLevelShadow: ViewModifier {
   let radius: CGFloat
   private let lightOffset: CGFloat = -0.6

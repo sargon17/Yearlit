@@ -5,7 +5,6 @@ struct JournalEntryDetailSheet: View {
     let entry: DayValuation
     @ObservedObject var valuationStore: ValuationStore
     @Environment(\.dismiss) private var dismiss
-    @Environment(\.colorScheme) private var colorScheme
 
     @State private var noteText: String
     @State private var hasChanges = false
@@ -71,7 +70,6 @@ struct JournalEntryDetailSheet: View {
                     .foregroundStyle(.textSecondary)
                 }
                 .padding(.all, 2)
-                .background(getVoidColor(colorScheme: colorScheme))
             }
             .padding()
             .padding(.top, 28)

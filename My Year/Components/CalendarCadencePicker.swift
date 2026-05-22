@@ -7,8 +7,6 @@ struct CalendarCadencePicker: View {
     let isEditable: Bool
     let onSelect: (CalendarCadence) -> Void
 
-    @Environment(\.colorScheme) var colorScheme
-
     var body: some View {
         CustomSection(label: "Cadence") {
             HStack(spacing: 2) {
@@ -18,7 +16,7 @@ struct CalendarCadencePicker: View {
             }
             .padding(.all, 2)
             .frame(maxWidth: .greatestFiniteMagnitude)
-            .background(getVoidColor(colorScheme: colorScheme))
+            .sameLevelGroupBackground()
         }
     }
 

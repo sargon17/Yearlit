@@ -43,8 +43,6 @@ struct HabitStackReminderSection: View {
     @Binding var scheduleTime: Date
     let accentColor: Color
 
-    @Environment(\.colorScheme) private var colorScheme
-
     var body: some View {
         CustomSection(label: "Schedule Reminder") {
             VStack(spacing: 2) {
@@ -88,7 +86,7 @@ struct HabitStackReminderSection: View {
                 }
             }
             .padding(.all, 1)
-            .background(getVoidColor(colorScheme: colorScheme))
+            .sameLevelGroupBackground()
             .cornerRadius(5)
             .outerSameLevelShadow(radius: 5)
         }
@@ -102,8 +100,6 @@ struct HabitStackStepsSection: View {
     let addStep: () -> Void
     let moveStep: (EditableStep, Int) -> Void
     let removeStep: (EditableStep) -> Void
-
-    @Environment(\.colorScheme) private var colorScheme
 
     var body: some View {
         CustomSection(label: "Steps") {

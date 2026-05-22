@@ -8,7 +8,6 @@ struct CalendarsOverview: View {
     @ObservedObject var valuationStore: ValuationStore
     @Binding var scrollPosition: ScrollPosition
     @Environment(\.dismiss) private var dismiss
-    @Environment(\.colorScheme) private var colorScheme
     @Environment(\.editMode) private var editMode
     @State private var showingArchivedCalendars = false
     @State private var showingJournalEntries = false
@@ -75,7 +74,6 @@ struct CalendarsOverview: View {
                 .sameLevelBorder()
                 .foregroundStyle(.textTertiary)
                 .padding(.all, 2)
-                .background(getVoidColor(colorScheme: colorScheme))
                 .listRowInsets(EdgeInsets(top: 8, leading: 16, bottom: 12, trailing: 16))
                 .listRowBackground(Color.clear)
                 .listRowSeparator(.hidden)

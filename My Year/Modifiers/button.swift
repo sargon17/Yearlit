@@ -1,9 +1,6 @@
-import Garnish
 import SwiftUI
 
 struct ButtonModifier: ViewModifier {
-    @Environment(\.colorScheme) var colorScheme
-
     func body(content: Content) -> some View {
         VStack {
             content
@@ -11,15 +8,6 @@ struct ButtonModifier: ViewModifier {
                 .foregroundStyle(Color.buttonForeground)
         }
         .padding(2)
-        .background(getVoidColor(colorScheme: colorScheme))
-        .overlay(
-            Image("noise")
-                .resizable()
-                .scaledToFill()
-                .blendMode(.overlay)
-        )
-        // .cornerRadius(5)
-        // .outerSameLevelShadow(radius: 5)
     }
 }
 
