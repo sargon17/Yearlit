@@ -11,7 +11,8 @@
     "format:swift": "swift format --in-place --recursive \"My Year\" SharedModels/Sources YearWidget YearEvaluationWidget HabitsWidget StreakWidget \"My YearTests\" \"My YearUITests\"",
     "format:swift:check": "swift format lint --recursive \"My Year\" SharedModels/Sources YearWidget YearEvaluationWidget HabitsWidget StreakWidget \"My YearTests\" \"My YearUITests\"",
     "check:swift": "bun run build:ios",
-    "check": "bun run check:swift"
+    "check": "bun run check:swift",
+    "dev": "scripts/ios-simulator.sh run"
   },
   "dependencies": {
     "@ai-hero/sandcastle": "^0.5.5"

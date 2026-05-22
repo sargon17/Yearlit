@@ -2,6 +2,7 @@ import RevenueCat
 import SwiftUI
 
 struct OnboardingPaywall: View {
+  let showsCloseButton: Bool
   let onNext: () -> Void
 
   @State private var packages: [Package] = []
@@ -10,35 +11,31 @@ struct OnboardingPaywall: View {
   @State private var isPurchasing = false
   @State private var errorMessage: String?
 
+  private let heroTopSpacing: CGFloat = 86
+
   private var selectedPackage: Package? {
     packages.first { $0.identifier == selectedPackageID } ?? preferredPackage(in: packages)
   }
 
+  init(showsCloseButton: Bool = true, onNext: @escaping () -> Void) {
+    self.showsCloseButton = showsCloseButton
+    self.onNext = onNext
+  }
+
   var body: some View {
-    OnboardingStepContainer {
-      ZStack {
+    OnboardingStepContainer(overlayHeight: 0.9) {
+      GeometryReader { proxy in
         ScrollView {
-          VStack(alignment: .leading) {
-            OnboardingView.Title("Build your year with Pro.", lineLimit: 3)
-
-            VStack(alignment: .leading, spacing: 4) {
-              OnboardingView.Caption("Keep your habits visible with widgets, unlimited")
-              OnboardingView.Caption("tracking, and tools built for consistency.")
-            }
-
-            VStack(alignment: .leading, spacing: 22) {
-              PaywallFeatureRow(title: "Deeper stats", subtitle: "see patterns over time")
-              PaywallFeatureRow(title: "Unlimited habits", subtitle: "track every promise")
-              PaywallFeatureRow(title: "Widgets", subtitle: "keep your dots on your Home Screen")
-            }
-            .padding(.top, 34)
-          }
+          PaywallHeroContent()
+            .padding(.top, proxy.safeAreaInsets.top + heroTopSpacing)
+            .padding(.bottom, 40)
         }
-        OnboardingView.GradientOverlay()
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .scrollIndicators(.hidden)
       }
     } content: {
     } actions: {
-      VStack(spacing: 10) {
+      VStack {
         if isLoading {
           PaywallLoadingCard()
         } else if packages.isEmpty {
@@ -89,23 +86,30 @@ struct OnboardingPaywall: View {
       .padding(.top, 4)
     }
     .overlay(alignment: .topTrailing) {
-      Button(action: onNext) {
-        Image(systemName: "xmark")
-          .font(.system(size: 15, weight: .semibold))
-          .foregroundColor(.textSecondary)
-          .padding(10)
-          .background(.surfaceMuted.opacity(0.75))
-          .clipShape(Circle())
-      }
-      .padding(.top, 48)
-      .padding(.trailing, 12)
-      .accessibilityLabel("Close paywall")
+      closeButtonOverlay
     }
     .task {
       await loadPackages()
     }
     .onAppear {
       Analytics.shared.trackPaywallViewed(trigger: .onboarding)
+    }
+  }
+
+  @ViewBuilder
+  private var closeButtonOverlay: some View {
+    if showsCloseButton {
+      Button(action: onNext) {
+        Image(systemName: "xmark")
+          .font(.system(size: 15, weight: .semibold))
+          .foregroundColor(.textSecondary)
+          .frame(width: 36, height: 36)
+      }
+      .buttonStyle(.plain)
+      .modifier(PaywallCloseButtonSurface())
+      .padding(.top, 48)
+      .padding(.trailing, 12)
+      .accessibilityLabel("Close paywall")
     }
   }
 
@@ -220,6 +224,39 @@ enum PaywallError: Error {
   case missingOfferings
 }
 
+private struct PaywallCloseButtonSurface: ViewModifier {
+  @ViewBuilder
+  func body(content: Content) -> some View {
+    if #available(iOS 26.0, *) {
+      content
+        .glassEffect(.regular.interactive(), in: .circle)
+    } else {
+      content
+        .background(.surfaceMuted.opacity(0.75), in: Circle())
+    }
+  }
+}
+
+private struct PaywallHeroContent: View {
+  var body: some View {
+    VStack(alignment: .leading) {
+      OnboardingView.Title("Build your year with Pro.", lineLimit: 3)
+
+      VStack(alignment: .leading, spacing: 4) {
+        OnboardingView.Caption("Keep your habits visible with widgets, unlimited")
+        OnboardingView.Caption("tracking, and tools built for consistency.")
+      }
+
+      VStack(alignment: .leading, spacing: 22) {
+        PaywallFeatureRow(title: "Deeper stats", subtitle: "see patterns over time")
+        PaywallFeatureRow(title: "Unlimited habits", subtitle: "track every promise")
+        PaywallFeatureRow(title: "Widgets", subtitle: "keep your dots on your Home Screen")
+      }
+      .padding(.top, 34)
+    }
+  }
+}
+
 private struct PaywallFeatureRow: View {
   let title: String
   let subtitle: String
@@ -278,19 +315,21 @@ private struct PaywallPlanCard: View {
           }
         }
 
-        Spacer(minLength: 44)
+        if isFeatured {
+          Spacer()
+        }
 
         Text(footer)
           .font(AppFont.sans(16))
           .foregroundStyle(.textPrimary.opacity(0.8))
       }
-      .frame(maxWidth: .infinity, minHeight: isFeatured ? 156 : 112, alignment: .leading)
-      .padding(18)
+      .frame(maxWidth: .infinity, maxHeight: isFeatured ? 156 : nil, alignment: .leading)
+      .padding(12)
       .background(.surfaceMuted)
       .clipShape(RoundedRectangle(cornerRadius: 4))
     }
     .buttonStyle(.plain)
-    .sameLevelBorder(radius: 4, color: isSelected ? .textSecondary.opacity(0.85) : .textSecondary.opacity(0.28))
+    .sameLevelBorder(radius: 4, isFlat: isSelected)
   }
 
   private var isFeatured: Bool {

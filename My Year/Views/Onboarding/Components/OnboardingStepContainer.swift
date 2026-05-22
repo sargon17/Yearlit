@@ -2,9 +2,20 @@ import Garnish
 import SwiftUI
 
 struct OnboardingStepContainer<Top: View, Content: View, Actions: View>: View {
+  let overlayHeight: CGFloat
   @ViewBuilder let top: () -> Top
   @ViewBuilder let content: () -> Content
   @ViewBuilder let actions: () -> Actions
+
+  init(
+    overlayHeight: CGFloat = 0.6, @ViewBuilder top: @escaping () -> Top, @ViewBuilder content: @escaping () -> Content,
+    @ViewBuilder actions: @escaping () -> Actions
+  ) {
+    self.overlayHeight = overlayHeight
+    self.top = top
+    self.content = content
+    self.actions = actions
+  }
 
   @Environment(\.colorScheme) var colorScheme
 
@@ -25,7 +36,7 @@ struct OnboardingStepContainer<Top: View, Content: View, Actions: View>: View {
           ZStack {
             top()
 
-            OnboardingView.GradientOverlay()
+            OnboardingView.GradientOverlay(height: overlayHeight)
               .allowsHitTesting(false)
           }
           .frame(maxHeight: .infinity)
