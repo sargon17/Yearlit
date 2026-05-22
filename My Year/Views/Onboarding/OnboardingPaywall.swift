@@ -251,6 +251,7 @@ private struct PaywallHeroContent: View {
         PaywallFeatureRow(title: "Deeper stats", subtitle: "see patterns over time")
         PaywallFeatureRow(title: "Unlimited habits", subtitle: "track every promise")
         PaywallFeatureRow(title: "Widgets", subtitle: "keep your dots on your Home Screen")
+        PaywallFeatureRow(title: "Support a solo-built app", subtitle: "Your upgrade helps me keep building Yearlit.")
       }
       .padding(.top, 34)
     }

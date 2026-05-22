@@ -10,6 +10,8 @@
     "lint:swift": "swiftlint lint --quiet",
     "format:swift": "swift format --in-place --recursive \"My Year\" SharedModels/Sources YearWidget YearEvaluationWidget HabitsWidget StreakWidget \"My YearTests\" \"My YearUITests\"",
     "format:swift:check": "swift format lint --recursive \"My Year\" SharedModels/Sources YearWidget YearEvaluationWidget HabitsWidget StreakWidget \"My YearTests\" \"My YearUITests\"",
+    "sourcekit:config": "./scripts/sourcekit-build-server.sh",
+    "sourcekit:refresh": "./scripts/sourcekit-build-server.sh",
     "check:swift": "bun run build:ios",
     "check": "bun run check:swift",
     "dev": "scripts/ios-simulator.sh run"
