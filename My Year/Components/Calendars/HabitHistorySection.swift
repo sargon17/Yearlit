@@ -9,8 +9,6 @@ struct HabitHistorySection: View {
   let onTrackingStartedAtChanged: () -> Void
   let onAddExistingStreak: () -> Void
 
-  @Environment(\.colorScheme) private var colorScheme
-
   var body: some View {
     CustomSection(label: "Habit history") {
       VStack(spacing: 8) {
@@ -36,7 +34,7 @@ struct HabitHistorySection: View {
           .foregroundStyle(.textSecondary)
         }
         .padding(.all, 2)
-        .background(getVoidColor(colorScheme: colorScheme))
+        .sameLevelGroupBackground()
 
         if let autoAdjustedMessage {
           Text(autoAdjustedMessage)

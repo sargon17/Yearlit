@@ -5,8 +5,6 @@ struct TrackingPicker: View {
     @Binding var trackingType: TrackingType
     let color: Color
 
-    @Environment(\.colorScheme) var colorScheme
-
     private func trackingTypeLabel(for type: TrackingType) -> LocalizedStringKey {
         switch type {
         case .binary:
@@ -45,7 +43,7 @@ struct TrackingPicker: View {
             }
             .padding(.all, 2)
             .frame(maxWidth: .greatestFiniteMagnitude)
-            .background(getVoidColor(colorScheme: colorScheme))
+            .sameLevelGroupBackground()
         }
     }
 }

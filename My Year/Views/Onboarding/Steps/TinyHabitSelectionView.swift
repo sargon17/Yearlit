@@ -7,8 +7,6 @@ struct TinyHabitSelectionView: View {
   let onHabitSelected: (String) -> Void
   let onContinue: () -> Void
 
-  @Environment(\.colorScheme) var colorScheme
-
   var body: some View {
     OnboardingStepContainer {
       GeometryReader { proxy in
@@ -40,11 +38,7 @@ struct TinyHabitSelectionView: View {
             .buttonStyle(.plain)
           }
         }.padding(2)
-          .background(
-            RoundedRectangle(cornerRadius: 6)
-              .foregroundStyle(getVoidColor(colorScheme: colorScheme))
-          )
-          .clipped()
+          .sameLevelGroupBackground()
 
         OnboardingView.Caption("Start with something small enough to do even on a hard day.")
       }

@@ -113,7 +113,7 @@ struct EditableStepRow: View {
                         .sameLevelBorder()
                     }
                     .padding(1)
-                    .background(getVoidColor(colorScheme: colorScheme))
+                    .sameLevelGroupBackground()
                     .cornerRadius(5)
                     .outerSameLevelShadow(radius: 5)
                 }

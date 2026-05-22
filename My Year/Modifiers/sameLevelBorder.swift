@@ -82,7 +82,7 @@ struct SameLevelBorder: ViewModifier {
         .shadow(
           color: color.mix(with: .black, by: 0.7).opacity(0.5),
           radius: isFlat ? 1 : 2,
-          x: isFlat ? 1 : -4,
+          x: isFlat ? 1 : 4,
           y: isFlat ? 1 : 6
         )
     )
@@ -122,10 +122,35 @@ extension View {
   }
 }
 
+struct SameLevelGroupBackground: ViewModifier {
+  let radius: CGFloat
+
+  @Environment(\.colorScheme) var colorScheme
+
+  init(radius: CGFloat = 6) {
+    self.radius = radius
+  }
+
+  func body(content: Content) -> some View {
+    content
+      .background(
+        RoundedRectangle(cornerRadius: radius)
+          .foregroundStyle(getVoidColor(colorScheme: colorScheme))
+      )
+      .clipped()
+  }
+}
+
+extension View {
+  func sameLevelGroupBackground(radius: CGFloat = 6) -> some View {
+    modifier(SameLevelGroupBackground(radius: radius))
+  }
+}
+
 struct OuterSameLevelShadow: ViewModifier {
   let radius: CGFloat
-  private let lightOffset: CGFloat = 0.6
-  private let darkOffset: CGFloat = -0.6
+  private let lightOffset: CGFloat = -0.6
+  private let darkOffset: CGFloat = 0.6
 
   @Environment(\.colorScheme) var colorScheme
 

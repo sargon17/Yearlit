@@ -4,7 +4,6 @@ import SwiftUI
 struct TimelinePreferenceChoiceSheet: View {
   let onSelect: (CalendarTimelineMode) -> Void
 
-  @Environment(\.colorScheme) private var colorScheme
   @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
   var body: some View {
@@ -132,7 +131,6 @@ struct TimelinePreferenceChoiceSheet: View {
           .sameLevelBorder(radius: 4, color: .brand)
       }
       .padding(2)
-      .background(getVoidColor(colorScheme: colorScheme))
     } else {
       button
     }

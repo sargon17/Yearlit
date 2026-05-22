@@ -184,7 +184,7 @@ struct CalendarShareSheet: View {
                 .foregroundStyle(.textSecondary)
             }
             .padding(2)
-            .background(getVoidColor(colorScheme: colorScheme))
+            .sameLevelGroupBackground()
         }
         .padding(.horizontal)
     }

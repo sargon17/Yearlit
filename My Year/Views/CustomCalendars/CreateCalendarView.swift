@@ -32,7 +32,6 @@ struct CreateCalendarView: View {
   @State private var showingNotificationSettings: Bool = false
 
   @FocusState private var isNameFocused: Bool
-  @Environment(\.colorScheme) var colorScheme
   @Environment(\.router) private var router
 
   private var isPremiumUser: Bool {
@@ -270,7 +269,7 @@ struct CreateCalendarView: View {
               }
             }
             .padding(.all, 2)
-            .background(getVoidColor(colorScheme: colorScheme))
+            .sameLevelGroupBackground()
           }
         }
 
@@ -304,7 +303,6 @@ struct CreateCalendarView: View {
             .sameLevelBorder(isFlat: true)
           }
           .padding(.all, 2)
-          .background(getVoidColor(colorScheme: colorScheme))
         }
         HabitHistorySection(
           cadence: cadence,

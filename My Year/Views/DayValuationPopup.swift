@@ -3,7 +3,6 @@ import SwiftUI
 
 struct DayValuationPopup: View {
     @Environment(\.dismiss) private var dismiss
-    @Environment(\.colorScheme) private var colorScheme
     let store = ValuationStore.shared
     let date: Date
     private let presentationDetents: Set<PresentationDetent>
@@ -163,7 +162,6 @@ struct DayValuationPopup: View {
                         .foregroundStyle(.textSecondary)
                     }
                     .padding(.all, 2)
-                    .background(getVoidColor(colorScheme: colorScheme))
                 }
                 .padding(.top, 8)
                 .frame(maxHeight: .infinity)

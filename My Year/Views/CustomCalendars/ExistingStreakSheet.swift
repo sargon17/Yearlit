@@ -23,8 +23,6 @@ struct ExistingStreakSheet: View {
     @State private var isOverwriteAlertPresented: Bool = false
 
     @Environment(\.router) private var router
-    @Environment(\.colorScheme) private var colorScheme
-
     init(
         cadence: CalendarCadence,
         trackingType: TrackingType,
@@ -80,7 +78,7 @@ struct ExistingStreakSheet: View {
                         .sameLevelBorder(isFlat: true)
                     }
                     .padding(.all, 2)
-                    .background(getVoidColor(colorScheme: colorScheme))
+                    .sameLevelGroupBackground()
                 }
 
                 if trackingType == .counter {
@@ -99,7 +97,7 @@ struct ExistingStreakSheet: View {
                         .padding(.all, 2)
                         .sameLevelBorder(isFlat: true)
                         .padding(.all, 2)
-                        .background(getVoidColor(colorScheme: colorScheme))
+                        .sameLevelGroupBackground()
                     }
                 }
 
