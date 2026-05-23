@@ -14,8 +14,7 @@ struct SameLevelBorder: ViewModifier {
   }
 
   @Environment(\.colorScheme) var colorScheme
-  private let lightOffset: CGFloat = 1.6
-  private let darkOffset: CGFloat = -1.6
+  private let bevelOffset: CGFloat = 1.6
 
   func body(content: Content) -> some View {
     let lightColor = color.mix(with: .white, by: 0.1)
@@ -36,16 +35,16 @@ struct SameLevelBorder: ViewModifier {
               .inner(
                 color: hardShadowColor,
                 radius: 10,
-                x: -lightOffset * 2,
-                y: lightOffset * 2
+                x: bevelOffset * 2,
+                y: bevelOffset * 2
               )
             )
             .shadow(
               .inner(
                 color: hardLightColor,
                 radius: 0.5,
-                x: -lightOffset,
-                y: lightOffset
+                x: -bevelOffset,
+                y: -bevelOffset
               )
             )
 
@@ -53,27 +52,27 @@ struct SameLevelBorder: ViewModifier {
               .inner(
                 color: lightColor,
                 radius: 10,
-                x: -darkOffset * 2,
-                y: darkOffset * 2
+                x: -bevelOffset * 2,
+                y: -bevelOffset * 2
               )
             )
             .shadow(
               .inner(
                 color: hardShadowColor,
                 radius: 0.5,
-                x: -darkOffset,
-                y: darkOffset
+                x: bevelOffset,
+                y: bevelOffset
               )
             )  // inner dark shadow
 
-            .shadow(.drop(color: lightReflect, radius: 2, x: lightOffset, y: -lightOffset))
+            .shadow(.drop(color: lightReflect, radius: 2, x: -bevelOffset, y: -bevelOffset))
 
-            .shadow(.drop(color: darkReflect, radius: 2, x: darkOffset, y: -darkOffset))
+            .shadow(.drop(color: darkReflect, radius: 2, x: bevelOffset, y: bevelOffset))
 
-            .shadow(.drop(color: .black, radius: 0, x: lightOffset, y: -lightOffset))
-            .shadow(.drop(color: .black, radius: 0, x: lightOffset, y: lightOffset))
-            .shadow(.drop(color: .black, radius: 0, x: darkOffset, y: -darkOffset))
-            .shadow(.drop(color: .black, radius: 0, x: darkOffset, y: darkOffset))
+            .shadow(.drop(color: .black, radius: 0, x: -bevelOffset, y: -bevelOffset))
+            .shadow(.drop(color: .black, radius: 0, x: -bevelOffset, y: bevelOffset))
+            .shadow(.drop(color: .black, radius: 0, x: bevelOffset, y: -bevelOffset))
+            .shadow(.drop(color: .black, radius: 0, x: bevelOffset, y: bevelOffset))
         )
         .overlay(
           NoiseLayer(opacity: 0.35, blendMode: .colorBurn)
