@@ -67,7 +67,7 @@ struct CreateCalendarView: View {
   }
 
   func userCanCreateCalendar() -> Bool {
-    return customerInfo?.entitlements["premium"]?.isActive ?? false || store.snapshot.calendars.count < 3
+    return isPremiumUser || store.snapshot.calendars.count < 3
   }
 
   func createCalendar() {
@@ -365,13 +365,9 @@ struct CreateCalendarView: View {
     }
     .onAppear {
       isNameFocused = true
-      Purchases.shared.getCustomerInfo { info, error in
-        if let error {
-          print("Error fetching customer info: \(error.localizedDescription)")
-          return
-        }
-        self.customerInfo = info
-      }
+    }
+    .task {
+      await observeCustomerInfo()
     }
     .sheet(isPresented: $showingNotificationSettings) {
       NotificationSettingsDraftSheet(
@@ -405,5 +401,19 @@ struct CreateCalendarView: View {
 
   private var backfillSummary: String {
     LocalizedCountText.backfilling(existingStreakEntries.count, cadence: cadence, locale: locale)
+  }
+
+  @MainActor
+  private func observeCustomerInfo() async {
+    do {
+      customerInfo = try await Purchases.shared.customerInfo()
+    } catch {
+      print("Error fetching customer info: \(error.localizedDescription)")
+    }
+
+    for await info in Purchases.shared.customerInfoStream {
+      customerInfo = info
+      AnalyticsState.shared.updatePremiumStatus(customerInfo: info)
+    }
   }
 }
