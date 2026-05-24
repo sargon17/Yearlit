@@ -206,6 +206,40 @@
         }
       }
     },
+    "\\(stack.steps.count) steps": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "\\(stack.steps.count)passi"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "\\(stack.steps.count)кроків"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "\\(stack.steps.count)pasos"
+          }
+        },
+        "es-MX": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "\\(stack.steps.count)pasos"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "\\(stack.steps.count)etapas"
+          }
+        }
+      }
+    },
     "%@": {
       "localizations": {
         "it": {
@@ -236,6 +270,40 @@
           "stringUnit": {
             "state": "translated",
             "value": "%@"
+          }
+        }
+      }
+    },
+    "%@ %lld of your streak! Keep going 💪": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@%lld della tua serie di vittorie consecutive! Continua così 💪"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@%lldвашої серії! Продовжуйте 💪"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@%lld de tu racha! Sigue adelante 💪"
+          }
+        },
+        "es-MX": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@%lld de tu racha! Sigue adelante 💪"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@%lld da sua sequência! Continue 💪"
           }
         }
       }
@@ -271,6 +339,40 @@
           "stringUnit": {
             "state": "translated",
             "value": "%lld"
+          }
+        }
+      }
+    },
+    "%lld %@ down! You're building momentum 🚀": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld %@ giù! Stai creando slancio 🚀"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld %@вниз! Ви набираєте імпульс 🚀"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld %@¡abajo! Estás ganando impulso 🚀"
+          }
+        },
+        "es-MX": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld %@¡abajo! Estás ganando impulso 🚀"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld %@ para baixo! Você está ganhando impulso 🚀"
           }
         }
       }
@@ -455,6 +557,40 @@
         }
       }
     },
+    "✨ Amazing! %lld %@ in a row. One more %@!": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "✨ Incredibile!%lld %@ di seguito. Ancora uno %@!"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "✨ Чудово!%lld %@підряд. Ще один%@!"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "✨¡Increíble!%lld %@ seguidos. ¡Un %@ más!"
+          }
+        },
+        "es-MX": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "✨¡Increíble!%lld %@ seguidos. ¡Un %@ más!"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "✨ Incrível!%lld %@ consecutivamente. Mais um %@!"
+          }
+        }
+      }
+    },
     "✨ Amazing! %lld days in a row. One more today!": {
       "extractionState": "stale",
       "localizations": {
@@ -601,6 +737,40 @@
         }
       }
     },
+    "💪 %lld %@ strong! Don't break it now!": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "💪%lld %@ forte! Non romperlo adesso!"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "💪%lld %@сильно! Не зламай його зараз!"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "💪%lld %@ fuerte! ¡No lo rompas ahora!"
+          }
+        },
+        "es-MX": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "💪%lld %@ fuerte! ¡No lo rompas ahora!"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "💪%lld %@ forte! Não quebre agora!"
+          }
+        }
+      }
+    },
     "💪 %lld days strong! Don't break it now!": {
       "extractionState": "stale",
       "localizations": {
@@ -708,6 +878,40 @@
           "stringUnit": {
             "state": "translated",
             "value": "📊 Identifique padrões rapidamente"
+          }
+        }
+      }
+    },
+    "🔥 Don't break your %lld-%@ streak!": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "🔥 Non interrompere la tua serie di %lld-%@!"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "🔥 Не переривайте свою серію%lld-%@!"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "🔥 ¡No rompas tu racha %lld-%@!"
+          }
+        },
+        "es-MX": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "🔥 ¡No rompas tu racha %lld-%@!"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "🔥 Não quebre sua sequência %lld-%@!"
           }
         }
       }
@@ -829,6 +1033,40 @@
         }
       }
     },
+    "🔥 You're on a %lld-%@ streak! Keep it alive!": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "🔥 Hai una serie positiva di %lld-%@! Mantienilo in vita!"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "🔥 У вас серія%lld-%@! Тримайте його живим!"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "🔥 ¡Estás en una racha de %lld-%@! ¡Mantenlo vivo!"
+          }
+        },
+        "es-MX": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "🔥 ¡Estás en una racha de %lld-%@! ¡Mantenlo vivo!"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "🔥 Você está em uma sequência %lld-%@! Mantenha-o vivo!"
+          }
+        }
+      }
+    },
     "🔥 You're on a %lld-day streak! Keep it alive!": {
       "extractionState": "stale",
       "localizations": {
@@ -940,6 +1178,76 @@
         }
       }
     },
+    "100 days showed up": {
+      "extractionState": "stale",
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "100 giorni presenti"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "100 днів відмічено"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "100 días cumplidos"
+          }
+        },
+        "es-MX": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "100 días cumplidos"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "100 dias cumpridos"
+          }
+        }
+      }
+    },
+    "150 days in": {
+      "extractionState": "stale",
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "150 giorni di fila"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "150 днів позаду"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "150 días en"
+          }
+        },
+        "es-MX": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "150 días en"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "150 dias em"
+          }
+        }
+      }
+    },
     "2. Craving": {
       "extractionState": "stale",
       "localizations": {
@@ -1006,76 +1314,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "3. Ação"
-          }
-        }
-      }
-    },
-    "4. Reward": {
-      "extractionState": "stale",
-      "localizations": {
-        "it": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "4. Ricompensa"
-          }
-        },
-        "uk": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "4. Нагорода"
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "4. Recompensa"
-          }
-        },
-        "es-MX": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "4. Recompensa"
-          }
-        },
-        "pt-BR": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "4. Recompensa"
-          }
-        }
-      }
-    },
-    "7d": {
-      "extractionState": "stale",
-      "localizations": {
-        "it": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "7g"
-          }
-        },
-        "uk": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "7д"
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "7d"
-          }
-        },
-        "es-MX": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "7d"
-          }
-        },
-        "pt-BR": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "7d"
           }
         }
       }
@@ -1185,72 +1423,72 @@
         }
       }
     },
-    "100 days showed up": {
+    "4. Reward": {
       "extractionState": "stale",
       "localizations": {
         "it": {
           "stringUnit": {
             "state": "translated",
-            "value": "100 giorni presenti"
+            "value": "4. Ricompensa"
           }
         },
         "uk": {
           "stringUnit": {
             "state": "translated",
-            "value": "100 днів відмічено"
+            "value": "4. Нагорода"
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "100 días cumplidos"
+            "value": "4. Recompensa"
           }
         },
         "es-MX": {
           "stringUnit": {
             "state": "translated",
-            "value": "100 días cumplidos"
+            "value": "4. Recompensa"
           }
         },
         "pt-BR": {
           "stringUnit": {
             "state": "translated",
-            "value": "100 dias cumpridos"
+            "value": "4. Recompensa"
           }
         }
       }
     },
-    "150 days in": {
+    "7d": {
       "extractionState": "stale",
       "localizations": {
         "it": {
           "stringUnit": {
             "state": "translated",
-            "value": "150 giorni di fila"
+            "value": "7g"
           }
         },
         "uk": {
           "stringUnit": {
             "state": "translated",
-            "value": "150 днів позаду"
+            "value": "7д"
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "150 días en"
+            "value": "7d"
           }
         },
         "es-MX": {
           "stringUnit": {
             "state": "translated",
-            "value": "150 días en"
+            "value": "7d"
           }
         },
         "pt-BR": {
           "stringUnit": {
             "state": "translated",
-            "value": "150 dias em"
+            "value": "7d"
           }
         }
       }
@@ -1286,6 +1524,40 @@
           "stringUnit": {
             "state": "translated",
             "value": "Um mês inteiro"
+          }
+        }
+      }
+    },
+    "A quick check-in can help you keep momentum.": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Un rapido check-in può aiutarti a mantenere lo slancio."
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Швидка реєстрація може допомогти вам зберегти імпульс."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Un control rápido puede ayudarle a mantener el impulso."
+          }
+        },
+        "es-MX": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Un control rápido puede ayudarle a mantener el impulso."
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Um check-in rápido pode ajudá-lo a manter o ritmo."
           }
         }
       }
@@ -1427,6 +1699,40 @@
         }
       }
     },
+    "About & Legal": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Informazioni e aspetti legali"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Про та юридичні питання"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Acerca de y Legal"
+          }
+        },
+        "es-MX": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Acerca de y Legal"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sobre e Jurídico"
+          }
+        }
+      }
+    },
     "Absolutely unreal": {
       "extractionState": "stale",
       "localizations": {
@@ -1528,6 +1834,74 @@
           "stringUnit": {
             "state": "translated",
             "value": "Adicionar"
+          }
+        }
+      }
+    },
+    "Add \\(guide.title)": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aggiungi\\(guide.title)"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Додати\\(guide.title)"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Añadir\\(guide.title)"
+          }
+        },
+        "es-MX": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Añadir\\(guide.title)"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Adicionar\\(guide.title)"
+          }
+        }
+      }
+    },
+    "Add \\(guide.title) widget": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aggiungi il widget\\(guide.title)"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Додайте віджет\\(guide.title)"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Agregar widget\\(guide.title)"
+          }
+        },
+        "es-MX": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Agregar widget\\(guide.title)"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Adicionar widget\\(guide.title)"
           }
         }
       }
@@ -2048,6 +2422,40 @@
         }
       }
     },
+    "Archive": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Archivio"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Архів"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Archivo"
+          }
+        },
+        "es-MX": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Archivo"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Arquivo"
+          }
+        }
+      }
+    },
     "Archive Calendar": {
       "extractionState": "stale",
       "localizations": {
@@ -2149,6 +2557,40 @@
           "stringUnit": {
             "state": "translated",
             "value": "O arquivamento oculta este calendário dos seus quadros sem excluir os dados anteriores."
+          }
+        }
+      }
+    },
+    "Are you sure you want to delete '\\(calendar.name)'? This action cannot be undone.": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vuoi eliminare \"\\(calendar.name)\"? Questa azione non può essere annullata."
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ви впевнені, що хочете видалити \"\\(calendar.name)\"? Цю дію не можна скасувати."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "¿Está seguro de que desea eliminar '\\(calendar.name)'? Esta acción no se puede deshacer."
+          }
+        },
+        "es-MX": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "¿Está seguro de que desea eliminar '\\(calendar.name)'? Esta acción no se puede deshacer."
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tem certeza de que deseja excluir '\\(calendar.name)'? Esta ação não pode ser desfeita."
           }
         }
       }
@@ -2929,6 +3371,40 @@
         }
       }
     },
+    "Close paywall": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Chiudi il pagamento"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Закрити систему оплати"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cerrar muro de pago"
+          }
+        },
+        "es-MX": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cerrar muro de pago"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fechar acesso pago"
+          }
+        }
+      }
+    },
     "Color": {
       "extractionState": "stale",
       "localizations": {
@@ -2960,6 +3436,40 @@
           "stringUnit": {
             "state": "translated",
             "value": "Cor"
+          }
+        }
+      }
+    },
+    "Come back when you’re ready. Today works.": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Torna quando sei pronto. Oggi funziona."
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Поверніться, коли будете готові. Сьогодні працює."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vuelve cuando estés listo. Hoy funciona."
+          }
+        },
+        "es-MX": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vuelve cuando estés listo. Hoy funciona."
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Volte quando estiver pronto. Hoje funciona."
           }
         }
       }
@@ -3979,6 +4489,40 @@
         }
       }
     },
+    "Default year view": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Visualizzazione annuale predefinita"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Перегляд року за умовчанням"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vista de año predeterminada"
+          }
+        },
+        "es-MX": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vista de año predeterminada"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Visualização de ano padrão"
+          }
+        }
+      }
+    },
     "Delete": {
       "extractionState": "stale",
       "localizations": {
@@ -4152,6 +4696,74 @@
         }
       }
     },
+    "Developer": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sviluppatore"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Розробник"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Revelador"
+          }
+        },
+        "es-MX": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Revelador"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Desenvolvedor"
+          }
+        }
+      }
+    },
+    "Disable Developer Mode": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Disabilita la modalità sviluppatore"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Вимкнути режим розробника"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Deshabilitar el modo de desarrollador"
+          }
+        },
+        "es-MX": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Deshabilitar el modo de desarrollador"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Desativar modo de desenvolvedor"
+          }
+        }
+      }
+    },
     "Distance": {
       "extractionState": "stale",
       "localizations": {
@@ -4183,6 +4795,74 @@
           "stringUnit": {
             "state": "translated",
             "value": "Distância"
+          }
+        }
+      }
+    },
+    "Don't forget to log your habit this week": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Non dimenticare di registrare la tua abitudine questa settimana"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Не забудьте зареєструвати свою звичку цього тижня"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No olvides registrar tu hábito esta semana."
+          }
+        },
+        "es-MX": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No olvides registrar tu hábito esta semana."
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Não se esqueça de registrar seu hábito esta semana"
+          }
+        }
+      }
+    },
+    "Don't forget to log your habit this week!": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Non dimenticare di registrare la tua abitudine questa settimana!"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Не забудьте зареєструвати свою звичку цього тижня!"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "¡No olvides registrar tu hábito esta semana!"
+          }
+        },
+        "es-MX": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "¡No olvides registrar tu hábito esta semana!"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Não se esqueça de registrar seu hábito esta semana!"
           }
         }
       }
@@ -4224,6 +4904,40 @@
           "stringUnit": {
             "state": "translated",
             "value": "Não se esqueça de registrar seu hábito hoje"
+          }
+        }
+      }
+    },
+    "Don't forget to track %@ this week! (Target: %d)": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Non dimenticare di monitorare %@ questa settimana! (Obiettivo:%d)"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Не забудьте відстежити%@цього тижня! (Ціль:%d)"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "¡No olvides seguir %@ esta semana! (Objetivo:%d)"
+          }
+        },
+        "es-MX": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "¡No olvides seguir %@ esta semana! (Objetivo:%d)"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Não se esqueça de acompanhar %@ esta semana! (Alvo:%d)"
           }
         }
       }
@@ -5281,6 +5995,40 @@
         }
       }
     },
+    "Got it": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fatto"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "зрозумів"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Entiendo"
+          }
+        },
+        "es-MX": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Entiendo"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Entendi"
+          }
+        }
+      }
+    },
     "Grams (g)": {
       "extractionState": "stale",
       "localizations": {
@@ -5312,6 +6060,40 @@
           "stringUnit": {
             "state": "translated",
             "value": "Gramas (g)"
+          }
+        }
+      }
+    },
+    "Great job last week! Let's keep it going this week 🎯": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ottimo lavoro la settimana scorsa! Continuiamo così questa settimana 🎯"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Чудова робота минулого тижня! Продовжимо так і цього тижня 🎯"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "¡Buen trabajo la semana pasada! Sigamos así esta semana 🎯"
+          }
+        },
+        "es-MX": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "¡Buen trabajo la semana pasada! Sigamos así esta semana 🎯"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ótimo trabalho na semana passada! Vamos continuar essa semana 🎯"
           }
         }
       }
@@ -5421,6 +6203,40 @@
           "stringUnit": {
             "state": "translated",
             "value": "Os hábitos moldam seus dias."
+          }
+        }
+      }
+    },
+    "Help & Feedback": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aiuto e feedback"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Довідка та відгук"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ayuda y comentarios"
+          }
+        },
+        "es-MX": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ayuda y comentarios"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ajuda e comentários"
           }
         }
       }
@@ -5801,6 +6617,40 @@
         }
       }
     },
+    "iOS does not let apps open the widget picker directly. Add it from the Home Screen.": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "iOS non consente alle app di aprire direttamente il selettore widget. Aggiungilo dalla schermata principale."
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "iOS не дозволяє програмам безпосередньо відкривати засіб вибору віджетів. Додайте його з головного екрана."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "iOS no permite que las aplicaciones abran el selector de widgets directamente. Agréguelo desde la pantalla de inicio."
+          }
+        },
+        "es-MX": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "iOS no permite que las aplicaciones abran el selector de widgets directamente. Agréguelo desde la pantalla de inicio."
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "O iOS não permite que os aplicativos abram o seletor de widgets diretamente. Adicione-o na tela inicial."
+          }
+        }
+      }
+    },
     "It’s for anyone who’s ever wanted to follow through, but found it hard to keep going.": {
       "localizations": {
         "it": {
@@ -6143,6 +6993,74 @@
           "stringUnit": {
             "state": "translated",
             "value": "Quilômetros (km)"
+          }
+        }
+      }
+    },
+    "Last chance to complete %@ this week": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ultima possibilità per completare %@ questa settimana"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Останній шанс завершити%@цього тижня"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Última oportunidad para completar %@ esta semana"
+          }
+        },
+        "es-MX": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Última oportunidad para completar %@ esta semana"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Última chance de completar %@ esta semana"
+          }
+        }
+      }
+    },
+    "Last week ✅ This week? Let's go! 🔥": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "La scorsa settimana ✅ Questa settimana? Andiamo! 🔥"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Минулого тижня ✅ Цього тижня? ходімо! 🔥"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "La semana pasada ✅ ¿Esta semana? ¡Vamos! 🔥"
+          }
+        },
+        "es-MX": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "La semana pasada ✅ ¿Esta semana? ¡Vamos! 🔥"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Semana passada ✅ Esta semana? Vamos! 🔥"
           }
         }
       }
@@ -6775,6 +7693,40 @@
         }
       }
     },
+    "Milestone celebration": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Celebrazione della pietra miliare"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Святкування віхи"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Celebración de hitos"
+          }
+        },
+        "es-MX": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Celebración de hitos"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Celebração de marco"
+          }
+        }
+      }
+    },
     "Milestone celebrations": {
       "localizations": {
         "it": {
@@ -7017,6 +7969,40 @@
         }
       }
     },
+    "Mood Tracking": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Monitoraggio dell'umore"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Відстеження настрою"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Seguimiento del estado de ánimo"
+          }
+        },
+        "es-MX": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Seguimiento del estado de ánimo"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Rastreamento de humor"
+          }
+        }
+      }
+    },
     "Morning Routine": {
       "localizations": {
         "it": {
@@ -7047,6 +8033,40 @@
           "stringUnit": {
             "state": "translated",
             "value": "Rotina Matinal"
+          }
+        }
+      }
+    },
+    "Motivation": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Motivazione"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Мотивація"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Motivación"
+          }
+        },
+        "es-MX": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Motivación"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Motivação"
           }
         }
       }
@@ -9128,6 +10148,40 @@
         }
       }
     },
+    "One small step is enough to restart.": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Basta un piccolo passo per ripartire."
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Для перезапуску достатньо одного маленького кроку."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Un pequeño paso es suficiente para reiniciar."
+          }
+        },
+        "es-MX": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Un pequeño paso es suficiente para reiniciar."
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Um pequeno passo é suficiente para reiniciar."
+          }
+        }
+      }
+    },
     "Only badge and sound, no text visible on lock screen": {
       "extractionState": "stale",
       "localizations": {
@@ -9580,6 +10634,40 @@
         }
       }
     },
+    "Pick up where you left off": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Riprendi da dove avevi interrotto"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Продовжуйте з того місця, де зупинилися"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Continua donde lo dejaste"
+          }
+        },
+        "es-MX": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Continua donde lo dejaste"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Continue de onde parou"
+          }
+        }
+      }
+    },
     "Plans unavailable": {
       "comment": "A label describing that the user's subscription plans are currently unavailable.",
       "isCommentAutoGenerated": true,
@@ -9715,6 +10803,40 @@
           "stringUnit": {
             "state": "translated",
             "value": "Prêmio"
+          }
+        }
+      }
+    },
+    "Preview Widgets": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Anteprima widget"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Переглянути віджети"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vista previa de widgets"
+          }
+        },
+        "es-MX": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vista previa de widgets"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Prévia dos widgets"
           }
         }
       }
@@ -10003,6 +11125,40 @@
         }
       }
     },
+    "Recap View": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Visualizzazione riepilogativa"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Перегляд підсумків"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vista recapitulativa"
+          }
+        },
+        "es-MX": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vista recapitulativa"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Visualização de recapitulação"
+          }
+        }
+      }
+    },
     "Recommended": {
       "localizations": {
         "it": {
@@ -10175,6 +11331,40 @@
         }
       }
     },
+    "Renews: \\(dateFormatter.string(from: expirationDate))": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Rinnovo:\\(dateFormatter.string(from: expirationDate))"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Оновлено:\\(dateFormatter.string(from: expirationDate))"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Renueva:\\(dateFormatter.string(from: expirationDate))"
+          }
+        },
+        "es-MX": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Renueva:\\(dateFormatter.string(from: expirationDate))"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Renova:\\(dateFormatter.string(from: expirationDate))"
+          }
+        }
+      }
+    },
     "Renews: %@": {
       "localizations": {
         "it": {
@@ -10278,6 +11468,40 @@
         }
       }
     },
+    "Restore purchases": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ripristina gli acquisti"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Відновити покупки"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Restaurar compras"
+          }
+        },
+        "es-MX": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Restaurar compras"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Restaurar compras"
+          }
+        }
+      }
+    },
     "Rounds": {
       "extractionState": "stale",
       "localizations": {
@@ -10309,6 +11533,40 @@
           "stringUnit": {
             "state": "translated",
             "value": "Rodadas"
+          }
+        }
+      }
+    },
+    "Runtime Debug": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Debug in fase di esecuzione"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Налагодження виконання"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Depuración en tiempo de ejecución"
+          }
+        },
+        "es-MX": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Depuración en tiempo de ejecución"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Depuração de tempo de execução"
           }
         }
       }
@@ -11044,6 +12302,74 @@
         }
       }
     },
+    "Show Paywall": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mostra Paywall"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Показати Paywall"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mostrar muro de pago"
+          }
+        },
+        "es-MX": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mostrar muro de pago"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mostrar acesso pago"
+          }
+        }
+      }
+    },
+    "Show Timeline Choice Sheet": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mostra il foglio di scelta della timeline"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Показати таблицю вибору шкали часу"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mostrar hoja de opciones de cronograma"
+          }
+        },
+        "es-MX": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mostrar hoja de opciones de cronograma"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mostrar folha de opções da linha do tempo"
+          }
+        }
+      }
+    },
     "Showing up celebrations": {
       "extractionState": "stale",
       "localizations": {
@@ -11361,6 +12687,40 @@
         }
       }
     },
+    "Stack": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Stack"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Стек"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Stack"
+          }
+        },
+        "es-MX": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Stack"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Stack"
+          }
+        }
+      }
+    },
     "Stack Name": {
       "extractionState": "stale",
       "localizations": {
@@ -11466,6 +12826,40 @@
         }
       }
     },
+    "Starts with \\(first.title)": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Inizia con\\(first.title)"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Починається з\\(first.title)"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Comienza con\\(first.title)"
+          }
+        },
+        "es-MX": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Comienza con\\(first.title)"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Começa com\\(first.title)"
+          }
+        }
+      }
+    },
     "Starts with %@": {
       "localizations": {
         "it": {
@@ -11565,6 +12959,40 @@
           "stringUnit": {
             "state": "translated",
             "value": "Desenvolvimento padrão de CR semanal"
+          }
+        }
+      }
+    },
+    "Step \\(index + 1)": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Passaggio\\(index + 1)"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Крок\\(index + 1)"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Paso\\(index + 1)"
+          }
+        },
+        "es-MX": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Paso\\(index + 1)"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Etapa\\(index + 1)"
           }
         }
       }
@@ -11776,6 +13204,40 @@
           "stringUnit": {
             "state": "translated",
             "value": "Passos"
+          }
+        }
+      }
+    },
+    "Still building your year?": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Stai ancora costruendo il tuo anno?"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Все ще будуєте свій рік?"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "¿Sigues construyendo tu año?"
+          }
+        },
+        "es-MX": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "¿Sigues construyendo tu año?"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ainda construindo seu ano?"
           }
         }
       }
@@ -12123,6 +13585,40 @@
           "stringUnit": {
             "state": "translated",
             "value": "Apoie o desenvolvedor"
+          }
+        }
+      }
+    },
+    "Support Yearlit": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Supporta Yearlit"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Підтримати Yearlit"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Apoya Yearlit"
+          }
+        },
+        "es-MX": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Apoya Yearlit"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Apoie o Yearlit"
           }
         }
       }
@@ -12647,6 +14143,40 @@
         }
       }
     },
+    "This week counts! Log your progress 📊": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Questa settimana conta! Registra i tuoi progressi 📊"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Цей тиждень має значення! Записуйте свій прогрес 📊"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "¡Esta semana cuenta! Registra tu progreso 📊"
+          }
+        },
+        "es-MX": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "¡Esta semana cuenta! Registra tu progreso 📊"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Esta semana conta! Registre seu progresso 📊"
+          }
+        }
+      }
+    },
     "This will overwrite %@ %@ within a %@-%@ range.": {
       "comment": "An alert message explaining that applying a new streak will overwrite existing entries. The first argument is the number of days in the streak range. The second argument is whether the streak is daily or weekly.",
       "extractionState": "stale",
@@ -12886,6 +14416,40 @@
           "stringUnit": {
             "state": "translated",
             "value": "É hora de construir seu hábito! (Alvo:%lld)"
+          }
+        }
+      }
+    },
+    "Time to log your habit this week": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "È ora di registrare la tua abitudine questa settimana"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Цього тижня час зареєструвати свою звичку"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Es hora de registrar tu hábito esta semana"
+          }
+        },
+        "es-MX": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Es hora de registrar tu hábito esta semana"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "É hora de registrar seu hábito esta semana"
           }
         }
       }
@@ -13482,6 +15046,40 @@
         }
       }
     },
+    "Unlock deeper stats, widgets, and more room to track your year.": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sblocca statistiche più approfondite, widget e più spazio per tenere traccia del tuo anno."
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Розблокуйте детальнішу статистику, віджети та більше місця для відстеження свого року."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Desbloquea estadísticas más profundas, widgets y más espacio para realizar un seguimiento de tu año."
+          }
+        },
+        "es-MX": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Desbloquea estadísticas más profundas, widgets y más espacio para realizar un seguimiento de tu año."
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Desbloqueie estatísticas mais detalhadas, widgets e mais espaço para acompanhar o seu ano."
+          }
+        }
+      }
+    },
     "Unlock with Premium": {
       "localizations": {
         "it": {
@@ -13547,6 +15145,40 @@
           "stringUnit": {
             "state": "translated",
             "value": "Corrida irreal"
+          }
+        }
+      }
+    },
+    "Up to \\(maxTotalReminderTimesPerDay) total times per day.": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fino a\\(maxTotalReminderTimesPerDay)volte totali al giorno."
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "До\\(maxTotalReminderTimesPerDay)загальна кількість разів на день."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hasta\\(maxTotalReminderTimesPerDay)veces en total por día."
+          }
+        },
+        "es-MX": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hasta\\(maxTotalReminderTimesPerDay)veces en total por día."
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Até\\(maxTotalReminderTimesPerDay)total de vezes por dia."
           }
         }
       }
@@ -14067,6 +15699,40 @@
         }
       }
     },
+    "Widgets": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Widget"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Віджети"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "widgets"
+          }
+        },
+        "es-MX": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "widgets"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Widgets"
+          }
+        }
+      }
+    },
     "Yearlit": {
       "localizations": {
         "it": {
@@ -14165,6 +15831,74 @@
           "stringUnit": {
             "state": "translated",
             "value": "O Yearlit ainda está crescendo, assim como as pessoas que o usam."
+          }
+        }
+      }
+    },
+    "Yearlit PRO": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Yearlit PRO"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Yearlit PRO"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Yearlit PRO"
+          }
+        },
+        "es-MX": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Yearlit PRO"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Yearlit PRO"
+          }
+        }
+      }
+    },
+    "Yearlit widgets keep progress visible without opening the app.": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "I widget Yearlit mantengono visibili i progressi senza aprire l'app."
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ВіджетиYearlitдозволяють бачити прогрес, не відкриваючи програму."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Los widgets Yearlit mantienen el progreso visible sin abrir la aplicación."
+          }
+        },
+        "es-MX": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Los widgets Yearlit mantienen el progreso visible sin abrir la aplicación."
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Os widgets Yearlit mantêm o progresso visível sem abrir o aplicativo."
           }
         }
       }
@@ -14383,6 +16117,40 @@
         }
       }
     },
+    "You did it last week, you can do it this week! 💚": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lo hai fatto la scorsa settimana, puoi farlo questa settimana! 💚"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ви зробили це минулого тижня, ви можете зробити це цього тижня! 💚"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "¡Lo hiciste la semana pasada, puedes hacerlo esta semana! 💚"
+          }
+        },
+        "es-MX": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "¡Lo hiciste la semana pasada, puedes hacerlo esta semana! 💚"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Você fez isso na semana passada, você pode fazer isso esta semana! 💚"
+          }
+        }
+      }
+    },
     "You did it yesterday, you can do it today! 💚": {
       "extractionState": "stale",
       "localizations": {
@@ -14500,6 +16268,40 @@
         }
       }
     },
+    "You're at %@ today! Keep pushing 💪": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sei a %@ oggi! Continua a spingere 💪"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ви сьогодні на%@! Продовжуйте натискати 💪"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "¡Estás en %@ hoy! Sigue empujando 💪"
+          }
+        },
+        "es-MX": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "¡Estás en %@ hoy! Sigue empujando 💪"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Você está em %@ hoje! Continue empurrando 💪"
+          }
+        }
+      }
+    },
     "your": {
       "localizations": {
         "it": {
@@ -14530,6 +16332,40 @@
           "stringUnit": {
             "state": "translated",
             "value": "seu"
+          }
+        }
+      }
+    },
+    "Your 365": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Il tuo 365"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Твій 365"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tu 365"
+          }
+        },
+        "es-MX": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tu 365"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Seu 365"
           }
         }
       }
@@ -14705,6 +16541,74 @@
           "stringUnit": {
             "state": "translated",
             "value": "Suas sugestões e ideias são o que o moldam."
+          }
+        }
+      }
+    },
+    "Your Year": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Il tuo anno"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ваш рік"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "tu año"
+          }
+        },
+        "es-MX": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "tu año"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Seu ano"
+          }
+        }
+      }
+    },
+    "Your year isn’t over": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Il tuo anno non è finito"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ваш рік не закінчився"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tu año no ha terminado"
+          }
+        },
+        "es-MX": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tu año no ha terminado"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Seu ano não acabou"
           }
         }
       }
