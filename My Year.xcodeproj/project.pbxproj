@@ -498,6 +498,9 @@
 				Base,
 				uk,
 				it,
+				es,
+				"es-MX",
+				"pt-BR",
 			);
 			mainGroup = 78B0255E2D35424100E70B4C;
 			minimizedProjectReferenceProxies = 1;

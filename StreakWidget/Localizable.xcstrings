@@ -16,6 +16,24 @@
             "state": "translated",
             "value": "%@"
           }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@"
+          }
+        },
+        "es-MX": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@"
+          }
         }
       }
     },
@@ -34,6 +52,24 @@
             "state": "translated",
             "value": "Внизу %@"
           }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Abajo %@"
+          }
+        },
+        "es-MX": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Abajo %@"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Parte inferior %@"
+          }
         }
       }
     },
@@ -50,6 +86,24 @@
           "stringUnit": {
             "state": "translated",
             "value": "Звичка"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hábito"
+          }
+        },
+        "es-MX": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hábito"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hábito"
           }
         }
       }
@@ -69,6 +123,24 @@
             "state": "translated",
             "value": "Привіт %@"
           }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hola %@"
+          }
+        },
+        "es-MX": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hola %@"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Olá %@"
+          }
         }
       }
     },
@@ -84,6 +156,24 @@
           "stringUnit": {
             "state": "translated",
             "value": "Ніколи не пізно почати нову серію!"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "¡Nunca es tarde para empezar una nueva racha!"
+          }
+        },
+        "es-MX": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "¡Nunca es tarde para empezar una nueva racha!"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nunca é tarde para começar uma nova sequência!"
           }
         }
       }
@@ -103,6 +193,24 @@
             "state": "translated",
             "value": "Л"
           }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "l"
+          }
+        },
+        "es-MX": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "l"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "eu"
+          }
         }
       }
     },
@@ -121,6 +229,24 @@
             "state": "translated",
             "value": "На початку"
           }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Principal"
+          }
+        },
+        "es-MX": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Principal"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Principal"
+          }
         }
       }
     },
@@ -138,6 +264,24 @@
             "state": "translated",
             "value": "Переглядайте поточну серію звички з першого погляду."
           }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Consulta tu racha de hábito de un vistazo."
+          }
+        },
+        "es-MX": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Consulta tu racha de hábito de un vistazo."
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Veja sua sequência de hábito rapidamente."
+          }
         }
       }
     },
@@ -154,6 +298,24 @@
           "stringUnit": {
             "state": "translated",
             "value": "Серія"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Racha"
+          }
+        },
+        "es-MX": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Racha"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sequência"
           }
         }
       }
@@ -173,6 +335,24 @@
             "state": "translated",
             "value": "П %@"
           }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "T %@"
+          }
+        },
+        "es-MX": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "T %@"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "T %@"
+          }
         }
       }
     },
@@ -191,6 +371,24 @@
             "state": "translated",
             "value": "У кінці"
           }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Seguimiento"
+          }
+        },
+        "es-MX": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Seguimiento"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "À direita"
+          }
         }
       }
     },
@@ -208,6 +406,24 @@
             "state": "translated",
             "value": "Ваша поточна серія для %@ під загрозою"
           }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "tu racha actual de %@ está en riesgo"
+          }
+        },
+        "es-MX": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "tu racha actual de %@ está en riesgo"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "sua sequência atual de %@ está em risco"
+          }
         }
       }
     },
@@ -224,6 +440,24 @@
           "stringUnit": {
             "state": "translated",
             "value": "Ваша поточна серія для %@:"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "tu racha actual de %@ es:"
+          }
+        },
+        "es-MX": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "tu racha actual de %@ es:"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "sua sequência atual de %@ é:"
           }
         }
       }

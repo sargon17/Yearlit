@@ -16,6 +16,24 @@
             "state": "translated",
             "value": " %@"
           }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": " %@"
+          }
+        },
+        "es-MX": {
+          "stringUnit": {
+            "state": "translated",
+            "value": " %@"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": " %@"
+          }
         }
       }
     },
@@ -30,6 +48,24 @@
           }
         },
         "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@"
+          }
+        },
+        "es-MX": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@"
+          }
+        },
+        "pt-BR": {
           "stringUnit": {
             "state": "translated",
             "value": "%@"
@@ -51,6 +87,24 @@
             "state": "translated",
             "value": "день"
           }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "día"
+          }
+        },
+        "es-MX": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "día"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "dia"
+          }
         }
       }
     },
@@ -67,6 +121,24 @@
           "stringUnit": {
             "state": "translated",
             "value": "поспіль"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "días de racha"
+          }
+        },
+        "es-MX": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "días de racha"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "dias de sequência"
           }
         }
       }
@@ -85,6 +157,24 @@
             "state": "translated",
             "value": "Прогрес звички"
           }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Progreso del hábito"
+          }
+        },
+        "es-MX": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Progreso del hábito"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Progresso do hábito"
+          }
         }
       }
     },
@@ -101,6 +191,24 @@
           "stringUnit": {
             "state": "translated",
             "value": "Швидке додавання звички"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Agregar rápido de hábitos"
+          }
+        },
+        "es-MX": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Agregar rápido de hábitos"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Adição rápida de hábito"
           }
         }
       }
@@ -119,6 +227,24 @@
             "state": "translated",
             "value": "Швидко додавайте записи у трекер звичок."
           }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Agregue rápidamente entradas a su rastreador de hábitos."
+          }
+        },
+        "es-MX": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Agregue rápidamente entradas a su rastreador de hábitos."
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Adicione entradas rapidamente ao seu rastreador de hábitos."
+          }
         }
       }
     },
@@ -136,6 +262,24 @@
             "state": "translated",
             "value": "сьогодні"
           }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "hoy"
+          }
+        },
+        "es-MX": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "hoy"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "hoje"
+          }
         }
       }
     },
@@ -152,6 +296,24 @@
           "stringUnit": {
             "state": "translated",
             "value": "Відстежуйте прогрес звички за допомогою красивої візуалізації."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Realice un seguimiento del progreso de su hábito con una hermosa visualización."
+          }
+        },
+        "es-MX": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Realice un seguimiento del progreso de su hábito con una hermosa visualización."
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Acompanhe o progresso do seu hábito com uma bela visualização."
           }
         }
       }
