@@ -1,6 +1,6 @@
 import SwiftUI
 
-struct MilestoneCelebrationsSectionView: View {
+struct MotivationSection: View {
   @AppStorage(AppStorageKeys.milestoneCelebrationsEnabled) private var milestoneCelebrationsEnabled: Bool = true
   @AppStorage(AppStorageKeys.streakMilestoneCelebrationsEnabled)
   private var streakMilestoneCelebrationsEnabled: Bool = true
@@ -66,7 +66,7 @@ struct MilestoneCelebrationsSectionView: View {
   }
 
   var body: some View {
-    Section(header: Text("Milestone celebrations")) {
+    Section(header: Text("Motivation")) {
       Toggle("Show milestone celebrations", isOn: milestoneCelebrationsBinding)
 
       Toggle("Streak celebrations", isOn: streakMilestoneCelebrationsBinding)
@@ -84,6 +84,6 @@ struct MilestoneCelebrationsSectionView: View {
 
 #Preview {
   Form {
-    MilestoneCelebrationsSectionView()
+    MotivationSection()
   }
 }

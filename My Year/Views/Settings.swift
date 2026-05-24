@@ -2,82 +2,80 @@ import RevenueCat
 import SwiftUI
 
 struct SettingsView: View {
-    @State private var customerInfo: CustomerInfo?
+  @State private var customerInfo: CustomerInfo?
 
-    var body: some View {
-        VStack(spacing: 0) {
-            Form {
-                SubscriptionStatusSection(customerInfo: customerInfo)
+  var body: some View {
+    VStack(spacing: 0) {
+      Form {
+        ProSection(customerInfo: customerInfo)
 
-                TimelinePreferenceSection()
+        YearExperienceSection()
 
-                MilestoneCelebrationsSectionView()
+        MotivationSection()
 
-                About()
+        WidgetsSettingsSection()
 
-                PoliciesSection()
+        HelpFeedbackSection()
 
-                WidgetsSettingsSection()
+        SupportYearlitSection()
 
-                Features()
+        DeveloperSettingsSection()
 
-                Contacts()
+        AboutLegalSection()
 
-                DevSupportSection(customerInfo: customerInfo)
-
-                DeveloperFooterView()
-            }
-            .scrollContentBackground(.hidden)
-            .font(AppFont.mono(12))
-            .foregroundColor(Color("text-secondary"))
-        }
-        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
-        .surfaceBackground(Color("surface-muted"), ignoresSafeArea: true)
-        .navigationTitle("Settings")
-        .onAppear {
-            Purchases.shared.getCustomerInfo { info, _ in
-                customerInfo = info
-            }
-        }
+        DeveloperFooterView()
+      }
+      .scrollContentBackground(.hidden)
+      .font(AppFont.mono(12))
+      .foregroundColor(Color("text-secondary"))
     }
+    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+    .surfaceBackground(Color("surface-muted"), ignoresSafeArea: true)
+    .navigationTitle("Settings")
+    .onAppear {
+      Purchases.shared.getCustomerInfo { info, _ in
+        customerInfo = info
+      }
+    }
+  }
 }
 
 private struct DeveloperFooterView: View {
-    @AppStorage(AppStorageKeys.isDeveloperModeEnabled) private var isDeveloperModeEnabled: Bool = false
-    @State private var developerModeTapCount: Int = 0
+  @AppStorage(AppStorageKeys.isDeveloperModeEnabled) private var isDeveloperModeEnabled: Bool = false
+  @State private var developerModeTapCount: Int = 0
 
-    private func handleIconTap() {
-        guard !isDeveloperModeEnabled else { return }
+  private func handleIconTap() {
+    guard !isDeveloperModeEnabled else { return }
 
-        developerModeTapCount += 1
-        if developerModeTapCount >= 10 {
-            isDeveloperModeEnabled = true
-            developerModeTapCount = 0
-            Task {
-                await hapticFeedback(.light)
-            }
-        }
+    developerModeTapCount += 1
+    if developerModeTapCount >= 10 {
+      isDeveloperModeEnabled = true
+      developerModeTapCount = 0
+      Task {
+        await hapticFeedback(.light)
+      }
     }
+  }
 
-    var body: some View {
-        VStack(spacing: 8) {
-            Image("icon")
-                .resizable()
-                .scaledToFit()
-                .frame(width: 36, height: 36)
-                .onTapGesture {
-                    handleIconTap()
-                }
-
-            DevCredits()
+  var body: some View {
+    VStack(spacing: 8) {
+      Image("icon")
+        .resizable()
+        .scaledToFit()
+        .frame(width: 36, height: 36)
+        .onTapGesture {
+          handleIconTap()
         }
-        .padding(.top, 8)
-        .frame(maxWidth: .infinity, alignment: .center)
-        .listRowBackground(Color.clear)
-        .listRowInsets(EdgeInsets())
+
+      DevCredits()
     }
+    .padding(.top, 8)
+    .frame(maxWidth: .infinity, alignment: .center)
+    .listRowBackground(Color.clear)
+    .listRowInsets(EdgeInsets())
+  }
 }
 
 #Preview {
-    SettingsView()
+  SettingsView()
 }
