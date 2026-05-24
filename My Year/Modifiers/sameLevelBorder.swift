@@ -36,7 +36,7 @@ struct SameLevelBorder: ViewModifier {
               .inner(
                 color: hardShadowColor,
                 radius: 10,
-                x: -lightOffset * 2,
+                x: lightOffset * 2,
                 y: lightOffset * 2
               )
             )
@@ -44,7 +44,7 @@ struct SameLevelBorder: ViewModifier {
               .inner(
                 color: hardLightColor,
                 radius: 0.5,
-                x: -lightOffset,
+                x: lightOffset,
                 y: lightOffset
               )
             )
@@ -53,7 +53,7 @@ struct SameLevelBorder: ViewModifier {
               .inner(
                 color: lightColor,
                 radius: 10,
-                x: -darkOffset * 2,
+                x: darkOffset * 2,
                 y: darkOffset * 2
               )
             )
@@ -61,19 +61,19 @@ struct SameLevelBorder: ViewModifier {
               .inner(
                 color: hardShadowColor,
                 radius: 0.5,
-                x: -darkOffset,
+                x: darkOffset,
                 y: darkOffset
               )
             )  // inner dark shadow
 
-            .shadow(.drop(color: lightReflect, radius: 2, x: lightOffset, y: -lightOffset))
+            .shadow(.drop(color: lightReflect, radius: 2, x: -lightOffset, y: -lightOffset))
 
-            .shadow(.drop(color: darkReflect, radius: 2, x: darkOffset, y: -darkOffset))
+            .shadow(.drop(color: darkReflect, radius: 2, x: -darkOffset, y: -darkOffset))
 
-            .shadow(.drop(color: .black, radius: 0, x: lightOffset, y: -lightOffset))
-            .shadow(.drop(color: .black, radius: 0, x: lightOffset, y: lightOffset))
-            .shadow(.drop(color: .black, radius: 0, x: darkOffset, y: -darkOffset))
-            .shadow(.drop(color: .black, radius: 0, x: darkOffset, y: darkOffset))
+            .shadow(.drop(color: .black, radius: 0, x: -lightOffset, y: -lightOffset))
+            .shadow(.drop(color: .black, radius: 0, x: -lightOffset, y: lightOffset))
+            .shadow(.drop(color: .black, radius: 0, x: -darkOffset, y: -darkOffset))
+            .shadow(.drop(color: .black, radius: 0, x: -darkOffset, y: darkOffset))
         )
         .overlay(
           NoiseLayer(opacity: 0.35, blendMode: .colorBurn)
@@ -82,7 +82,7 @@ struct SameLevelBorder: ViewModifier {
         .shadow(
           color: color.mix(with: .black, by: 0.7).opacity(0.5),
           radius: isFlat ? 1 : 2,
-          x: isFlat ? -1 : -4,
+          x: isFlat ? 1 : 4,
           y: isFlat ? 1 : 6
         )
     )
@@ -149,8 +149,8 @@ extension View {
 
 struct OuterSameLevelShadow: ViewModifier {
   let radius: CGFloat
-  private let lightOffset: CGFloat = 0.6
-  private let darkOffset: CGFloat = -0.6
+  private let lightOffset: CGFloat = -0.6
+  private let darkOffset: CGFloat = 0.6
 
   @Environment(\.colorScheme) var colorScheme
 
