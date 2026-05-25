@@ -48,7 +48,7 @@ struct ShareCardData {
     }
 
     var streakUnitPlural: String {
-        calendar.cadence == .weekly ? "weeks" : "days"
+        calendar.cadence == .weekly ? String(localized: "weeks") : String(localized: "days")
     }
 
     var your365Title: LocalizedStringKey {
@@ -59,10 +59,10 @@ struct ShareCardData {
         guard let snapshot = your365Snapshot else { return "" }
         if isYour365FirstYear {
             if let todayCell = snapshot.todayCell {
-                return "Day \(todayCell.dayNumber) of your 365"
+                return String(localized: "Day \(todayCell.dayNumber) of your 365")
             }
         }
-        return "Started \(formattedStartDate(snapshot.trackingStartedAt))"
+        return String(localized: "Started \(formattedStartDate(snapshot.trackingStartedAt))")
     }
 
     private func formattedStartDate(_ date: Date) -> String {

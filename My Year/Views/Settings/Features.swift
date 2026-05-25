@@ -14,7 +14,7 @@ struct YearExperienceSection: View {
   }
 
   private var timelineHelperCopy: String {
-    "Your 365 starts each daily habit from the day you began. Calendar Year shows January to December progress."
+    String(localized: "Your 365 starts each daily habit from the day you began. Calendar Year shows January to December progress.")
   }
 
   private var moodTrackingBinding: Binding<Bool> {

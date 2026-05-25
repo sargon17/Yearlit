@@ -33,7 +33,7 @@ extension HabitStackEditorView {
     func save() {
         let trimmedName = name.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmedName.isEmpty else {
-            errorMessage = "Give the stack a name."
+            errorMessage = String(localized: "Give the stack a name.")
             return
         }
 
@@ -86,7 +86,7 @@ extension HabitStackEditorView {
                 }
 
         guard !sanitized.isEmpty else {
-            errorMessage = "Add at least one step before saving."
+            errorMessage = String(localized: "Add at least one step before saving.")
             return nil
         }
         return sanitized

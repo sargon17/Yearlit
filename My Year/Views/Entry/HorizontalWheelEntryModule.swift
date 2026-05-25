@@ -14,7 +14,7 @@ struct HorizontalWheelEntryModule: View {
             }
             return unit.displayName
         }
-        return "Count"
+        return String(localized: "Count")
     }
 
     init(calendar: CustomCalendar, entryCount: Binding<Int>) {

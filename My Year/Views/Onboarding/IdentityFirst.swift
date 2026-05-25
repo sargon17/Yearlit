@@ -12,7 +12,26 @@ enum IdentityCommitment: String, CaseIterable, Identifiable, Hashable {
   case earlyBird = "wakes early"
 
   var id: String { rawValue }
-  var title: String { rawValue }
+  var title: String {
+    switch self {
+    case .reader:
+      return String(localized: "reads")
+    case .strengthTrainer:
+      return String(localized: "trains")
+    case .writer:
+      return String(localized: "writes")
+    case .meditator:
+      return String(localized: "meditate")
+    case .learner:
+      return String(localized: "learn")
+    case .saver:
+      return String(localized: "saves money")
+    case .creator:
+      return String(localized: "creates")
+    case .earlyBird:
+      return String(localized: "wakes early")
+    }
+  }
 }
 
 struct IdentityFirst: View {

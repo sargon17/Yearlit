@@ -299,7 +299,7 @@ struct EditCalendarView: View {
               )
               dismiss()
             }) {
-              Text(isArchived ? "Unarchive Calendar" : "Archive Calendar")
+              Text(String(localized: isArchived ? "Unarchive Calendar" : "Archive Calendar"))
                 .frame(maxWidth: .infinity, alignment: .center)
                 .fontWeight(.bold)
                 .padding()

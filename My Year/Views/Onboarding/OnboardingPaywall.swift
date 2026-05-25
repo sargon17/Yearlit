@@ -39,7 +39,7 @@ struct OnboardingPaywall: View {
         if isLoading {
           PaywallLoadingCard()
         } else if packages.isEmpty {
-          PaywallEmptyCard(message: errorMessage ?? "Plans are unavailable right now.")
+          PaywallEmptyCard(message: errorMessage ?? String(localized: "Plans are unavailable right now."))
         } else {
           VStack(spacing: 8) {
             ForEach(packages, id: \.identifier) { package in
@@ -114,8 +114,8 @@ struct OnboardingPaywall: View {
   }
 
   private var primaryButtonTitle: String {
-    guard let selectedPackage else { return "Continue" }
-    return hasFreeTrial(selectedPackage) ? "Start Free Trial" : "Continue with Pro"
+    guard let selectedPackage else { return String(localized: "Continue") }
+    return hasFreeTrial(selectedPackage) ? String(localized: "Start Free Trial") : String(localized: "Continue with Pro")
   }
 
   @MainActor
@@ -129,7 +129,7 @@ struct OnboardingPaywall: View {
       packages = sortedPackages(offeringPackages)
       selectedPackageID = preferredPackage(in: packages)?.identifier
     } catch {
-      errorMessage = "Couldn’t load plans. Check your connection and try again."
+      errorMessage = String(localized: "Couldn’t load plans. Check your connection and try again.")
       packages = []
     }
 
@@ -151,7 +151,7 @@ struct OnboardingPaywall: View {
           onNext()
         }
       } catch {
-        errorMessage = "Purchase failed. Please try again."
+        errorMessage = String(localized: "Purchase failed. Please try again.")
       }
 
       isPurchasing = false
@@ -172,10 +172,10 @@ struct OnboardingPaywall: View {
         if isPremium(customerInfo: customerInfo) {
           onNext()
         } else {
-          errorMessage = "No active subscription found."
+          errorMessage = String(localized: "No active subscription found.")
         }
       } catch {
-        errorMessage = "Restore failed. Please try again."
+        errorMessage = String(localized: "Restore failed. Please try again.")
       }
 
       isPurchasing = false
@@ -259,8 +259,8 @@ private struct PaywallHeroContent: View {
 }
 
 private struct PaywallFeatureRow: View {
-  let title: String
-  let subtitle: String
+  let title: LocalizedStringKey
+  let subtitle: LocalizedStringKey
 
   var body: some View {
     VStack(alignment: .leading, spacing: 4) {
@@ -339,16 +339,16 @@ private struct PaywallPlanCard: View {
 
   private var title: String {
     switch package.packageType {
-    case .annual: return "Yearly"
-    case .weekly: return "Weekly"
-    case .monthly: return "Monthly"
+    case .annual: return String(localized: "Yearly")
+    case .weekly: return String(localized: "Weekly")
+    case .monthly: return String(localized: "Monthly")
     default: return package.storeProduct.localizedTitle.nilIfEmpty ?? "Pro"
     }
   }
 
   private var priceLine: String {
     if let trialText {
-      return "\(trialText), then \(package.localizedPriceString)\(periodSuffix)"
+      return String(localized: "\(trialText), then \(package.localizedPriceString)\(periodSuffix)")
     }
 
     return "\(package.localizedPriceString)\(periodSuffix)"
@@ -356,9 +356,9 @@ private struct PaywallPlanCard: View {
 
   private var periodSuffix: String {
     switch package.packageType {
-    case .annual: return "/year"
-    case .weekly: return "/week"
-    case .monthly: return "/month"
+    case .annual: return String(localized: "/year")
+    case .weekly: return String(localized: "/week")
+    case .monthly: return String(localized: "/month")
     default: return ""
     }
   }
@@ -371,19 +371,19 @@ private struct PaywallPlanCard: View {
 
     let value = intro.subscriptionPeriod.value * intro.numberOfPeriods
     let unit = intro.subscriptionPeriod.unit.paywallUnitName(for: value)
-    return "\(value) \(unit) free"
+    return String(localized: "\(value) \(unit) free")
   }
 
   private var badge: String? {
-    package.packageType == .annual ? "Save 51%" : nil
+    package.packageType == .annual ? String(localized: "Save 51%") : nil
   }
 
   private var footer: String {
     switch package.packageType {
-    case .annual: return "Best for building consistency"
-    case .weekly: return "Flexible access"
-    case .monthly: return "Simple monthly plan"
-    default: return "Unlock every Pro tool"
+    case .annual: return String(localized: "Best for building consistency")
+    case .weekly: return String(localized: "Flexible access")
+    case .monthly: return String(localized: "Simple monthly plan")
+    default: return String(localized: "Unlock every Pro tool")
     }
   }
 }
@@ -446,11 +446,11 @@ private struct PaywallFooterLinks: View {
 extension SubscriptionPeriod.Unit {
   fileprivate func paywallUnitName(for value: Int) -> String {
     switch self {
-    case .day: return value == 1 ? "day" : "days"
-    case .week: return value == 1 ? "week" : "weeks"
-    case .month: return value == 1 ? "month" : "months"
-    case .year: return value == 1 ? "year" : "years"
-    @unknown default: return "days"
+    case .day: return value == 1 ? String(localized: "day") : String(localized: "days")
+    case .week: return value == 1 ? String(localized: "week") : String(localized: "weeks")
+    case .month: return value == 1 ? String(localized: "month") : String(localized: "months")
+    case .year: return value == 1 ? String(localized: "year") : String(localized: "years")
+    @unknown default: return String(localized: "days")
     }
   }
 }

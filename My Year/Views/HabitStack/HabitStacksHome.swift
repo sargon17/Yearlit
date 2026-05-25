@@ -108,24 +108,24 @@ struct HabitStacksHome: View {
         let steps: [HabitStackStep] = [
             HabitStackStep(
                 stackId: stackId,
-                title: "Brew coffee",
-                detail: "Fill the kettle and set out the mug.",
+                title: String(localized: "Brew coffee"),
+                detail: String(localized: "Fill the kettle and set out the mug."),
                 order: 0,
                 createdAt: now,
                 updatedAt: now
             ),
             HabitStackStep(
                 stackId: stackId,
-                title: "Read 5 pages",
-                detail: "Sit on the sofa and open your current book.",
+                title: String(localized: "Read 5 pages"),
+                detail: String(localized: "Sit on the sofa and open your current book."),
                 order: 1,
                 createdAt: now,
                 updatedAt: now
             ),
             HabitStackStep(
                 stackId: stackId,
-                title: "Plan day",
-                detail: "Write top 3 priorities in the journal.",
+                title: String(localized: "Plan day"),
+                detail: String(localized: "Write top 3 priorities in the journal."),
                 order: 2,
                 createdAt: now,
                 updatedAt: now
@@ -135,8 +135,8 @@ struct HabitStacksHome: View {
         do {
             let stack = try HabitStack(
                 id: stackId,
-                name: "Morning Routine",
-                prompt: "After I wake up",
+                name: String(localized: "Morning Routine"),
+                prompt: String(localized: "After I wake up"),
                 scheduledHour: 7,
                 scheduledMinute: 0,
                 order: store.stacks.count,

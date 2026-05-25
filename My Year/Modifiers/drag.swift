@@ -28,7 +28,7 @@ struct ContextOrDragModifier: ViewModifier {
             }
             Divider()
             Button(action: toggleArchiveStatus) {
-                Text(calendar.isArchived ? "Unarchive Calendar" : "Archive Calendar")
+                Text(String(localized: calendar.isArchived ? "Unarchive Calendar" : "Archive Calendar"))
             }
             Divider()
             Button(action: {

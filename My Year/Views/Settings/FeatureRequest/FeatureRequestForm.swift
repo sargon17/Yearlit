@@ -50,8 +50,8 @@ struct FeatureRequestForm: View {
             onError: {
                 router.showAlert(
                     .alert,
-                    title: "Something went wrong",
-                    subtitle: "please try later"
+                    title: String(localized: "Something went wrong"),
+                    subtitle: String(localized: "please try later")
                 )
             }
         )

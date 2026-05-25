@@ -112,7 +112,7 @@ struct TimelinePreferenceChoiceSheet: View {
 
   @ViewBuilder
   private func modeButton(
-    title: String,
+    title: LocalizedStringKey,
     mode: CalendarTimelineMode,
     style: ModeButtonStyle
   ) -> some View {
@@ -122,7 +122,7 @@ struct TimelinePreferenceChoiceSheet: View {
       modeButtonLabel(title: title, style: style)
     }
     .buttonStyle(.plain)
-    .accessibilityLabel(title)
+    .accessibilityLabel(Text(title))
 
     if style == .primary {
       VStack {
@@ -137,7 +137,7 @@ struct TimelinePreferenceChoiceSheet: View {
   }
 
   private func modeButtonLabel(
-    title: String,
+    title: LocalizedStringKey,
     style: ModeButtonStyle
   ) -> some View {
     Text(title)

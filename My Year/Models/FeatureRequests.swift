@@ -186,7 +186,7 @@ struct RequestStatus: Codable, Identifiable {
             _id: "wish-fallback-status",
             _creationTime: 0,
             name: id,
-            displayName: "Requests",
+            displayName: String(localized: "Requests"),
             description: nil,
             project: nil,
             type: .custom,

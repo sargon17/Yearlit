@@ -22,7 +22,7 @@ struct StreakWidgetControl: ControlWidget {
                 isOn: value.isRunning,
                 action: StartTimerIntent(value.name)
             ) { isRunning in
-                Label(isRunning ? "On" : "Off", systemImage: "timer")
+                Label(String(localized: isRunning ? "On" : "Off"), systemImage: "timer")
             }
         }
         .displayName("Timer")

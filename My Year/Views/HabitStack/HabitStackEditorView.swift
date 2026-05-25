@@ -65,7 +65,7 @@ struct HabitStackEditorView: View {
     }
 
     private var saveButtonLabel: String {
-        isEditing ? "Save" : "Create"
+        isEditing ? String(localized: "Save") : String(localized: "Create")
     }
 
     private var canSave: Bool {
@@ -112,7 +112,7 @@ struct HabitStackEditorView: View {
             .scrollIndicators(.hidden)
             .scrollClipDisabled(true)
             .surfaceBackground(Color("surface-muted"), ignoresSafeArea: true)
-            .navigationTitle(isEditing ? "Edit Stack" : "New Stack")
+            .navigationTitle(isEditing ? String(localized: "Edit Stack") : String(localized: "New Stack"))
             .navigationBarTitleDisplayMode(.large)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {

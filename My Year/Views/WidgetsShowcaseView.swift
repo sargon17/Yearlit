@@ -74,7 +74,7 @@ struct WidgetsShowcaseView: View {
           WidgetShowcaseButton(guide: .streak, selectedInstallGuide: $selectedInstallGuide) {
             WidgetPreviewFrame(family: .small, width: smallPreviewWidth) {
               StreakWidgetDisplayView(
-                calendarName: "Daily Training",
+                calendarName: String(localized: "Daily Training"),
                 accentColor: Color("qs-orange"),
                 streak: 18,
                 isAtRisk: false,
@@ -117,11 +117,11 @@ private enum WidgetInstallGuide: String, Identifiable {
   var title: String {
     switch self {
     case .year:
-      return "Year Progress"
+      return String(localized: "Year Progress")
     case .habitProgress:
-      return "Habit Progress"
+      return String(localized: "Habit Progress")
     case .streak:
-      return "Streak"
+      return String(localized: "Streak")
     }
   }
 }
@@ -138,12 +138,12 @@ private struct WidgetShowcaseButton<Content: View>: View {
       content()
     }
     .buttonStyle(.plain)
-    .accessibilityLabel("Add \(guide.title) widget")
+    .accessibilityLabel(String(localized: "Add \(guide.title) widget"))
   }
 }
 
 private struct WidgetShowcaseGroup<Content: View>: View {
-  let title: String
+  let title: LocalizedStringKey
   @ViewBuilder let content: () -> Content
 
   var body: some View {
@@ -179,10 +179,10 @@ private struct WidgetInstallGuideSheet: View {
         .fixedSize(horizontal: false, vertical: true)
 
       VStack(alignment: .leading, spacing: 12) {
-        WidgetInstallStep(number: "01", text: "Go to your Home Screen.")
-        WidgetInstallStep(number: "02", text: "Touch and hold an empty area.")
-        WidgetInstallStep(number: "03", text: "Tap Edit, then Add Widget.")
-        WidgetInstallStep(number: "04", text: "Search Yearlit and choose \(guide.title).")
+        WidgetInstallStep(number: "01", text: String(localized: "Go to your Home Screen."))
+        WidgetInstallStep(number: "02", text: String(localized: "Touch and hold an empty area."))
+        WidgetInstallStep(number: "03", text: String(localized: "Tap Edit, then Add Widget."))
+        WidgetInstallStep(number: "04", text: String(localized: "Search Yearlit and choose \(guide.title)."))
       }
       .padding(.top, 2)
 
@@ -204,7 +204,7 @@ private struct WidgetInstallGuideSheet: View {
       .padding(2)
       .background(getVoidColor(colorScheme: colorScheme))
     }
-    .navigationTitle("Add \(guide.title)")
+    .navigationTitle(String(localized: "Add \(guide.title)"))
     .navigationBarTitleDisplayMode(.large)
     .padding(24)
     .surfaceBackground(Color("surface-muted"), ignoresSafeArea: true)

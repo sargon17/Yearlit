@@ -18,30 +18,30 @@ enum CalendarShareTemplate: String, CaseIterable, Identifiable {
     var title: String {
         switch self {
         case .yearCard:
-            return "Year Card"
+            return String(localized: "Year Card")
         case .minimalGrid:
-            return "Minimal Grid"
+            return String(localized: "Minimal Grid")
         case .streakFocus:
-            return "Streak Focus"
+            return String(localized: "Streak Focus")
         case .performance:
-            return "Performance"
+            return String(localized: "Performance")
         case .your365:
-            return "Your 365"
+            return String(localized: "Your 365")
         }
     }
 
     var subtitle: String {
         switch self {
         case .yearCard:
-            return "Full-year grid + stats"
+            return String(localized: "Full-year grid + stats")
         case .minimalGrid:
-            return "Clean grid only"
+            return String(localized: "Clean grid only")
         case .streakFocus:
-            return "Streaks + grid strip"
+            return String(localized: "Streaks + grid strip")
         case .performance:
-            return "Trends and progress"
+            return String(localized: "Trends and progress")
         case .your365:
-            return "Personal habit-year card"
+            return String(localized: "Personal habit-year card")
         }
     }
 
@@ -211,11 +211,11 @@ struct CalendarShareSheet: View {
 
     private var shareMessage: String {
         let calendarName = calendar.name.capitalized
-        let period = calendar.cadence == .weekly ? "weekly" : "daily"
+        let period = calendar.cadence == .weekly ? String(localized: "weekly") : String(localized: "daily")
         if selectedTemplate == .your365 {
-            return "Here's my Your 365 progress for \(calendarName)!\n\ntracked using yearlit by @tymofyeyev "
+            return String(localized: "Here's my Your 365 progress for \(calendarName)!\n\ntracked using yearlit by @tymofyeyev ")
         }
-        return "Here's my \(period) \(calendarName) progress!\n\ntracked using yearlit by @tymofyeyev "
+        return String(localized: "Here's my \(period) \(calendarName) progress!\n\ntracked using yearlit by @tymofyeyev ")
     }
 
     private var effectiveTemplate: CalendarShareTemplate {
@@ -243,7 +243,7 @@ struct CalendarShareSheet: View {
     private func shareSelectedTemplate() {
         Task { @MainActor in
             if isLockedTemplate {
-                saveAlertMessage = "Premium card. Upgrade to share this template."
+                saveAlertMessage = String(localized: "Premium card. Upgrade to share this template.")
                 showingSaveAlert = true
                 return
             }
@@ -256,18 +256,18 @@ struct CalendarShareSheet: View {
     private func saveToPhotos() {
         Task { @MainActor in
             if isLockedTemplate {
-                saveAlertMessage = "Premium card. Upgrade to save this template."
+                saveAlertMessage = String(localized: "Premium card. Upgrade to save this template.")
                 showingSaveAlert = true
                 return
             }
             guard let image = renderImage() else {
-                saveAlertMessage = "Could not render the image."
+                saveAlertMessage = String(localized: "Could not render the image.")
                 showingSaveAlert = true
                 return
             }
             let status = await PHPhotoLibrary.requestAuthorization(for: .addOnly)
             guard status == .authorized || status == .limited else {
-                saveAlertMessage = "Photo access denied. Enable Photos permissions in Settings."
+                saveAlertMessage = String(localized: "Photo access denied. Enable Photos permissions in Settings.")
                 showingSaveAlert = true
                 return
             }
@@ -276,9 +276,9 @@ struct CalendarShareSheet: View {
             }) { success, error in
                 DispatchQueue.main.async {
                     if success {
-                        saveAlertMessage = "Saved to Photos."
+                        saveAlertMessage = String(localized: "Saved to Photos.")
                     } else {
-                        saveAlertMessage = error?.localizedDescription ?? "Save failed."
+                        saveAlertMessage = error?.localizedDescription ?? String(localized: "Save failed.")
                     }
                     showingSaveAlert = true
                 }

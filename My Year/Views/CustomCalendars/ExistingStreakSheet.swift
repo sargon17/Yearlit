@@ -157,15 +157,15 @@ struct ExistingStreakSheet: View {
         let today = calendar.startOfDay(for: Date())
 
         if endDay > today {
-            errorMessage = "End date must be today or earlier."
+            errorMessage = String(localized: "End date must be today or earlier.")
             return
         }
         if startDay > endDay {
-            errorMessage = "Start date must be on or before the end date."
+            errorMessage = String(localized: "Start date must be on or before the end date.")
             return
         }
         if trackingType == .counter, dailyValue <= 0 {
-            errorMessage = "Daily value must be greater than zero."
+            errorMessage = String(localized: "Daily value must be greater than zero.")
             return
         }
 

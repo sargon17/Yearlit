@@ -65,7 +65,7 @@ struct StreakFocusShareView: View {
                 .fontWeight(.black)
                 .lineLimit(1)
                 .minimumScaleFactor(0.7)
-            Text(data.calendar.cadence == .weekly ? "Weekly Streak Focus" : "Streak Focus")
+            Text(String(localized: data.calendar.cadence == .weekly ? "Weekly Streak Focus" : "Streak Focus"))
                 .font(AppFont.mono(12))
                 .foregroundColor(Color("text-tertiary"))
         }

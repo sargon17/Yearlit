@@ -20,7 +20,7 @@ struct YearWidgetControl: ControlWidget {
                 isOn: value,
                 action: StartTimerIntent()
             ) { isRunning in
-                Label(isRunning ? "On" : "Off", systemImage: "timer")
+                Label(String(localized: isRunning ? "On" : "Off"), systemImage: "timer")
             }
         }
         .displayName("Timer")

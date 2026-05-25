@@ -34,7 +34,7 @@ struct HabitStackRow: View {
             }
 
             HStack(spacing: 12) {
-                Label("\(stack.steps.count) steps", systemImage: "list.number")
+                Label(String(localized: "\(stack.steps.count) steps"), systemImage: "list.number")
                     .caption()
                 if let first = stack.stepsSorted.first {
                     Text("Starts with \(first.title)")

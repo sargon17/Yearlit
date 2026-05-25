@@ -13,30 +13,30 @@ enum CalendarError: LocalizedError, Identifiable {
   var title: String {
     switch self {
     case .invalidName:
-      return "Invalid Name"
+      return String(localized: "Invalid Name")
     case .notificationPermissionDenied:
-      return "Notification Permission Denied"
+      return String(localized: "Notification Permission Denied")
     case .notificationSchedulingFailed:
-      return "Notification Error"
+      return String(localized: "Notification Error")
     case .errorAddingEntry:
-      return "Entry Error"
+      return String(localized: "Entry Error")
     }
   }
 
   var message: String {
-    errorDescription ?? "An unknown error occurred."
+    errorDescription ?? String(localized: "An unknown error occurred.")
   }
 
   var errorDescription: String? {
     switch self {
     case .invalidName:
-      return "Please enter a valid name (1-50 characters)"
+      return String(localized: "Please enter a valid name (1-50 characters)")
     case .notificationPermissionDenied:
-      return "Please enable notifications in Settings to receive reminders."
+      return String(localized: "Please enable notifications in Settings to receive reminders.")
     case .notificationSchedulingFailed(let error):
-      return "Failed to schedule notification: \(error.localizedDescription)"
+      return String(localized: "Failed to schedule notification: \(error.localizedDescription)")
     case .errorAddingEntry(let error):
-      return "Failed to add entry: \(error.localizedDescription)"
+      return String(localized: "Failed to add entry: \(error.localizedDescription)")
     }
   }
 }

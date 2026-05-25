@@ -93,9 +93,9 @@ enum CalendarRenderSnapshotCache {
     let your365HeaderTitle: String? = {
       guard let snapshot = your365Snapshot else { return nil }
       if calendar.isWithinFirstYear(today: today), let todayCell = snapshot.todayCell {
-        return "Day \(todayCell.dayNumber) of your 365"
+        return String(localized: "Day \(todayCell.dayNumber) of your 365")
       }
-      return "Latest 365 days"
+      return String(localized: "Latest 365 days")
     }()
     let currentPeriodReferenceDate: Date? = {
       if isShowingYour365 {

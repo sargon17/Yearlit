@@ -5,21 +5,21 @@ enum OnboardingHabitCatalog {
   static func habits(for commitment: IdentityCommitment) -> [String] {
     switch commitment {
     case .reader:
-      ["Read 1 page", "Read for 5 minutes", "Open a book"]
+      [String(localized: "Read 1 page"), String(localized: "Read for 5 minutes"), String(localized: "Open a book")]
     case .strengthTrainer:
-      ["Move for 5 minutes", "Stretch for 5 minutes", "Do 1 bodyweight set"]
+      [String(localized: "Move for 5 minutes"), String(localized: "Stretch for 5 minutes"), String(localized: "Do 1 bodyweight set")]
     case .writer:
-      ["Write 3 lines", "Write for 5 minutes", "Open a notebook"]
+      [String(localized: "Write 3 lines"), String(localized: "Write for 5 minutes"), String(localized: "Open a notebook")]
     case .meditator:
-      ["Meditate for 2 minutes", "Take 5 deep breaths", "Sit quietly for 2 minutes"]
+      [String(localized: "Meditate for 2 minutes"), String(localized: "Take 5 deep breaths"), String(localized: "Sit quietly for 2 minutes")]
     case .learner:
-      ["Learn for 5 minutes", "Watch 1 short lesson", "Write 1 thing you learned"]
+      [String(localized: "Learn for 5 minutes"), String(localized: "Watch 1 short lesson"), String(localized: "Write 1 thing you learned")]
     case .saver:
-      ["Set aside $5", "Check spending for 2 minutes", "Review 1 expense"]
+      [String(localized: "Set aside $5"), String(localized: "Check spending for 2 minutes"), String(localized: "Review 1 expense")]
     case .creator:
-      ["Create for 5 minutes", "Write 1 idea", "Open your project"]
+      [String(localized: "Create for 5 minutes"), String(localized: "Write 1 idea"), String(localized: "Open your project")]
     case .earlyBird:
-      ["Wake up 10 minutes earlier", "Get out of bed right away", "Drink 1 glass of water"]
+      [String(localized: "Wake up 10 minutes earlier"), String(localized: "Get out of bed right away"), String(localized: "Drink 1 glass of water")]
     }
   }
 }

@@ -104,7 +104,7 @@ struct MoodTrackingCalendar: View {
           Spacer()
 
           HStack(alignment: .lastTextBaseline, spacing: 2) {
-            Text(showRemainingDays ? "Left: " : "Passed: ")
+            Text(String(localized: showRemainingDays ? "Left: " : "Passed: "))
               .font(AppFont.mono(12))
               .foregroundColor(Color("text-tertiary"))
               .fontWeight(.regular)

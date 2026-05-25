@@ -89,7 +89,7 @@ struct ReminderScheduleSection: View {
     private var toggleRow: some View {
         HStack {
             VStack(alignment: .leading, spacing: 4) {
-                Text(cadence == .weekly ? "Send a weekly reminder" : "Send a daily reminder")
+                Text(String(localized: cadence == .weekly ? "Send a weekly reminder" : "Send a daily reminder"))
                     .labelStyle(type: .secondary)
             }
             Spacer()
@@ -250,7 +250,7 @@ struct AdditionalRemindersSection: View {
         }
     }
 
-    private func infoRow(title: String, description: String) -> some View {
+    private func infoRow(title: LocalizedStringKey, description: LocalizedStringKey) -> some View {
         HStack {
             VStack(alignment: .leading, spacing: 4) {
                 Text(title)
@@ -553,15 +553,15 @@ enum NotificationSettingsHelpers {
     ) -> String {
         guard isEnabled else {
             return cadence == .weekly
-                ? "Off • set a weekly reminder and privacy level."
-                : "Off • set a daily reminder and privacy level."
+                ? String(localized: "Off • set a weekly reminder and privacy level.")
+                : String(localized: "Off • set a daily reminder and privacy level.")
         }
 
         let time = reminderTime.formatted(date: .omitted, time: .shortened)
         if cadence == .weekly {
-            return "On • \(weekdayName(reminderWeekday)) at \(time)."
+            return String(localized: "On • \(weekdayName(reminderWeekday)) at \(time).")
         }
-        return "On • every day at \(time)."
+        return String(localized: "On • every day at \(time).")
     }
 }
 

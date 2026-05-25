@@ -11,18 +11,18 @@ public enum CalendarTimelineMode: String, Codable, CaseIterable, Identifiable, S
     public var title: String {
         switch self {
         case .your365:
-            return "Your 365"
+            return String(localized: "Your 365")
         case .calendarYear:
-            return "Calendar Year"
+            return String(localized: "Calendar Year")
         }
     }
 
     public var detail: String {
         switch self {
         case .your365:
-            return "Each habit starts its own 365-day journey from the day you began."
+            return String(localized: "Each habit starts its own 365-day journey from the day you began.")
         case .calendarYear:
-            return "View progress from January to December."
+            return String(localized: "View progress from January to December.")
         }
     }
 
@@ -30,4 +30,3 @@ public enum CalendarTimelineMode: String, Codable, CaseIterable, Identifiable, S
         cadence == .weekly ? .calendarYear : self
     }
 }
-
