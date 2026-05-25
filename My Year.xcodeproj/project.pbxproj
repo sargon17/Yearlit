@@ -501,6 +501,13 @@
 				es,
 				"es-MX",
 				"pt-BR",
+				de,
+				fr,
+				nl,
+				da,
+				sv,
+				nb,
+				pl,
 			);
 			mainGroup = 78B0255E2D35424100E70B4C;
 			minimizedProjectReferenceProxies = 1;

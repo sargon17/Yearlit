@@ -35,6 +35,48 @@
             "state": "translated",
             "value": " "
           }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": " "
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": " "
+          }
+        },
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": " "
+          }
+        },
+        "da": {
+          "stringUnit": {
+            "state": "translated",
+            "value": " "
+          }
+        },
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": " "
+          }
+        },
+        "nb": {
+          "stringUnit": {
+            "state": "translated",
+            "value": " "
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": " "
+          }
         }
       }
     },
@@ -72,6 +114,48 @@
             "state": "translated",
             "value": " dias restantes"
           }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": " Tage übrig"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": " jours restants"
+          }
+        },
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": " dagen over"
+          }
+        },
+        "da": {
+          "stringUnit": {
+            "state": "translated",
+            "value": " dage tilbage"
+          }
+        },
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": " dagar kvar"
+          }
+        },
+        "nb": {
+          "stringUnit": {
+            "state": "translated",
+            "value": " dager igjen"
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": " pozostało dni"
+          }
         }
       }
     },
@@ -104,6 +188,48 @@
           }
         },
         "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "/"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "/"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "/"
+          }
+        },
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "/"
+          }
+        },
+        "da": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "/"
+          }
+        },
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "/"
+          }
+        },
+        "nb": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "/"
+          }
+        },
+        "pl": {
           "stringUnit": {
             "state": "translated",
             "value": "/"
@@ -145,6 +271,48 @@
             "state": "translated",
             "value": "%@"
           }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@"
+          }
+        },
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@"
+          }
+        },
+        "da": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@"
+          }
+        },
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@"
+          }
+        },
+        "nb": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@"
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@"
+          }
         }
       }
     },
@@ -180,6 +348,48 @@
             "state": "translated",
             "value": "Um exemplo de controle que executa um timer."
           }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ein Beispielsteuerelement, das einen Timer ausführt."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Un exemple de contrôle qui exécute une minuterie."
+          }
+        },
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Een voorbeeldbesturing die een timer uitvoert."
+          }
+        },
+        "da": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Et eksempel på kontrol, der kører en timer."
+          }
+        },
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ett exempel på kontroll som kör en timer."
+          }
+        },
+        "nb": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "En eksempelkontroll som kjører en tidtaker."
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Przykładowa kontrolka uruchamiająca timer."
+          }
         }
       }
     },
@@ -213,6 +423,48 @@
           "stringUnit": {
             "state": "translated",
             "value": "Parte inferior\\(context.state.emoji)"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Unten\\(context.state.emoji)"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bas\\(context.state.emoji)"
+          }
+        },
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bodem\\(context.state.emoji)"
+          }
+        },
+        "da": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nederst\\(context.state.emoji)"
+          }
+        },
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nederst\\(context.state.emoji)"
+          }
+        },
+        "nb": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nederst\\(context.state.emoji)"
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dół\\(context.state.emoji)"
           }
         }
       }
@@ -250,6 +502,48 @@
             "state": "translated",
             "value": "Parte inferior %@"
           }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Unten %@"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bas %@"
+          }
+        },
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bodem %@"
+          }
+        },
+        "da": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nederst %@"
+          }
+        },
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nederst %@"
+          }
+        },
+        "nb": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nederst %@"
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dół%@"
+          }
         }
       }
     },
@@ -285,6 +579,48 @@
             "state": "translated",
             "value": "dias restantes"
           }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tage übrig"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "jours restants"
+          }
+        },
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "dagen over"
+          }
+        },
+        "da": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "dage tilbage"
+          }
+        },
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "dagar kvar"
+          }
+        },
+        "nb": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "dager igjen"
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "pozostało dni"
+          }
         }
       }
     },
@@ -318,6 +654,48 @@
           "stringUnit": {
             "state": "translated",
             "value": "Olá\\(context.state.emoji)"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hallo\\(context.state.emoji)"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bonjour\\(context.state.emoji)"
+          }
+        },
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hallo\\(context.state.emoji)"
+          }
+        },
+        "da": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hej\\(context.state.emoji)"
+          }
+        },
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hej\\(context.state.emoji)"
+          }
+        },
+        "nb": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hei\\(context.state.emoji)"
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Witaj\\(context.state.emoji)"
           }
         }
       }
@@ -355,6 +733,48 @@
             "state": "translated",
             "value": "Olá %@"
           }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hallo %@"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bonjour %@"
+          }
+        },
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hallo %@"
+          }
+        },
+        "da": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hej %@"
+          }
+        },
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hej %@"
+          }
+        },
+        "nb": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hei %@"
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Witaj %@"
+          }
         }
       }
     },
@@ -390,6 +810,48 @@
           "stringUnit": {
             "state": "translated",
             "value": "eu"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "L"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "L"
+          }
+        },
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "L"
+          }
+        },
+        "da": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "L"
+          }
+        },
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "L"
+          }
+        },
+        "nb": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "L"
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "L"
           }
         }
       }
@@ -427,6 +889,48 @@
             "state": "translated",
             "value": "Principal"
           }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Führend"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Menant"
+          }
+        },
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Leidend"
+          }
+        },
+        "da": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Førende"
+          }
+        },
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ledande"
+          }
+        },
+        "nb": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ledende"
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Prowadzący"
+          }
         }
       }
     },
@@ -457,6 +961,48 @@
           }
         },
         "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "T\\(context.state.emoji)"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "T\\(context.state.emoji)"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "T\\(context.state.emoji)"
+          }
+        },
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "T\\(context.state.emoji)"
+          }
+        },
+        "da": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "T\\(context.state.emoji)"
+          }
+        },
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "T\\(context.state.emoji)"
+          }
+        },
+        "nb": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "T\\(context.state.emoji)"
+          }
+        },
+        "pl": {
           "stringUnit": {
             "state": "translated",
             "value": "T\\(context.state.emoji)"
@@ -497,6 +1043,48 @@
             "state": "translated",
             "value": "T %@"
           }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "T %@"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "T %@"
+          }
+        },
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "T %@"
+          }
+        },
+        "da": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "T %@"
+          }
+        },
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "T %@"
+          }
+        },
+        "nb": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "T %@"
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "T %@"
+          }
         }
       }
     },
@@ -532,6 +1120,48 @@
             "state": "translated",
             "value": "Temporizador"
           }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Timer"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Minuteur"
+          }
+        },
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Timer"
+          }
+        },
+        "da": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Timer"
+          }
+        },
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Timer"
+          }
+        },
+        "nb": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Timer"
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Regulator czasowy"
+          }
         }
       }
     },
@@ -566,6 +1196,48 @@
           "stringUnit": {
             "state": "translated",
             "value": "Acompanhe o progresso do seu ano com uma bela visualização."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Verfolgen Sie den Fortschritt Ihres Jahres mit einer schönen Visualisierung."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Suivez les progrès de votre année avec une belle visualisation."
+          }
+        },
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Volg de voortgang van uw jaar met een prachtige visualisatie."
+          }
+        },
+        "da": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Følg dit års fremskridt med en smuk visualisering."
+          }
+        },
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Spåra ditt års framsteg med en vacker visualisering."
+          }
+        },
+        "nb": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Følg årets fremgang med en vakker visualisering."
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Śledź postępy w ciągu roku dzięki pięknej wizualizacji."
           }
         }
       }
@@ -603,6 +1275,48 @@
             "state": "translated",
             "value": "À direita"
           }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nachlaufend"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "À la traîne"
+          }
+        },
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Achterlopend"
+          }
+        },
+        "da": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Efterfølgende"
+          }
+        },
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Efterföljande"
+          }
+        },
+        "nb": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Etterfølgende"
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kończący"
+          }
         }
       }
     },
@@ -637,6 +1351,48 @@
           "stringUnit": {
             "state": "translated",
             "value": "Progresso do ano"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Jahresfortschritt"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Progression de l'année"
+          }
+        },
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Jaar vooruitgang"
+          }
+        },
+        "da": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Årets fremskridt"
+          }
+        },
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Årets framsteg"
+          }
+        },
+        "nb": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Års fremgang"
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Rok Postępu"
           }
         }
       }
