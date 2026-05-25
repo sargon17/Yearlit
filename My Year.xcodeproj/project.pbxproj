@@ -508,6 +508,15 @@
 				sv,
 				nb,
 				pl,
+				fi,
+				cs,
+				ro,
+				hu,
+				sk,
+				hr,
+				sl,
+				et,
+				lv,
 			);
 			mainGroup = 78B0255E2D35424100E70B4C;
 			minimizedProjectReferenceProxies = 1;

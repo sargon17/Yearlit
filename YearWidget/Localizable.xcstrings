@@ -77,6 +77,60 @@
             "state": "translated",
             "value": " "
           }
+        },
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": " "
+          }
+        },
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": " "
+          }
+        },
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": " "
+          }
+        },
+        "hu": {
+          "stringUnit": {
+            "state": "translated",
+            "value": " "
+          }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": " "
+          }
+        },
+        "hr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": " "
+          }
+        },
+        "sl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": " "
+          }
+        },
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": " "
+          }
+        },
+        "lv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": " "
+          }
         }
       }
     },
@@ -156,6 +210,60 @@
             "state": "translated",
             "value": " pozostało dni"
           }
+        },
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": " päivää jäljellä"
+          }
+        },
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": " zbývající dny"
+          }
+        },
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": " zile rămase"
+          }
+        },
+        "hu": {
+          "stringUnit": {
+            "state": "translated",
+            "value": " napok vannak hátra"
+          }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": " zostávajúcich dní"
+          }
+        },
+        "hr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": " preostalih dana"
+          }
+        },
+        "sl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": " preostalih dni"
+          }
+        },
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": " päevad jäänud"
+          }
+        },
+        "lv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": " atlikušas dienas"
+          }
         }
       }
     },
@@ -230,6 +338,60 @@
           }
         },
         "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "/"
+          }
+        },
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "/"
+          }
+        },
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "/"
+          }
+        },
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "/"
+          }
+        },
+        "hu": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "/"
+          }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "/"
+          }
+        },
+        "hr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "/"
+          }
+        },
+        "sl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "/"
+          }
+        },
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "/"
+          }
+        },
+        "lv": {
           "stringUnit": {
             "state": "translated",
             "value": "/"
@@ -313,6 +475,60 @@
             "state": "translated",
             "value": "%@"
           }
+        },
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@"
+          }
+        },
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@"
+          }
+        },
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@"
+          }
+        },
+        "hu": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@"
+          }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@"
+          }
+        },
+        "hr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@"
+          }
+        },
+        "sl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@"
+          }
+        },
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@"
+          }
+        },
+        "lv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@"
+          }
         }
       }
     },
@@ -390,6 +606,60 @@
             "state": "translated",
             "value": "Przykładowa kontrolka uruchamiająca timer."
           }
+        },
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Esimerkkisäädin, joka käyttää ajastinta."
+          }
+        },
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Příklad ovládacího prvku, který spouští časovač."
+          }
+        },
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Un exemplu de control care rulează un cronometru."
+          }
+        },
+        "hu": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Egy példa vezérlő, amely egy időzítőt futtat."
+          }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Príklad ovládacieho prvku, ktorý spúšťa časovač."
+          }
+        },
+        "hr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Primjer kontrole koja pokreće mjerač vremena."
+          }
+        },
+        "sl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Primer kontrolnika, ki izvaja časovnik."
+          }
+        },
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Näidisjuhtelement, mis käitab taimerit."
+          }
+        },
+        "lv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vadības piemērs, kas palaiž taimeri."
+          }
         }
       }
     },
@@ -465,6 +735,60 @@
           "stringUnit": {
             "state": "translated",
             "value": "Dół\\(context.state.emoji)"
+          }
+        },
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Alhaalla\\(context.state.emoji)"
+          }
+        },
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dolní\\(context.state.emoji)"
+          }
+        },
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "De jos\\(context.state.emoji)"
+          }
+        },
+        "hu": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Alul\\(context.state.emoji)"
+          }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Spodná\\(context.state.emoji)"
+          }
+        },
+        "hr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dno\\(context.state.emoji)"
+          }
+        },
+        "sl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Spodaj\\(context.state.emoji)"
+          }
+        },
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Alumine\\(context.state.emoji)"
+          }
+        },
+        "lv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Apakšējā\\(context.state.emoji)"
           }
         }
       }
@@ -544,6 +868,60 @@
             "state": "translated",
             "value": "Dół%@"
           }
+        },
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Alhaalla %@"
+          }
+        },
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dolní %@"
+          }
+        },
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "De jos %@"
+          }
+        },
+        "hu": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Alul %@"
+          }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Spodná %@"
+          }
+        },
+        "hr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dno %@"
+          }
+        },
+        "sl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Spodaj %@"
+          }
+        },
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Alumine %@"
+          }
+        },
+        "lv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Apakšējā %@"
+          }
         }
       }
     },
@@ -621,6 +999,60 @@
             "state": "translated",
             "value": "pozostało dni"
           }
+        },
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "päivää jäljellä"
+          }
+        },
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "zbývající dny"
+          }
+        },
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "zile rămase"
+          }
+        },
+        "hu": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "napok vannak hátra"
+          }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "zostávajúcich dní"
+          }
+        },
+        "hr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "preostalih dana"
+          }
+        },
+        "sl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "preostalih dni"
+          }
+        },
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "päevad jäänud"
+          }
+        },
+        "lv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "atlikušas dienas"
+          }
         }
       }
     },
@@ -696,6 +1128,60 @@
           "stringUnit": {
             "state": "translated",
             "value": "Witaj\\(context.state.emoji)"
+          }
+        },
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hei\\(context.state.emoji)"
+          }
+        },
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ahoj\\(context.state.emoji)"
+          }
+        },
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bună\\(context.state.emoji)"
+          }
+        },
+        "hu": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Szia\\(context.state.emoji)"
+          }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dobrý deň\\(context.state.emoji)"
+          }
+        },
+        "hr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pozdrav\\(context.state.emoji)"
+          }
+        },
+        "sl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pozdravljeni\\(context.state.emoji)"
+          }
+        },
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tere\\(context.state.emoji)"
+          }
+        },
+        "lv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sveiki,\\(context.state.emoji)"
           }
         }
       }
@@ -775,6 +1261,60 @@
             "state": "translated",
             "value": "Witaj %@"
           }
+        },
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hei %@"
+          }
+        },
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ahoj %@"
+          }
+        },
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bună %@"
+          }
+        },
+        "hu": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Szia %@"
+          }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dobrý deň %@"
+          }
+        },
+        "hr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pozdrav %@"
+          }
+        },
+        "sl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pozdravljeni %@"
+          }
+        },
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tere %@"
+          }
+        },
+        "lv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sveiki,%@"
+          }
         }
       }
     },
@@ -849,6 +1389,60 @@
           }
         },
         "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "L"
+          }
+        },
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "L"
+          }
+        },
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "L"
+          }
+        },
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "L"
+          }
+        },
+        "hu": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "L"
+          }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "L"
+          }
+        },
+        "hr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "L"
+          }
+        },
+        "sl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "L"
+          }
+        },
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "L"
+          }
+        },
+        "lv": {
           "stringUnit": {
             "state": "translated",
             "value": "L"
@@ -931,6 +1525,60 @@
             "state": "translated",
             "value": "Prowadzący"
           }
+        },
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Johtava"
+          }
+        },
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vedoucí"
+          }
+        },
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Conducere"
+          }
+        },
+        "hu": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vezető"
+          }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vedenie"
+          }
+        },
+        "hr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vodeći"
+          }
+        },
+        "sl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vodenje"
+          }
+        },
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Juhtiv"
+          }
+        },
+        "lv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vadošais"
+          }
         }
       }
     },
@@ -1003,6 +1651,60 @@
           }
         },
         "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "T\\(context.state.emoji)"
+          }
+        },
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "T\\(context.state.emoji)"
+          }
+        },
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "T\\(context.state.emoji)"
+          }
+        },
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "T\\(context.state.emoji)"
+          }
+        },
+        "hu": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "T\\(context.state.emoji)"
+          }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "T\\(context.state.emoji)"
+          }
+        },
+        "hr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "T\\(context.state.emoji)"
+          }
+        },
+        "sl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "T\\(context.state.emoji)"
+          }
+        },
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "T\\(context.state.emoji)"
+          }
+        },
+        "lv": {
           "stringUnit": {
             "state": "translated",
             "value": "T\\(context.state.emoji)"
@@ -1085,6 +1787,60 @@
             "state": "translated",
             "value": "T %@"
           }
+        },
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "T %@"
+          }
+        },
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "T %@"
+          }
+        },
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "T %@"
+          }
+        },
+        "hu": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "T %@"
+          }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "T %@"
+          }
+        },
+        "hr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "T %@"
+          }
+        },
+        "sl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "T %@"
+          }
+        },
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "T %@"
+          }
+        },
+        "lv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "T %@"
+          }
         }
       }
     },
@@ -1162,6 +1918,60 @@
             "state": "translated",
             "value": "Regulator czasowy"
           }
+        },
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ajastin"
+          }
+        },
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Časovač"
+          }
+        },
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cronometru"
+          }
+        },
+        "hu": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Időzítő"
+          }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Časovač"
+          }
+        },
+        "hr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Timer"
+          }
+        },
+        "sl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Časovnik"
+          }
+        },
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Taimer"
+          }
+        },
+        "lv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Taimeris"
+          }
         }
       }
     },
@@ -1238,6 +2048,60 @@
           "stringUnit": {
             "state": "translated",
             "value": "Śledź postępy w ciągu roku dzięki pięknej wizualizacji."
+          }
+        },
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Seuraa vuoden edistymistä kauniilla visualisoinneilla."
+          }
+        },
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sledujte pokrok svého roku pomocí krásné vizualizace."
+          }
+        },
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Urmăriți progresul anului dvs. cu o vizualizare frumoasă."
+          }
+        },
+        "hu": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kövesse nyomon az év előrehaladását egy gyönyörű vizualizációval."
+          }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sledujte pokrok svojho roka pomocou krásnej vizualizácie."
+          }
+        },
+        "hr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pratite napredak svoje godine uz prekrasnu vizualizaciju."
+          }
+        },
+        "sl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Spremljajte napredek v letu s čudovito vizualizacijo."
+          }
+        },
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Jälgige oma aasta edenemist kauni visualiseerimisega."
+          }
+        },
+        "lv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sekojiet līdzi gada progresam, izmantojot skaistu vizualizāciju."
           }
         }
       }
@@ -1317,6 +2181,60 @@
             "state": "translated",
             "value": "Kończący"
           }
+        },
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Perässä"
+          }
+        },
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Trailing"
+          }
+        },
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Urmărire"
+          }
+        },
+        "hu": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Utána"
+          }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Trailing"
+          }
+        },
+        "hr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Trailing"
+          }
+        },
+        "sl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Trailing"
+          }
+        },
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Jälgimine"
+          }
+        },
+        "lv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Trailing"
+          }
         }
       }
     },
@@ -1393,6 +2311,60 @@
           "stringUnit": {
             "state": "translated",
             "value": "Rok Postępu"
+          }
+        },
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vuoden edistyminen"
+          }
+        },
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pokrok roku"
+          }
+        },
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Progresul anului"
+          }
+        },
+        "hu": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Év Haladás"
+          }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pokrok v roku"
+          }
+        },
+        "hr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Godina Napredak"
+          }
+        },
+        "sl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Leto Napredek"
+          }
+        },
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aasta edenemine"
+          }
+        },
+        "lv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Gada progress"
           }
         }
       }
