@@ -15,6 +15,8 @@ struct SettingsView: View {
 
         WidgetsSettingsSection()
 
+        DailyWallpaperSettingsSection()
+
         HelpFeedbackSection()
 
         SupportYearlitSection()
