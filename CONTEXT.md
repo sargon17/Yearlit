@@ -92,6 +92,18 @@ _Avoid_: Sample dot, fake completion
 The Calendar a user starts during onboarding, or the earliest existing active Calendar if onboarding restarts after setup began.
 _Avoid_: Onboarding calendar, sample calendar
 
+**Daily Wallpaper**:
+A dark Yearlit-generated image intended to be applied as an iPhone wallpaper by a Shortcuts automation.
+_Avoid_: bg, background pipeline
+
+**Year Progress**:
+The current year visualization based on elapsed days, today, future days, percent complete, and days left.
+_Avoid_: habit wallpaper, calendar wallpaper
+
+**Daily Wallpaper Shortcut**:
+The iOS Shortcut automation that runs Yearlit's **Create Daily Wallpaper** action and Apple's **Set Wallpaper** action.
+_Avoid_: bg shortcut, pipeline
+
 ## Relationships
 
 - A **Calendar** can reach many **Milestones**.
@@ -131,14 +143,24 @@ _Avoid_: Onboarding calendar, sample calendar
 - Selecting a **Tiny habit** creates the user's **First Calendar**.
 - Marking the **First dot** creates a real **Check-in** for the **First Calendar**.
 - If the **Onboarding flow** restarts after setup began, an existing active **Calendar** is treated as the **First Calendar** instead of creating a duplicate.
+- A **Daily Wallpaper Shortcut** produces one **Daily Wallpaper** each time it runs.
+- A **Daily Wallpaper** is applied by Shortcuts, not directly by Yearlit.
+- A **Daily Wallpaper** uses **Year Progress** data and is sized for the natural iPhone wallpaper aspect ratio.
 
 ## Example dialogue
 
 > **Dev:** "If a user disables **Milestone celebrations**, should we stop detecting **Milestones**?"
 > **Domain expert:** "No — keep detecting them silently so old **Milestone celebrations** do not spam the user later."
 
+> **Dev:** "Should Yearlit set the user's wallpaper directly?"
+> **Domain expert:** "No. Yearlit generates the **Daily Wallpaper**; the **Daily Wallpaper Shortcut** applies it through Apple's Shortcuts actions."
+
+> **Dev:** "Should the **Daily Wallpaper** include habit completion?"
+> **Domain expert:** "No. It should show **Year Progress**, matching the Year widget's data semantics."
+
 ## Flagged ambiguities
 
 - "Switch milestones off" was resolved to mean disabling **Milestone celebrations**, not deleting or pausing **Milestone** detection/history.
 - "Customize milestones" was resolved to mean changing **Milestone celebration settings**, while keeping milestone detection intact.
 - "Fake calendar" was resolved to **Marketing demo calendar**: normal calendar content used by the developer for marketing screenshots.
+- "bg" was used to mean wallpaper. Resolved: use **Daily Wallpaper** for the generated image and **Daily Wallpaper Shortcut** for the automation.
