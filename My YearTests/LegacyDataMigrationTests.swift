@@ -116,6 +116,45 @@ struct LegacyDataMigrationTests {
         #expect(fixture.defaults.bool(forKey: LegacyPersistenceKeys.trackingStartedAtBackfillMigrationFlagKey))
     }
 
+    @Test func backsUpTrackingStartedAtBeforeBackfillChangesCalendarStarts() throws {
+        let fixture = makeDefaultsFixture()
+        defer { tearDownDefaultsFixture(fixture) }
+
+        let container = makeContainer()
+        let context = ModelContext(container)
+        context.autosaveEnabled = false
+
+        let originalStart = try #require(makeDate(year: 2026, month: 5, day: 1, hour: 8, minute: 15))
+        let entryDate = try #require(makeDate(year: 2026, month: 1, day: 12, hour: 18, minute: 45))
+        let calendar = HabitCalendarEntity(
+            name: "Tracked",
+            color: "qs-emerald",
+            trackingTypeRawValue: TrackingType.binary.rawValue,
+            dailyTarget: 1,
+            trackingStartedAt: originalStart
+        )
+        context.insert(calendar)
+        context.insert(
+            CalendarEntryEntity(
+                compositeKey: CalendarEntryEntity.makeCompositeKey(
+                    calendarId: calendar.id,
+                    dayKey: DayKeyFormatter.shared.string(from: LocalDayCalendar.startOfDay(for: entryDate))
+                ),
+                calendarId: calendar.id,
+                dayKey: DayKeyFormatter.shared.string(from: LocalDayCalendar.startOfDay(for: entryDate)),
+                date: entryDate,
+                count: 1,
+                completed: true
+            )
+        )
+        try context.save()
+
+        LegacyDataMigrator.migrateIfNeeded(container: container, defaults: fixture.defaults)
+
+        let backup = LegacyDataMigrator.trackingStartedAtBackup(defaults: fixture.defaults)
+        #expect(backup[calendar.id] == LocalDayCalendar.startOfDay(for: originalStart))
+    }
+
     @Test func repairsTrackingStartedAtWhenEarlierEntriesExistAfterBackfillFlagWasAlreadySet() throws {
         let fixture = makeDefaultsFixture()
         defer { tearDownDefaultsFixture(fixture) }
@@ -162,6 +201,93 @@ struct LegacyDataMigrationTests {
 
         #expect(reloaded.trackingStartedAt == expectedStart)
         #expect(fixture.defaults.bool(forKey: LegacyPersistenceKeys.trackingStartedAtRepairMigrationFlagKey))
+    }
+
+    @Test func doesNotOverwriteTrackingStartedAtBackupDuringRepair() throws {
+        let fixture = makeDefaultsFixture()
+        defer { tearDownDefaultsFixture(fixture) }
+
+        fixture.defaults.set(true, forKey: LegacyPersistenceKeys.migrationFlagKey)
+        fixture.defaults.set(true, forKey: LegacyPersistenceKeys.dayKeyMigrationFlagKey)
+        fixture.defaults.set(true, forKey: LegacyPersistenceKeys.trackingStartedAtBackfillMigrationFlagKey)
+
+        let container = makeContainer()
+        let context = ModelContext(container)
+        context.autosaveEnabled = false
+
+        let originalStart = try #require(makeDate(year: 2026, month: 6, day: 1, hour: 8, minute: 0))
+        let repairStart = try #require(makeDate(year: 2025, month: 6, day: 1, hour: 18, minute: 0))
+        let calendar = HabitCalendarEntity(
+            name: "Long streak",
+            color: "qs-orange",
+            trackingTypeRawValue: TrackingType.binary.rawValue,
+            dailyTarget: 1,
+            trackingStartedAt: originalStart
+        )
+        context.insert(calendar)
+        context.insert(
+            CalendarEntryEntity(
+                compositeKey: CalendarEntryEntity.makeCompositeKey(
+                    calendarId: calendar.id,
+                    dayKey: DayKeyFormatter.shared.string(from: LocalDayCalendar.startOfDay(for: repairStart))
+                ),
+                calendarId: calendar.id,
+                dayKey: DayKeyFormatter.shared.string(from: LocalDayCalendar.startOfDay(for: repairStart)),
+                date: repairStart,
+                count: 1,
+                completed: true
+            )
+        )
+        try context.save()
+
+        let preservedStart = try #require(makeDate(year: 2024, month: 1, day: 1, hour: 9, minute: 0))
+        let encodedBackup = try #require(try? encodeTrackingStartedAtBackup([
+            calendar.id: LocalDayCalendar.startOfDay(for: preservedStart)
+        ]))
+        fixture.defaults.set(encodedBackup, forKey: LegacyPersistenceKeys.trackingStartedAtBackupKey)
+
+        LegacyDataMigrator.migrateIfNeeded(container: container, defaults: fixture.defaults)
+
+        let backup = LegacyDataMigrator.trackingStartedAtBackup(defaults: fixture.defaults)
+        #expect(backup[calendar.id] == LocalDayCalendar.startOfDay(for: preservedStart))
+    }
+
+    @Test func restoresTrackingStartedAtFromBackup() throws {
+        let fixture = makeDefaultsFixture()
+        defer { tearDownDefaultsFixture(fixture) }
+
+        let container = makeContainer()
+        let context = ModelContext(container)
+        context.autosaveEnabled = false
+
+        let originalStart = try #require(makeDate(year: 2025, month: 1, day: 1, hour: 8, minute: 0))
+        let migratedStart = try #require(makeDate(year: 2026, month: 1, day: 1, hour: 8, minute: 0))
+        let calendar = HabitCalendarEntity(
+            name: "Tracked",
+            color: "qs-emerald",
+            trackingTypeRawValue: TrackingType.binary.rawValue,
+            dailyTarget: 1,
+            trackingStartedAt: migratedStart
+        )
+        context.insert(calendar)
+        try context.save()
+
+        let encodedBackup = try #require(try? encodeTrackingStartedAtBackup([
+            calendar.id: LocalDayCalendar.startOfDay(for: originalStart)
+        ]))
+        fixture.defaults.set(encodedBackup, forKey: LegacyPersistenceKeys.trackingStartedAtBackupKey)
+
+        let didRestore = LegacyDataMigrator.restoreTrackingStartedAtFromBackup(
+            container: container,
+            defaults: fixture.defaults
+        )
+
+        let refreshedContext = ModelContext(container)
+        refreshedContext.autosaveEnabled = false
+        let reloaded = try #require(refreshedContext.fetch(FetchDescriptor<HabitCalendarEntity>()).first)
+
+        #expect(didRestore)
+        #expect(reloaded.trackingStartedAt == LocalDayCalendar.startOfDay(for: originalStart))
     }
 
     @Test func backfillsEmptySwiftDataCalendarWhenLegacyPayloadIsEmpty() throws {
@@ -237,6 +363,18 @@ struct LegacyDataMigrationTests {
             trackingStartedAt: Date(),
             dailyTarget: 1
         )
+    }
+
+    private func encodeTrackingStartedAtBackup(_ values: [UUID: Date]) throws -> Data {
+        struct Backup: Codable {
+            let createdAt: Date
+            let valuesByCalendarId: [String: Date]
+        }
+
+        let stringValues = values.reduce(into: [String: Date]()) { partialResult, item in
+            partialResult[item.key.uuidString] = item.value
+        }
+        return try JSONEncoder().encode(Backup(createdAt: Date(), valuesByCalendarId: stringValues))
     }
 
     private func makeDate(year: Int, month: Int, day: Int, hour: Int, minute: Int) -> Date? {

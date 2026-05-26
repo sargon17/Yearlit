@@ -3,6 +3,7 @@ enum AppStorageKeys {
     static let isRecapViewEnabled = "isRecapViewEnabled"
     static let isDeveloperModeEnabled = "isDeveloperModeEnabled"
     static let runtimeDebugEnabled = "runtimeDebugEnabled"
+    static let cleanScreenshotsEnabled = "cleanScreenshotsEnabled"
     static let wandFillForce = "wandFillForce"
     static let milestoneCelebrationsEnabled = "milestoneCelebrationsEnabled"
     static let streakMilestoneCelebrationsEnabled = "streakMilestoneCelebrationsEnabled"

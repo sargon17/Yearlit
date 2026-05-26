@@ -61,6 +61,7 @@ struct YearExperienceSection: View {
 struct DeveloperSettingsSection: View {
   @AppStorage(AppStorageKeys.isDeveloperModeEnabled) var isDeveloperModeEnabled: Bool = false
   @AppStorage(AppStorageKeys.runtimeDebugEnabled) var runtimeDebugEnabled: Bool = false
+  @AppStorage(AppStorageKeys.cleanScreenshotsEnabled) var cleanScreenshotsEnabled: Bool = false
   @AppStorage(AppStorageKeys.wandFillForce) var wandFillForce: Double = 0.5
 
   private var shouldShowDeveloperSettings: Bool {
@@ -68,7 +69,8 @@ struct DeveloperSettingsSection: View {
   }
 
   private var shouldShowWandSettings: Bool {
-    (My_YearApp.isDebugMode && runtimeDebugEnabled) || isDeveloperModeEnabled
+    !cleanScreenshotsEnabled
+      && ((My_YearApp.isDebugMode && runtimeDebugEnabled) || isDeveloperModeEnabled)
   }
 
   var body: some View {
@@ -78,18 +80,20 @@ struct DeveloperSettingsSection: View {
           Toggle("Runtime Debug", isOn: $runtimeDebugEnabled)
         #endif
 
+        Toggle("Clean Screenshots", isOn: $cleanScreenshotsEnabled)
+
         if shouldShowWandSettings {
           VStack(alignment: .leading, spacing: 8) {
             Text("Wand Fill Force: \(wandFillForce, specifier: "%.2f")")
             Slider(value: $wandFillForce, in: 0.0...1.0, step: 0.05)
-
-            if isDeveloperModeEnabled {
-              Button("Disable Developer Mode") {
-                isDeveloperModeEnabled = false
-              }
-              .foregroundColor(Color("text-tertiary"))
-            }
           }
+        }
+
+        if isDeveloperModeEnabled {
+          Button("Disable Developer Mode") {
+            isDeveloperModeEnabled = false
+          }
+          .foregroundColor(Color("text-tertiary"))
         }
       }
     }

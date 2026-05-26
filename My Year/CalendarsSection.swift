@@ -12,6 +12,7 @@ struct CalendarsSection: View {
   @State private var selectedIndex: Int = 0
   @AppStorage(AppStorageKeys.isMoodTrackingEnabled) var isMoodTrackingEnabled: Bool = false
   @AppStorage(AppStorageKeys.isRecapViewEnabled) var isRecapViewEnabled: Bool = false
+  @AppStorage(AppStorageKeys.cleanScreenshotsEnabled) private var cleanScreenshotsEnabled: Bool = false
   @ObservedObject private var timelinePreference = TimelinePreferenceManager.shared
 
   @Environment(\.router) private var router
@@ -231,33 +232,35 @@ struct CalendarsSection: View {
   var toolbar: some View {
     HStack(spacing: 12) {
       #if DEBUG
-        Button(action: {
-          onboarding.reset()
-        }) {
-          Image(systemName: "point.bottomleft.forward.to.point.topright.filled.scurvepath")
-            // .foregroundColor(Color("text-tertiary"))
-            .font(.system(size: 16))
-        }
-
-        Button(action: {
-          isTimelinePreferenceSheetPresented = true
-        }) {
-          Image(systemName: "calendar.badge.clock")
-            .font(.system(size: 16))
-        }
-        .accessibilityLabel("Show Timeline Choice Sheet")
-
-        Button(action: {
-          router.showScreen(.sheet) { _ in
-            OnboardingPaywall {
-              router.dismissScreen()
-            }
+        if !cleanScreenshotsEnabled {
+          Button(action: {
+            onboarding.reset()
+          }) {
+            Image(systemName: "point.bottomleft.forward.to.point.topright.filled.scurvepath")
+              // .foregroundColor(Color("text-tertiary"))
+              .font(.system(size: 16))
           }
-        }) {
-          Image(systemName: "dollarsign.circle")
-            .font(.system(size: 16))
+
+          Button(action: {
+            isTimelinePreferenceSheetPresented = true
+          }) {
+            Image(systemName: "calendar.badge.clock")
+              .font(.system(size: 16))
+          }
+          .accessibilityLabel("Show Timeline Choice Sheet")
+
+          Button(action: {
+            router.showScreen(.sheet) { _ in
+              OnboardingPaywall {
+                router.dismissScreen()
+              }
+            }
+          }) {
+            Image(systemName: "dollarsign.circle")
+              .font(.system(size: 16))
+          }
+          .accessibilityLabel("Show Paywall")
         }
-        .accessibilityLabel("Show Paywall")
       #endif
 
       Button(action: {

@@ -206,6 +206,11 @@ struct MilestoneCelebrationSheet: View {
                 showingSaveAlert = true
                 return
             }
+            guard let imageURL = ShareImageRenderer.writeTemporaryJPEG(from: image) else {
+                saveAlertMessage = String(localized: "Save failed.")
+                showingSaveAlert = true
+                return
+            }
             let status = await PHPhotoLibrary.requestAuthorization(for: .addOnly)
             guard status == .authorized || status == .limited else {
                 saveAlertMessage = String(localized: "Photo access denied. Enable Photos permissions in Settings.")
@@ -213,8 +218,9 @@ struct MilestoneCelebrationSheet: View {
                 return
             }
             PHPhotoLibrary.shared().performChanges({
-                PHAssetChangeRequest.creationRequestForAsset(from: image)
+                PHAssetChangeRequest.creationRequestForAssetFromImage(atFileURL: imageURL)
             }) { success, error in
+                try? FileManager.default.removeItem(at: imageURL)
                 DispatchQueue.main.async {
                     if success {
                         saveAlertMessage = String(localized: "Saved to Photos.")

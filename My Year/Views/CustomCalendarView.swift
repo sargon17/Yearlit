@@ -44,6 +44,7 @@ struct CustomCalendarView: View {
   @ObservedObject private var valuationStore: ValuationStore = .shared
 
   @AppStorage(AppStorageKeys.runtimeDebugEnabled) private var runtimeDebugEnabled: Bool = false
+  @AppStorage(AppStorageKeys.cleanScreenshotsEnabled) private var cleanScreenshotsEnabled: Bool = false
   @AppStorage(AppStorageKeys.wandFillForce) private var wandFillForce: Double = 0.5
   @AppStorage(AppStorageKeys.isDeveloperModeEnabled) private var isDeveloperModeEnabled: Bool = false
   @State private var today: Date = Calendar.current.startOfDay(for: Date())
@@ -86,6 +87,11 @@ struct CustomCalendarView: View {
   @State private var optimisticEntryOverrides: [String: OptimisticEntryOverride] = [:]
 
   private let milestoneCelebrationPolicy = MilestoneCelebrationPolicy.shared
+
+  private var shouldShowDeveloperControls: Bool {
+    !cleanScreenshotsEnabled
+      && ((My_YearApp.isDebugMode && runtimeDebugEnabled) || isDeveloperModeEnabled)
+  }
 
   @Environment(\.router) private var router
 
@@ -397,7 +403,7 @@ struct CustomCalendarView: View {
 
                 let currentDayDate = valuationStore.dateForDay(valuationStore.currentDayNumber - 1)
 
-                if (My_YearApp.isDebugMode && runtimeDebugEnabled) || isDeveloperModeEnabled {
+                if shouldShowDeveloperControls {
                   Button(action: fillRandomEntries) {
                     Image(systemName: "wand.and.stars")
                       .foregroundColor(Color(activeCalendar.color))

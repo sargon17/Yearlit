@@ -9,10 +9,16 @@ enum LegacyPersistenceKeys {
     static let dayKeyMigrationFlagKey = "swiftDataDayKeyMigrationComplete"
     static let trackingStartedAtBackfillMigrationFlagKey = "swiftDataTrackingStartedAtBackfillMigrationComplete"
     static let trackingStartedAtRepairMigrationFlagKey = "swiftDataTrackingStartedAtRepairV2Complete"
+    static let trackingStartedAtBackupKey = "swiftDataTrackingStartedAtBackupV1"
 }
 
 @available(iOS 17.0, macOS 14.0, *)
 enum LegacyDataMigrator {
+    private struct TrackingStartedAtBackup: Codable {
+        let createdAt: Date
+        let valuesByCalendarId: [String: Date]
+    }
+
     static func migrateIfNeeded(container: ModelContainer = SwiftDataManager.container) {
         guard let defaults = UserDefaults(suiteName: LegacyPersistenceKeys.appGroupId) else {
             return
@@ -229,6 +235,7 @@ enum LegacyDataMigrator {
             let calendars = try context.fetch(FetchDescriptor<HabitCalendarEntity>())
             let entries = try context.fetch(FetchDescriptor<CalendarEntryEntity>())
             let entriesByCalendarId = Dictionary(grouping: entries, by: { $0.calendarId })
+            preserveTrackingStartedAtBackupIfNeeded(defaults: defaults, calendars: calendars)
 
             for calendar in calendars {
                 let resolvedStart = earliestEntryBucketDate(
@@ -259,6 +266,7 @@ enum LegacyDataMigrator {
             let calendars = try context.fetch(FetchDescriptor<HabitCalendarEntity>())
             let entries = try context.fetch(FetchDescriptor<CalendarEntryEntity>())
             let entriesByCalendarId = Dictionary(grouping: entries, by: { $0.calendarId })
+            preserveTrackingStartedAtBackupIfNeeded(defaults: defaults, calendars: calendars)
 
             for calendar in calendars {
                 guard let earliestEntryDate = earliestEntryBucketDate(
@@ -279,6 +287,68 @@ enum LegacyDataMigrator {
         } catch {
             NSLog("Tracking started at repair failed: \(error)")
         }
+    }
+
+    static func trackingStartedAtBackup(defaults: UserDefaults) -> [UUID: Date] {
+        guard let data = defaults.data(forKey: LegacyPersistenceKeys.trackingStartedAtBackupKey),
+              let backup = try? JSONDecoder().decode(TrackingStartedAtBackup.self, from: data)
+        else {
+            return [:]
+        }
+
+        return backup.valuesByCalendarId.reduce(into: [UUID: Date]()) { partialResult, item in
+            guard let calendarId = UUID(uuidString: item.key) else { return }
+            partialResult[calendarId] = item.value
+        }
+    }
+
+    static func restoreTrackingStartedAtFromBackup(container: ModelContainer, defaults: UserDefaults) -> Bool {
+        let backup = trackingStartedAtBackup(defaults: defaults)
+        guard !backup.isEmpty else { return false }
+
+        let context = ModelContext(container)
+        context.autosaveEnabled = false
+
+        do {
+            let calendars = try context.fetch(FetchDescriptor<HabitCalendarEntity>())
+            var didChange = false
+
+            for calendar in calendars {
+                guard let backedUpStart = backup[calendar.id] else { continue }
+                let normalizedStart = LocalDayCalendar.startOfDay(for: backedUpStart)
+                if calendar.trackingStartedAt != normalizedStart {
+                    calendar.trackingStartedAt = normalizedStart
+                    didChange = true
+                }
+            }
+
+            guard didChange else { return false }
+            try context.save()
+            return true
+        } catch {
+            NSLog("Failed to restore trackingStartedAt migration backup: \(error)")
+            return false
+        }
+    }
+
+    private static func preserveTrackingStartedAtBackupIfNeeded(
+        defaults: UserDefaults,
+        calendars: [HabitCalendarEntity]
+    ) {
+        guard defaults.data(forKey: LegacyPersistenceKeys.trackingStartedAtBackupKey) == nil else { return }
+        guard !calendars.isEmpty else { return }
+
+        let valuesByCalendarId = calendars.reduce(into: [String: Date]()) { partialResult, calendar in
+            partialResult[calendar.id.uuidString] = LocalDayCalendar.startOfDay(for: calendar.trackingStartedAt)
+        }
+        let backup = TrackingStartedAtBackup(createdAt: Date(), valuesByCalendarId: valuesByCalendarId)
+
+        guard let data = try? JSONEncoder().encode(backup) else {
+            NSLog("Failed to encode trackingStartedAt migration backup")
+            return
+        }
+
+        defaults.set(data, forKey: LegacyPersistenceKeys.trackingStartedAtBackupKey)
     }
 
     private static func earliestEntryBucketDate(
