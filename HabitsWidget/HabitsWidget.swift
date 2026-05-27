@@ -373,7 +373,12 @@ struct HorizontalCalendarGrid: View {
         }
 
         if let snapshot = your365Snapshot {
-            return snapshot.cells.map(\.date)
+            switch family {
+            case .systemSmall:
+                return smallYour365Dates(today: today, snapshot: snapshot)
+            default:
+                return snapshot.cells.map(\.date)
+            }
         }
 
         switch family {
@@ -384,6 +389,21 @@ struct HorizontalCalendarGrid: View {
         default:
             return yearDates(containing: today)
         }
+    }
+
+    private func smallYour365Dates(today: Date, snapshot: Your365Snapshot) -> [Date] {
+        let cells = snapshot.cells
+        guard !cells.isEmpty else { return [] }
+
+        let normalizedToday = localCalendar.startOfDay(for: today)
+        let todayIndex =
+            cells.firstIndex { $0.date == normalizedToday }
+            ?? cells.indices.last { cells[$0].date <= normalizedToday }
+            ?? cells.startIndex
+        let endIndex = min(cells.endIndex, max(35, cells.index(after: todayIndex)))
+        let startIndex = max(cells.startIndex, endIndex - 35)
+
+        return cells[startIndex ..< endIndex].map(\.date)
     }
 
     private func yearDates(containing date: Date) -> [Date] {
