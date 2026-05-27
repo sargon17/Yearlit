@@ -14,7 +14,8 @@
     "sourcekit:refresh": "./scripts/sourcekit-build-server.sh",
     "check:swift": "bun run build:ios",
     "check": "bun run check:swift",
-    "dev": "scripts/ios-simulator.sh run"
+    "dev": "scripts/ios-simulator.sh run",
+    "dev:device": "./scripts/ios-device.sh run"
   },
   "dependencies": {
     "@ai-hero/sandcastle": "^0.5.5"
