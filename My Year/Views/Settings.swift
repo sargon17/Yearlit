@@ -15,7 +15,7 @@ struct SettingsView: View {
 
         WidgetsSettingsSection()
 
-        DailyWallpaperSettingsSection()
+        DailyWallpaperSettingsSection(customerInfo: customerInfo)
 
         HelpFeedbackSection()
 
@@ -37,6 +37,7 @@ struct SettingsView: View {
     .onAppear {
       Purchases.shared.getCustomerInfo { info, _ in
         customerInfo = info
+        AnalyticsState.shared.updatePremiumStatus(customerInfo: info)
       }
     }
   }

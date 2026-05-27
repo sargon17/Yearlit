@@ -104,6 +104,26 @@ _Avoid_: habit wallpaper, calendar wallpaper
 The iOS Shortcut automation that runs Yearlit's **Create Daily Wallpaper** action and Apple's **Set Wallpaper** action.
 _Avoid_: bg shortcut, pipeline
 
+**Daily Wallpaper settings**:
+The in-app configuration that chooses how Yearlit renders the next **Daily Wallpaper**.
+_Avoid_: Shortcut settings, automation parameters
+
+**Daily Wallpaper template**:
+A fixed visual recipe for rendering **Year Progress** inside a **Daily Wallpaper**.
+_Avoid_: habit wallpaper template, calendar wallpaper template, data source
+
+**Daily Wallpaper theme**:
+The light or dark color mode used by a **Daily Wallpaper template**.
+_Avoid_: template when only the light or dark mode changes
+
+**Daily Wallpaper accent color**:
+The color used for active **Year Progress** elements inside a **Daily Wallpaper**, such as the current-day dot and the highlighted progress number.
+_Avoid_: active color, brand color, theme color
+
+**Daily Wallpaper message**:
+A user-written line rendered by premium message-capable **Daily Wallpaper templates**.
+_Avoid_: quote, caption, reminder text
+
 ## Relationships
 
 - A **Calendar** can reach many **Milestones**.
@@ -146,6 +166,27 @@ _Avoid_: bg shortcut, pipeline
 - A **Daily Wallpaper Shortcut** produces one **Daily Wallpaper** each time it runs.
 - A **Daily Wallpaper** is applied by Shortcuts, not directly by Yearlit.
 - A **Daily Wallpaper** uses **Year Progress** data and is sized for the natural iPhone wallpaper aspect ratio.
+- **Daily Wallpaper settings** live in Yearlit, not in the **Daily Wallpaper Shortcut**.
+- The **Daily Wallpaper Shortcut** runs the same **Create Daily Wallpaper** action regardless of the selected template, theme, color, or message.
+- A **Daily Wallpaper template** changes presentation only; it does not change the **Year Progress** data shown by the **Daily Wallpaper**.
+- The Classic **Daily Wallpaper template** is free.
+- The initial premium **Daily Wallpaper templates** are Poster and Minimal.
+- Poster and Minimal support rendering a **Daily Wallpaper message**.
+- The light and dark **Daily Wallpaper themes** are free for the Classic **Daily Wallpaper template**.
+- **Daily Wallpaper theme** selection is manual; it does not automatically follow system appearance.
+- The default **Daily Wallpaper theme** is dark to preserve existing behavior.
+- Additional **Daily Wallpaper templates** and customization options may be premium.
+- A **Daily Wallpaper accent color** customizes the active progress highlight, not the whole template palette.
+- Free users use the default Yearlit orange **Daily Wallpaper accent color**.
+- Premium users can customize the **Daily Wallpaper accent color**.
+- A **Daily Wallpaper message** is only available on premium **Daily Wallpaper templates** that explicitly support rendering it.
+- The Classic **Daily Wallpaper template** does not render a **Daily Wallpaper message**.
+- A **Daily Wallpaper message** is optional, single-line, trimmed, and limited to 40 characters.
+- Empty **Daily Wallpaper message** text means no message is rendered.
+- When premium access is inactive or unknown, **Create Daily Wallpaper** renders with free defaults: Classic template, a free light or dark theme, the default Yearlit orange **Daily Wallpaper accent color**, and no **Daily Wallpaper message**.
+- Losing premium access does not delete saved premium **Daily Wallpaper settings**; those choices can apply again if premium access returns.
+- **Create Daily Wallpaper** reads cached premium status when enforcing premium **Daily Wallpaper settings**.
+- **Create Daily Wallpaper** does not block generation on a live purchase-status network request.
 
 ## Example dialogue
 

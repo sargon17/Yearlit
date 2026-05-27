@@ -1,5 +1,6 @@
 import Foundation
 import Testing
+
 @testable import My_Year
 
 struct WidgetDeepLinkAnalyticsTests {
@@ -24,18 +25,21 @@ struct WidgetDeepLinkAnalyticsTests {
   }
 
   @Test func ignoresNonWidgetSources() {
-    let url = URL(string: "my-year://calendar/123?source=share&widget_kind=habits&widget_action=open_calendar")!
+    let url = URL(
+      string: "my-year://calendar/123?source=share&widget_kind=habits&widget_action=open_calendar")!
 
     #expect(WidgetDeepLinkAnalytics.context(from: url) == nil)
   }
 
+  @MainActor
   @Test func quickAddFallbackTracksBeforeCalendarValidation() {
     let client = RecordingAnalyticsClient()
     Analytics.shared.replaceClient(client)
 
     defer { Analytics.shared.replaceClient(NoopAnalyticsClient()) }
 
-    let url = URL(string: "my-year://quick-add/not-a-uuid?source=widget&widget_kind=habits&widget_action=quick_add")!
+    let url = URL(
+      string: "my-year://quick-add/not-a-uuid?source=widget&widget_kind=habits&widget_action=quick_add")!
 
     handleWidgetQuickAddURL(url)
 

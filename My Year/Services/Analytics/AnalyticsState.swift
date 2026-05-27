@@ -48,6 +48,9 @@ final class AnalyticsState {
   func updatePremiumStatus(customerInfo: CustomerInfo?) {
     premiumStatusKnown = customerInfo != nil
     isPremiumUser = isPremium(customerInfo: customerInfo)
+    if customerInfo != nil {
+      DailyWallpaperSettingsStore.setCachedPremiumAccess(isPremiumUser, defaults: defaults)
+    }
     Analytics.shared.updatePersonProperties()
   }
 
@@ -74,17 +77,23 @@ final class AnalyticsState {
 
     return [
       "days_since_install": .int(daysSinceInstall),
-      "app_version": .string(Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "unknown"),
-      "build_number": .string(Bundle.main.object(forInfoDictionaryKey: "CFBundleVersion") as? String ?? "unknown"),
+      "app_version": .string(
+        Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "unknown"),
+      "build_number": .string(
+        Bundle.main.object(forInfoDictionaryKey: "CFBundleVersion") as? String ?? "unknown"),
       "app_locale_language": .string(Locale.current.language.languageCode?.identifier ?? "unknown"),
       "is_premium": .bool(isPremiumUser),
       "premium_status_known": .bool(premiumStatusKnown),
       "mood_tracking_enabled": .bool(defaults.bool(forKey: AppStorageKeys.isMoodTrackingEnabled)),
       "recap_view_enabled": .bool(defaults.bool(forKey: AppStorageKeys.isRecapViewEnabled)),
-      "milestone_celebrations_enabled": .bool(defaults.object(forKey: AppStorageKeys.milestoneCelebrationsEnabled) as? Bool ?? true),
-      "streak_milestone_celebrations_enabled": .bool(defaults.object(forKey: AppStorageKeys.streakMilestoneCelebrationsEnabled) as? Bool ?? true),
-      "showed_up_milestone_celebrations_enabled": .bool(defaults.object(forKey: AppStorageKeys.showedUpMilestoneCelebrationsEnabled) as? Bool ?? true),
-      "recap_milestone_celebrations_enabled": .bool(defaults.bool(forKey: AppStorageKeys.recapMilestoneCelebrationsEnabled)),
+      "milestone_celebrations_enabled": .bool(
+        defaults.object(forKey: AppStorageKeys.milestoneCelebrationsEnabled) as? Bool ?? true),
+      "streak_milestone_celebrations_enabled": .bool(
+        defaults.object(forKey: AppStorageKeys.streakMilestoneCelebrationsEnabled) as? Bool ?? true),
+      "showed_up_milestone_celebrations_enabled": .bool(
+        defaults.object(forKey: AppStorageKeys.showedUpMilestoneCelebrationsEnabled) as? Bool ?? true),
+      "recap_milestone_celebrations_enabled": .bool(
+        defaults.bool(forKey: AppStorageKeys.recapMilestoneCelebrationsEnabled)),
       "calendar_count": .int(snapshot.calendars.count),
       "active_calendar_count": .int(snapshot.activeCalendars.count),
       "archived_calendar_count": .int(snapshot.archivedCalendars.count),
