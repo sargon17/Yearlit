@@ -91,7 +91,6 @@ struct My_YearApp: App {
     config: AppConfig.wishConfiguration
   )
   @Environment(\.scenePhase) private var scenePhase
-  @State private var isOnboardingPresented = false
   @State private var isTimelinePreferenceSheetPresented = false
   @State private var hasTrackedOnboardingStarted = false
 
@@ -168,12 +167,11 @@ struct My_YearApp: App {
       }
       .environmentObject(onboarding)
       .environmentObject(featureRequest)
-      .fullScreenCover(isPresented: $isOnboardingPresented, onDismiss: {
+      .fullScreenCover(isPresented: onboardingPresentation, onDismiss: {
         updateTimelinePreferencePresentation()
       }) {
         OnboardingView {
           onboarding.markAsSeen()
-          isOnboardingPresented = false
         }
       }
       .fullScreenCover(isPresented: $isTimelinePreferenceSheetPresented) {
@@ -183,15 +181,13 @@ struct My_YearApp: App {
         }
       }
       .onAppear {
-        updateOnboardingPresentation()
         updateTimelinePreferencePresentation()
         trackOnboardingStartedIfNeeded()
       }
-      .onChange(of: onboarding.hasSeenOnboarding) { _, _ in
-        updateOnboardingPresentation()
-      }
-      .onChange(of: isOnboardingPresented) { _, isPresented in
-        if isPresented {
+      .onChange(of: onboarding.hasSeenOnboarding) { _, hasSeenOnboarding in
+        if hasSeenOnboarding {
+          updateTimelinePreferencePresentation()
+        } else {
           trackOnboardingStartedIfNeeded()
         }
       }
@@ -203,8 +199,14 @@ struct My_YearApp: App {
     }
   }
 
-  private func updateOnboardingPresentation() {
-    isOnboardingPresented = !onboarding.hasSeenOnboarding
+  private var onboardingPresentation: Binding<Bool> {
+    Binding(
+      get: { !onboarding.hasSeenOnboarding },
+      set: { isPresented in
+        guard !isPresented else { return }
+        onboarding.markAsSeen()
+      }
+    )
   }
 
   private func updateTimelinePreferencePresentation() {
@@ -212,7 +214,7 @@ struct My_YearApp: App {
   }
 
   private func trackOnboardingStartedIfNeeded() {
-    guard isOnboardingPresented, !hasTrackedOnboardingStarted else { return }
+    guard !onboarding.hasSeenOnboarding, !hasTrackedOnboardingStarted else { return }
     hasTrackedOnboardingStarted = true
     Analytics.shared.track(.onboardingStarted)
   }

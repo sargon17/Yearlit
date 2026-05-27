@@ -1,5 +1,5 @@
+import Foundation
 import SharedModels
-import SwiftUI
 
 /// Gestisce lo stato di visualizzazione dell'onboarding.
 /// Usa una chiave con versione così, se cambi onboarding, puoi forzare a rivederlo.
@@ -7,25 +7,29 @@ import SwiftUI
 final class OnboardingManager: ObservableObject {
   static let currentVersion = 1
 
-  @AppStorage(AppStorageKeys.onboardingSeenV1) private var seenV1: Bool = false
+  @Published private(set) var hasSeenOnboarding: Bool
 
-  var hasSeenOnboarding: Bool {
-    seenV1
+  private let defaults: UserDefaults
+
+  init(defaults: UserDefaults = .standard) {
+    self.defaults = defaults
+    hasSeenOnboarding = defaults.bool(forKey: AppStorageKeys.onboardingSeenV1)
   }
 
   func markAsSeen() {
-    let wasUnseen = !seenV1
-    seenV1 = true
+    let wasUnseen = !hasSeenOnboarding
+    defaults.set(true, forKey: AppStorageKeys.onboardingSeenV1)
+    hasSeenOnboarding = true
+
     guard wasUnseen else { return }
 
     Analytics.shared.track(.onboardingCompleted)
-    objectWillChange.send()
   }
 
   #if DEBUG
     func reset() {
-      seenV1 = false
-      objectWillChange.send()
+      defaults.set(false, forKey: AppStorageKeys.onboardingSeenV1)
+      hasSeenOnboarding = false
     }
   #endif
 }

@@ -10,6 +10,7 @@ struct OnboardingPaywall: View {
   @State private var isLoading = true
   @State private var isPurchasing = false
   @State private var errorMessage: String?
+  @EnvironmentObject private var onboarding: OnboardingManager
 
   private let heroTopSpacing: CGFloat = 86
 
@@ -99,7 +100,7 @@ struct OnboardingPaywall: View {
   @ViewBuilder
   private var closeButtonOverlay: some View {
     if showsCloseButton {
-      Button(action: onNext) {
+      Button(action: finishOnboarding) {
         Image(systemName: "xmark")
           .font(.system(size: 15, weight: .semibold))
           .foregroundColor(.textSecondary)
@@ -148,7 +149,7 @@ struct OnboardingPaywall: View {
         AnalyticsState.shared.updatePremiumStatus(customerInfo: result.customerInfo)
 
         if !result.userCancelled {
-          onNext()
+          finishOnboarding()
         }
       } catch {
         errorMessage = String(localized: "Purchase failed. Please try again.")
@@ -170,7 +171,7 @@ struct OnboardingPaywall: View {
         AnalyticsState.shared.updatePremiumStatus(customerInfo: customerInfo)
 
         if isPremium(customerInfo: customerInfo) {
-          onNext()
+          finishOnboarding()
         } else {
           errorMessage = String(localized: "No active subscription found.")
         }
@@ -203,6 +204,11 @@ struct OnboardingPaywall: View {
 
   private func hasFreeTrial(_ package: Package) -> Bool {
     package.storeProduct.introductoryDiscount?.paymentMode == .freeTrial
+  }
+
+  private func finishOnboarding() {
+    onboarding.markAsSeen()
+    onNext()
   }
 
   private func loadOfferings() async throws -> Offerings {
