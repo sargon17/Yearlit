@@ -1,17 +1,12 @@
 import UIKit
 
 enum DailyWallpaperMinimalTemplate {
-  static func draw(
-    size: CGSize,
-    screenScale: CGFloat,
-    progress: DailyWallpaperProgressData,
-    palette: DailyWallpaperPalette,
-    message: String?
-  ) {
-    let unit = max(1, screenScale)
-    let contentWidth = min(size.width * 0.72, 300 * unit)
-    let contentX = (size.width - contentWidth) / 2
-    let contentY = size.height * 0.38
+  static func draw(_ input: DailyWallpaperTemplateRenderInput) {
+    let unit = max(1, input.screenScale)
+    let contentWidth = min(input.size.width * 0.84, 370 * unit)
+    let contentX = (input.size.width - contentWidth) / 2
+    let contentY = input.size.height * 0.3
+    let gridHeight = min(max(input.size.height * 0.24, 215 * unit), 280 * unit)
     let layout = DailyWallpaperTemplateLayout(
       contentX: contentX,
       contentY: contentY,
@@ -19,18 +14,23 @@ enum DailyWallpaperMinimalTemplate {
       unit: unit
     )
 
-    drawLabels(layout: layout, progress: progress, palette: palette)
+    drawLabels(layout: layout, progress: input.progress, palette: input.palette)
 
-    DailyWallpaperDrawing.drawProgressBar(
+    DailyWallpaperDrawing.drawGrid(
       in: DailyWallpaperDrawing.aligned(
-        layout.rect(yOffset: 124, height: 5)
+        CGRect(x: contentX, y: contentY + (132 * unit), width: contentWidth, height: gridHeight)
       ),
-      progress: progress.percentComplete,
-      palette: palette,
-      cornerRadius: 2.5 * unit
+      unit: unit,
+      progress: input.progress,
+      palette: input.palette
     )
 
-    DailyWallpaperDrawing.drawMessageIfNeeded(message, in: size, unit: unit, palette: palette)
+    DailyWallpaperDrawing.drawMessageIfNeeded(
+      input.message,
+      in: input.size,
+      unit: unit,
+      palette: input.palette
+    )
   }
 
   private static func drawLabels(

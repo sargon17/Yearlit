@@ -1,4 +1,5 @@
 import SharedModels
+import SwiftUI
 import UIKit
 
 typealias DailyWallpaperTextAttributes = [NSAttributedString.Key: Any]
@@ -94,25 +95,69 @@ enum DailyWallpaperDrawing {
     ).fill()
   }
 
+  static func drawDivider(
+    y: CGFloat,
+    size: CGSize,
+    unit: CGFloat,
+    palette: DailyWallpaperPalette,
+    context: CGContext
+  ) {
+    palette.separatorTop.setFill()
+    context.fill(
+      aligned(
+        CGRect(x: 0, y: y, width: size.width, height: unit)
+      )
+    )
+    palette.separatorBottom.setFill()
+    context.fill(
+      aligned(
+        CGRect(x: 0, y: y + unit, width: size.width, height: unit)
+      )
+    )
+  }
+
   static func drawMessageIfNeeded(
     _ message: String?,
     in size: CGSize,
     unit: CGFloat,
-    palette: DailyWallpaperPalette
+    palette: DailyWallpaperPalette,
+    yRatio: CGFloat = 0.78
   ) {
     guard let message = DailyWallpaperSettingsStore.sanitizedMessage(message) else { return }
 
-    let rect = CGRect(
-      x: size.width * 0.14,
-      y: size.height * 0.78,
-      width: size.width * 0.72,
-      height: 28 * unit
-    )
-    drawText(
-      message,
-      in: rect,
-      attributes: textAttributes(size: 15 * unit, weight: .semibold, color: palette.secondaryText),
-      alignment: .center
+    let font = AppFont.uiFont(.mono, size: 12 * unit, weight: .regular)
+    let paragraphStyle = NSMutableParagraphStyle()
+    paragraphStyle.alignment = .center
+    paragraphStyle.lineBreakMode = .byWordWrapping
+    let attributes: DailyWallpaperTextAttributes = [
+      .font: font,
+      .foregroundColor: palette.secondaryText,
+      .paragraphStyle: paragraphStyle
+    ]
+    let width = size.width * 0.46
+    let maximumHeight = font.lineHeight * 2
+    let measuredHeight = (message as NSString)
+      .boundingRect(
+        with: CGSize(width: width, height: maximumHeight),
+        options: [.usesLineFragmentOrigin, .usesFontLeading],
+        attributes: attributes,
+        context: nil
+      )
+      .height
+    let textHeight = min(max(font.lineHeight, ceil(measuredHeight)), maximumHeight)
+    let centeredY = (size.height * yRatio) - (textHeight / 2)
+    (message as NSString).draw(
+      with: aligned(
+        CGRect(
+          x: (size.width - width) / 2,
+          y: centeredY,
+          width: width,
+          height: textHeight
+        )
+      ),
+      options: [.usesLineFragmentOrigin, .usesFontLeading],
+      attributes: attributes,
+      context: nil
     )
   }
 
@@ -133,11 +178,11 @@ enum DailyWallpaperDrawing {
 
   static func textAttributes(
     size: CGFloat,
-    weight: UIFont.Weight,
+    weight: Font.Weight,
     color: UIColor
   ) -> DailyWallpaperTextAttributes {
     [
-      .font: UIFont.monospacedSystemFont(ofSize: size, weight: weight),
+      .font: AppFont.uiFont(.mono, size: size, weight: weight),
       .foregroundColor: color
     ]
   }

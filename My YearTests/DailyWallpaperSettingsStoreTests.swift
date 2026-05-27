@@ -6,7 +6,7 @@ import Testing
 struct DailyWallpaperSettingsStoreTests {
   @Test func effectiveSettingsFallBackToFreeDefaultsWhenPremiumIsMissing() {
     let defaults = isolatedDefaults()
-    DailyWallpaperSettingsStore.saveTemplate(.poster, defaults: defaults)
+    DailyWallpaperSettingsStore.saveTemplate(.large, defaults: defaults)
     DailyWallpaperSettingsStore.saveTheme(.light, defaults: defaults)
     DailyWallpaperSettingsStore.saveAccentColorName("qs-emerald", defaults: defaults)
     DailyWallpaperSettingsStore.saveMessage("One honest day at a time", defaults: defaults)

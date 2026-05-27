@@ -36,43 +36,43 @@ struct DailyWallpaperPalette {
 
   private static func background(for theme: DailyWallpaperTheme) -> UIColor {
     switch theme {
-    case .dark: rgb(0x12, 0x12, 0x14)
-    case .light: rgb(0xF7, 0xF2, 0xEA)
+    case .dark: namedColor("surface-muted", userInterfaceStyle: .dark) ?? rgb(0x18, 0x18, 0x1B)
+    case .light: namedColor("surface-muted", userInterfaceStyle: .light) ?? rgb(0xF4, 0xF4, 0xF5)
     }
   }
 
   private static func primaryText(for theme: DailyWallpaperTheme) -> UIColor {
     switch theme {
-    case .dark: rgb(0xFA, 0xFA, 0xFA)
-    case .light: rgb(0x18, 0x18, 0x1B)
+    case .dark: namedColor("text-primary", userInterfaceStyle: .dark) ?? rgb(0xFA, 0xFA, 0xFA)
+    case .light: namedColor("text-primary", userInterfaceStyle: .light) ?? rgb(0x09, 0x09, 0x0B)
     }
   }
 
   private static func secondaryText(for theme: DailyWallpaperTheme) -> UIColor {
     switch theme {
-    case .dark: rgb(0xC2, 0xC2, 0xCA)
-    case .light: rgb(0x46, 0x43, 0x3D)
+    case .dark: namedColor("text-secondary", userInterfaceStyle: .dark) ?? rgb(0x9F, 0x9F, 0xA9)
+    case .light: namedColor("text-secondary", userInterfaceStyle: .light) ?? rgb(0x3F, 0x3F, 0x46)
     }
   }
 
   private static func tertiaryText(for theme: DailyWallpaperTheme) -> UIColor {
     switch theme {
-    case .dark: rgb(0x87, 0x87, 0x94)
-    case .light: rgb(0x82, 0x7B, 0x70)
+    case .dark: namedColor("text-tertiary", userInterfaceStyle: .dark) ?? rgb(0x52, 0x52, 0x5C)
+    case .light: namedColor("text-tertiary", userInterfaceStyle: .light) ?? rgb(0x71, 0x71, 0x7B)
     }
   }
 
   private static func separatorTop(for theme: DailyWallpaperTheme) -> UIColor {
     switch theme {
-    case .dark: rgb(0x2A, 0x2A, 0x2E)
-    case .light: rgb(0xDE, 0xD7, 0xCB)
+    case .dark: namedColor("devider-top", userInterfaceStyle: .dark) ?? rgb(0x0E, 0x0E, 0x11)
+    case .light: namedColor("devider-top", userInterfaceStyle: .light) ?? rgb(0xD4, 0xD4, 0xD8)
     }
   }
 
   private static func separatorBottom(for theme: DailyWallpaperTheme) -> UIColor {
     switch theme {
-    case .dark: rgb(0x10, 0x10, 0x12)
-    case .light: rgb(0xFF, 0xFB, 0xF3)
+    case .dark: namedColor("devider-bottom", userInterfaceStyle: .dark) ?? rgb(0x22, 0x22, 0x25)
+    case .light: namedColor("devider-bottom", userInterfaceStyle: .light) ?? rgb(0xF4, 0xF4, 0xF5)
     }
   }
 
@@ -82,6 +82,14 @@ struct DailyWallpaperPalette {
       green: CGFloat(green) / 255,
       blue: CGFloat(blue) / 255,
       alpha: 1
+    )
+  }
+
+  private static func namedColor(_ name: String, userInterfaceStyle: UIUserInterfaceStyle) -> UIColor? {
+    UIColor(
+      named: name,
+      in: .main,
+      compatibleWith: UITraitCollection(userInterfaceStyle: userInterfaceStyle)
     )
   }
 

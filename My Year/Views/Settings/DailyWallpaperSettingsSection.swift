@@ -386,7 +386,7 @@ extension DailyWallpaperTemplate {
   fileprivate var displayName: String {
     switch self {
     case .classic: "Classic"
-    case .poster: "Poster"
+    case .large: "Large Clock"
     case .minimal: "Minimal"
     }
   }
@@ -394,7 +394,7 @@ extension DailyWallpaperTemplate {
   fileprivate var systemImageName: String {
     switch self {
     case .classic: "circle.grid.3x3.fill"
-    case .poster: "rectangle.portrait.fill"
+    case .large: "rectangle.grid.1x2.fill"
     case .minimal: "minus"
     }
   }

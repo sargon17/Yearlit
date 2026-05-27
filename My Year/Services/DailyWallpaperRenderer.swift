@@ -51,24 +51,22 @@ enum DailyWallpaperRenderer {
 
     palette.background.setFill()
     context.fill(CGRect(origin: .zero, size: size))
+    let input = DailyWallpaperTemplateRenderInput(
+      context: context,
+      size: size,
+      screenScale: screenScale,
+      progress: progress,
+      palette: palette,
+      message: settings.message
+    )
 
     switch settings.template {
     case .classic:
-      DailyWallpaperClassicTemplate.draw(
-        in: context,
-        size: size,
-        screenScale: screenScale,
-        progress: progress,
-        palette: palette
-      )
-    case .poster:
-      DailyWallpaperPosterTemplate.draw(
-        size: size, screenScale: screenScale, progress: progress, palette: palette,
-        message: settings.message)
+      DailyWallpaperClassicTemplate.draw(input)
+    case .large:
+      DailyWallpaperLargeTemplate.draw(input)
     case .minimal:
-      DailyWallpaperMinimalTemplate.draw(
-        size: size, screenScale: screenScale, progress: progress, palette: palette,
-        message: settings.message)
+      DailyWallpaperMinimalTemplate.draw(input)
     }
   }
 }

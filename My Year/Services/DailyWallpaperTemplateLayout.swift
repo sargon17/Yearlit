@@ -15,3 +15,12 @@ struct DailyWallpaperTemplateLayout {
     )
   }
 }
+
+struct DailyWallpaperTemplateRenderInput {
+  let context: CGContext
+  let size: CGSize
+  let screenScale: CGFloat
+  let progress: DailyWallpaperProgressData
+  let palette: DailyWallpaperPalette
+  let message: String?
+}

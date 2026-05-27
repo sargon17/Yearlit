@@ -1,22 +1,24 @@
 import UIKit
 
-enum DailyWallpaperClassicTemplate {
+enum DailyWallpaperLargeTemplate {
   static func draw(_ input: DailyWallpaperTemplateRenderInput) {
     let unit = max(1, input.screenScale)
     let contentWidth = min(input.size.width * 0.84, 370 * unit)
     let contentX = (input.size.width - contentWidth) / 2
-    let headerHeight: CGFloat = 24 * unit
-    let separatorTop = headerHeight + (16 * unit)
+    let separatorTop = (24 * unit) + (16 * unit)
     let gridTop = separatorTop + (22 * unit)
-    let contentY = input.size.height * 0.28
+    let bottomSeparatorY = input.size.height * 0.83
+    let minimumGridHeight = 144 * unit
+    let contentY = min(
+      input.size.height * 0.52 + (72 * unit),
+      bottomSeparatorY - gridTop - minimumGridHeight - (16 * unit)
+    )
     let gridY = contentY + gridTop
-    let maxGridBottom = input.size.height * 0.81
-    let maxGridHeight = max(215 * unit, maxGridBottom - gridY)
-    let gridHeight = min(max(input.size.height * 0.49, 410 * unit), maxGridHeight)
+    let gridHeight = max(minimumGridHeight, bottomSeparatorY - gridY - (16 * unit))
 
     DailyWallpaperDrawing.drawHeader(
       in: DailyWallpaperDrawing.aligned(
-        CGRect(x: contentX, y: contentY, width: contentWidth, height: headerHeight)
+        CGRect(x: contentX, y: contentY, width: contentWidth, height: 24 * unit)
       ),
       unit: unit,
       progress: input.progress,
@@ -40,13 +42,20 @@ enum DailyWallpaperClassicTemplate {
       palette: input.palette
     )
 
-    let bottomSeparatorY = min(gridY + gridHeight + (16 * unit), input.size.height * 0.83)
     DailyWallpaperDrawing.drawDivider(
       y: bottomSeparatorY,
       size: input.size,
       unit: unit,
       palette: input.palette,
       context: input.context
+    )
+
+    DailyWallpaperDrawing.drawMessageIfNeeded(
+      input.message,
+      in: input.size,
+      unit: unit,
+      palette: input.palette,
+      yRatio: 0.902
     )
   }
 }

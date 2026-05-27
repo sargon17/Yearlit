@@ -170,8 +170,8 @@ _Avoid_: quote, caption, reminder text
 - The **Daily Wallpaper Shortcut** runs the same **Create Daily Wallpaper** action regardless of the selected template, theme, color, or message.
 - A **Daily Wallpaper template** changes presentation only; it does not change the **Year Progress** data shown by the **Daily Wallpaper**.
 - The Classic **Daily Wallpaper template** is free.
-- The initial premium **Daily Wallpaper templates** are Poster and Minimal.
-- Poster and Minimal support rendering a **Daily Wallpaper message**.
+- The initial premium **Daily Wallpaper templates** are Large Clock and Minimal.
+- Large Clock and Minimal support rendering a **Daily Wallpaper message**.
 - The light and dark **Daily Wallpaper themes** are free for the Classic **Daily Wallpaper template**.
 - **Daily Wallpaper theme** selection is manual; it does not automatically follow system appearance.
 - The default **Daily Wallpaper theme** is dark to preserve existing behavior.
@@ -180,7 +180,7 @@ _Avoid_: quote, caption, reminder text
 - Free users use the default Yearlit orange **Daily Wallpaper accent color**.
 - Premium users can customize the **Daily Wallpaper accent color**.
 - A **Daily Wallpaper message** is only available on premium **Daily Wallpaper templates** that explicitly support rendering it.
-- The Classic **Daily Wallpaper template** does not render a **Daily Wallpaper message**.
+- The Classic **Daily Wallpaper template** is the default full-grid wallpaper and does not render a **Daily Wallpaper message**.
 - A **Daily Wallpaper message** is optional, single-line, trimmed, and limited to 40 characters.
 - Empty **Daily Wallpaper message** text means no message is rendered.
 - When premium access is inactive or unknown, **Create Daily Wallpaper** renders with free defaults: Classic template, a free light or dark theme, the default Yearlit orange **Daily Wallpaper accent color**, and no **Daily Wallpaper message**.
