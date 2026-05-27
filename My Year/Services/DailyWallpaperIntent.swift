@@ -4,7 +4,7 @@ import UniformTypeIdentifiers
 
 struct CreateDailyWallpaperIntent: AppIntent {
   static var title: LocalizedStringResource = "Create Daily Wallpaper"
-  static var description = IntentDescription("Creates a dark Yearlit year progress wallpaper for Shortcuts.")
+  static var description = IntentDescription("Creates a Yearlit year progress wallpaper for Shortcuts.")
   static var openAppWhenRun = false
 
   @MainActor

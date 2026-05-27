@@ -7,7 +7,12 @@ enum DailyWallpaperMinimalTemplate {
     let progressBarY = metrics.minimalProgressBarY()
     let layout = metrics.minimalLayout(progressBarY: progressBarY)
 
-    drawLabels(layout: layout, progress: input.progress, palette: input.palette)
+    drawLabels(
+      layout: layout,
+      progress: input.progress,
+      localizedText: input.localizedText,
+      palette: input.palette
+    )
 
     DailyWallpaperDrawing.drawProgressBar(
       in: DailyWallpaperDrawing.aligned(
@@ -43,6 +48,7 @@ enum DailyWallpaperMinimalTemplate {
   private static func drawLabels(
     layout: DailyWallpaperTemplateLayout,
     progress: DailyWallpaperProgressData,
+    localizedText: DailyWallpaperLocalizedText,
     palette: DailyWallpaperPalette
   ) {
     DailyWallpaperDrawing.drawText(
@@ -57,7 +63,7 @@ enum DailyWallpaperMinimalTemplate {
     )
 
     DailyWallpaperDrawing.drawText(
-      "\(progress.daysLeft) left",
+      localizedText.compactDaysLeft,
       in: layout.rect(yOffset: 0, height: 32),
       attributes: DailyWallpaperDrawing.textAttributes(
         size: 18 * layout.unit,

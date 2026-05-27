@@ -19,6 +19,7 @@ enum DailyWallpaperLargeTemplate {
       ),
       unit: unit,
       progress: input.progress,
+      localizedText: input.localizedText,
       palette: input.palette
     )
 

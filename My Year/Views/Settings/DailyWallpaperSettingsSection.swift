@@ -223,7 +223,7 @@ private struct DailyWallpaperSetupView: View {
         selectTemplate(template)
       } label: {
         WallpaperOptionRow(
-          title: template.displayName,
+          title: template.localizedDisplayName,
           iconName: template.systemImageName,
           isSelected: selectedTemplate == template,
           isLocked: template.isPremium && !isPremiumUser
@@ -254,7 +254,7 @@ private struct DailyWallpaperSetupView: View {
 }
 
 private struct WallpaperOptionRow: View {
-  let title: String
+  let title: LocalizedStringKey
   let iconName: String
   let isSelected: Bool
   let isLocked: Bool
@@ -356,8 +356,8 @@ private struct DailyWallpaperPreview: View {
 
 private struct SetupStepRow: View {
   let number: Int
-  let title: String
-  let subtitle: String
+  let title: LocalizedStringKey
+  let subtitle: LocalizedStringKey
 
   var body: some View {
     HStack(alignment: .top, spacing: 12) {
@@ -382,8 +382,18 @@ private struct SetupStepRow: View {
   }
 }
 
+extension DailyWallpaperTemplate {
+  fileprivate var localizedDisplayName: LocalizedStringKey {
+    switch self {
+    case .classic: "Classic"
+    case .largeClock: "Large Clock"
+    case .minimal: "Minimal"
+    }
+  }
+}
+
 extension DailyWallpaperTheme {
-  fileprivate var displayName: String {
+  fileprivate var displayName: LocalizedStringKey {
     switch self {
     case .dark: "Dark"
     case .light: "Light"
