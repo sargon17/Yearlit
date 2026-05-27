@@ -126,10 +126,7 @@ struct NotificationSettingsSheet: View {
 extension NotificationSettingsSheet {
     private func showPremiumPaywall() {
         router.showScreen(.sheet) { _ in
-            PaywallView(displayCloseButton: true)
-                .onAppear {
-                    Analytics.shared.trackPaywallViewed(trigger: .notificationGate)
-                }
+            PremiumPaywallSheet(displayCloseButton: true, trigger: .notificationGate)
         }
     }
 

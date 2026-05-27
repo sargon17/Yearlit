@@ -3,15 +3,20 @@ import SwiftUI
 
 struct OnboardingStepContainer<Top: View, Content: View, Actions: View>: View {
   let overlayHeight: CGFloat
+  let actionsBottomPadding: CGFloat
   @ViewBuilder let top: () -> Top
   @ViewBuilder let content: () -> Content
   @ViewBuilder let actions: () -> Actions
 
   init(
-    overlayHeight: CGFloat = 0.6, @ViewBuilder top: @escaping () -> Top, @ViewBuilder content: @escaping () -> Content,
+    overlayHeight: CGFloat = 0.6,
+    actionsBottomPadding: CGFloat = 16,
+    @ViewBuilder top: @escaping () -> Top,
+    @ViewBuilder content: @escaping () -> Content,
     @ViewBuilder actions: @escaping () -> Actions
   ) {
     self.overlayHeight = overlayHeight
+    self.actionsBottomPadding = actionsBottomPadding
     self.top = top
     self.content = content
     self.actions = actions
@@ -47,7 +52,7 @@ struct OnboardingStepContainer<Top: View, Content: View, Actions: View>: View {
             content()
               .padding(.top)
             actions()
-              .padding(.bottom)
+              .padding(.bottom, actionsBottomPadding)
           }
           .padding(.horizontal)
           .padding(.bottom)

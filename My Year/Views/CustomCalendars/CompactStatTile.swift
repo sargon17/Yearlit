@@ -53,10 +53,7 @@ struct CompactStatTile: View {
     .onTapGesture {
       if isLocked {
         router.showScreen(.sheet) { _ in
-          PaywallView()
-            .onAppear {
-              Analytics.shared.trackPaywallViewed(trigger: .statsGate)
-            }
+          PremiumPaywallSheet(trigger: .statsGate)
         }
 
         Task {

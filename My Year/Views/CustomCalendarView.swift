@@ -626,10 +626,7 @@ struct CustomCalendarView: View {
       .presentationDetents([.height(280)])
     }
     .sheet(isPresented: $isPaywallPresented) {
-      PaywallView()
-        .onAppear {
-          Analytics.shared.trackPaywallViewed(trigger: .statsGate)
-        }
+      PremiumPaywallSheet(trigger: .statsGate)
     }
     .alert(item: $calendarError) { error in
       Alert(

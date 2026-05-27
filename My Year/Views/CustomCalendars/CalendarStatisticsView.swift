@@ -185,10 +185,7 @@ struct CalendarStatisticsView: View {
             guard !isPremium else { return }
 
             router.showScreen(.sheet) { _ in
-              PaywallView()
-                .onAppear {
-                  Analytics.shared.trackPaywallViewed(trigger: .statsGate)
-                }
+              PremiumPaywallSheet(trigger: .statsGate)
             }
 
             Task {
@@ -207,10 +204,7 @@ struct CalendarStatisticsView: View {
             guard !isPremium else { return }
 
             router.showScreen(.sheet) { _ in
-              PaywallView()
-                .onAppear {
-                  Analytics.shared.trackPaywallViewed(trigger: .statsGate)
-                }
+              PremiumPaywallSheet(trigger: .statsGate)
             }
 
             Task {
@@ -238,10 +232,7 @@ struct CalendarStatisticsView: View {
               guard !isPremium else { return }
 
               router.showScreen(.sheet) { _ in
-                PaywallView()
-                  .onAppear {
-                    Analytics.shared.trackPaywallViewed(trigger: .statsGate)
-                  }
+                PremiumPaywallSheet(trigger: .statsGate)
               }
 
               Task {
@@ -261,10 +252,7 @@ struct CalendarStatisticsView: View {
             guard !isPremium else { return }
 
             router.showScreen(.sheet) { _ in
-              PaywallView()
-                .onAppear {
-                  Analytics.shared.trackPaywallViewed(trigger: .statsGate)
-                }
+              PremiumPaywallSheet(trigger: .statsGate)
             }
 
             Task {
@@ -312,10 +300,7 @@ struct CalendarStatisticsView: View {
           guard !isPremium else { return }
 
           router.showScreen(.sheet) { _ in
-            PaywallView()
-              .onAppear {
-                Analytics.shared.trackPaywallViewed(trigger: .statsGate)
-              }
+            PremiumPaywallSheet(trigger: .statsGate)
           }
 
           Task {

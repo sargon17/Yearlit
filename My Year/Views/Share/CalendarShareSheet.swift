@@ -129,10 +129,7 @@ struct CalendarShareSheet: View {
             Text(saveAlertMessage)
         }
         .sheet(isPresented: $isPaywallPresented) {
-            PaywallView()
-                .onAppear {
-                    Analytics.shared.trackPaywallViewed(trigger: .shareGate)
-                }
+            PremiumPaywallSheet(trigger: .shareGate)
         }
     }
 

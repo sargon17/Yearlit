@@ -17,7 +17,7 @@ struct OnboardingHabitCatalogTests {
         let calendar = OnboardingFirstCalendarFactory.makeCalendar(title: "Read 2 pages", today: today)
 
         #expect(calendar.name == "Read 2 pages")
-        #expect(calendar.color == "qs-amber")
+        #expect(calendar.color == "qs-orange")
         #expect(calendar.cadence == .daily)
         #expect(calendar.trackingType == .binary)
         #expect(calendar.dailyTarget == 1)

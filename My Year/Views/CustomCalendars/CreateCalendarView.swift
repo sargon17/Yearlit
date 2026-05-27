@@ -134,10 +134,7 @@ struct CreateCalendarView: View {
   func handleCreateCalendar() -> Bool {
     if !userCanCreateCalendar() {
       router.showScreen(.sheet) { _ in
-        PaywallView(displayCloseButton: true)
-          .onAppear {
-            Analytics.shared.trackPaywallViewed(trigger: .calendarLimit)
-          }
+        PremiumPaywallSheet(displayCloseButton: true, trigger: .calendarLimit)
       }
       return false
     } else {

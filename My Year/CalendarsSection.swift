@@ -251,7 +251,7 @@ struct CalendarsSection: View {
 
           Button(action: {
             router.showScreen(.sheet) { _ in
-              OnboardingPaywall {
+              OnboardingPaywall(isPresentedAsSheet: true) {
                 router.dismissScreen()
               }
             }

@@ -245,10 +245,7 @@ private struct DailyWallpaperSetupView: View {
 
   private func showPremiumPaywall() {
     router.showScreen(.sheet) { _ in
-      PaywallView(displayCloseButton: true)
-        .onAppear {
-          Analytics.shared.trackPaywallViewed(trigger: .settingsSupport)
-        }
+      PremiumPaywallSheet(displayCloseButton: true, trigger: .settingsSupport)
     }
   }
 }

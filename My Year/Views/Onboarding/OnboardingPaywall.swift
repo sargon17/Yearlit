@@ -3,6 +3,7 @@ import SwiftUI
 
 struct OnboardingPaywall: View {
   let showsCloseButton: Bool
+  let isPresentedAsSheet: Bool
   let onNext: () -> Void
 
   @State private var packages: [Package] = []
@@ -18,17 +19,19 @@ struct OnboardingPaywall: View {
     packages.first { $0.identifier == selectedPackageID } ?? preferredPackage(in: packages)
   }
 
-  init(showsCloseButton: Bool = true, onNext: @escaping () -> Void) {
+  init(showsCloseButton: Bool = true, isPresentedAsSheet: Bool = false, onNext: @escaping () -> Void) {
     self.showsCloseButton = showsCloseButton
+    self.isPresentedAsSheet = isPresentedAsSheet
     self.onNext = onNext
   }
 
   var body: some View {
-    OnboardingStepContainer(overlayHeight: 0.9) {
+    OnboardingStepContainer(overlayHeight: 0.9, actionsBottomPadding: isPresentedAsSheet ? 4 : 16) {
       GeometryReader { proxy in
         ScrollView {
           PaywallHeroContent()
             .padding(.top, proxy.safeAreaInsets.top + heroTopSpacing)
+            .padding(.horizontal)
             .padding(.bottom, 40)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -249,11 +252,13 @@ private struct PaywallHeroContent: View {
   var body: some View {
     VStack(alignment: .leading) {
       OnboardingView.Title("Build your year with Pro.", lineLimit: 3)
+        .frame(maxWidth: .infinity, alignment: .leading)
 
       VStack(alignment: .leading, spacing: 4) {
         OnboardingView.Caption("Keep your habits visible with widgets, unlimited")
         OnboardingView.Caption("tracking, and tools built for consistency.")
       }
+      .frame(maxWidth: .infinity, alignment: .leading)
 
       VStack(alignment: .leading, spacing: 22) {
         PaywallFeatureRow(title: "Deeper stats", subtitle: "see patterns over time")
@@ -263,6 +268,7 @@ private struct PaywallHeroContent: View {
       }
       .padding(.top, 34)
     }
+    .frame(maxWidth: .infinity, alignment: .leading)
   }
 }
 
@@ -275,11 +281,20 @@ private struct PaywallFeatureRow: View {
       Text(title)
         .font(AppFont.pixelCircle(24))
         .foregroundStyle(Color.brand)
+        .lineLimit(2)
+        .minimumScaleFactor(0.75)
+        .multilineTextAlignment(.leading)
+        .frame(maxWidth: .infinity, alignment: .leading)
 
       Text(subtitle)
         .font(AppFont.sans(18))
         .foregroundStyle(.textSecondary.opacity(0.5))
+        .lineLimit(3)
+        .minimumScaleFactor(0.85)
+        .multilineTextAlignment(.leading)
+        .frame(maxWidth: .infinity, alignment: .leading)
     }
+    .frame(maxWidth: .infinity, alignment: .leading)
   }
 }
 
@@ -438,16 +453,31 @@ private struct PaywallFooterLinks: View {
   let onRestore: () -> Void
 
   var body: some View {
-    HStack(spacing: 18) {
-      Button("Restore purchases", action: onRestore)
-      Link("Terms", destination: URL(string: "https://tymofyeyev.com/yearlit/terms")!)
-      Link("Privacy", destination: URL(string: "https://tymofyeyev.com/yearlit/privacy-policy")!)
+    HStack(spacing: 14) {
+      Button(action: onRestore) {
+        footerLabel("Restore purchases")
+      }
+
+      Link(destination: URL(string: "https://tymofyeyev.com/yearlit/terms")!) {
+        footerLabel("Terms")
+      }
+
+      Link(destination: URL(string: "https://tymofyeyev.com/yearlit/privacy-policy")!) {
+        footerLabel("Privacy")
+      }
     }
-    .font(AppFont.sans(12))
     .foregroundStyle(.textSecondary)
-    .lineLimit(1)
-    .minimumScaleFactor(0.75)
     .frame(maxWidth: .infinity)
+    .padding(.top, 8)
+  }
+
+  private func footerLabel(_ title: LocalizedStringKey) -> some View {
+    Text(title)
+      .font(AppFont.sans(12))
+      .lineLimit(1)
+      .minimumScaleFactor(0.75)
+      .frame(minHeight: 44)
+      .contentShape(Rectangle())
   }
 }
 

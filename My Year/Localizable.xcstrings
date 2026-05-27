@@ -76438,7 +76438,7 @@
         "da": {
           "stringUnit": {
             "state": "translated",
-            "value": "Læs 1 side"
+            "value": "Læse 1 side"
           }
         },
         "de": {
@@ -76462,13 +76462,13 @@
         "et": {
           "stringUnit": {
             "state": "translated",
-            "value": "Loe 1 lehekülg"
+            "value": "1 lehekülje lugemine"
           }
         },
         "fi": {
           "stringUnit": {
             "state": "translated",
-            "value": "Lue 1 sivu"
+            "value": "1 sivun lukeminen"
           }
         },
         "fr": {
@@ -76480,43 +76480,43 @@
         "hr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Pročitaj 1 stranicu"
+            "value": "Pročitati 1 stranicu"
           }
         },
         "hu": {
           "stringUnit": {
             "state": "translated",
-            "value": "Olvass el 1 oldalt"
+            "value": "1 oldal elolvasása"
           }
         },
         "it": {
           "stringUnit": {
             "state": "translated",
-            "value": "Leggi 1 pagina"
+            "value": "Leggere 1 pagina"
           }
         },
         "lv": {
           "stringUnit": {
             "state": "translated",
-            "value": "Lasīt 1 lappusi"
+            "value": "Lasīt 1 lapu"
           }
         },
         "nb": {
           "stringUnit": {
             "state": "translated",
-            "value": "Les 1 side"
+            "value": "Lese 1 side"
           }
         },
         "nl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Lees 1 pagina"
+            "value": "1 pagina lezen"
           }
         },
         "pl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Przeczytaj 1 stronę"
+            "value": "Przeczytanie 1 strony"
           }
         },
         "pt-BR": {
@@ -76528,7 +76528,7 @@
         "ro": {
           "stringUnit": {
             "state": "translated",
-            "value": "Citește 1 pagină"
+            "value": "Citit 1 pagină"
           }
         },
         "sk": {
@@ -76540,13 +76540,13 @@
         "sl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Preberite 1 stran"
+            "value": "Prebrati 1 stran"
           }
         },
         "sv": {
           "stringUnit": {
             "state": "translated",
-            "value": "Läs 1 sida"
+            "value": "Läsa 1 sida"
           }
         },
         "uk": {
@@ -76574,7 +76574,7 @@
         "da": {
           "stringUnit": {
             "state": "translated",
-            "value": "Læs i 5 minutter"
+            "value": "Læse i 5 minutter"
           }
         },
         "de": {
@@ -76598,61 +76598,61 @@
         "et": {
           "stringUnit": {
             "state": "translated",
-            "value": "Loe 5 minutit"
+            "value": "5 minutit lugemist"
           }
         },
         "fi": {
           "stringUnit": {
             "state": "translated",
-            "value": "Lue 5 minuuttia"
+            "value": "5 minuutin lukeminen"
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Lisez pendant 5 minutes"
+            "value": "Lire pendant 5 minutes"
           }
         },
         "hr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Čitaj 5 minuta"
+            "value": "Čitati 5 minuta"
           }
         },
         "hu": {
           "stringUnit": {
             "state": "translated",
-            "value": "Olvass 5 percig"
+            "value": "5 perc olvasás"
           }
         },
         "it": {
           "stringUnit": {
             "state": "translated",
-            "value": "Leggi per 5 minuti"
+            "value": "Leggere per 5 minuti"
           }
         },
         "lv": {
           "stringUnit": {
             "state": "translated",
-            "value": "Lasiet 5 minūtes"
+            "value": "Lasīt 5 minūtes"
           }
         },
         "nb": {
           "stringUnit": {
             "state": "translated",
-            "value": "Les i 5 minutter"
+            "value": "Lese i 5 minutter"
           }
         },
         "nl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Lees 5 minuten"
+            "value": "5 minuten lezen"
           }
         },
         "pl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Czytaj przez 5 minut"
+            "value": "Czytanie przez 5 minut"
           }
         },
         "pt-BR": {
@@ -76664,7 +76664,7 @@
         "ro": {
           "stringUnit": {
             "state": "translated",
-            "value": "Citește 5 minute"
+            "value": "Citit 5 minute"
           }
         },
         "sk": {
@@ -76676,13 +76676,13 @@
         "sl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Berite 5 minut"
+            "value": "Brati 5 minut"
           }
         },
         "sv": {
           "stringUnit": {
             "state": "translated",
-            "value": "Läs i 5 minuter"
+            "value": "Läsa i 5 minuter"
           }
         },
         "uk": {
@@ -76710,7 +76710,7 @@
         "da": {
           "stringUnit": {
             "state": "translated",
-            "value": "Åbn en bog"
+            "value": "Åbne en bog"
           }
         },
         "de": {
@@ -76734,13 +76734,13 @@
         "et": {
           "stringUnit": {
             "state": "translated",
-            "value": "Ava raamat"
+            "value": "Raamatu avamine"
           }
         },
         "fi": {
           "stringUnit": {
             "state": "translated",
-            "value": "Avaa kirja"
+            "value": "Kirjan avaaminen"
           }
         },
         "fr": {
@@ -76752,25 +76752,25 @@
         "hr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Otvori knjigu"
+            "value": "Otvoriti knjigu"
           }
         },
         "hu": {
           "stringUnit": {
             "state": "translated",
-            "value": "Nyiss ki egy könyvet"
+            "value": "Könyv kinyitása"
           }
         },
         "it": {
           "stringUnit": {
             "state": "translated",
-            "value": "Apri un libro"
+            "value": "Aprire un libro"
           }
         },
         "lv": {
           "stringUnit": {
             "state": "translated",
-            "value": "Atveriet grāmatu"
+            "value": "Atvērt grāmatu"
           }
         },
         "nb": {
@@ -76782,13 +76782,13 @@
         "nl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Open een boek"
+            "value": "Een boek openen"
           }
         },
         "pl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Otwórz książkę"
+            "value": "Otwarcie książki"
           }
         },
         "pt-BR": {
@@ -76800,7 +76800,7 @@
         "ro": {
           "stringUnit": {
             "state": "translated",
-            "value": "Deschide o carte"
+            "value": "Deschis o carte"
           }
         },
         "sk": {
@@ -76812,7 +76812,7 @@
         "sl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Odprite knjigo"
+            "value": "Odpreti knjigo"
           }
         },
         "sv": {
@@ -76846,7 +76846,7 @@
         "da": {
           "stringUnit": {
             "state": "translated",
-            "value": "Bevæg dig i 5 minutter"
+            "value": "Bevæge sig i 5 minutter"
           }
         },
         "de": {
@@ -76858,73 +76858,73 @@
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Moverte 5 minutos"
+            "value": "Moverse 5 minutos"
           }
         },
         "es-MX": {
           "stringUnit": {
             "state": "translated",
-            "value": "Moverte 5 minutos"
+            "value": "Moverse 5 minutos"
           }
         },
         "et": {
           "stringUnit": {
             "state": "translated",
-            "value": "Liigu 5 minutit"
+            "value": "5 minutit liikumist"
           }
         },
         "fi": {
           "stringUnit": {
             "state": "translated",
-            "value": "Liiku 5 minuuttia"
+            "value": "5 minuutin liikkuminen"
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Bougez pendant 5 minutes"
+            "value": "Bouger pendant 5 minutes"
           }
         },
         "hr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Kreći se 5 minuta"
+            "value": "Kretati se 5 minuta"
           }
         },
         "hu": {
           "stringUnit": {
             "state": "translated",
-            "value": "Mozogj 5 percig"
+            "value": "5 perc mozgás"
           }
         },
         "it": {
           "stringUnit": {
             "state": "translated",
-            "value": "Muoviti per 5 minuti"
+            "value": "Muoversi per 5 minuti"
           }
         },
         "lv": {
           "stringUnit": {
             "state": "translated",
-            "value": "Pārvietojieties 5 minūtes"
+            "value": "Kustēties 5 minūtes"
           }
         },
         "nb": {
           "stringUnit": {
             "state": "translated",
-            "value": "Beveg deg i 5 minutter"
+            "value": "Bevege seg i 5 minutter"
           }
         },
         "nl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Beweeg gedurende 5 minuten"
+            "value": "5 minuten bewegen"
           }
         },
         "pl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Poruszaj się przez 5 minut"
+            "value": "Ruch przez 5 minut"
           }
         },
         "pt-BR": {
@@ -76936,7 +76936,7 @@
         "ro": {
           "stringUnit": {
             "state": "translated",
-            "value": "Mișcă-te 5 minute"
+            "value": "Mișcare 5 minute"
           }
         },
         "sk": {
@@ -76948,13 +76948,13 @@
         "sl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Gibajte se 5 minut"
+            "value": "Gibati se 5 minut"
           }
         },
         "sv": {
           "stringUnit": {
             "state": "translated",
-            "value": "Rör på dig i 5 minuter"
+            "value": "Röra på sig i 5 minuter"
           }
         },
         "uk": {
@@ -76982,7 +76982,7 @@
         "da": {
           "stringUnit": {
             "state": "translated",
-            "value": "Stræk ud i 5 minutter"
+            "value": "Strække ud i 5 minutter"
           }
         },
         "de": {
@@ -77000,67 +77000,67 @@
         "es-MX": {
           "stringUnit": {
             "state": "translated",
-            "value": "Estirarte 5 minutos"
+            "value": "Estirarse 5 minutos"
           }
         },
         "et": {
           "stringUnit": {
             "state": "translated",
-            "value": "Venita 5 minutit"
+            "value": "5 minutit venitamist"
           }
         },
         "fi": {
           "stringUnit": {
             "state": "translated",
-            "value": "Venytele 5 minuuttia"
+            "value": "5 minuutin venyttely"
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Étirez-vous pendant 5 minutes"
+            "value": "S’étirer pendant 5 minutes"
           }
         },
         "hr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Isteži se 5 minuta"
+            "value": "Istezati se 5 minuta"
           }
         },
         "hu": {
           "stringUnit": {
             "state": "translated",
-            "value": "Nyújts 5 percig"
+            "value": "5 perc nyújtás"
           }
         },
         "it": {
           "stringUnit": {
             "state": "translated",
-            "value": "Fai stretching per 5 minuti"
+            "value": "Fare stretching per 5 minuti"
           }
         },
         "lv": {
           "stringUnit": {
             "state": "translated",
-            "value": "Izstiepiet 5 minūtes"
+            "value": "Stiepties 5 minūtes"
           }
         },
         "nb": {
           "stringUnit": {
             "state": "translated",
-            "value": "Tøy i 5 minutter"
+            "value": "Tøye i 5 minutter"
           }
         },
         "nl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Rek gedurende 5 minuten"
+            "value": "5 minuten rekken"
           }
         },
         "pl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Rozciągaj się przez 5 minut"
+            "value": "Rozciąganie przez 5 minut"
           }
         },
         "pt-BR": {
@@ -77072,7 +77072,7 @@
         "ro": {
           "stringUnit": {
             "state": "translated",
-            "value": "Fă stretching 5 minute"
+            "value": "Stretching 5 minute"
           }
         },
         "sk": {
@@ -77084,7 +77084,7 @@
         "sl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Raztegnite se 5 minut"
+            "value": "Raztezanje 5 minut"
           }
         },
         "sv": {
@@ -77118,7 +77118,7 @@
         "da": {
           "stringUnit": {
             "state": "translated",
-            "value": "Lav 1 sæt med kropsvægt"
+            "value": "Lave 1 sæt med kropsvægt"
           }
         },
         "de": {
@@ -77130,73 +77130,73 @@
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Hacer 1 serie con tu peso corporal"
+            "value": "Hacer 1 serie con peso corporal"
           }
         },
         "es-MX": {
           "stringUnit": {
             "state": "translated",
-            "value": "Hacer 1 serie con tu peso corporal"
+            "value": "Hacer 1 serie con peso corporal"
           }
         },
         "et": {
           "stringUnit": {
             "state": "translated",
-            "value": "Tee 1 oma keharaskusega seeria"
+            "value": "1 keharaskusega seeria"
           }
         },
         "fi": {
           "stringUnit": {
             "state": "translated",
-            "value": "Tee 1 kehonpainosarja"
+            "value": "1 kehonpainosarja"
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Faites 1 série de poids corporel"
+            "value": "Faire 1 série au poids du corps"
           }
         },
         "hr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Napravi 1 seriju vježbi s vlastitom težinom"
+            "value": "Napraviti 1 seriju s vlastitom težinom"
           }
         },
         "hu": {
           "stringUnit": {
             "state": "translated",
-            "value": "Csinálj 1 saját testsúlyos sorozatot"
+            "value": "1 saját testsúlyos sorozat"
           }
         },
         "it": {
           "stringUnit": {
             "state": "translated",
-            "value": "Fai 1 serie a corpo libero"
+            "value": "Fare 1 serie a corpo libero"
           }
         },
         "lv": {
           "stringUnit": {
             "state": "translated",
-            "value": "Veiciet 1 ķermeņa svara komplektu"
+            "value": "1 vingrojumu sērija ar savu svaru"
           }
         },
         "nb": {
           "stringUnit": {
             "state": "translated",
-            "value": "Gjør 1 sett med kroppsvekt"
+            "value": "Gjøre 1 sett med kroppsvekt"
           }
         },
         "nl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Doe 1 lichaamsgewichtset"
+            "value": "1 set met lichaamsgewicht doen"
           }
         },
         "pl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Wykonaj 1 serię z ciężarem ciała"
+            "value": "1 seria z ciężarem ciała"
           }
         },
         "pt-BR": {
@@ -77208,7 +77208,7 @@
         "ro": {
           "stringUnit": {
             "state": "translated",
-            "value": "Fă 1 serie cu greutatea corpului"
+            "value": "1 serie cu greutatea corpului"
           }
         },
         "sk": {
@@ -77220,13 +77220,13 @@
         "sl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Naredi 1 serijo z lastno težo"
+            "value": "Narediti 1 serijo z lastno težo"
           }
         },
         "sv": {
           "stringUnit": {
             "state": "translated",
-            "value": "Gör 1 set med kroppsvikt"
+            "value": "Göra 1 set med kroppsvikt"
           }
         },
         "uk": {
@@ -77254,7 +77254,7 @@
         "da": {
           "stringUnit": {
             "state": "translated",
-            "value": "Skriv 3 linjer"
+            "value": "Skrive 3 linjer"
           }
         },
         "de": {
@@ -77278,37 +77278,37 @@
         "et": {
           "stringUnit": {
             "state": "translated",
-            "value": "Kirjuta 3 rida"
+            "value": "3 rea kirjutamine"
           }
         },
         "fi": {
           "stringUnit": {
             "state": "translated",
-            "value": "Kirjoita 3 riviä"
+            "value": "3 rivin kirjoittaminen"
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Écrivez 3 lignes"
+            "value": "Écrire 3 lignes"
           }
         },
         "hr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Napiši 3 retka"
+            "value": "Napisati 3 retka"
           }
         },
         "hu": {
           "stringUnit": {
             "state": "translated",
-            "value": "Írj 3 sort"
+            "value": "3 sor írása"
           }
         },
         "it": {
           "stringUnit": {
             "state": "translated",
-            "value": "Scrivi 3 righe"
+            "value": "Scrivere 3 righe"
           }
         },
         "lv": {
@@ -77320,19 +77320,19 @@
         "nb": {
           "stringUnit": {
             "state": "translated",
-            "value": "Skriv 3 linjer"
+            "value": "Skrive 3 linjer"
           }
         },
         "nl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Schrijf 3 regels"
+            "value": "3 regels schrijven"
           }
         },
         "pl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Napisz 3 linie"
+            "value": "Napisanie 3 linijek"
           }
         },
         "pt-BR": {
@@ -77344,7 +77344,7 @@
         "ro": {
           "stringUnit": {
             "state": "translated",
-            "value": "Scrie 3 rânduri"
+            "value": "Scris 3 rânduri"
           }
         },
         "sk": {
@@ -77356,13 +77356,13 @@
         "sl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Napišite 3 vrstice"
+            "value": "Napisati 3 vrstice"
           }
         },
         "sv": {
           "stringUnit": {
             "state": "translated",
-            "value": "Skriv 3 rader"
+            "value": "Skriva 3 rader"
           }
         },
         "uk": {
@@ -77390,7 +77390,7 @@
         "da": {
           "stringUnit": {
             "state": "translated",
-            "value": "Skriv i 5 minutter"
+            "value": "Skrive i 5 minutter"
           }
         },
         "de": {
@@ -77414,37 +77414,37 @@
         "et": {
           "stringUnit": {
             "state": "translated",
-            "value": "Kirjuta 5 minutit"
+            "value": "5 minutit kirjutamist"
           }
         },
         "fi": {
           "stringUnit": {
             "state": "translated",
-            "value": "Kirjoita 5 minuuttia"
+            "value": "5 minuutin kirjoittaminen"
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Écrivez pendant 5 minutes"
+            "value": "Écrire pendant 5 minutes"
           }
         },
         "hr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Piši 5 minuta"
+            "value": "Pisati 5 minuta"
           }
         },
         "hu": {
           "stringUnit": {
             "state": "translated",
-            "value": "Írj 5 percig"
+            "value": "5 perc írás"
           }
         },
         "it": {
           "stringUnit": {
             "state": "translated",
-            "value": "Scrivi per 5 minuti"
+            "value": "Scrivere per 5 minuti"
           }
         },
         "lv": {
@@ -77456,19 +77456,19 @@
         "nb": {
           "stringUnit": {
             "state": "translated",
-            "value": "Skriv i 5 minutter"
+            "value": "Skrive i 5 minutter"
           }
         },
         "nl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Schrijf 5 minuten"
+            "value": "5 minuten schrijven"
           }
         },
         "pl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Pisz przez 5 minut"
+            "value": "Pisanie przez 5 minut"
           }
         },
         "pt-BR": {
@@ -77480,25 +77480,25 @@
         "ro": {
           "stringUnit": {
             "state": "translated",
-            "value": "Scrie 5 minute"
+            "value": "Scris 5 minute"
           }
         },
         "sk": {
           "stringUnit": {
             "state": "translated",
-            "value": "Píšte 5 minút"
+            "value": "Písať 5 minút"
           }
         },
         "sl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Pišite 5 minut"
+            "value": "Pisati 5 minut"
           }
         },
         "sv": {
           "stringUnit": {
             "state": "translated",
-            "value": "Skriv i 5 minuter"
+            "value": "Skriva i 5 minuter"
           }
         },
         "uk": {
@@ -77526,7 +77526,7 @@
         "da": {
           "stringUnit": {
             "state": "translated",
-            "value": "Åbn en notesbog"
+            "value": "Åbne en notesbog"
           }
         },
         "de": {
@@ -77550,43 +77550,43 @@
         "et": {
           "stringUnit": {
             "state": "translated",
-            "value": "Ava märkmik"
+            "value": "Märkmiku avamine"
           }
         },
         "fi": {
           "stringUnit": {
             "state": "translated",
-            "value": "Avaa muistikirja"
+            "value": "Muistikirjan avaaminen"
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Ouvrir un bloc-notes"
+            "value": "Ouvrir un carnet"
           }
         },
         "hr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Otvori bilježnicu"
+            "value": "Otvoriti bilježnicu"
           }
         },
         "hu": {
           "stringUnit": {
             "state": "translated",
-            "value": "Nyiss ki egy jegyzetfüzetet"
+            "value": "Jegyzetfüzet kinyitása"
           }
         },
         "it": {
           "stringUnit": {
             "state": "translated",
-            "value": "Apri un quaderno"
+            "value": "Aprire un quaderno"
           }
         },
         "lv": {
           "stringUnit": {
             "state": "translated",
-            "value": "Atveriet piezīmju grāmatiņu"
+            "value": "Atvērt piezīmju grāmatu"
           }
         },
         "nb": {
@@ -77598,13 +77598,13 @@
         "nl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Open een notitieboekje"
+            "value": "Een notitieboek openen"
           }
         },
         "pl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Otwórz notatnik"
+            "value": "Otwarcie notatnika"
           }
         },
         "pt-BR": {
@@ -77616,7 +77616,7 @@
         "ro": {
           "stringUnit": {
             "state": "translated",
-            "value": "Deschide un caiet"
+            "value": "Deschis un caiet"
           }
         },
         "sk": {
@@ -77628,7 +77628,7 @@
         "sl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Odprite zvezek"
+            "value": "Odpreti zvezek"
           }
         },
         "sv": {
@@ -77662,13 +77662,13 @@
         "da": {
           "stringUnit": {
             "state": "translated",
-            "value": "Mediter i 2 minutter"
+            "value": "Meditere i 2 minutter"
           }
         },
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "Meditiere 2 Minuten lang"
+            "value": "2 Minuten meditieren"
           }
         },
         "es": {
@@ -77686,61 +77686,61 @@
         "et": {
           "stringUnit": {
             "state": "translated",
-            "value": "Mediteeri 2 minutit"
+            "value": "2 minutit meditatsiooni"
           }
         },
         "fi": {
           "stringUnit": {
             "state": "translated",
-            "value": "Meditoi 2 minuuttia"
+            "value": "2 minuutin meditointi"
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Méditez pendant 2 minutes"
+            "value": "Méditer pendant 2 minutes"
           }
         },
         "hr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Meditiraj 2 minute"
+            "value": "Meditirati 2 minute"
           }
         },
         "hu": {
           "stringUnit": {
             "state": "translated",
-            "value": "Meditálj 2 percig"
+            "value": "2 perc meditáció"
           }
         },
         "it": {
           "stringUnit": {
             "state": "translated",
-            "value": "Medita per 2 minuti"
+            "value": "Meditare per 2 minuti"
           }
         },
         "lv": {
           "stringUnit": {
             "state": "translated",
-            "value": "Meditējiet 2 minūtes"
+            "value": "Meditēt 2 minūtes"
           }
         },
         "nb": {
           "stringUnit": {
             "state": "translated",
-            "value": "Mediter i 2 minutter"
+            "value": "Meditere i 2 minutter"
           }
         },
         "nl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Mediteer 2 minuten"
+            "value": "2 minuten mediteren"
           }
         },
         "pl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Medytuj przez 2 minuty"
+            "value": "Medytacja przez 2 minuty"
           }
         },
         "pt-BR": {
@@ -77752,19 +77752,19 @@
         "ro": {
           "stringUnit": {
             "state": "translated",
-            "value": "Meditează 2 minute"
+            "value": "Meditație 2 minute"
           }
         },
         "sk": {
           "stringUnit": {
             "state": "translated",
-            "value": "Meditujte 2 minúty"
+            "value": "Meditovať 2 minúty"
           }
         },
         "sl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Meditirajte 2 minuti"
+            "value": "Meditirati 2 minuti"
           }
         },
         "sv": {
@@ -77798,13 +77798,13 @@
         "da": {
           "stringUnit": {
             "state": "translated",
-            "value": "Tag 5 dybe vejrtrækninger"
+            "value": "Tage 5 dybe vejrtrækninger"
           }
         },
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "Atme 5 Mal tief durch"
+            "value": "5-mal tief atmen"
           }
         },
         "es": {
@@ -77822,43 +77822,43 @@
         "et": {
           "stringUnit": {
             "state": "translated",
-            "value": "Hinga 5 korda sügavalt"
+            "value": "5 sügavat hingetõmmet"
           }
         },
         "fi": {
           "stringUnit": {
             "state": "translated",
-            "value": "Hengitä 5 kertaa syvään"
+            "value": "5 syvää hengitystä"
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Prenez 5 respirations profondes"
+            "value": "Prendre 5 respirations profondes"
           }
         },
         "hr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Udahni duboko 5 puta"
+            "value": "Udahnuti duboko 5 puta"
           }
         },
         "hu": {
           "stringUnit": {
             "state": "translated",
-            "value": "Vegyél 5 mély levegőt"
+            "value": "5 mély levegő"
           }
         },
         "it": {
           "stringUnit": {
             "state": "translated",
-            "value": "Fai 5 respiri profondi"
+            "value": "Fare 5 respiri profondi"
           }
         },
         "lv": {
           "stringUnit": {
             "state": "translated",
-            "value": "Veiciet 5 dziļas elpas"
+            "value": "5 dziļas ieelpas"
           }
         },
         "nb": {
@@ -77870,13 +77870,13 @@
         "nl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Haal 5 keer diep adem"
+            "value": "5 keer diep ademhalen"
           }
         },
         "pl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Weź 5 głębokich oddechów"
+            "value": "5 głębokich oddechów"
           }
         },
         "pt-BR": {
@@ -77888,7 +77888,7 @@
         "ro": {
           "stringUnit": {
             "state": "translated",
-            "value": "Respiră adânc de 5 ori"
+            "value": "5 respirații adânci"
           }
         },
         "sk": {
@@ -77900,7 +77900,7 @@
         "sl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Petkrat globoko vdihnite"
+            "value": "5 globokih vdihov"
           }
         },
         "sv": {
@@ -77934,7 +77934,7 @@
         "da": {
           "stringUnit": {
             "state": "translated",
-            "value": "Sid stille i 2 minutter"
+            "value": "Sidde stille i 2 minutter"
           }
         },
         "de": {
@@ -77946,73 +77946,73 @@
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Sentarte en silencio 2 minutos"
+            "value": "Sentarse en silencio 2 minutos"
           }
         },
         "es-MX": {
           "stringUnit": {
             "state": "translated",
-            "value": "Sentarte en silencio 2 minutos"
+            "value": "Sentarse en silencio 2 minutos"
           }
         },
         "et": {
           "stringUnit": {
             "state": "translated",
-            "value": "Istu 2 minutit vaikselt"
+            "value": "2 minutit vaikselt istumist"
           }
         },
         "fi": {
           "stringUnit": {
             "state": "translated",
-            "value": "Istu hiljaa 2 minuuttia"
+            "value": "2 minuuttia hiljaa istumista"
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Asseyez-vous tranquillement pendant 2 minutes"
+            "value": "Rester assis en silence pendant 2 minutes"
           }
         },
         "hr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Sjedi u tišini 2 minute"
+            "value": "Sjediti u tišini 2 minute"
           }
         },
         "hu": {
           "stringUnit": {
             "state": "translated",
-            "value": "Ülj csendben 2 percig"
+            "value": "2 perc csendes ülés"
           }
         },
         "it": {
           "stringUnit": {
             "state": "translated",
-            "value": "Siediti in silenzio per 2 minuti"
+            "value": "Stare in silenzio per 2 minuti"
           }
         },
         "lv": {
           "stringUnit": {
             "state": "translated",
-            "value": "Sēdiet mierīgi 2 minūtes"
+            "value": "Sēdēt mierā 2 minūtes"
           }
         },
         "nb": {
           "stringUnit": {
             "state": "translated",
-            "value": "Sitt stille i 2 minutter"
+            "value": "Sitte stille i 2 minutter"
           }
         },
         "nl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Ga 2 minuten rustig zitten"
+            "value": "2 minuten stil zitten"
           }
         },
         "pl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Usiądź spokojnie przez 2 minuty"
+            "value": "Siedzenie w ciszy przez 2 minuty"
           }
         },
         "pt-BR": {
@@ -78024,25 +78024,25 @@
         "ro": {
           "stringUnit": {
             "state": "translated",
-            "value": "Stai în liniște 2 minute"
+            "value": "Stat în liniște 2 minute"
           }
         },
         "sk": {
           "stringUnit": {
             "state": "translated",
-            "value": "Pokojne seďte 2 minúty"
+            "value": "Sedieť 2 minúty v tichu"
           }
         },
         "sl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Tiho sedite 2 minuti"
+            "value": "Sedeti v tišini 2 minuti"
           }
         },
         "sv": {
           "stringUnit": {
             "state": "translated",
-            "value": "Sitt tyst i 2 minuter"
+            "value": "Sitta tyst i 2 minuter"
           }
         },
         "uk": {
@@ -78070,7 +78070,7 @@
         "da": {
           "stringUnit": {
             "state": "translated",
-            "value": "Lær i 5 minutter"
+            "value": "Lære i 5 minutter"
           }
         },
         "de": {
@@ -78094,37 +78094,37 @@
         "et": {
           "stringUnit": {
             "state": "translated",
-            "value": "Õpi 5 minutit"
+            "value": "5 minutit õppimist"
           }
         },
         "fi": {
           "stringUnit": {
             "state": "translated",
-            "value": "Opiskele 5 minuuttia"
+            "value": "5 minuutin opiskelu"
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Apprenez pendant 5 minutes"
+            "value": "Apprendre pendant 5 minutes"
           }
         },
         "hr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Uči 5 minuta"
+            "value": "Učiti 5 minuta"
           }
         },
         "hu": {
           "stringUnit": {
             "state": "translated",
-            "value": "Tanulj 5 percig"
+            "value": "5 perc tanulás"
           }
         },
         "it": {
           "stringUnit": {
             "state": "translated",
-            "value": "Impara per 5 minuti"
+            "value": "Imparare per 5 minuti"
           }
         },
         "lv": {
@@ -78136,19 +78136,19 @@
         "nb": {
           "stringUnit": {
             "state": "translated",
-            "value": "Lær i 5 minutter"
+            "value": "Lære i 5 minutter"
           }
         },
         "nl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Leer 5 minuten"
+            "value": "5 minuten leren"
           }
         },
         "pl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Ucz się przez 5 minut"
+            "value": "Nauka przez 5 minut"
           }
         },
         "pt-BR": {
@@ -78160,25 +78160,25 @@
         "ro": {
           "stringUnit": {
             "state": "translated",
-            "value": "Învață 5 minute"
+            "value": "Învățat 5 minute"
           }
         },
         "sk": {
           "stringUnit": {
             "state": "translated",
-            "value": "Učte sa 5 minút"
+            "value": "Učiť sa 5 minút"
           }
         },
         "sl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Učite se 5 minut"
+            "value": "Učiti se 5 minut"
           }
         },
         "sv": {
           "stringUnit": {
             "state": "translated",
-            "value": "Lär dig i 5 minuter"
+            "value": "Lära sig i 5 minuter"
           }
         },
         "uk": {
@@ -78230,13 +78230,13 @@
         "et": {
           "stringUnit": {
             "state": "translated",
-            "value": "Vaata 1 lühike õppetund"
+            "value": "1 lühike õppetund"
           }
         },
         "fi": {
           "stringUnit": {
             "state": "translated",
-            "value": "Katso 1 lyhyt oppitunti"
+            "value": "1 lyhyt oppitunti"
           }
         },
         "fr": {
@@ -78248,25 +78248,25 @@
         "hr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Pogledaj 1 kratku lekciju"
+            "value": "Pogledati 1 kratku lekciju"
           }
         },
         "hu": {
           "stringUnit": {
             "state": "translated",
-            "value": "Nézz meg 1 rövid leckét"
+            "value": "1 rövid lecke megnézése"
           }
         },
         "it": {
           "stringUnit": {
             "state": "translated",
-            "value": "Guarda 1 breve lezione"
+            "value": "Guardare 1 breve lezione"
           }
         },
         "lv": {
           "stringUnit": {
             "state": "translated",
-            "value": "Noskatieties 1 īsu nodarbību"
+            "value": "Noskatīties 1 īsu nodarbību"
           }
         },
         "nb": {
@@ -78278,13 +78278,13 @@
         "nl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Bekijk 1 korte les"
+            "value": "1 korte les bekijken"
           }
         },
         "pl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Obejrzyj 1 krótką lekcję"
+            "value": "Obejrzenie 1 krótkiej lekcji"
           }
         },
         "pt-BR": {
@@ -78296,19 +78296,19 @@
         "ro": {
           "stringUnit": {
             "state": "translated",
-            "value": "Urmărește o lecție scurtă"
+            "value": "O lecție scurtă"
           }
         },
         "sk": {
           "stringUnit": {
             "state": "translated",
-            "value": "Pozrite si 1 krátku lekciu"
+            "value": "Pozrieť si 1 krátku lekciu"
           }
         },
         "sl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Oglejte si 1 kratko lekcijo"
+            "value": "Ogledati si 1 kratko lekcijo"
           }
         },
         "sv": {
@@ -78342,121 +78342,121 @@
         "da": {
           "stringUnit": {
             "state": "translated",
-            "value": "Skriv 1 ting, du lærte"
+            "value": "Skrive 1 ny ting"
           }
         },
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "1 Sache aufschreiben, die du gelernt hast"
+            "value": "1 gelernte Sache aufschreiben"
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Escribir 1 cosa que has aprendido"
+            "value": "Escribir 1 cosa aprendida"
           }
         },
         "es-MX": {
           "stringUnit": {
             "state": "translated",
-            "value": "Escribir 1 cosa que aprendiste"
+            "value": "Escribir 1 cosa aprendida"
           }
         },
         "et": {
           "stringUnit": {
             "state": "translated",
-            "value": "Kirjuta 1 asi, mida õppisid"
+            "value": "1 õpitud asja kirjutamine"
           }
         },
         "fi": {
           "stringUnit": {
             "state": "translated",
-            "value": "Kirjoita 1 asia, jonka opit"
+            "value": "1 opitun asian kirjoittaminen"
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Écrivez 1 chose que vous avez apprise"
+            "value": "Écrire 1 chose apprise"
           }
         },
         "hr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Napiši 1 stvar koju si naučio"
+            "value": "Zapisati 1 novu stvar"
           }
         },
         "hu": {
           "stringUnit": {
             "state": "translated",
-            "value": "Írj le 1 dolgot, amit megtanultál"
+            "value": "1 tanult dolog leírása"
           }
         },
         "it": {
           "stringUnit": {
             "state": "translated",
-            "value": "Scrivi 1 cosa che hai imparato"
+            "value": "Scrivere 1 cosa imparata"
           }
         },
         "lv": {
           "stringUnit": {
             "state": "translated",
-            "value": "Uzraksti 1 lietu, ko esi iemācījies"
+            "value": "Uzrakstīt 1 jaunu lietu"
           }
         },
         "nb": {
           "stringUnit": {
             "state": "translated",
-            "value": "Skriv 1 ting du lærte"
+            "value": "Skrive 1 ny ting"
           }
         },
         "nl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Schrijf 1 ding op dat je hebt geleerd"
+            "value": "1 geleerd ding opschrijven"
           }
         },
         "pl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Napisz 1 rzecz, której się nauczyłeś"
+            "value": "Zapisanie 1 rzeczy z nauki"
           }
         },
         "pt-BR": {
           "stringUnit": {
             "state": "translated",
-            "value": "Escrever 1 coisa que aprendeu"
+            "value": "Escrever 1 coisa aprendida"
           }
         },
         "ro": {
           "stringUnit": {
             "state": "translated",
-            "value": "Scrie un lucru pe care l-ai învățat"
+            "value": "Un lucru învățat"
           }
         },
         "sk": {
           "stringUnit": {
             "state": "translated",
-            "value": "Napíšte 1 vec, ktorú ste sa naučili"
+            "value": "Zapísať 1 novú vec"
           }
         },
         "sl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Napiši 1 stvar, ki si se je naučil"
+            "value": "Zapisati 1 novo stvar"
           }
         },
         "sv": {
           "stringUnit": {
             "state": "translated",
-            "value": "Skriv 1 sak du lärde dig"
+            "value": "Skriva 1 ny sak"
           }
         },
         "uk": {
           "stringUnit": {
             "state": "translated",
-            "value": "Записати 1 річ, яку вивчив(-ла)"
+            "value": "Записати 1 нову річ"
           }
         }
       }
@@ -78478,7 +78478,7 @@
         "da": {
           "stringUnit": {
             "state": "translated",
-            "value": "Læg 5 $ til side"
+            "value": "Lægge 5 $ til side"
           }
         },
         "de": {
@@ -78502,61 +78502,61 @@
         "et": {
           "stringUnit": {
             "state": "translated",
-            "value": "Pane kõrvale 5 $"
+            "value": "5 $ kõrvale panemine"
           }
         },
         "fi": {
           "stringUnit": {
             "state": "translated",
-            "value": "Laita 5 $ sivuun"
+            "value": "5 $ sivuun"
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Mettez de côté 5 $"
+            "value": "Mettre 5 $ de côté"
           }
         },
         "hr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Odvoji 5 $"
+            "value": "Odvojiti 5 $"
           }
         },
         "hu": {
           "stringUnit": {
             "state": "translated",
-            "value": "Tegyél félre 5 dollárt"
+            "value": "5 dollár félretétele"
           }
         },
         "it": {
           "stringUnit": {
             "state": "translated",
-            "value": "Metti da parte 5 $"
+            "value": "Mettere da parte 5 $"
           }
         },
         "lv": {
           "stringUnit": {
             "state": "translated",
-            "value": "Atlieciet 5 $"
+            "value": "Atlikt 5 $"
           }
         },
         "nb": {
           "stringUnit": {
             "state": "translated",
-            "value": "Sett av $5"
+            "value": "Sette av $5"
           }
         },
         "nl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Reserveer $ 5"
+            "value": "$ 5 opzijzetten"
           }
         },
         "pl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Odłóż 5 dolarów"
+            "value": "Odłożenie 5 dolarów"
           }
         },
         "pt-BR": {
@@ -78568,7 +78568,7 @@
         "ro": {
           "stringUnit": {
             "state": "translated",
-            "value": "Pune deoparte 5 USD"
+            "value": "5 USD puși deoparte"
           }
         },
         "sk": {
@@ -78580,13 +78580,13 @@
         "sl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Odložite 5 $"
+            "value": "Dati na stran 5 $"
           }
         },
         "sv": {
           "stringUnit": {
             "state": "translated",
-            "value": "Lägg undan 5 $"
+            "value": "Lägga undan 5 $"
           }
         },
         "uk": {
@@ -78614,7 +78614,7 @@
         "da": {
           "stringUnit": {
             "state": "translated",
-            "value": "Tjek dit forbrug i 2 minutter"
+            "value": "Tjekke forbrug i 2 minutter"
           }
         },
         "de": {
@@ -78632,67 +78632,67 @@
         "es-MX": {
           "stringUnit": {
             "state": "translated",
-            "value": "Revisar tus gastos 2 minutos"
+            "value": "Revisar gastos 2 minutos"
           }
         },
         "et": {
           "stringUnit": {
             "state": "translated",
-            "value": "Vaata 2 minutit kulusid üle"
+            "value": "Kulude ülevaatus 2 minutit"
           }
         },
         "fi": {
           "stringUnit": {
             "state": "translated",
-            "value": "Tarkista menot 2 minuutin ajan"
+            "value": "Menojen tarkistus 2 minuuttia"
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Vérifiez vos dépenses pendant 2 minutes"
+            "value": "Vérifier ses dépenses pendant 2 minutes"
           }
         },
         "hr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Provjeri potrošnju 2 minute"
+            "value": "Provjeriti potrošnju 2 minute"
           }
         },
         "hu": {
           "stringUnit": {
             "state": "translated",
-            "value": "Nézd át a költéseidet 2 percig"
+            "value": "Költések átnézése 2 percig"
           }
         },
         "it": {
           "stringUnit": {
             "state": "translated",
-            "value": "Controlla le spese per 2 minuti"
+            "value": "Controllare le spese per 2 minuti"
           }
         },
         "lv": {
           "stringUnit": {
             "state": "translated",
-            "value": "2 minūtes pārbaudīt tēriņus"
+            "value": "Pārbaudīt tēriņus 2 minūtes"
           }
         },
         "nb": {
           "stringUnit": {
             "state": "translated",
-            "value": "Sjekk forbruket i 2 minutter"
+            "value": "Sjekke forbruket i 2 minutter"
           }
         },
         "nl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Controleer de uitgaven gedurende 2 minuten"
+            "value": "2 minuten uitgaven checken"
           }
         },
         "pl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Sprawdzaj wydatki przez 2 minuty"
+            "value": "Sprawdzenie wydatków przez 2 minuty"
           }
         },
         "pt-BR": {
@@ -78704,7 +78704,7 @@
         "ro": {
           "stringUnit": {
             "state": "translated",
-            "value": "Verifică cheltuielile 2 minute"
+            "value": "Verificat cheltuieli 2 minute"
           }
         },
         "sk": {
@@ -78716,7 +78716,7 @@
         "sl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Preverite porabo za 2 minuti"
+            "value": "Preveriti porabo 2 minuti"
           }
         },
         "sv": {
@@ -78774,37 +78774,37 @@
         "et": {
           "stringUnit": {
             "state": "translated",
-            "value": "Vaata üle 1 kulu"
+            "value": "1 kulu ülevaatus"
           }
         },
         "fi": {
           "stringUnit": {
             "state": "translated",
-            "value": "Tarkista 1 meno"
+            "value": "1 menon tarkistus"
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Examiner 1 dépense"
+            "value": "Revoir 1 dépense"
           }
         },
         "hr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Pregledaj 1 trošak"
+            "value": "Pregledati 1 trošak"
           }
         },
         "hu": {
           "stringUnit": {
             "state": "translated",
-            "value": "Nézz át 1 kiadást"
+            "value": "1 kiadás átnézése"
           }
         },
         "it": {
           "stringUnit": {
             "state": "translated",
-            "value": "Rivedi 1 spesa"
+            "value": "Rivedere 1 spesa"
           }
         },
         "lv": {
@@ -78822,13 +78822,13 @@
         "nl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Bekijk 1 uitgave"
+            "value": "1 uitgave bekijken"
           }
         },
         "pl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Przejrzyj 1 wydatek"
+            "value": "Przejrzenie 1 wydatku"
           }
         },
         "pt-BR": {
@@ -78840,7 +78840,7 @@
         "ro": {
           "stringUnit": {
             "state": "translated",
-            "value": "Revizuiește 1 cheltuială"
+            "value": "O cheltuială revizuită"
           }
         },
         "sk": {
@@ -78852,7 +78852,7 @@
         "sl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Preglej 1 strošek"
+            "value": "Pregledati 1 strošek"
           }
         },
         "sv": {
@@ -78886,13 +78886,13 @@
         "da": {
           "stringUnit": {
             "state": "translated",
-            "value": "Skab i 5 minutter"
+            "value": "Skabe i 5 minutter"
           }
         },
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "5 Minuten lang erstellen"
+            "value": "5 Minuten kreativ sein"
           }
         },
         "es": {
@@ -78910,13 +78910,13 @@
         "et": {
           "stringUnit": {
             "state": "translated",
-            "value": "Loo 5 minutit"
+            "value": "5 minutit loomist"
           }
         },
         "fi": {
           "stringUnit": {
             "state": "translated",
-            "value": "Luo 5 minuuttia"
+            "value": "5 minuutin luominen"
           }
         },
         "fr": {
@@ -78928,19 +78928,19 @@
         "hr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Stvaraj 5 minuta"
+            "value": "Stvarati 5 minuta"
           }
         },
         "hu": {
           "stringUnit": {
             "state": "translated",
-            "value": "Alkoss 5 percig"
+            "value": "5 perc alkotás"
           }
         },
         "it": {
           "stringUnit": {
             "state": "translated",
-            "value": "Crea per 5 minuti"
+            "value": "Creare per 5 minuti"
           }
         },
         "lv": {
@@ -78952,19 +78952,19 @@
         "nb": {
           "stringUnit": {
             "state": "translated",
-            "value": "Skap noe i 5 minutter"
+            "value": "Skape noe i 5 minutter"
           }
         },
         "nl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Creëer gedurende 5 minuten"
+            "value": "5 minuten creëren"
           }
         },
         "pl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Twórz przez 5 minut"
+            "value": "Tworzenie przez 5 minut"
           }
         },
         "pt-BR": {
@@ -78976,7 +78976,7 @@
         "ro": {
           "stringUnit": {
             "state": "translated",
-            "value": "Creează 5 minute"
+            "value": "Creat 5 minute"
           }
         },
         "sk": {
@@ -78988,7 +78988,7 @@
         "sl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Ustvarjajte 5 minut"
+            "value": "Ustvarjati 5 minut"
           }
         },
         "sv": {
@@ -79022,7 +79022,7 @@
         "da": {
           "stringUnit": {
             "state": "translated",
-            "value": "Skriv 1 idé"
+            "value": "Skrive 1 idé"
           }
         },
         "de": {
@@ -79046,61 +79046,61 @@
         "et": {
           "stringUnit": {
             "state": "translated",
-            "value": "Kirjuta 1 idee"
+            "value": "1 idee kirjutamine"
           }
         },
         "fi": {
           "stringUnit": {
             "state": "translated",
-            "value": "Kirjoita 1 idea"
+            "value": "1 idean kirjoittaminen"
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Écrivez 1 idée"
+            "value": "Écrire 1 idée"
           }
         },
         "hr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Napiši 1 ideju"
+            "value": "Napisati 1 ideju"
           }
         },
         "hu": {
           "stringUnit": {
             "state": "translated",
-            "value": "Írj le 1 ötletet"
+            "value": "1 ötlet leírása"
           }
         },
         "it": {
           "stringUnit": {
             "state": "translated",
-            "value": "Scrivi 1 idea"
+            "value": "Scrivere 1 idea"
           }
         },
         "lv": {
           "stringUnit": {
             "state": "translated",
-            "value": "Uzraksti 1 ideju"
+            "value": "Uzrakstīt 1 ideju"
           }
         },
         "nb": {
           "stringUnit": {
             "state": "translated",
-            "value": "Skriv 1 idé"
+            "value": "Skrive 1 idé"
           }
         },
         "nl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Schrijf 1 idee"
+            "value": "1 idee opschrijven"
           }
         },
         "pl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Napisz 1 pomysł"
+            "value": "Zapisanie 1 pomysłu"
           }
         },
         "pt-BR": {
@@ -79112,25 +79112,25 @@
         "ro": {
           "stringUnit": {
             "state": "translated",
-            "value": "Scrie o idee"
+            "value": "O idee scrisă"
           }
         },
         "sk": {
           "stringUnit": {
             "state": "translated",
-            "value": "Napíšte 1 nápad"
+            "value": "Napísať 1 nápad"
           }
         },
         "sl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Napišite 1 idejo"
+            "value": "Napisati 1 idejo"
           }
         },
         "sv": {
           "stringUnit": {
             "state": "translated",
-            "value": "Skriv 1 idé"
+            "value": "Skriva 1 idé"
           }
         },
         "uk": {
@@ -79158,7 +79158,7 @@
         "da": {
           "stringUnit": {
             "state": "translated",
-            "value": "Åbn dit projekt"
+            "value": "Åbne et projekt"
           }
         },
         "de": {
@@ -79170,103 +79170,103 @@
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Abrir tu proyecto"
+            "value": "Abrir un proyecto"
           }
         },
         "es-MX": {
           "stringUnit": {
             "state": "translated",
-            "value": "Abrir tu proyecto"
+            "value": "Abrir un proyecto"
           }
         },
         "et": {
           "stringUnit": {
             "state": "translated",
-            "value": "Ava oma projekt"
+            "value": "Projekti avamine"
           }
         },
         "fi": {
           "stringUnit": {
             "state": "translated",
-            "value": "Avaa oma projekti"
+            "value": "Oman projektin avaaminen"
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Ouvrez votre projet"
+            "value": "Ouvrir un projet"
           }
         },
         "hr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Otvori svoj projekt"
+            "value": "Otvoriti projekt"
           }
         },
         "hu": {
           "stringUnit": {
             "state": "translated",
-            "value": "Nyisd meg a projektedet"
+            "value": "Projekt megnyitása"
           }
         },
         "it": {
           "stringUnit": {
             "state": "translated",
-            "value": "Apri il tuo progetto"
+            "value": "Aprire un progetto"
           }
         },
         "lv": {
           "stringUnit": {
             "state": "translated",
-            "value": "Atveriet savu projektu"
+            "value": "Atvērt savu projektu"
           }
         },
         "nb": {
           "stringUnit": {
             "state": "translated",
-            "value": "Åpne prosjektet ditt"
+            "value": "Åpne et prosjekt"
           }
         },
         "nl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Open je project"
+            "value": "Een project openen"
           }
         },
         "pl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Otwórz swój projekt"
+            "value": "Otwarcie swojego projektu"
           }
         },
         "pt-BR": {
           "stringUnit": {
             "state": "translated",
-            "value": "Abrir seu projeto"
+            "value": "Abrir um projeto"
           }
         },
         "ro": {
           "stringUnit": {
             "state": "translated",
-            "value": "Deschide proiectul"
+            "value": "Proiect deschis"
           }
         },
         "sk": {
           "stringUnit": {
             "state": "translated",
-            "value": "Otvoriť svoj projekt"
+            "value": "Otvoriť projekt"
           }
         },
         "sl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Odpri svoj projekt"
+            "value": "Odpreti projekt"
           }
         },
         "sv": {
           "stringUnit": {
             "state": "translated",
-            "value": "Öppna ditt projekt"
+            "value": "Öppna ett projekt"
           }
         },
         "uk": {
@@ -79294,19 +79294,19 @@
         "da": {
           "stringUnit": {
             "state": "translated",
-            "value": "Vågn 10 minutter tidligere"
+            "value": "Vågne 10 minutter tidligere"
           }
         },
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "10 Minuten früher aufstehen"
+            "value": "10 Minuten früher aufwachen"
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Despertarte 10 minutos antes"
+            "value": "Despertar 10 minutos antes"
           }
         },
         "es-MX": {
@@ -79318,37 +79318,37 @@
         "et": {
           "stringUnit": {
             "state": "translated",
-            "value": "Ärka 10 minutit varem"
+            "value": "Ärkamine 10 minutit varem"
           }
         },
         "fi": {
           "stringUnit": {
             "state": "translated",
-            "value": "Herää 10 minuuttia aikaisemmin"
+            "value": "Herääminen 10 minuuttia aiemmin"
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Réveillez-vous 10 minutes plus tôt"
+            "value": "Se réveiller 10 minutes plus tôt"
           }
         },
         "hr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Probudi se 10 minuta ranije"
+            "value": "Probuditi se 10 minuta ranije"
           }
         },
         "hu": {
           "stringUnit": {
             "state": "translated",
-            "value": "Kelj 10 perccel korábban"
+            "value": "Ébredés 10 perccel korábban"
           }
         },
         "it": {
           "stringUnit": {
             "state": "translated",
-            "value": "Svegliati 10 minuti prima"
+            "value": "Svegliarsi 10 minuti prima"
           }
         },
         "lv": {
@@ -79360,19 +79360,19 @@
         "nb": {
           "stringUnit": {
             "state": "translated",
-            "value": "Våkn 10 minutter tidligere"
+            "value": "Våkne 10 minutter tidligere"
           }
         },
         "nl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Word 10 minuten eerder wakker"
+            "value": "10 minuten eerder wakker worden"
           }
         },
         "pl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Obudź się 10 minut wcześniej"
+            "value": "Pobudka 10 minut wcześniej"
           }
         },
         "pt-BR": {
@@ -79384,19 +79384,19 @@
         "ro": {
           "stringUnit": {
             "state": "translated",
-            "value": "Trezește-te cu 10 minute mai devreme"
+            "value": "Trezit cu 10 minute mai devreme"
           }
         },
         "sk": {
           "stringUnit": {
             "state": "translated",
-            "value": "Zobuďte sa o 10 minút skôr"
+            "value": "Zobudiť sa o 10 minút skôr"
           }
         },
         "sl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Zbudite se 10 minut prej"
+            "value": "Zbuditi se 10 minut prej"
           }
         },
         "sv": {
@@ -79442,49 +79442,49 @@
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Levantarte en cuanto despiertes"
+            "value": "Levantarse al despertar"
           }
         },
         "es-MX": {
           "stringUnit": {
             "state": "translated",
-            "value": "Levantarte de la cama de inmediato"
+            "value": "Levantarse de la cama de inmediato"
           }
         },
         "et": {
           "stringUnit": {
             "state": "translated",
-            "value": "Tõuse kohe voodist välja"
+            "value": "Kohe voodist tõusmine"
           }
         },
         "fi": {
           "stringUnit": {
             "state": "translated",
-            "value": "Nouse heti sängystä"
+            "value": "Heti sängystä nouseminen"
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Sortez du lit tout de suite"
+            "value": "Se lever tout de suite"
           }
         },
         "hr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Odmah ustani iz kreveta"
+            "value": "Odmah ustati iz kreveta"
           }
         },
         "hu": {
           "stringUnit": {
             "state": "translated",
-            "value": "Kelj ki az ágyból azonnal"
+            "value": "Azonnali felkelés"
           }
         },
         "it": {
           "stringUnit": {
             "state": "translated",
-            "value": "Alzati subito dal letto"
+            "value": "Alzarsi subito dal letto"
           }
         },
         "lv": {
@@ -79502,13 +79502,13 @@
         "nl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Ga meteen uit bed"
+            "value": "Meteen uit bed gaan"
           }
         },
         "pl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Natychmiast wstań z łóżka"
+            "value": "Wstanie od razu z łóżka"
           }
         },
         "pt-BR": {
@@ -79520,7 +79520,7 @@
         "ro": {
           "stringUnit": {
             "state": "translated",
-            "value": "Ridică-te imediat din pat"
+            "value": "Ridicat imediat din pat"
           }
         },
         "sk": {
@@ -79532,7 +79532,7 @@
         "sl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Takoj vstani iz postelje"
+            "value": "Takoj vstati iz postelje"
           }
         },
         "sv": {
@@ -79566,7 +79566,7 @@
         "da": {
           "stringUnit": {
             "state": "translated",
-            "value": "Drik 1 glas vand"
+            "value": "Drikke 1 glas vand"
           }
         },
         "de": {
@@ -79590,61 +79590,61 @@
         "et": {
           "stringUnit": {
             "state": "translated",
-            "value": "Joo 1 klaas vett"
+            "value": "1 klaas vett"
           }
         },
         "fi": {
           "stringUnit": {
             "state": "translated",
-            "value": "Juo 1 lasillinen vettä"
+            "value": "1 lasillinen vettä"
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Boire 1 verre d'eau"
+            "value": "Boire 1 verre d’eau"
           }
         },
         "hr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Popij 1 čašu vode"
+            "value": "Popiti 1 čašu vode"
           }
         },
         "hu": {
           "stringUnit": {
             "state": "translated",
-            "value": "Igyál 1 pohár vizet"
+            "value": "1 pohár víz megivása"
           }
         },
         "it": {
           "stringUnit": {
             "state": "translated",
-            "value": "Bevi 1 bicchiere d'acqua"
+            "value": "Bere 1 bicchiere d'acqua"
           }
         },
         "lv": {
           "stringUnit": {
             "state": "translated",
-            "value": "Izdzer 1 glāzi ūdens"
+            "value": "Izdzert 1 glāzi ūdens"
           }
         },
         "nb": {
           "stringUnit": {
             "state": "translated",
-            "value": "Drikk 1 glass vann"
+            "value": "Drikke 1 glass vann"
           }
         },
         "nl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Drink 1 glas water"
+            "value": "1 glas water drinken"
           }
         },
         "pl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Wypij 1 szklankę wody"
+            "value": "Wypicie 1 szklanki wody"
           }
         },
         "pt-BR": {
@@ -79656,25 +79656,25 @@
         "ro": {
           "stringUnit": {
             "state": "translated",
-            "value": "Bea 1 pahar cu apă"
+            "value": "1 pahar cu apă"
           }
         },
         "sk": {
           "stringUnit": {
             "state": "translated",
-            "value": "Vypite 1 pohár vody"
+            "value": "Vypiť 1 pohár vody"
           }
         },
         "sl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Popijte 1 kozarec vode"
+            "value": "Popiti 1 kozarec vode"
           }
         },
         "sv": {
           "stringUnit": {
             "state": "translated",
-            "value": "Drick 1 glas vatten"
+            "value": "Dricka 1 glas vatten"
           }
         },
         "uk": {

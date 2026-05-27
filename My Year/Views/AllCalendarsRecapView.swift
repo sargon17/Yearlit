@@ -101,10 +101,7 @@ struct AllCalendarsRecapView: View {
         }
         .scrollIndicators(.hidden)
         .sheet(isPresented: $isPaywallPresented) {
-            PaywallView()
-                .onAppear {
-                    Analytics.shared.trackPaywallViewed(trigger: .statsGate)
-                }
+            PremiumPaywallSheet(trigger: .statsGate)
         }
         .sheet(isPresented: $showingYearPicker) {
             NavigationStack {
