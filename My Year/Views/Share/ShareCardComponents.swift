@@ -73,11 +73,17 @@ struct ShareCalendarGridView: View {
         }
     }
 
-    init(snapshot: Your365Snapshot, accentColor: Color) {
+    init(snapshot: Your365Snapshot, calendar: CustomCalendar, today: Date = Date()) {
+        let scale = precomputeRobustDotScale(for: calendar.entries.values.map(\.count))
         mappedDays = snapshot.cells.map { cell in
             (
                 date: cell.date,
-                color: colorForYour365Cell(cell, accentColor: accentColor)
+                color: colorForYour365Cell(
+                    cell,
+                    calendar: calendar,
+                    today: today,
+                    precomputedScale: scale
+                )
             )
         }
     }
@@ -116,18 +122,24 @@ struct ShareCalendarGridView: View {
     }
 }
 
-private func colorForYour365Cell(_ cell: Your365Cell, accentColor: Color) -> Color {
+private func colorForYour365Cell(
+    _ cell: Your365Cell,
+    calendar: CustomCalendar,
+    today: Date,
+    precomputedScale: Double
+) -> Color {
     switch cell.state {
-    case .completed:
-        return accentColor
-    case .todayPending:
-        return activeDayColor()
-    case .missed:
-        return missedDayColor()
+    case .completed, .missed, .todayPending:
+        return colorForDay(
+            cell.date,
+            calendar: calendar,
+            today: today,
+            precomputedScale: precomputedScale
+        )
     case .future:
         return futureDayColor()
     case .notTracked:
-        return Color("text-tertiary").opacity(0.18)
+        return missedDayColor().opacity(0.35)
     }
 }
 

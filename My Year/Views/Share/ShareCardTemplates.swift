@@ -171,7 +171,7 @@ struct Your365ShareView: View {
                     .padding(.horizontal, -28)
 
                 if let snapshot = data.your365Snapshot {
-                    ShareCalendarGridView(snapshot: snapshot, accentColor: data.accentColor)
+                    ShareCalendarGridView(snapshot: snapshot, calendar: data.calendar)
                         .frame(maxWidth: .infinity, maxHeight: .infinity)
 
                     statRow(snapshot: snapshot)
@@ -188,11 +188,18 @@ struct Your365ShareView: View {
 
     private var header: some View {
         VStack(alignment: .leading, spacing: 4) {
-            Text(data.your365Title)
+            Text(data.calendar.name.capitalized)
                 .font(AppFont.mono(18))
                 .foregroundColor(Color("text-primary"))
                 .fontWeight(.black)
-                .lineLimit(2)
+                .lineLimit(1)
+                .minimumScaleFactor(0.7)
+
+            Text(data.your365Title)
+                .font(AppFont.mono(12))
+                .foregroundColor(data.accentColor)
+                .fontWeight(.bold)
+                .lineLimit(1)
                 .minimumScaleFactor(0.7)
 
             Text(data.your365Subtitle)
