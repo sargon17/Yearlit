@@ -63,7 +63,7 @@ struct LegacyDataMigrationTests {
         #expect(fixture.defaults.bool(forKey: LegacyPersistenceKeys.dayKeyMigrationFlagKey))
     }
 
-    @Test func backfillsTrackingStartedAtOnceFromEntryBucketsAndMigrationDate() throws {
+    @Test func backfillsTrackingStartedAtOnceFromEntryBucketsOnly() throws {
         let fixture = makeDefaultsFixture()
         defer { tearDownDefaultsFixture(fixture) }
 
@@ -102,7 +102,6 @@ struct LegacyDataMigrationTests {
         )
         try context.save()
 
-        let expectedMigrationDate = LocalDayCalendar.startOfDay(for: Date())
         LegacyDataMigrator.migrateIfNeeded(container: container, defaults: fixture.defaults)
 
         let refreshedContext = ModelContext(container)
@@ -112,7 +111,7 @@ struct LegacyDataMigrationTests {
         let empty = try #require(calendars.first(where: { $0.id == emptyCalendar.id }))
 
         #expect(tracked.trackingStartedAt == bucketDate)
-        #expect(empty.trackingStartedAt == expectedMigrationDate)
+        #expect(empty.trackingStartedAt == Date.distantPast)
         #expect(fixture.defaults.bool(forKey: LegacyPersistenceKeys.trackingStartedAtBackfillMigrationFlagKey))
     }
 
@@ -290,7 +289,7 @@ struct LegacyDataMigrationTests {
         #expect(reloaded.trackingStartedAt == LocalDayCalendar.startOfDay(for: originalStart))
     }
 
-    @Test func backfillsEmptySwiftDataCalendarWhenLegacyPayloadIsEmpty() throws {
+    @Test func doesNotBackfillEmptySwiftDataCalendarWhenLegacyPayloadIsEmpty() throws {
         let fixture = makeDefaultsFixture()
         defer { tearDownDefaultsFixture(fixture) }
 
@@ -309,14 +308,13 @@ struct LegacyDataMigrationTests {
         context.insert(calendar)
         try context.save()
 
-        let expectedMigrationDate = LocalDayCalendar.startOfDay(for: Date())
         LegacyDataMigrator.migrateIfNeeded(container: container, defaults: fixture.defaults)
 
         let refreshedContext = ModelContext(container)
         refreshedContext.autosaveEnabled = false
         let reloaded = try #require(refreshedContext.fetch(FetchDescriptor<HabitCalendarEntity>()).first)
 
-        #expect(reloaded.trackingStartedAt == expectedMigrationDate)
+        #expect(reloaded.trackingStartedAt == oldStart)
         #expect(fixture.defaults.bool(forKey: LegacyPersistenceKeys.trackingStartedAtBackfillMigrationFlagKey))
     }
 

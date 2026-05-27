@@ -183,7 +183,7 @@ struct RequestStatus: Codable, Identifiable {
 
     static func fallback(id: String) -> RequestStatus {
         RequestStatus(
-            _id: "wish-fallback-status",
+            _id: id,
             _creationTime: 0,
             name: id,
             displayName: String(localized: "Requests"),

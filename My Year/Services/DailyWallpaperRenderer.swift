@@ -3,7 +3,8 @@ import UIKit
 enum DailyWallpaperRenderer {
   @MainActor
   static func render(
-    settings: DailyWallpaperSettings = DailyWallpaperSettingsStore.effectiveSettings()
+    settings: DailyWallpaperSettings = DailyWallpaperSettingsStore.effectiveSettings(),
+    referenceDate: Date = Date()
   ) -> UIImage? {
     let screen = UIScreen.main
     let pointSize = screen.bounds.size == .zero ? CGSize(width: 430, height: 932) : screen.bounds.size
@@ -13,24 +14,19 @@ enum DailyWallpaperRenderer {
       ? CGSize(width: pointSize.width * screenScale, height: pointSize.height * screenScale)
       : screen.nativeBounds.size
 
-    return render(pixelSize: pixelSize, screenScale: screenScale, settings: settings, referenceDate: Date())
+    return render(pixelSize: pixelSize, screenScale: screenScale, settings: settings, referenceDate: referenceDate)
   }
 
   @MainActor
-  static func renderPreview(settings: DailyWallpaperSettings) -> UIImage? {
-    render(
-      pixelSize: CGSize(width: 430, height: 932),
-      screenScale: 1,
-      settings: settings,
-      referenceDate: Date()
-    )
+  static func renderPreview(settings: DailyWallpaperSettings, referenceDate: Date = Date()) -> UIImage? {
+    render(pixelSize: CGSize(width: 430, height: 932), screenScale: 1, settings: settings, referenceDate: referenceDate)
   }
 
   static func render(
     pixelSize: CGSize,
     screenScale: CGFloat,
     settings: DailyWallpaperSettings,
-    referenceDate: Date
+    referenceDate: Date = Date()
   ) -> UIImage? {
     let format = UIGraphicsImageRendererFormat()
     format.scale = 1
@@ -69,13 +65,6 @@ enum DailyWallpaperRenderer {
       message: settings.message
     )
 
-    switch settings.template {
-    case .classic:
-      DailyWallpaperClassicTemplate.draw(input)
-    case .largeClock:
-      DailyWallpaperLargeTemplate.draw(input)
-    case .minimal:
-      DailyWallpaperMinimalTemplate.draw(input)
-    }
+    settings.template.draw(input)
   }
 }

@@ -132,3 +132,16 @@ struct DailyWallpaperTemplateRenderInput {
   let localizedText: DailyWallpaperLocalizedText
   let message: String?
 }
+
+extension DailyWallpaperTemplate {
+  func draw(_ input: DailyWallpaperTemplateRenderInput) {
+    switch self {
+    case .classic:
+      DailyWallpaperClassicTemplate.draw(input)
+    case .largeClock:
+      DailyWallpaperLargeTemplate.draw(input)
+    case .minimal:
+      DailyWallpaperMinimalTemplate.draw(input)
+    }
+  }
+}

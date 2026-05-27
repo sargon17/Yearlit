@@ -28,7 +28,7 @@ enum OnboardingFirstCalendarFactory {
   static func makeCalendar(title: String, today: Date) -> CustomCalendar {
     CustomCalendar(
       name: title,
-      color: "qs-orange",
+      color: "qs-amber",
       cadence: .daily,
       trackingType: .binary,
       trackingStartedAt: LocalDayCalendar.startOfDay(for: today),

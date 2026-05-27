@@ -131,7 +131,7 @@ struct CreateCalendarView: View {
     historyMessage = nil
   }
 
-  func handleCreateCalendar() {
+  func handleCreateCalendar() -> Bool {
     if !userCanCreateCalendar() {
       router.showScreen(.sheet) { _ in
         PaywallView(displayCloseButton: true)
@@ -139,8 +139,10 @@ struct CreateCalendarView: View {
             Analytics.shared.trackPaywallViewed(trigger: .calendarLimit)
           }
       }
+      return false
     } else {
       createCalendar()
+      return true
     }
   }
 
@@ -348,15 +350,7 @@ struct CreateCalendarView: View {
       }
       ToolbarItem(placement: .confirmationAction) {
         Button("Create") {
-          if !userCanCreateCalendar() {
-            router.showScreen(.sheet) { _ in
-              PaywallView(displayCloseButton: false)
-                .onAppear {
-                  Analytics.shared.trackPaywallViewed(trigger: .calendarLimit)
-                }
-            }
-          } else {
-            createCalendar()
+          if handleCreateCalendar() {
             router.dismissScreen()
           }
         }

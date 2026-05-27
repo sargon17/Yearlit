@@ -35,7 +35,7 @@ struct WishFeatureRequestsDecodingTests {
         let request = try #require(response.requests.first)
         #expect(request.id == "request-id")
         #expect(request.status == "status-id")
-        #expect(request.computedStatus.id == "wish-fallback-status")
+        #expect(request.computedStatus.id == "status-id")
         #expect(request.computedStatus.displayName == "Requests")
     }
 }

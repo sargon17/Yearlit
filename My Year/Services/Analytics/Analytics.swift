@@ -40,7 +40,7 @@ final class Analytics {
 
   func track(_ event: AnalyticsEvent, properties: [String: AnalyticsPropertyValue] = [:]) {
     let merged = state.standardProperties().merging(properties) { _, new in new }
-    client.track(event, properties: merged)
+    client.track(event, properties: Self.sanitizedProperties(merged))
   }
 
   func trackPaywallViewed(trigger: PaywallTrigger) {
@@ -89,15 +89,17 @@ final class Analytics {
         continue
       }
 
-      let properties = Self.convertWidgetProperties(event.properties)
+      var properties = Self.convertWidgetProperties(event.properties)
+      properties["widget_event_timestamp"] = .string(
+        Self.widgetEventTimestampFormatter.string(from: event.timestamp))
       let merged = state.standardProperties().merging(properties) { _, new in new }
-      client.track(analyticsEvent, properties: merged)
+      client.track(analyticsEvent, properties: Self.sanitizedProperties(merged))
     }
   }
 
   func updatePersonProperties(_ properties: [String: AnalyticsPropertyValue] = [:]) {
     let merged = state.standardProperties().merging(properties) { _, new in new }
-    client.setPersonProperties(merged)
+    client.setPersonProperties(Self.sanitizedProperties(merged))
   }
 
   func markFirstCheckinCompleted() {
@@ -136,6 +138,24 @@ final class Analytics {
     case let .bool(value):
       return .bool(value)
     }
+  }
+
+  private static let widgetEventTimestampFormatter = ISO8601DateFormatter()
+
+  private static func sanitizedProperties(
+    _ properties: [String: AnalyticsPropertyValue]
+  ) -> [String: AnalyticsPropertyValue] {
+    let forbiddenKeys = Set(AnalyticsCatalog.forbiddenSensitivePropertyKeys)
+    let sensitiveKeys = Set(properties.keys).intersection(forbiddenKeys)
+
+    if !sensitiveKeys.isEmpty {
+      assertionFailure(
+        "Analytics properties include forbidden sensitive keys: \(sensitiveKeys.sorted().joined(separator: ", "))"
+      )
+      return properties.filter { !forbiddenKeys.contains($0.key) }
+    }
+
+    return properties
   }
 }
 

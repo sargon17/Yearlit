@@ -104,7 +104,7 @@ public final class WidgetAnalyticsQueue {
     private let decoder = JSONDecoder()
     private let retention: TimeInterval = 60 * 60 * 24 * 7
 
-    public init(defaults: UserDefaults? = UserDefaults(suiteName: "group.sargon17.My-Year")) {
+    public init(defaults: UserDefaults? = UserDefaults(suiteName: SharedAppGroup.id)) {
         self.defaults = defaults
         encoder.dateEncodingStrategy = .iso8601
         decoder.dateDecodingStrategy = .iso8601

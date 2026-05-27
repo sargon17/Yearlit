@@ -19,13 +19,7 @@ final class OnboardingManager: ObservableObject {
     guard wasUnseen else { return }
 
     Analytics.shared.track(.onboardingCompleted)
-    persistDefaultTimelinePreferenceIfNeeded()
     objectWillChange.send()
-  }
-
-  func persistDefaultTimelinePreferenceIfNeeded() {
-    guard hasSeenOnboarding, !TimelinePreferenceStore.hasStoredMode() else { return }
-    TimelinePreferenceManager.shared.setMode(.your365)
   }
 
   #if DEBUG

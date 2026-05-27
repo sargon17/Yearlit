@@ -1,7 +1,7 @@
 import Foundation
 
 public enum TimelinePreferenceStore {
-    public static let appGroupId = "group.sargon17.My-Year"
+    public static let appGroupId = SharedAppGroup.id
     public static let timelineModeKey = "timeline.mode.v1"
 
     public static var appGroupDefaults: UserDefaults {

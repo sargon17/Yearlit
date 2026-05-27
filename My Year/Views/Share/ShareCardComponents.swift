@@ -94,17 +94,18 @@ struct ShareCalendarGridView: View {
             let padding: CGFloat = 0
             let availableWidth = max(0, geometry.size.width - (padding * 2))
             let availableHeight = max(1, geometry.size.height - (padding * 2))
-            let aspectRatio = max(0.001, availableWidth / availableHeight)
-            let columns = adjustedColumns(for: mappedDays.count, aspectRatio: aspectRatio)
-            let rows = max(1, Int(ceil(Double(mappedDays.count) / Double(columns))))
-            let horizontalSpacing = (availableWidth - (dotSize * CGFloat(columns))) / CGFloat(max(2, columns - 1))
-            let verticalSpacing = (availableHeight - (dotSize * CGFloat(rows))) / CGFloat(max(2, rows - 1))
+            let layout = WidgetStyle.gridLayout(
+                count: mappedDays.count,
+                dotSize: dotSize,
+                availableWidth: availableWidth,
+                availableHeight: availableHeight
+            )
 
-            VStack(spacing: verticalSpacing) {
-                ForEach(0 ..< rows, id: \.self) { row in
-                    HStack(spacing: horizontalSpacing) {
-                        ForEach(0 ..< columns, id: \.self) { col in
-                            let day = row * columns + col
+            VStack(spacing: layout.verticalSpacing) {
+                ForEach(0 ..< layout.rows, id: \.self) { row in
+                    HStack(spacing: layout.horizontalSpacing) {
+                        ForEach(0 ..< layout.columns, id: \.self) { col in
+                            let day = row * layout.columns + col
                             if day < mappedDays.count {
                                 GridDot(
                                     color: mappedDays[day].color,
@@ -152,13 +153,4 @@ func shareWeekdayName(_ idx: Int) -> String {
     let symbols = Calendar.current.shortWeekdaySymbols
     let clamped = max(1, min(7, idx))
     return symbols[clamped - 1]
-}
-
-private func adjustedColumns(for count: Int, aspectRatio: CGFloat) -> Int {
-    let targetColumns = max(1, Int(sqrt(Double(count) * aspectRatio)))
-    var columns = max(1, min(targetColumns, count))
-    while columns > 1 && count % columns == 1 {
-        columns -= 1
-    }
-    return columns
 }

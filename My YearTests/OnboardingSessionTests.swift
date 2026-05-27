@@ -1,4 +1,5 @@
 @testable import My_Year
+import Foundation
 import SharedModels
 import Testing
 
@@ -7,12 +8,12 @@ struct OnboardingSessionTests {
     @Test func togglingIdentityCommitmentsPreservesOrder() {
         var session = OnboardingSession()
 
-        session.toggleIdentityCommitment(.runner)
+        session.toggleIdentityCommitment(.strengthTrainer)
         session.toggleIdentityCommitment(.reader)
-        session.toggleIdentityCommitment(.runner)
-        session.toggleIdentityCommitment(.runner)
+        session.toggleIdentityCommitment(.strengthTrainer)
+        session.toggleIdentityCommitment(.strengthTrainer)
 
-        #expect(session.selectedIdentityCommitments == [.reader, .runner])
+        #expect(session.selectedIdentityCommitments == [.reader, .strengthTrainer])
     }
 
     @Test func coordinatorClearsTinyHabitWhenIdentityChanges() {
@@ -41,7 +42,7 @@ struct OnboardingSessionTests {
 
         coordinator.continueTapped()
         coordinator.continueTapped()
-        coordinator.identityCommitmentChanged(.runner)
+        coordinator.identityCommitmentChanged(.strengthTrainer)
         coordinator.continueTapped()
         coordinator.tinyHabitContinueTapped()
 
@@ -163,7 +164,7 @@ struct OnboardingSessionTests {
     @Test func nonPositivePreReviewGateRoutesToNotifications() {
         let coordinator = OnboardingCoordinator(onFinish: {})
 
-        coordinator.preReviewGateAnswered(.neutral)
+        coordinator.preReviewGateAnswered(.negative)
 
         #expect(!coordinator.session.preReviewGateWasPositive)
         #expect(coordinator.currentStep == .notificationPermission)
@@ -172,7 +173,7 @@ struct OnboardingSessionTests {
     @Test func skippedPreReviewGateRoutesToNotifications() {
         let coordinator = OnboardingCoordinator(onFinish: {})
 
-        coordinator.preReviewGateAnswered(.skip)
+        coordinator.preReviewGateAnswered(nil)
 
         #expect(!coordinator.session.preReviewGateWasPositive)
         #expect(coordinator.currentStep == .notificationPermission)
@@ -298,9 +299,9 @@ struct OnboardingSessionTests {
             didFinish = true
         }, analytics: analytics)
 
-        #expect(analytics.events == [
-            (event: .onboardingStepViewed, properties: ["step_id": .string(OnboardingStep.emotionalHook.rawValue)])
-        ])
+        #expect(analytics.events.count == 1)
+        #expect(analytics.events.first?.event == .onboardingStepViewed)
+        #expect(analytics.events.first?.properties["step_id"] == .string(OnboardingStep.emotionalHook.rawValue))
 
         coordinator.continueTapped()
         coordinator.continueTapped()
@@ -393,6 +394,14 @@ struct OnboardingSessionTests {
             "paywall"
         ])
     }
+
+    private static let analyticsEventsDocPath: String = {
+        let fileURL = URL(fileURLWithPath: #filePath)
+        let repoRoot = fileURL
+            .deletingLastPathComponent()
+            .deletingLastPathComponent()
+        return repoRoot.appendingPathComponent("docs/analytics-events.md").path
+    }()
 
     private func makeCalendar(
         name: String,

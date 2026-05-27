@@ -1,8 +1,12 @@
 import Foundation
 import SwiftData
 
+public enum SharedAppGroup {
+    public static let id = "group.sargon17.My-Year"
+}
+
 enum LegacyPersistenceKeys {
-    static let appGroupId = "group.sargon17.My-Year"
+    static let appGroupId = SharedAppGroup.id
     static let calendarsKey = "customCalendars"
     static let valuationsKey = "dayValuations"
     static let migrationFlagKey = "swiftDataMigrationComplete"
@@ -229,7 +233,6 @@ enum LegacyDataMigrator {
 
         let context = ModelContext(container)
         context.autosaveEnabled = false
-        let migrationDate = LocalDayCalendar.startOfDay(for: Date())
 
         do {
             let calendars = try context.fetch(FetchDescriptor<HabitCalendarEntity>())
@@ -238,10 +241,11 @@ enum LegacyDataMigrator {
             preserveTrackingStartedAtBackupIfNeeded(defaults: defaults, calendars: calendars)
 
             for calendar in calendars {
-                let resolvedStart = earliestEntryBucketDate(
+                guard let resolvedStart = earliestEntryBucketDate(
                     for: calendar,
                     entries: entriesByCalendarId[calendar.id, default: []]
-                ) ?? migrationDate
+                ) else { continue }
+
                 if calendar.trackingStartedAt != resolvedStart {
                     calendar.trackingStartedAt = resolvedStart
                 }

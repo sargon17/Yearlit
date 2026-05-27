@@ -47,22 +47,39 @@ private struct HabitWidgetGridSnapshotBuilder {
     let snapshot = your365Snapshot(today: referenceDate)
     let cells = snapshot?.cells ?? []
     let cellsByDate = Dictionary(uniqueKeysWithValues: cells.map { ($0.date, $0) })
+    let counterDotScale = precomputeCounterDotScale()
     let days = datesForFamily(today: referenceDate, your365Snapshot: snapshot).map {
-      gridDay(for: $0, today: referenceDate, your365CellsByDate: cellsByDate)
+      gridDay(
+        for: $0,
+        today: referenceDate,
+        your365CellsByDate: cellsByDate,
+        counterDotScale: counterDotScale
+      )
     }
 
     return HabitWidgetGridSnapshot(days: days)
   }
 
+  private func precomputeCounterDotScale() -> Double {
+    guard let calendar, calendar.trackingType == .counter else { return 1 }
+    return precomputeRobustDotScale(for: calendar.entries.values.map(\.count))
+  }
+
   private func gridDay(
     for date: Date,
     today: Date,
-    your365CellsByDate: [Date: Your365Cell]
+    your365CellsByDate: [Date: Your365Cell],
+    counterDotScale: Double
   ) -> HabitWidgetGridDay {
     let normalized = normalizedBucketDate(for: date)
 
     return HabitWidgetGridDay(
-      color: colorForDay(normalized, today: today, your365CellsByDate: your365CellsByDate),
+      color: colorForDay(
+        normalized,
+        today: today,
+        your365CellsByDate: your365CellsByDate,
+        counterDotScale: counterDotScale
+      ),
       accentable: isAccentedDay(normalized, today: today)
     )
   }
@@ -70,24 +87,35 @@ private struct HabitWidgetGridSnapshotBuilder {
   private func colorForDay(
     _ normalized: Date,
     today: Date,
-    your365CellsByDate: [Date: Your365Cell]
+    your365CellsByDate: [Date: Your365Cell],
+    counterDotScale: Double
   ) -> Color {
     if let cell = your365CellsByDate[normalized], cell.usesYour365OnlyColor {
       return colorForYour365Cell(cell)
     }
 
-    return colorForCalendarDay(normalized, today: today, your365CellsByDate: your365CellsByDate)
+    return colorForCalendarDay(
+      normalized,
+      today: today,
+      your365CellsByDate: your365CellsByDate,
+      counterDotScale: counterDotScale
+    )
   }
 
   private func colorForCalendarDay(
     _ normalized: Date,
     today: Date,
-    your365CellsByDate: [Date: Your365Cell]
+    your365CellsByDate: [Date: Your365Cell],
+    counterDotScale: Double
   ) -> Color {
     let normalizedToday = normalizedBucketDate(for: today)
 
     if renderingMode.isMonochrome {
-      return monochromeColorForCalendarDay(normalized, today: normalizedToday)
+      return monochromeColorForCalendarDay(
+        normalized,
+        today: normalizedToday,
+        counterDotScale: counterDotScale
+      )
     }
 
     if normalized > normalizedToday {
@@ -101,13 +129,13 @@ private struct HabitWidgetGridSnapshotBuilder {
     switch calendar.trackingType {
     case .binary:
       return entry.completed
-        ? completedColor(for: entry, today: today)
+        ? completedColor(for: entry, today: today, counterDotScale: counterDotScale)
         : emptyDotColor(for: normalized, today: today, your365CellsByDate: your365CellsByDate)
     case .counter:
       guard entry.hasLoggedValue else {
         return emptyDotColor(for: normalized, today: today, your365CellsByDate: your365CellsByDate)
       }
-      let ratio = counterDotFillRatio(count: entry.count, counts: calendar.entries.values.map { $0.count })
+      let ratio = counterDotFillRatio(count: entry.count, precomputedScale: counterDotScale)
       return WidgetStyle.blendedColor(base: backgroundColor, overlay: Color(calendar.color), ratio: ratio)
     case .multipleDaily:
       guard entry.hasLoggedValue else {
@@ -118,7 +146,11 @@ private struct HabitWidgetGridSnapshotBuilder {
     }
   }
 
-  private func monochromeColorForCalendarDay(_ normalized: Date, today normalizedToday: Date) -> Color {
+  private func monochromeColorForCalendarDay(
+    _ normalized: Date,
+    today normalizedToday: Date,
+    counterDotScale: Double
+  ) -> Color {
     if normalized > normalizedToday {
       return WidgetStyle.monochromeFutureDotColor()
     }
@@ -138,7 +170,7 @@ private struct HabitWidgetGridSnapshotBuilder {
       guard entry.hasLoggedValue else {
         return WidgetStyle.monochromePastDotColor()
       }
-      let ratio = max(0.35, counterDotFillRatio(count: entry.count, counts: calendar.entries.values.map { $0.count }))
+      let ratio = max(0.35, counterDotFillRatio(count: entry.count, precomputedScale: counterDotScale))
       return normalized == normalizedToday
         ? WidgetStyle.monochromeAccentColor().opacity(ratio)
         : WidgetStyle.monochromePrimaryColor().opacity(ratio)
@@ -329,7 +361,7 @@ private struct HabitWidgetGridSnapshotBuilder {
     }
   }
 
-  private func completedColor(for entry: CalendarEntry, today: Date) -> Color {
+  private func completedColor(for entry: CalendarEntry, today: Date, counterDotScale: Double) -> Color {
     guard let calendar else {
       return missedDayColor(base: backgroundColor, overlay: textPrimaryColor)
     }
@@ -344,7 +376,7 @@ private struct HabitWidgetGridSnapshotBuilder {
           ? WidgetStyle.monochromeAccentColor()
           : WidgetStyle.monochromePrimaryColor()
       case .counter:
-        let ratio = max(0.35, counterDotFillRatio(count: entry.count, counts: calendar.entries.values.map { $0.count }))
+        let ratio = max(0.35, counterDotFillRatio(count: entry.count, precomputedScale: counterDotScale))
         return normalizedEntryDate == normalizedToday
           ? WidgetStyle.monochromeAccentColor().opacity(ratio)
           : WidgetStyle.monochromePrimaryColor().opacity(ratio)
@@ -360,7 +392,7 @@ private struct HabitWidgetGridSnapshotBuilder {
     case .binary:
       return Color(calendar.color)
     case .counter:
-      let ratio = counterDotFillRatio(count: entry.count, counts: calendar.entries.values.map { $0.count })
+      let ratio = counterDotFillRatio(count: entry.count, precomputedScale: counterDotScale)
       return WidgetStyle.blendedColor(base: backgroundColor, overlay: Color(calendar.color), ratio: ratio)
     case .multipleDaily:
       let opacity = multipleDailyDotFillRatio(count: entry.count, dailyTarget: calendar.dailyTarget)

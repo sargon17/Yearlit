@@ -27,13 +27,17 @@ struct Provider: AppIntentTimelineProvider {
     let entry = makeEntry(for: configuration, date: currentDate)
 
     if !context.isPreview {
+      let analyticsTimelineMode = entry.calendar.map {
+        entry.timelineMode.effectiveMode(for: $0.cadence)
+      } ?? entry.timelineMode
+
       WidgetAnalyticsQueue.shared.enqueueTimelineLoaded(properties: [
         "widget_kind": .string(WidgetAnalyticsKind.habits.rawValue),
         "widget_family": .string(widgetFamilyName(context.family)),
         "has_calendar": .bool(entry.calendar != nil),
         "cadence": .string(entry.calendar?.cadence.rawValue ?? "unknown"),
         "tracking_type": .string(entry.calendar?.trackingType.analyticsValue ?? "unknown"),
-        "timeline_mode": .string(entry.timelineMode.rawValue)
+        "timeline_mode": .string(analyticsTimelineMode.rawValue)
       ])
     }
 

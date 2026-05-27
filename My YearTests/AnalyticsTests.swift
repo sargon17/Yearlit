@@ -1,4 +1,5 @@
 import Foundation
+import SharedModels
 @testable import My_Year
 import Testing
 
@@ -19,6 +20,50 @@ struct AnalyticsTests {
     #expect(spy.trackedEvents.first?.properties["has_note"] == .bool(true))
     #expect(spy.trackedEvents.first?.properties["app_version"] == .string("override"))
     #expect(spy.trackedEvents.first?.properties["mood_tracking_enabled"] != nil)
+  }
+
+  @Test func flushQueuedWidgetEventsPreservesQueuedTimestamp() throws {
+    let defaults = makeTestDefaults()
+    defer { cleanupTestDefaults(defaults) }
+    _ = WidgetAnalyticsQueue.shared.drain()
+    defer { _ = WidgetAnalyticsQueue.shared.drain() }
+
+    let analytics = makeAnalytics(defaults: defaults)
+    let spy = SpyAnalyticsClient()
+    analytics.replaceClient(spy)
+
+    WidgetAnalyticsQueue.shared.enqueueOpenedApp(properties: [
+      "widget_kind": .string("year"),
+      "widget_action": .string("open_app"),
+      "destination": .string("home")
+    ])
+
+    analytics.flushQueuedWidgetEvents()
+
+    #expect(spy.trackedEvents.count == 1)
+    #expect(spy.trackedEvents.first?.event == .widgetOpenedApp)
+    let timestamp = try #require(spy.trackedEvents.first?.properties["widget_event_timestamp"])
+    guard case let .string(value) = timestamp else {
+      Issue.record("Expected widget_event_timestamp to be a string")
+      return
+    }
+    #expect(ISO8601DateFormatter().date(from: value) != nil)
+  }
+
+  @Test func standardPropertiesUseInjectedDefaults() {
+    let defaults = makeTestDefaults()
+    defer { cleanupTestDefaults(defaults) }
+
+    let standardDefaults = UserDefaults.standard
+    let originalMoodTracking = standardDefaults.object(forKey: AppStorageKeys.isMoodTrackingEnabled)
+    defer { restore(originalMoodTracking, forKey: AppStorageKeys.isMoodTrackingEnabled, in: standardDefaults) }
+
+    standardDefaults.set(false, forKey: AppStorageKeys.isMoodTrackingEnabled)
+    defaults.set(true, forKey: AppStorageKeys.isMoodTrackingEnabled)
+
+    let state = makeState(defaults: defaults)
+
+    #expect(state.standardProperties()["mood_tracking_enabled"] == .bool(true))
   }
 
   @Test func standardSnapshotPropertyKeysAreStableAndDocumented() throws {
@@ -58,9 +103,9 @@ struct AnalyticsTests {
     analytics.markFirstCheckinCompleted()
 
     #expect(spy.trackedEvents.map(\.event) == [.firstCheckinCompleted])
-    #expect(spy.identifyCalls == [])
-    #expect(spy.personPropertyCalls == 2)
-    #expect(spy.personPropertyCalls.last?.properties["has_completed_first_checkin"] == .bool(true))
+    #expect(spy.identifyCalls.isEmpty)
+    #expect(spy.personPropertyCalls.count == 2)
+    #expect(spy.personPropertyCalls.last?["has_completed_first_checkin"] == .bool(true))
   }
 
   @Test func eventAndCatalogValuesUseLowercaseSnakeCase() {
@@ -130,8 +175,17 @@ struct AnalyticsTests {
   }
 
   private func cleanupTestDefaults(_ defaults: UserDefaults) {
-    guard let suiteName = defaults.suiteName else { return }
-    defaults.removePersistentDomain(forName: suiteName)
+    for key in defaults.dictionaryRepresentation().keys {
+      defaults.removeObject(forKey: key)
+    }
+  }
+
+  private func restore(_ value: Any?, forKey key: String, in defaults: UserDefaults) {
+    if let value {
+      defaults.set(value, forKey: key)
+    } else {
+      defaults.removeObject(forKey: key)
+    }
   }
 
   private func isLowercaseSnakeCase(_ value: String) -> Bool {

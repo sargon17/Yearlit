@@ -735,6 +735,7 @@ private func _scheduleAllReminders(
     completion: @escaping (Result<Void, NotificationError>) -> Void
 ) {
     let group = DispatchGroup()
+    let errorsQueue = DispatchQueue(label: "notifications.scheduleAllReminders.errors")
     var errors: [Error] = []
 
     var additionalIndex = 0
@@ -757,14 +758,20 @@ private func _scheduleAllReminders(
             store: store
         ) { result in
             if case let .failure(error) = result {
-                errors.append(error)
+                errorsQueue.sync {
+                    errors.append(error)
+                }
             }
             group.leave()
         }
     }
 
     group.notify(queue: .main) {
-        if let firstError = errors.first as? NotificationError {
+        let firstError = errorsQueue.sync {
+            errors.first as? NotificationError
+        }
+
+        if let firstError {
             completion(.failure(firstError))
         } else {
             completion(.success(()))

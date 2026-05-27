@@ -223,7 +223,7 @@ private struct DailyWallpaperSetupView: View {
         selectTemplate(template)
       } label: {
         WallpaperOptionRow(
-          title: template.localizedDisplayName,
+          title: LocalizedStringKey(template.displayName),
           iconName: template.systemImageName,
           isSelected: selectedTemplate == template,
           isLocked: template.isPremium && !isPremiumUser
@@ -379,16 +379,6 @@ private struct SetupStepRow: View {
       }
     }
     .padding(.vertical, 4)
-  }
-}
-
-extension DailyWallpaperTemplate {
-  fileprivate var localizedDisplayName: LocalizedStringKey {
-    switch self {
-    case .classic: "Classic"
-    case .largeClock: "Large Clock"
-    case .minimal: "Minimal"
-    }
   }
 }
 

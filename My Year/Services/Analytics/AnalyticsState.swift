@@ -73,7 +73,6 @@ final class AnalyticsState {
   func standardProperties() -> [String: AnalyticsPropertyValue] {
     let snapshot = CustomCalendarStore.shared.snapshot
     let activeCalendars = snapshot.activeCalendars
-    let defaults = UserDefaults.standard
 
     return [
       "days_since_install": .int(daysSinceInstall),

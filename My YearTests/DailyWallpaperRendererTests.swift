@@ -41,8 +41,7 @@ struct DailyWallpaperRendererTests {
 
   @Test func templateDispatchProducesDistinctLayouts() throws {
     let fingerprints = try DailyWallpaperTemplate.allCases.map { template in
-      let image = try render(
-        settings: wallpaperSettings(template: template, theme: .dark), referenceDate: referenceDate)
+      let image = try render(settings: wallpaperSettings(template: template, theme: .dark), referenceDate: referenceDate)
       return fingerprint(of: image)
     }
 

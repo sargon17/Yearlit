@@ -183,11 +183,11 @@ Recommended visible states:
 
 If testing a bolder first impression, use this first-three sequence instead:
 
-1. **Stop restarting your year**  
+1. **Stop restarting your year**
    Subline: Start again with one tiny dot.
-2. **Make habits too small to fail**  
+2. **Make habits too small to fail**
    Subline: 5 minutes counts. 1 page counts.
-3. **Watch self-trust come back**  
+3. **Watch self-trust come back**
    Subline: Build visible proof, one day at a time.
 
 This variant is more pain-led. The default set is more brand-led and calmer.

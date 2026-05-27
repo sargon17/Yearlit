@@ -125,9 +125,9 @@ struct CalendarStatisticsView: View {
             .layoutPriority(1)
           }
         }
-        .frame(maxWidth: .greatestFiniteMagnitude)
+        .frame(maxWidth: .infinity)
       }
-      .frame(maxWidth: .greatestFiniteMagnitude)
+      .frame(maxWidth: .infinity)
       .padding(.horizontal)
       .padding(.bottom, -22)
       .clipped()
@@ -160,9 +160,9 @@ struct CalendarStatisticsView: View {
           )
           .layoutPriority(1)
         }
-        .frame(maxWidth: .greatestFiniteMagnitude)
+        .frame(maxWidth: .infinity)
       }
-      .frame(maxWidth: .greatestFiniteMagnitude)
+      .frame(maxWidth: .infinity)
       .padding(.horizontal)
       .padding(.bottom, -22)
       .clipped()
@@ -255,7 +255,7 @@ struct CalendarStatisticsView: View {
             accentColor: accentColor,
             isLocked: !isPremium
           )
-          .frame(maxWidth: .greatestFiniteMagnitude)
+          .frame(maxWidth: .infinity)
           .overlay(bottomDivider)
           .onTapGesture {
             guard !isPremium else { return }
@@ -299,7 +299,7 @@ struct CalendarStatisticsView: View {
           )
           .layoutPriority(1)
         }
-        .frame(maxWidth: .greatestFiniteMagnitude)
+        .frame(maxWidth: .infinity)
 
         // Volatility - Premium
         labeledValueRow(
@@ -425,10 +425,10 @@ private func weekdayRibbon(
     ForEach(order, id: \.self) { d in
       let v = rates[d] ?? 0
       let bgColor: Color = GarnishColor.blend(.surfaceMuted, with: accentColor, ratio: isLocked ? 0.2 : v)
-      let labelColor = try! bgColor.contrastingShade()
+      let labelColor = (try? bgColor.contrastingShade()) ?? Color.textPrimary
       RoundedRectangle(cornerRadius: 2)
         .fill(bgColor)
-        .frame(maxWidth: .greatestFiniteMagnitude, minHeight: 30)
+        .frame(maxWidth: .infinity, minHeight: 30)
         .overlay(
           Text(weekdayName(d).prefix(1))
             .font(AppFont.mono(8))
@@ -440,7 +440,7 @@ private func weekdayRibbon(
   }
   .padding(.top)
   .padding(.horizontal)
-  .frame(maxWidth: .greatestFiniteMagnitude)
+  .frame(maxWidth: .infinity)
 }
 
 private func monthlyBars(
@@ -465,7 +465,7 @@ private func monthlyBars(
         )
         RoundedRectangle(cornerRadius: 2)
           .fill(bgColor)
-          .frame(maxWidth: .greatestFiniteMagnitude, maxHeight: 48)
+          .frame(maxWidth: .infinity, maxHeight: 48)
           .blur(radius: isLocked ? 10 : 0)
       }
     }

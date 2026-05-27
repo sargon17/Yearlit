@@ -422,17 +422,18 @@ private struct MilestoneGridView: View {
             let padding: CGFloat = 0
             let availableWidth = max(0, geometry.size.width - (padding * 2))
             let availableHeight = max(1, geometry.size.height - (padding * 2))
-            let aspectRatio = max(0.001, availableWidth / availableHeight)
-            let columns = adjustedColumns(for: dates.count, aspectRatio: aspectRatio)
-            let rows = max(1, Int(ceil(Double(dates.count) / Double(columns))))
-            let horizontalSpacing = (availableWidth - (dotSize * CGFloat(columns))) / CGFloat(max(2, columns - 1))
-            let verticalSpacing = (availableHeight - (dotSize * CGFloat(rows))) / CGFloat(max(2, rows - 1))
+            let layout = WidgetStyle.gridLayout(
+                count: dates.count,
+                dotSize: dotSize,
+                availableWidth: availableWidth,
+                availableHeight: availableHeight
+            )
 
-            VStack(spacing: verticalSpacing) {
-                ForEach(0 ..< rows, id: \.self) { row in
-                    HStack(spacing: horizontalSpacing) {
-                        ForEach(0 ..< columns, id: \.self) { col in
-                            let dayIndex = row * columns + col
+            VStack(spacing: layout.verticalSpacing) {
+                ForEach(0 ..< layout.rows, id: \.self) { row in
+                    HStack(spacing: layout.horizontalSpacing) {
+                        ForEach(0 ..< layout.columns, id: \.self) { col in
+                            let dayIndex = row * layout.columns + col
                             if dayIndex < dates.count {
                                 GridDot(
                                     color: dotColor(for: dates[dayIndex]),
@@ -471,13 +472,4 @@ private struct MilestoneGridView: View {
             return foregroundColor.opacity(ratio)
         }
     }
-}
-
-private func adjustedColumns(for count: Int, aspectRatio: CGFloat) -> Int {
-    let targetColumns = max(1, Int(sqrt(Double(count) * aspectRatio)))
-    var columns = max(1, min(targetColumns, count))
-    while columns > 1 && count % columns == 1 {
-        columns -= 1
-    }
-    return columns
 }
