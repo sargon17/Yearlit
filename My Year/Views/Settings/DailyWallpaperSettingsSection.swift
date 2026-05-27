@@ -160,7 +160,7 @@ private struct DailyWallpaperSetupView: View {
       } header: {
         Text("Message")
       } footer: {
-        Text("Premium message templates render one optional line, up to 40 characters.")
+        Text("Premium message templates render up to two centered lines, 40 characters total.")
       }
 
       Section(header: Text("Actions")) {
@@ -379,24 +379,6 @@ private struct SetupStepRow: View {
       }
     }
     .padding(.vertical, 4)
-  }
-}
-
-extension DailyWallpaperTemplate {
-  fileprivate var displayName: String {
-    switch self {
-    case .classic: "Classic"
-    case .large: "Large Clock"
-    case .minimal: "Minimal"
-    }
-  }
-
-  fileprivate var systemImageName: String {
-    switch self {
-    case .classic: "circle.grid.3x3.fill"
-    case .large: "rectangle.grid.1x2.fill"
-    case .minimal: "minus"
-    }
   }
 }
 

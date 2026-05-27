@@ -2,22 +2,38 @@ import Foundation
 
 enum DailyWallpaperTemplate: String, CaseIterable, Equatable, Identifiable {
   case classic
-  case large
+  case largeClock = "large"
   case minimal
 
   var id: String { rawValue }
 
+  var displayName: String {
+    switch self {
+    case .classic: "Classic"
+    case .largeClock: "Large Clock"
+    case .minimal: "Minimal"
+    }
+  }
+
+  var systemImageName: String {
+    switch self {
+    case .classic: "circle.grid.3x3.fill"
+    case .largeClock: "rectangle.grid.1x2.fill"
+    case .minimal: "minus"
+    }
+  }
+
   var isPremium: Bool {
     switch self {
     case .classic: false
-    case .large, .minimal: true
+    case .largeClock, .minimal: true
     }
   }
 
   var supportsMessage: Bool {
     switch self {
     case .classic: false
-    case .large, .minimal: true
+    case .largeClock, .minimal: true
     }
   }
 }
@@ -112,7 +128,7 @@ enum DailyWallpaperSettingsStore {
 
   private static func template(from rawValue: String?) -> DailyWallpaperTemplate {
     if rawValue == "poster" {
-      return .large
+      return .largeClock
     }
 
     guard let rawValue, let template = DailyWallpaperTemplate(rawValue: rawValue) else {

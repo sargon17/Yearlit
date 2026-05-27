@@ -13,18 +13,24 @@ enum DailyWallpaperRenderer {
       ? CGSize(width: pointSize.width * screenScale, height: pointSize.height * screenScale)
       : screen.nativeBounds.size
 
-    return render(pixelSize: pixelSize, screenScale: screenScale, settings: settings)
+    return render(pixelSize: pixelSize, screenScale: screenScale, settings: settings, referenceDate: Date())
   }
 
   @MainActor
   static func renderPreview(settings: DailyWallpaperSettings) -> UIImage? {
-    render(pixelSize: CGSize(width: 430, height: 932), screenScale: 1, settings: settings)
+    render(
+      pixelSize: CGSize(width: 430, height: 932),
+      screenScale: 1,
+      settings: settings,
+      referenceDate: Date()
+    )
   }
 
-  private static func render(
+  static func render(
     pixelSize: CGSize,
     screenScale: CGFloat,
-    settings: DailyWallpaperSettings
+    settings: DailyWallpaperSettings,
+    referenceDate: Date
   ) -> UIImage? {
     let format = UIGraphicsImageRendererFormat()
     format.scale = 1
@@ -35,7 +41,8 @@ enum DailyWallpaperRenderer {
         in: context.cgContext,
         size: pixelSize,
         screenScale: screenScale,
-        settings: settings
+        settings: settings,
+        referenceDate: referenceDate
       )
     }
   }
@@ -44,10 +51,11 @@ enum DailyWallpaperRenderer {
     in context: CGContext,
     size: CGSize,
     screenScale: CGFloat,
-    settings: DailyWallpaperSettings
+    settings: DailyWallpaperSettings,
+    referenceDate: Date
   ) {
     let palette = DailyWallpaperPalette(theme: settings.theme, accentColorName: settings.accentColorName)
-    let progress = DailyWallpaperProgressData(referenceDate: Date())
+    let progress = DailyWallpaperProgressData(referenceDate: referenceDate)
 
     palette.background.setFill()
     context.fill(CGRect(origin: .zero, size: size))
@@ -63,7 +71,7 @@ enum DailyWallpaperRenderer {
     switch settings.template {
     case .classic:
       DailyWallpaperClassicTemplate.draw(input)
-    case .large:
+    case .largeClock:
       DailyWallpaperLargeTemplate.draw(input)
     case .minimal:
       DailyWallpaperMinimalTemplate.draw(input)

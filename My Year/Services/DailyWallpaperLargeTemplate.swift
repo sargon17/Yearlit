@@ -3,22 +3,19 @@ import UIKit
 enum DailyWallpaperLargeTemplate {
   static func draw(_ input: DailyWallpaperTemplateRenderInput) {
     let unit = max(1, input.screenScale)
-    let contentWidth = min(input.size.width * 0.84, 370 * unit)
-    let contentX = (input.size.width - contentWidth) / 2
-    let separatorTop = (24 * unit) + (16 * unit)
-    let gridTop = separatorTop + (22 * unit)
-    let bottomSeparatorY = input.size.height * 0.83
-    let minimumGridHeight = 144 * unit
-    let contentY = min(
-      input.size.height * 0.52 + (72 * unit),
-      bottomSeparatorY - gridTop - minimumGridHeight - (16 * unit)
-    )
-    let gridY = contentY + gridTop
-    let gridHeight = max(minimumGridHeight, bottomSeparatorY - gridY - (16 * unit))
+    let metrics = DailyWallpaperTemplateMetrics(size: input.size, unit: unit)
+    let layout = metrics.largeClockLayout()
+    let gridY = layout.contentY + metrics.gridYOffset
+    let gridHeight = metrics.largeClockGridHeight(gridY: gridY)
 
     DailyWallpaperDrawing.drawHeader(
       in: DailyWallpaperDrawing.aligned(
-        CGRect(x: contentX, y: contentY, width: contentWidth, height: 24 * unit)
+        CGRect(
+          x: layout.contentX,
+          y: layout.contentY,
+          width: layout.contentWidth,
+          height: metrics.headerHeight
+        )
       ),
       unit: unit,
       progress: input.progress,
@@ -26,7 +23,7 @@ enum DailyWallpaperLargeTemplate {
     )
 
     DailyWallpaperDrawing.drawDivider(
-      y: contentY + separatorTop,
+      y: layout.contentY + metrics.headerDividerYOffset,
       size: input.size,
       unit: unit,
       palette: input.palette,
@@ -35,7 +32,7 @@ enum DailyWallpaperLargeTemplate {
 
     DailyWallpaperDrawing.drawGrid(
       in: DailyWallpaperDrawing.aligned(
-        CGRect(x: contentX, y: gridY, width: contentWidth, height: gridHeight)
+        CGRect(x: layout.contentX, y: gridY, width: layout.contentWidth, height: gridHeight)
       ),
       unit: unit,
       progress: input.progress,
@@ -43,7 +40,7 @@ enum DailyWallpaperLargeTemplate {
     )
 
     DailyWallpaperDrawing.drawDivider(
-      y: bottomSeparatorY,
+      y: metrics.bottomDividerY,
       size: input.size,
       unit: unit,
       palette: input.palette,
@@ -55,7 +52,7 @@ enum DailyWallpaperLargeTemplate {
       in: input.size,
       unit: unit,
       palette: input.palette,
-      yRatio: 0.902
+      yRatio: metrics.messageYRatio
     )
   }
 }

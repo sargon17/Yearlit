@@ -3,33 +3,40 @@ import UIKit
 enum DailyWallpaperMinimalTemplate {
   static func draw(_ input: DailyWallpaperTemplateRenderInput) {
     let unit = max(1, input.screenScale)
-    let contentWidth = min(input.size.width * 0.84, 370 * unit)
-    let contentX = (input.size.width - contentWidth) / 2
-    let contentY = input.size.height * 0.3
-    let gridHeight = min(max(input.size.height * 0.24, 215 * unit), 280 * unit)
-    let layout = DailyWallpaperTemplateLayout(
-      contentX: contentX,
-      contentY: contentY,
-      contentWidth: contentWidth,
-      unit: unit
-    )
+    let metrics = DailyWallpaperTemplateMetrics(size: input.size, unit: unit)
+    let progressBarY = metrics.minimalProgressBarY()
+    let layout = metrics.minimalLayout(progressBarY: progressBarY)
 
     drawLabels(layout: layout, progress: input.progress, palette: input.palette)
 
-    DailyWallpaperDrawing.drawGrid(
+    DailyWallpaperDrawing.drawProgressBar(
       in: DailyWallpaperDrawing.aligned(
-        CGRect(x: contentX, y: contentY + (132 * unit), width: contentWidth, height: gridHeight)
+        CGRect(
+          x: layout.contentX,
+          y: progressBarY,
+          width: layout.contentWidth,
+          height: metrics.progressBarHeight
+        )
       ),
+      progress: input.progress.percentComplete,
+      palette: input.palette,
+      cornerRadius: metrics.progressBarHeight / 2
+    )
+
+    DailyWallpaperDrawing.drawDivider(
+      y: metrics.bottomDividerY,
+      size: input.size,
       unit: unit,
-      progress: input.progress,
-      palette: input.palette
+      palette: input.palette,
+      context: input.context
     )
 
     DailyWallpaperDrawing.drawMessageIfNeeded(
       input.message,
       in: input.size,
       unit: unit,
-      palette: input.palette
+      palette: input.palette,
+      yRatio: metrics.messageYRatio
     )
   }
 
@@ -38,59 +45,22 @@ enum DailyWallpaperMinimalTemplate {
     progress: DailyWallpaperProgressData,
     palette: DailyWallpaperPalette
   ) {
-    drawTopLabels(layout: layout, progress: progress, palette: palette)
-    drawBottomLabels(layout: layout, progress: progress, palette: palette)
-  }
-
-  private static func drawTopLabels(
-    layout: DailyWallpaperTemplateLayout,
-    progress: DailyWallpaperProgressData,
-    palette: DailyWallpaperPalette
-  ) {
     DailyWallpaperDrawing.drawText(
       "\(progress.year)",
-      in: layout.rect(yOffset: 0, height: 28),
+      in: layout.rect(yOffset: 0, height: 32),
       attributes: DailyWallpaperDrawing.textAttributes(
-        size: 17 * layout.unit,
+        size: 18 * layout.unit,
         weight: .heavy,
-        color: palette.secondaryText
-      ),
-      alignment: .left
-    )
-
-    DailyWallpaperDrawing.drawText(
-      String(format: "%.1f%%", progress.percentComplete * 100),
-      in: layout.rect(yOffset: 34, height: 44),
-      attributes: DailyWallpaperDrawing.textAttributes(
-        size: 34 * layout.unit,
-        weight: .black,
         color: palette.primaryText
-      ),
-      alignment: .left
-    )
-  }
-
-  private static func drawBottomLabels(
-    layout: DailyWallpaperTemplateLayout,
-    progress: DailyWallpaperProgressData,
-    palette: DailyWallpaperPalette
-  ) {
-    DailyWallpaperDrawing.drawText(
-      "\(progress.currentDayNumber)/\(progress.numberOfDaysInYear)",
-      in: layout.rect(yOffset: 86, height: 24),
-      attributes: DailyWallpaperDrawing.textAttributes(
-        size: 14 * layout.unit,
-        weight: .regular,
-        color: palette.tertiaryText
       ),
       alignment: .left
     )
 
     DailyWallpaperDrawing.drawText(
       "\(progress.daysLeft) left",
-      in: layout.rect(yOffset: 86, height: 24),
+      in: layout.rect(yOffset: 0, height: 32),
       attributes: DailyWallpaperDrawing.textAttributes(
-        size: 14 * layout.unit,
+        size: 18 * layout.unit,
         weight: .heavy,
         color: palette.accent
       ),

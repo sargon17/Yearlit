@@ -181,7 +181,7 @@ _Avoid_: quote, caption, reminder text
 - Premium users can customize the **Daily Wallpaper accent color**.
 - A **Daily Wallpaper message** is only available on premium **Daily Wallpaper templates** that explicitly support rendering it.
 - The Classic **Daily Wallpaper template** is the default full-grid wallpaper and does not render a **Daily Wallpaper message**.
-- A **Daily Wallpaper message** is optional, single-line, trimmed, and limited to 40 characters.
+- A **Daily Wallpaper message** is optional, trimmed, rendered in up to two centered lines, and limited to 40 characters.
 - Empty **Daily Wallpaper message** text means no message is rendered.
 - When premium access is inactive or unknown, **Create Daily Wallpaper** renders with free defaults: Classic template, a free light or dark theme, the default Yearlit orange **Daily Wallpaper accent color**, and no **Daily Wallpaper message**.
 - Losing premium access does not delete saved premium **Daily Wallpaper settings**; those choices can apply again if premium access returns.
