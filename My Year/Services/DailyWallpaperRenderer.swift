@@ -57,6 +57,7 @@ enum DailyWallpaperRenderer {
       screenScale: screenScale,
       progress: progress,
       palette: palette,
+      localizedText: DailyWallpaperLocalizedText(progress: progress),
       message: settings.message
     )
 

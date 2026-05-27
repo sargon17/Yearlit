@@ -823,37 +823,37 @@
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "Es ist nie spät, eine neue Serie zu beginnen!"
+            "value": "Es ist nie zu spät, eine neue Serie zu beginnen!"
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Il n'est jamais tard pour démarrer une nouvelle séquence!"
+            "value": "Il n’est jamais trop tard pour commencer une nouvelle série !"
           }
         },
         "nl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Het is nooit te laat om aan een nieuwe reeks te beginnen!"
+            "value": "Het is nooit te laat om een nieuwe reeks te beginnen!"
           }
         },
         "da": {
           "stringUnit": {
             "state": "translated",
-            "value": "Det er aldrig for sent at starte en ny streak!"
+            "value": "Det er aldrig for sent at starte en ny serie!"
           }
         },
         "sv": {
           "stringUnit": {
             "state": "translated",
-            "value": "Det är aldrig försent att starta en ny serie!"
+            "value": "Det är aldrig för sent att starta en ny serie!"
           }
         },
         "nb": {
           "stringUnit": {
             "state": "translated",
-            "value": "Det er aldri sent å starte en ny serie!"
+            "value": "Det er aldri for sent å starte en ny serie!"
           }
         },
         "pl": {
@@ -865,7 +865,7 @@
         "fi": {
           "stringUnit": {
             "state": "translated",
-            "value": "Koskaan ei ole myöhäistä aloittaa uusi sarja!"
+            "value": "Koskaan ei ole liian myöhäistä aloittaa uusi putki!"
           }
         },
         "cs": {
@@ -877,7 +877,7 @@
         "ro": {
           "stringUnit": {
             "state": "translated",
-            "value": "Nu este niciodată târziu pentru a începe o nouă serie!"
+            "value": "Nu este niciodată prea târziu să începi o serie nouă!"
           }
         },
         "hu": {
@@ -907,13 +907,19 @@
         "et": {
           "stringUnit": {
             "state": "translated",
-            "value": "Kunagi pole hilja alustada uut seeriat!"
+            "value": "Kunagi pole liiga hilja alustada uut seeriat!"
           }
         },
         "lv": {
           "stringUnit": {
             "state": "translated",
             "value": "Nekad nav par vēlu sākt jaunu sēriju!"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "It's never too late to start a new streak!"
           }
         }
       }
@@ -1844,13 +1850,13 @@
         "it": {
           "stringUnit": {
             "state": "translated",
-            "value": "La tua serie attuale di %@ è a rischio"
+            "value": "la tua serie attuale per %@ è a rischio"
           }
         },
         "uk": {
           "stringUnit": {
             "state": "translated",
-            "value": "Ваша поточна серія для %@ під загрозою"
+            "value": "поточна серія для %@ під загрозою"
           }
         },
         "es": {
@@ -1874,61 +1880,61 @@
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "Ihr aktueller %@-Streak ist gefährdet"
+            "value": "deine aktuelle %@-Serie ist gefährdet"
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "votre séquence actuelle %@ est en danger"
+            "value": "ta série actuelle pour %@ est en danger"
           }
         },
         "nl": {
           "stringUnit": {
             "state": "translated",
-            "value": "uw huidige %@-reeks loopt gevaar"
+            "value": "je huidige reeks voor %@ loopt gevaar"
           }
         },
         "da": {
           "stringUnit": {
             "state": "translated",
-            "value": "din nuværende %@ streak er i fare"
+            "value": "din nuværende serie for %@ er i fare"
           }
         },
         "sv": {
           "stringUnit": {
             "state": "translated",
-            "value": "din nuvarande %@ streak är i riskzonen"
+            "value": "din nuvarande serie för %@ är i riskzonen"
           }
         },
         "nb": {
           "stringUnit": {
             "state": "translated",
-            "value": "din nåværende %@-rekke er i fare"
+            "value": "din nåværende serie for %@ er i fare"
           }
         },
         "pl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Twoja obecna passa %@ jest zagrożona"
+            "value": "twoja aktualna passa dla %@ jest zagrożona"
           }
         },
         "fi": {
           "stringUnit": {
             "state": "translated",
-            "value": "nykyinen %@-putkisi on vaarassa"
+            "value": "nykyinen %@-putkesi on vaarassa"
           }
         },
         "cs": {
           "stringUnit": {
             "state": "translated",
-            "value": "vaše současná série %@ je ohrožena"
+            "value": "vaše aktuální série pro %@ je ohrožena"
           }
         },
         "ro": {
           "stringUnit": {
             "state": "translated",
-            "value": "seria dvs. actuală de %@ este în pericol"
+            "value": "seria ta actuală pentru %@ este în pericol"
           }
         },
         "hu": {
@@ -1940,31 +1946,37 @@
         "sk": {
           "stringUnit": {
             "state": "translated",
-            "value": "vaša súčasná séria %@ je ohrozená"
+            "value": "tvoja aktuálna séria pre %@ je ohrozená"
           }
         },
         "hr": {
           "stringUnit": {
             "state": "translated",
-            "value": "vaš trenutni niz %@ je u opasnosti"
+            "value": "tvoj trenutni niz za %@ je u opasnosti"
           }
         },
         "sl": {
           "stringUnit": {
             "state": "translated",
-            "value": "vaš trenutni niz %@ je ogrožen"
+            "value": "vaš trenutni niz za %@ je ogrožen"
           }
         },
         "et": {
           "stringUnit": {
             "state": "translated",
-            "value": "teie praegune %@ seeria on ohus"
+            "value": "sinu praegune %@ seeria on ohus"
           }
         },
         "lv": {
           "stringUnit": {
             "state": "translated",
-            "value": "jūsu pašreizējā %@ sērija ir apdraudēta"
+            "value": "tava pašreizējā %@ sērija ir apdraudēta"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "your current %@ streak is at risk"
           }
         }
       }
@@ -1975,13 +1987,13 @@
         "it": {
           "stringUnit": {
             "state": "translated",
-            "value": "La tua serie attuale di %@ è:"
+            "value": "la tua serie attuale per %@ è:"
           }
         },
         "uk": {
           "stringUnit": {
             "state": "translated",
-            "value": "Ваша поточна серія для %@:"
+            "value": "поточна серія для %@:"
           }
         },
         "es": {
@@ -2005,61 +2017,61 @@
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "Ihr aktueller %@-Streak ist:"
+            "value": "deine aktuelle %@-Serie ist:"
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "votre séquence actuelle de %@ est:"
+            "value": "ta série actuelle pour %@ est :"
           }
         },
         "nl": {
           "stringUnit": {
             "state": "translated",
-            "value": "je huidige %@-reeks is:"
+            "value": "je huidige reeks voor %@ is:"
           }
         },
         "da": {
           "stringUnit": {
             "state": "translated",
-            "value": "din nuværende %@ streak er:"
+            "value": "din nuværende serie for %@ er:"
           }
         },
         "sv": {
           "stringUnit": {
             "state": "translated",
-            "value": "din nuvarande %@ streak är:"
+            "value": "din nuvarande serie för %@ är:"
           }
         },
         "nb": {
           "stringUnit": {
             "state": "translated",
-            "value": "din nåværende %@ rekke er:"
+            "value": "din nåværende serie for %@ er:"
           }
         },
         "pl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Twoja aktualna passa %@ to:"
+            "value": "twoja aktualna passa dla %@ to:"
           }
         },
         "fi": {
           "stringUnit": {
             "state": "translated",
-            "value": "nykyinen %@-putkisi on:"
+            "value": "nykyinen %@-putkesi on:"
           }
         },
         "cs": {
           "stringUnit": {
             "state": "translated",
-            "value": "vaše aktuální série %@ je:"
+            "value": "vaše aktuální série pro %@ je:"
           }
         },
         "ro": {
           "stringUnit": {
             "state": "translated",
-            "value": "seria ta actuală %@ este:"
+            "value": "seria ta actuală pentru %@ este:"
           }
         },
         "hu": {
@@ -2071,31 +2083,37 @@
         "sk": {
           "stringUnit": {
             "state": "translated",
-            "value": "vaša aktuálna séria %@ je:"
+            "value": "tvoja aktuálna séria pre %@ je:"
           }
         },
         "hr": {
           "stringUnit": {
             "state": "translated",
-            "value": "tvoj trenutni niz %@ je:"
+            "value": "tvoj trenutni niz za %@ je:"
           }
         },
         "sl": {
           "stringUnit": {
             "state": "translated",
-            "value": "vaš trenutni niz %@ je:"
+            "value": "vaš trenutni niz za %@ je:"
           }
         },
         "et": {
           "stringUnit": {
             "state": "translated",
-            "value": "teie praegune %@ seeria on:"
+            "value": "sinu praegune %@ seeria on:"
           }
         },
         "lv": {
           "stringUnit": {
             "state": "translated",
-            "value": "jūsu pašreizējā %@ sērija ir:"
+            "value": "tava pašreizējā %@ sērija ir:"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "your current %@ streak is:"
           }
         }
       }
@@ -2253,7 +2271,7 @@
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "En"
+            "value": "Activado"
           }
         },
         "es-MX": {
@@ -2356,6 +2374,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Увімкнено"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "On"
           }
         }
       }
@@ -2467,7 +2491,7 @@
         "sk": {
           "stringUnit": {
             "state": "translated",
-            "value": "Vyp"
+            "value": "Vypnuté"
           }
         },
         "sl": {
@@ -2486,6 +2510,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Вимкнено"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Off"
           }
         }
       }
@@ -2755,19 +2785,19 @@
         "cs": {
           "stringUnit": {
             "state": "translated",
-            "value": "Konfigurace názvu časovače"
+            "value": "Nastavení názvu časovače"
           }
         },
         "da": {
           "stringUnit": {
             "state": "translated",
-            "value": "Konfiguration af timernavn"
+            "value": "Indstilling af timernavn"
           }
         },
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "Timer-Namenskonfiguration"
+            "value": "Timer-Namen konfigurieren"
           }
         },
         "es": {
@@ -2785,7 +2815,7 @@
         "et": {
           "stringUnit": {
             "state": "translated",
-            "value": "Taimeri nime konfiguratsioon"
+            "value": "Taimeri nime seadistus"
           }
         },
         "fi": {
@@ -2797,13 +2827,13 @@
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Configuration du nom de la minuterie"
+            "value": "Configuration du nom du minuteur"
           }
         },
         "hr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Konfiguracija naziva mjerača vremena"
+            "value": "Postavke naziva mjerača vremena"
           }
         },
         "hu": {
@@ -2815,31 +2845,31 @@
         "it": {
           "stringUnit": {
             "state": "translated",
-            "value": "Configurazione del nome del timer"
+            "value": "Configurazione nome timer"
           }
         },
         "lv": {
           "stringUnit": {
             "state": "translated",
-            "value": "Taimera nosaukuma konfigurācija"
+            "value": "Taimera nosaukuma iestatījumi"
           }
         },
         "nb": {
           "stringUnit": {
             "state": "translated",
-            "value": "Tidtakernavnkonfigurasjon"
+            "value": "Innstilling av timernavn"
           }
         },
         "nl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Configuratie timernaam"
+            "value": "Timernaam configureren"
           }
         },
         "pl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Konfiguracja nazwy timera"
+            "value": "Konfiguracja nazwy minutnika"
           }
         },
         "pt-BR": {
@@ -2851,31 +2881,37 @@
         "ro": {
           "stringUnit": {
             "state": "translated",
-            "value": "Configurarea numelui temporizatorului"
+            "value": "Configurarea numelui cronometrului"
           }
         },
         "sk": {
           "stringUnit": {
             "state": "translated",
-            "value": "Konfigurácia názvu časovača"
+            "value": "Nastavenie názvu časovača"
           }
         },
         "sl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Konfiguracija imena časovnika"
+            "value": "Nastavitev imena časovnika"
           }
         },
         "sv": {
           "stringUnit": {
             "state": "translated",
-            "value": "Timer Name Configuration"
+            "value": "Timer-namninställning"
           }
         },
         "uk": {
           "stringUnit": {
             "state": "translated",
-            "value": "Конфігурація імені таймера"
+            "value": "Налаштування назви таймера"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Timer Name Configuration"
           }
         }
       }
@@ -3015,7 +3051,7 @@
         "cs": {
           "stringUnit": {
             "state": "translated",
-            "value": "Spusťte časovač"
+            "value": "Spustit časovač"
           }
         },
         "da": {
@@ -3027,7 +3063,7 @@
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "Starten Sie einen Timer"
+            "value": "Timer starten"
           }
         },
         "es": {
@@ -3045,7 +3081,7 @@
         "et": {
           "stringUnit": {
             "state": "translated",
-            "value": "Käivitage taimer"
+            "value": "Käivita taimer"
           }
         },
         "fi": {
@@ -3063,13 +3099,13 @@
         "hr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Pokrenite mjerač vremena"
+            "value": "Pokreni mjerač vremena"
           }
         },
         "hu": {
           "stringUnit": {
             "state": "translated",
-            "value": "Indítsa el az időzítőt"
+            "value": "Időzítő indítása"
           }
         },
         "it": {
@@ -3081,49 +3117,49 @@
         "lv": {
           "stringUnit": {
             "state": "translated",
-            "value": "Sāciet taimeri"
+            "value": "Palaist taimeri"
           }
         },
         "nb": {
           "stringUnit": {
             "state": "translated",
-            "value": "Start en tidtaker"
+            "value": "Start en timer"
           }
         },
         "nl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Start een timer"
+            "value": "Timer starten"
           }
         },
         "pl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Uruchom licznik czasu"
+            "value": "Uruchom minutnik"
           }
         },
         "pt-BR": {
           "stringUnit": {
             "state": "translated",
-            "value": "Iniciar um cronômetro"
+            "value": "Iniciar um temporizador"
           }
         },
         "ro": {
           "stringUnit": {
             "state": "translated",
-            "value": "Porniți un cronometru"
+            "value": "Pornește un cronometru"
           }
         },
         "sk": {
           "stringUnit": {
             "state": "translated",
-            "value": "Spustite časovač"
+            "value": "Spustiť časovač"
           }
         },
         "sl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Zaženite časovnik"
+            "value": "Zaženi časovnik"
           }
         },
         "sv": {
@@ -3135,7 +3171,13 @@
         "uk": {
           "stringUnit": {
             "state": "translated",
-            "value": "Запустіть таймер"
+            "value": "Запустити таймер"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Start a timer"
           }
         }
       }

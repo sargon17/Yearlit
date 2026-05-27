@@ -208,7 +208,7 @@
         "pl": {
           "stringUnit": {
             "state": "translated",
-            "value": " pozostało dni"
+            "value": " dni pozostało"
           }
         },
         "fi": {
@@ -220,7 +220,7 @@
         "cs": {
           "stringUnit": {
             "state": "translated",
-            "value": " zbývající dny"
+            "value": " zbývá dní"
           }
         },
         "ro": {
@@ -232,13 +232,13 @@
         "hu": {
           "stringUnit": {
             "state": "translated",
-            "value": " napok vannak hátra"
+            "value": " nap van hátra"
           }
         },
         "sk": {
           "stringUnit": {
             "state": "translated",
-            "value": " zostávajúcich dní"
+            "value": " zostáva dní"
           }
         },
         "hr": {
@@ -256,13 +256,19 @@
         "et": {
           "stringUnit": {
             "state": "translated",
-            "value": " päevad jäänud"
+            "value": " päeva jäänud"
           }
         },
         "lv": {
           "stringUnit": {
             "state": "translated",
             "value": " atlikušas dienas"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": " days left"
           }
         }
       }
@@ -931,13 +937,13 @@
         "it": {
           "stringUnit": {
             "state": "translated",
-            "value": "giorni rimanenti"
+            "value": "giorni rimasti"
           }
         },
         "uk": {
           "stringUnit": {
             "state": "translated",
-            "value": "залишилося"
+            "value": "днів залишилося"
           }
         },
         "es": {
@@ -997,7 +1003,7 @@
         "pl": {
           "stringUnit": {
             "state": "translated",
-            "value": "pozostało dni"
+            "value": "dni pozostało"
           }
         },
         "fi": {
@@ -1009,7 +1015,7 @@
         "cs": {
           "stringUnit": {
             "state": "translated",
-            "value": "zbývající dny"
+            "value": "zbývá dní"
           }
         },
         "ro": {
@@ -1021,13 +1027,13 @@
         "hu": {
           "stringUnit": {
             "state": "translated",
-            "value": "napok vannak hátra"
+            "value": "nap van hátra"
           }
         },
         "sk": {
           "stringUnit": {
             "state": "translated",
-            "value": "zostávajúcich dní"
+            "value": "zostáva dní"
           }
         },
         "hr": {
@@ -1045,13 +1051,19 @@
         "et": {
           "stringUnit": {
             "state": "translated",
-            "value": "päevad jäänud"
+            "value": "päeva jäänud"
           }
         },
         "lv": {
           "stringUnit": {
             "state": "translated",
             "value": "atlikušas dienas"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "days left"
           }
         }
       }
@@ -2522,7 +2534,7 @@
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "En"
+            "value": "Activado"
           }
         },
         "es-MX": {
@@ -2625,6 +2637,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Увімкнено"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "On"
           }
         }
       }
@@ -2736,7 +2754,7 @@
         "sk": {
           "stringUnit": {
             "state": "translated",
-            "value": "Vyp"
+            "value": "Vypnuté"
           }
         },
         "sl": {
@@ -2756,6 +2774,12 @@
             "state": "translated",
             "value": "Вимкнено"
           }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Off"
+          }
         }
       }
     },
@@ -2764,7 +2788,7 @@
         "cs": {
           "stringUnit": {
             "state": "translated",
-            "value": "Spusťte časovač"
+            "value": "Spustit časovač"
           }
         },
         "da": {
@@ -2776,7 +2800,7 @@
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "Starten Sie einen Timer"
+            "value": "Timer starten"
           }
         },
         "es": {
@@ -2794,7 +2818,7 @@
         "et": {
           "stringUnit": {
             "state": "translated",
-            "value": "Käivitage taimer"
+            "value": "Käivita taimer"
           }
         },
         "fi": {
@@ -2812,13 +2836,13 @@
         "hr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Pokrenite mjerač vremena"
+            "value": "Pokreni mjerač vremena"
           }
         },
         "hu": {
           "stringUnit": {
             "state": "translated",
-            "value": "Indítsa el az időzítőt"
+            "value": "Időzítő indítása"
           }
         },
         "it": {
@@ -2830,49 +2854,49 @@
         "lv": {
           "stringUnit": {
             "state": "translated",
-            "value": "Sāciet taimeri"
+            "value": "Palaist taimeri"
           }
         },
         "nb": {
           "stringUnit": {
             "state": "translated",
-            "value": "Start en tidtaker"
+            "value": "Start en timer"
           }
         },
         "nl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Start een timer"
+            "value": "Timer starten"
           }
         },
         "pl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Uruchom stoper"
+            "value": "Uruchom minutnik"
           }
         },
         "pt-BR": {
           "stringUnit": {
             "state": "translated",
-            "value": "Iniciar um cronômetro"
+            "value": "Iniciar um temporizador"
           }
         },
         "ro": {
           "stringUnit": {
             "state": "translated",
-            "value": "Porniți un cronometru"
+            "value": "Pornește un cronometru"
           }
         },
         "sk": {
           "stringUnit": {
             "state": "translated",
-            "value": "Spustite časovač"
+            "value": "Spustiť časovač"
           }
         },
         "sl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Zaženite časovnik"
+            "value": "Zaženi časovnik"
           }
         },
         "sv": {
@@ -2884,7 +2908,13 @@
         "uk": {
           "stringUnit": {
             "state": "translated",
-            "value": "Запустіть таймер"
+            "value": "Запустити таймер"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Start a timer"
           }
         }
       }

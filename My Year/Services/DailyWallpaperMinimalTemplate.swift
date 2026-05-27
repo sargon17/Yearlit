@@ -14,7 +14,12 @@ enum DailyWallpaperMinimalTemplate {
       unit: unit
     )
 
-    drawLabels(layout: layout, progress: input.progress, palette: input.palette)
+    drawLabels(
+      layout: layout,
+      progress: input.progress,
+      localizedText: input.localizedText,
+      palette: input.palette
+    )
 
     DailyWallpaperDrawing.drawGrid(
       in: DailyWallpaperDrawing.aligned(
@@ -36,15 +41,17 @@ enum DailyWallpaperMinimalTemplate {
   private static func drawLabels(
     layout: DailyWallpaperTemplateLayout,
     progress: DailyWallpaperProgressData,
+    localizedText: DailyWallpaperLocalizedText,
     palette: DailyWallpaperPalette
   ) {
-    drawTopLabels(layout: layout, progress: progress, palette: palette)
-    drawBottomLabels(layout: layout, progress: progress, palette: palette)
+    drawTopLabels(layout: layout, progress: progress, localizedText: localizedText, palette: palette)
+    drawBottomLabels(layout: layout, progress: progress, localizedText: localizedText, palette: palette)
   }
 
   private static func drawTopLabels(
     layout: DailyWallpaperTemplateLayout,
     progress: DailyWallpaperProgressData,
+    localizedText: DailyWallpaperLocalizedText,
     palette: DailyWallpaperPalette
   ) {
     DailyWallpaperDrawing.drawText(
@@ -59,7 +66,7 @@ enum DailyWallpaperMinimalTemplate {
     )
 
     DailyWallpaperDrawing.drawText(
-      String(format: "%.1f%%", progress.percentComplete * 100),
+      localizedText.percentComplete,
       in: layout.rect(yOffset: 34, height: 44),
       attributes: DailyWallpaperDrawing.textAttributes(
         size: 34 * layout.unit,
@@ -73,6 +80,7 @@ enum DailyWallpaperMinimalTemplate {
   private static func drawBottomLabels(
     layout: DailyWallpaperTemplateLayout,
     progress: DailyWallpaperProgressData,
+    localizedText: DailyWallpaperLocalizedText,
     palette: DailyWallpaperPalette
   ) {
     DailyWallpaperDrawing.drawText(
@@ -87,7 +95,7 @@ enum DailyWallpaperMinimalTemplate {
     )
 
     DailyWallpaperDrawing.drawText(
-      "\(progress.daysLeft) left",
+      localizedText.compactDaysLeft,
       in: layout.rect(yOffset: 86, height: 24),
       attributes: DailyWallpaperDrawing.textAttributes(
         size: 14 * layout.unit,

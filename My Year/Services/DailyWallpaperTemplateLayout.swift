@@ -22,5 +22,6 @@ struct DailyWallpaperTemplateRenderInput {
   let screenScale: CGFloat
   let progress: DailyWallpaperProgressData
   let palette: DailyWallpaperPalette
+  let localizedText: DailyWallpaperLocalizedText
   let message: String?
 }

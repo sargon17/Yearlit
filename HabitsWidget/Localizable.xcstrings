@@ -408,7 +408,7 @@
         "uk": {
           "stringUnit": {
             "state": "translated",
-            "value": "поспіль"
+            "value": "днів поспіль"
           }
         },
         "es": {
@@ -432,61 +432,61 @@
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "Tage Streak"
+            "value": "Tage in Folge"
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "jours consécutifs"
+            "value": "jours de suite"
           }
         },
         "nl": {
           "stringUnit": {
             "state": "translated",
-            "value": "dagen strepen"
+            "value": "dagen op rij"
           }
         },
         "da": {
           "stringUnit": {
             "state": "translated",
-            "value": "dages række"
+            "value": "dage i træk"
           }
         },
         "sv": {
           "stringUnit": {
             "state": "translated",
-            "value": "dagars rad"
+            "value": "dagar i rad"
           }
         },
         "nb": {
           "stringUnit": {
             "state": "translated",
-            "value": "dagers rekke"
+            "value": "dager på rad"
           }
         },
         "pl": {
           "stringUnit": {
             "state": "translated",
-            "value": "passa dni"
+            "value": "dni z rzędu"
           }
         },
         "fi": {
           "stringUnit": {
             "state": "translated",
-            "value": "päivän sarja"
+            "value": "päivää putkeen"
           }
         },
         "cs": {
           "stringUnit": {
             "state": "translated",
-            "value": "pruh dní"
+            "value": "dní v řadě"
           }
         },
         "ro": {
           "stringUnit": {
             "state": "translated",
-            "value": "serie de zile"
+            "value": "zile la rând"
           }
         },
         "hu": {
@@ -498,31 +498,37 @@
         "sk": {
           "stringUnit": {
             "state": "translated",
-            "value": "dní"
+            "value": "dní v rade"
           }
         },
         "hr": {
           "stringUnit": {
             "state": "translated",
-            "value": "niz dana"
+            "value": "dana zaredom"
           }
         },
         "sl": {
           "stringUnit": {
             "state": "translated",
-            "value": "niz dni"
+            "value": "dni zapored"
           }
         },
         "et": {
           "stringUnit": {
             "state": "translated",
-            "value": "päevade seeria"
+            "value": "päeva järjest"
           }
         },
         "lv": {
           "stringUnit": {
             "state": "translated",
-            "value": "dienu sērija"
+            "value": "dienas pēc kārtas"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "day streak"
           }
         }
       }
@@ -664,7 +670,7 @@
         "it": {
           "stringUnit": {
             "state": "translated",
-            "value": "Aggiunta rapida"
+            "value": "Aggiunta rapida abitudine"
           }
         },
         "uk": {
@@ -676,13 +682,13 @@
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Agregar rápido de hábitos"
+            "value": "Añadir hábito rápido"
           }
         },
         "es-MX": {
           "stringUnit": {
             "state": "translated",
-            "value": "Agregar rápido de hábitos"
+            "value": "Añadir hábito rápido"
           }
         },
         "pt-BR": {
@@ -700,31 +706,31 @@
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Ajout rapide d'habitudes"
+            "value": "Ajout rapide d’habitude"
           }
         },
         "nl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Gewoonte Snel toevoegen"
+            "value": "Gewoonte snel toevoegen"
           }
         },
         "da": {
           "stringUnit": {
             "state": "translated",
-            "value": "Vane Hurtig tilføjelse"
+            "value": "Tilføj vane hurtigt"
           }
         },
         "sv": {
           "stringUnit": {
             "state": "translated",
-            "value": "Vana Quick Add"
+            "value": "Lägg till vana snabbt"
           }
         },
         "nb": {
           "stringUnit": {
             "state": "translated",
-            "value": "Vane Rask Legg til"
+            "value": "Legg til vane raskt"
           }
         },
         "pl": {
@@ -736,13 +742,13 @@
         "fi": {
           "stringUnit": {
             "state": "translated",
-            "value": "Habit Quick Add"
+            "value": "Tavan pikalisäys"
           }
         },
         "cs": {
           "stringUnit": {
             "state": "translated",
-            "value": "Rychlé přidání návyku"
+            "value": "Rychlé přidání zvyku"
           }
         },
         "ro": {
@@ -754,19 +760,19 @@
         "hu": {
           "stringUnit": {
             "state": "translated",
-            "value": "Habit Quick Add"
+            "value": "Szokás gyors hozzáadása"
           }
         },
         "sk": {
           "stringUnit": {
             "state": "translated",
-            "value": "Rýchle pridanie návyku"
+            "value": "Rýchle pridanie zvyku"
           }
         },
         "hr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Brzo dodavanje navika"
+            "value": "Brzo dodavanje navike"
           }
         },
         "sl": {
@@ -784,7 +790,13 @@
         "lv": {
           "stringUnit": {
             "state": "translated",
-            "value": "Ieradums Ātrā pievienošana"
+            "value": "Ātra ieraduma pievienošana"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Habit Quick Add"
           }
         }
       }
@@ -1577,13 +1589,13 @@
         "it": {
           "stringUnit": {
             "state": "translated",
-            "value": "settimane di serie"
+            "value": "settimane di fila"
           }
         },
         "uk": {
           "stringUnit": {
             "state": "translated",
-            "value": "тижнів серії"
+            "value": "тижнів поспіль"
           }
         },
         "es": {
@@ -1607,61 +1619,61 @@
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "Woche Streak"
+            "value": "Wochen in Folge"
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "semaines consécutives"
+            "value": "semaines de suite"
           }
         },
         "nl": {
           "stringUnit": {
             "state": "translated",
-            "value": "weken streep"
+            "value": "weken op rij"
           }
         },
         "da": {
           "stringUnit": {
             "state": "translated",
-            "value": "ugers række"
+            "value": "uger i træk"
           }
         },
         "sv": {
           "stringUnit": {
             "state": "translated",
-            "value": "veckors rad"
+            "value": "veckor i rad"
           }
         },
         "nb": {
           "stringUnit": {
             "state": "translated",
-            "value": "ukers rekke"
+            "value": "uker på rad"
           }
         },
         "pl": {
           "stringUnit": {
             "state": "translated",
-            "value": "tygodniowa passa"
+            "value": "tygodni z rzędu"
           }
         },
         "fi": {
           "stringUnit": {
             "state": "translated",
-            "value": "viikon putkeen"
+            "value": "viikkoa putkeen"
           }
         },
         "cs": {
           "stringUnit": {
             "state": "translated",
-            "value": "série týdnů"
+            "value": "týdnů v řadě"
           }
         },
         "ro": {
           "stringUnit": {
             "state": "translated",
-            "value": "serie de săptămâni"
+            "value": "săptămâni la rând"
           }
         },
         "hu": {
@@ -1673,31 +1685,37 @@
         "sk": {
           "stringUnit": {
             "state": "translated",
-            "value": "týždňová séria"
+            "value": "týždňov v rade"
           }
         },
         "hr": {
           "stringUnit": {
             "state": "translated",
-            "value": "niz tjedana"
+            "value": "tjedana zaredom"
           }
         },
         "sl": {
           "stringUnit": {
             "state": "translated",
-            "value": "tedenski niz"
+            "value": "tednov zapored"
           }
         },
         "et": {
           "stringUnit": {
             "state": "translated",
-            "value": "nädala seeria"
+            "value": "nädalat järjest"
           }
         },
         "lv": {
           "stringUnit": {
             "state": "translated",
-            "value": "nedēļu sērija"
+            "value": "nedēļas pēc kārtas"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "week streak"
           }
         }
       }
@@ -1707,61 +1725,61 @@
         "cs": {
           "stringUnit": {
             "state": "translated",
-            "value": "Konfigurace zvyku"
+            "value": "Nastavení zvyku"
           }
         },
         "da": {
           "stringUnit": {
             "state": "translated",
-            "value": "Vanekonfiguration"
+            "value": "Vaneindstilling"
           }
         },
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "Gewohnheitskonfiguration"
+            "value": "Gewohnheit konfigurieren"
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Configuración de hábitos"
+            "value": "Configuración de hábito"
           }
         },
         "es-MX": {
           "stringUnit": {
             "state": "translated",
-            "value": "Configuración de hábitos"
+            "value": "Configuración de hábito"
           }
         },
         "et": {
           "stringUnit": {
             "state": "translated",
-            "value": "Harjumuse konfiguratsioon"
+            "value": "Harjumuse seadistus"
           }
         },
         "fi": {
           "stringUnit": {
             "state": "translated",
-            "value": "Habit Configuration"
+            "value": "Tavan määritys"
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Configuration des habitudes"
+            "value": "Configuration de l’habitude"
           }
         },
         "hr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Konfiguracija navika"
+            "value": "Postavke navike"
           }
         },
         "hu": {
           "stringUnit": {
             "state": "translated",
-            "value": "Szokáskonfiguráció"
+            "value": "Szokás beállítása"
           }
         },
         "it": {
@@ -1773,13 +1791,13 @@
         "lv": {
           "stringUnit": {
             "state": "translated",
-            "value": "Paraduma konfigurācija"
+            "value": "Ieraduma iestatījumi"
           }
         },
         "nb": {
           "stringUnit": {
             "state": "translated",
-            "value": "Vanekonfigurasjon"
+            "value": "Vaneinnstilling"
           }
         },
         "nl": {
@@ -1791,7 +1809,7 @@
         "pl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Konfiguracja nawyków"
+            "value": "Konfiguracja nawyku"
           }
         },
         "pt-BR": {
@@ -1809,25 +1827,31 @@
         "sk": {
           "stringUnit": {
             "state": "translated",
-            "value": "Konfigurácia zvyku"
+            "value": "Nastavenie zvyku"
           }
         },
         "sl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Konfiguracija navade"
+            "value": "Nastavitev navade"
           }
         },
         "sv": {
           "stringUnit": {
             "state": "translated",
-            "value": "Vanekonfiguration"
+            "value": "Vaneinställning"
           }
         },
         "uk": {
           "stringUnit": {
             "state": "translated",
-            "value": "Конфігурація звички"
+            "value": "Налаштування звички"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Habit Configuration"
           }
         }
       }
@@ -1967,127 +1991,133 @@
         "cs": {
           "stringUnit": {
             "state": "translated",
-            "value": "Rychlý záznam zvyku protokolu"
+            "value": "Rychle zapsat zvyk"
           }
         },
         "da": {
           "stringUnit": {
             "state": "translated",
-            "value": "Hurtig logvaneindtastning"
+            "value": "Log vane hurtigt"
           }
         },
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "Schnellprotokoll-Gewohnheitseintrag"
+            "value": "Gewohnheit schnell eintragen"
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Entrada rápida de hábitos de registro"
+            "value": "Registro rápido de hábito"
           }
         },
         "es-MX": {
           "stringUnit": {
             "state": "translated",
-            "value": "Entrada rápida de hábitos de registro"
+            "value": "Registro rápido de hábito"
           }
         },
         "et": {
           "stringUnit": {
             "state": "translated",
-            "value": "Kiire logiharjumuse sisestamine"
+            "value": "Logi harjumus kiiresti"
           }
         },
         "fi": {
           "stringUnit": {
             "state": "translated",
-            "value": "Quick Log Habit Entry"
+            "value": "Kirjaa tapa nopeasti"
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Entrée rapide des habitudes de journal"
+            "value": "Journaliser rapidement l’habitude"
           }
         },
         "hr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Brzi unos navika"
+            "value": "Brzi zapis navike"
           }
         },
         "hu": {
           "stringUnit": {
             "state": "translated",
-            "value": "Gyors naplóbejegyzés"
+            "value": "Szokás gyors naplózása"
           }
         },
         "it": {
           "stringUnit": {
             "state": "translated",
-            "value": "Inserimento rapido delle abitudini nel registro"
+            "value": "Registra abitudine rapidamente"
           }
         },
         "lv": {
           "stringUnit": {
             "state": "translated",
-            "value": "Ātrā žurnāla ieraduma ievade"
+            "value": "Ātri reģistrēt ieradumu"
           }
         },
         "nb": {
           "stringUnit": {
             "state": "translated",
-            "value": "Hurtigregistrering av loggvaner"
+            "value": "Logg vane raskt"
           }
         },
         "nl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Snelle invoer van loggewoonten"
+            "value": "Gewoonte snel loggen"
           }
         },
         "pl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Szybki wpis do dziennika nawyków"
+            "value": "Szybki wpis nawyku"
           }
         },
         "pt-BR": {
           "stringUnit": {
             "state": "translated",
-            "value": "Entrada rápida de hábito de registro"
+            "value": "Registro rápido de hábito"
           }
         },
         "ro": {
           "stringUnit": {
             "state": "translated",
-            "value": "Intrare rapidă în jurnal"
+            "value": "Înregistrează rapid obiceiul"
           }
         },
         "sk": {
           "stringUnit": {
             "state": "translated",
-            "value": "Quick Log Habit Entry"
+            "value": "Rýchlo zapísať zvyk"
           }
         },
         "sl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Hitri vnos v dnevnik"
+            "value": "Hitro zabeleži navado"
           }
         },
         "sv": {
           "stringUnit": {
             "state": "translated",
-            "value": "Snabbregistrering av vana"
+            "value": "Logga vana snabbt"
           }
         },
         "uk": {
           "stringUnit": {
             "state": "translated",
-            "value": "Швидкий запис звички в журналі"
+            "value": "Швидко записати звичку"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Quick Log Habit Entry"
           }
         }
       }
@@ -2097,37 +2127,37 @@
         "cs": {
           "stringUnit": {
             "state": "translated",
-            "value": "Rychle přidejte záznam do svého sledování návyků"
+            "value": "Rychle přidejte záznam do sledování návyků"
           }
         },
         "da": {
           "stringUnit": {
             "state": "translated",
-            "value": "Føj hurtigt en post til din vanetracker"
+            "value": "Tilføj hurtigt en post til din vanetracker"
           }
         },
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "Fügen Sie schnell einen Eintrag zu Ihrem Habit Tracker hinzu"
+            "value": "Füge deinem Gewohnheitstracker schnell einen Eintrag hinzu"
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Agregue rápidamente una entrada a su rastreador de hábitos"
+            "value": "Añade rápidamente una entrada a tu seguimiento de hábitos"
           }
         },
         "es-MX": {
           "stringUnit": {
             "state": "translated",
-            "value": "Agregue rápidamente una entrada a su rastreador de hábitos"
+            "value": "Añade rápidamente una entrada a tu seguimiento de hábitos"
           }
         },
         "et": {
           "stringUnit": {
             "state": "translated",
-            "value": "Lisage kiiresti kirje oma harjumuste jälgimisse"
+            "value": "Lisa kiiresti kirje oma harjumuste jälgijasse"
           }
         },
         "fi": {
@@ -2139,49 +2169,49 @@
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Ajoutez rapidement une entrée à votre suivi d'habitudes"
+            "value": "Ajoute rapidement une entrée à ton suivi d’habitudes"
           }
         },
         "hr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Brzo dodajte unos u svoj alat za praćenje navika"
+            "value": "Brzo dodaj zapis u praćenje navika"
           }
         },
         "hu": {
           "stringUnit": {
             "state": "translated",
-            "value": "Gyorsan adjon hozzá bejegyzést a szokáskövetőhöz"
+            "value": "Adj gyorsan bejegyzést a szokáskövetődhöz"
           }
         },
         "it": {
           "stringUnit": {
             "state": "translated",
-            "value": "Aggiungi rapidamente una voce al tuo monitoraggio delle abitudini"
+            "value": "Aggiungi rapidamente una voce al tuo tracker delle abitudini"
           }
         },
         "lv": {
           "stringUnit": {
             "state": "translated",
-            "value": "Ātri pievienojiet ierakstu ieradumu izsekotājam"
+            "value": "Ātri pievieno ierakstu savam ieradumu sekotājam"
           }
         },
         "nb": {
           "stringUnit": {
             "state": "translated",
-            "value": "Legg raskt til en oppføring i vanesporingen din"
+            "value": "Legg raskt til en oppføring i vanesporeren din"
           }
         },
         "nl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Voeg snel een item toe aan uw gewoonte-tracker"
+            "value": "Voeg snel een item toe aan je gewoontetracker"
           }
         },
         "pl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Szybko dodaj wpis do swojego narzędzia do śledzenia nawyków"
+            "value": "Szybko dodaj wpis do śledzenia nawyków"
           }
         },
         "pt-BR": {
@@ -2193,19 +2223,19 @@
         "ro": {
           "stringUnit": {
             "state": "translated",
-            "value": "Adăugați rapid o intrare în instrumentul de urmărire a obiceiurilor"
+            "value": "Adaugă rapid o intrare în trackerul de obiceiuri"
           }
         },
         "sk": {
           "stringUnit": {
             "state": "translated",
-            "value": "Rýchlo pridajte záznam do svojho nástroja na sledovanie návykov"
+            "value": "Rýchlo pridaj záznam do sledovania návykov"
           }
         },
         "sl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Hitro dodajte vnos v sledilnik navad"
+            "value": "Hitro dodaj vnos v sledilnik navad"
           }
         },
         "sv": {
@@ -2217,7 +2247,13 @@
         "uk": {
           "stringUnit": {
             "state": "translated",
-            "value": "Швидко додайте запис у свій трекер звичок"
+            "value": "Швидко додайте запис у трекер звичок"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Quickly add an entry to your habit tracker"
           }
         }
       }
@@ -2868,6 +2904,550 @@
           "stringUnit": {
             "state": "translated",
             "value": "Який календар ви хочете відобразити?"
+          }
+        }
+      }
+    },
+    "habitWidget.dayStreak": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld day streak"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld giorno di fila"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld день поспіль"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Racha de %lld día"
+          }
+        },
+        "es-MX": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Racha de %lld día"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sequência de %lld dia"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld Tag in Folge"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld jour de suite"
+          }
+        },
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld dag op rij"
+          }
+        },
+        "da": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld dag i træk"
+          }
+        },
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld dag i rad"
+          }
+        },
+        "nb": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld dag på rad"
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld dzień z rzędu"
+          }
+        },
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld päivä putkeen"
+          }
+        },
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld den v řadě"
+          }
+        },
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld zi la rând"
+          }
+        },
+        "hu": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld napos sorozat"
+          }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld deň v rade"
+          }
+        },
+        "hr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld dan zaredom"
+          }
+        },
+        "sl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld dan zapored"
+          }
+        },
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld päev järjest"
+          }
+        },
+        "lv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld diena pēc kārtas"
+          }
+        }
+      }
+    },
+    "habitWidget.daysStreak": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld day streak"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld giorni di fila"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld днів поспіль"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Racha de %lld días"
+          }
+        },
+        "es-MX": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Racha de %lld días"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sequência de %lld dias"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld Tage in Folge"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld jours de suite"
+          }
+        },
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld dagen op rij"
+          }
+        },
+        "da": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld dage i træk"
+          }
+        },
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld dagar i rad"
+          }
+        },
+        "nb": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld dager på rad"
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld dni z rzędu"
+          }
+        },
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld päivää putkeen"
+          }
+        },
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld dní v řadě"
+          }
+        },
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld zile la rând"
+          }
+        },
+        "hu": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld napos sorozat"
+          }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld dní v rade"
+          }
+        },
+        "hr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld dana zaredom"
+          }
+        },
+        "sl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld dni zapored"
+          }
+        },
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld päeva järjest"
+          }
+        },
+        "lv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld dienas pēc kārtas"
+          }
+        }
+      }
+    },
+    "habitWidget.weekStreak": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld week streak"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld settimana di fila"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld тиждень поспіль"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Racha de %lld semana"
+          }
+        },
+        "es-MX": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Racha de %lld semana"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sequência de %lld semana"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld Woche in Folge"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld semaine de suite"
+          }
+        },
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld week op rij"
+          }
+        },
+        "da": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld uge i træk"
+          }
+        },
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld vecka i rad"
+          }
+        },
+        "nb": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld uke på rad"
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld tydzień z rzędu"
+          }
+        },
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld viikko putkeen"
+          }
+        },
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld týden v řadě"
+          }
+        },
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld săptămână la rând"
+          }
+        },
+        "hu": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld hetes sorozat"
+          }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld týždeň v rade"
+          }
+        },
+        "hr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld tjedan zaredom"
+          }
+        },
+        "sl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld teden zapored"
+          }
+        },
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld nädal järjest"
+          }
+        },
+        "lv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld nedēļa pēc kārtas"
+          }
+        }
+      }
+    },
+    "habitWidget.weeksStreak": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld week streak"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld settimane di fila"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld тижнів поспіль"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Racha de %lld semanas"
+          }
+        },
+        "es-MX": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Racha de %lld semanas"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sequência de %lld semanas"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld Wochen in Folge"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld semaines de suite"
+          }
+        },
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld weken op rij"
+          }
+        },
+        "da": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld uger i træk"
+          }
+        },
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld veckor i rad"
+          }
+        },
+        "nb": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld uker på rad"
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld tygodni z rzędu"
+          }
+        },
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld viikkoa putkeen"
+          }
+        },
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld týdnů v řadě"
+          }
+        },
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld săptămâni la rând"
+          }
+        },
+        "hu": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld hetes sorozat"
+          }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld týždňov v rade"
+          }
+        },
+        "hr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld tjedana zaredom"
+          }
+        },
+        "sl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld tednov zapored"
+          }
+        },
+        "et": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld nädalat järjest"
+          }
+        },
+        "lv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld nedēļas pēc kārtas"
           }
         }
       }

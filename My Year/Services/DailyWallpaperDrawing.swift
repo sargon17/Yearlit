@@ -9,6 +9,7 @@ enum DailyWallpaperDrawing {
     in rect: CGRect,
     unit: CGFloat,
     progress: DailyWallpaperProgressData,
+    localizedText: DailyWallpaperLocalizedText,
     palette: DailyWallpaperPalette
   ) {
     let yearAttributes = textAttributes(size: 18 * unit, weight: .heavy, color: palette.primaryText)
@@ -21,20 +22,31 @@ enum DailyWallpaperDrawing {
     leftText.append(NSAttributedString(string: " / ", attributes: slashAttributes))
     leftText.append(
       NSAttributedString(
-        string: String(format: "%.1f%%", progress.percentComplete * 100),
+        string: localizedText.percentComplete,
         attributes: percentAttributes
       ))
 
-    let rightText = NSMutableAttributedString(
-      string: "\(progress.daysLeft)",
-      attributes: daysNumberAttributes
+    let rightText = attributedText(
+      localizedText.daysLeftHeader,
+      valueAttributes: daysNumberAttributes,
+      defaultAttributes: daysTextAttributes
     )
-    rightText.append(NSAttributedString(string: " days left", attributes: daysTextAttributes))
 
     leftText.draw(at: CGPoint(x: rect.minX, y: rect.minY))
 
     let rightSize = rightText.size()
     rightText.draw(at: CGPoint(x: rect.maxX - rightSize.width, y: rect.minY))
+  }
+
+  private static func attributedText(
+    _ text: DailyWallpaperLocalizedTextParts,
+    valueAttributes: DailyWallpaperTextAttributes,
+    defaultAttributes: DailyWallpaperTextAttributes
+  ) -> NSMutableAttributedString {
+    let attributedText = NSMutableAttributedString(string: text.prefix, attributes: defaultAttributes)
+    attributedText.append(NSAttributedString(string: text.value, attributes: valueAttributes))
+    attributedText.append(NSAttributedString(string: text.suffix, attributes: defaultAttributes))
+    return attributedText
   }
 
   static func drawGrid(
