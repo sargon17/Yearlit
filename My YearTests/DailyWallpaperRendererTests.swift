@@ -19,8 +19,12 @@ struct DailyWallpaperRendererTests {
     )
 
     assertSize(firstImage)
-    #expect(bitmapData(from: firstImage) == bitmapData(from: secondImage))
-    #expect(fingerprint(of: firstImage) != fingerprint(of: laterImage))
+    let firstBitmap = try bitmapData(from: firstImage)
+    let secondBitmap = try bitmapData(from: secondImage)
+    let firstFingerprint = try fingerprint(of: firstImage)
+    let laterFingerprint = try fingerprint(of: laterImage)
+    #expect(firstBitmap == secondBitmap)
+    #expect(firstFingerprint != laterFingerprint)
   }
 
   @Test func renderProducesContentForEachTemplateAndTheme() throws {
@@ -39,11 +43,12 @@ struct DailyWallpaperRendererTests {
     }
   }
 
-  @Test func templateDispatchProducesDistinctLayouts() throws {
-    let fingerprints = try DailyWallpaperTemplate.allCases.map { template in
-      let image = try render(settings: wallpaperSettings(template: template, theme: .dark), referenceDate: referenceDate)
-      return fingerprint(of: image)
-    }
+	  @Test func templateDispatchProducesDistinctLayouts() throws {
+	    let fingerprints = try DailyWallpaperTemplate.allCases.map { template in
+	      let settings = wallpaperSettings(template: template, theme: .dark)
+	      let image = try render(settings: settings, referenceDate: referenceDate)
+	      return try fingerprint(of: image)
+	    }
 
     #expect(Set(fingerprints).count == DailyWallpaperTemplate.allCases.count)
   }

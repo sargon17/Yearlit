@@ -4,27 +4,23 @@ import SwiftUI
 struct OnboardingPaywall: View {
   let showsCloseButton: Bool
   let isPresentedAsSheet: Bool
+  let trigger: PaywallTrigger
   let onNext: () -> Void
-
-  @State private var packages: [Package] = []
-  @State private var selectedPackageID: String?
-  @State private var isLoading = true
-  @State private var isPurchasing = false
-  @State private var errorMessage: String?
+  @StateObject private var purchaseModel = PaywallPurchaseModel()
   @Environment(\.dismiss) private var dismiss
-
   private let heroTopSpacing: CGFloat = 86
 
-  private var selectedPackage: Package? {
-    packages.first { $0.identifier == selectedPackageID } ?? preferredPackage(in: packages)
-  }
-
-  init(showsCloseButton: Bool = true, isPresentedAsSheet: Bool = false, onNext: @escaping () -> Void) {
+  init(
+    showsCloseButton: Bool = true,
+    isPresentedAsSheet: Bool = false,
+    trigger: PaywallTrigger = .onboarding,
+    onNext: @escaping () -> Void
+  ) {
     self.showsCloseButton = showsCloseButton
     self.isPresentedAsSheet = isPresentedAsSheet
+    self.trigger = trigger
     self.onNext = onNext
   }
-
   var body: some View {
     OnboardingStepContainer(overlayHeight: 0.9, actionsBottomPadding: isPresentedAsSheet ? 4 : 16) {
       GeometryReader { proxy in
@@ -40,23 +36,25 @@ struct OnboardingPaywall: View {
     } content: {
     } actions: {
       VStack {
-        if isLoading {
+        if purchaseModel.isLoading {
           PaywallLoadingCard()
-        } else if packages.isEmpty {
-          PaywallEmptyCard(message: errorMessage ?? String(localized: "Plans are unavailable right now."))
+        } else if purchaseModel.packages.isEmpty {
+          PaywallEmptyCard(
+            message: purchaseModel.errorMessage ?? String(localized: "Plans are unavailable right now.")
+          )
         } else {
           VStack(spacing: 8) {
-            ForEach(packages, id: \.identifier) { package in
+            ForEach(purchaseModel.packages, id: \.identifier) { package in
               PaywallPlanCard(
                 package: package,
-                isSelected: selectedPackage?.identifier == package.identifier,
-                onTap: { selectedPackageID = package.identifier }
+                isSelected: purchaseModel.selectedPackage?.identifier == package.identifier,
+                onTap: { purchaseModel.selectedPackageID = package.identifier }
               )
             }
           }
         }
 
-        if let errorMessage, !packages.isEmpty {
+        if let errorMessage = purchaseModel.errorMessage, !purchaseModel.packages.isEmpty {
           Text(errorMessage)
             .font(AppFont.sans(12))
             .foregroundStyle(.textSecondary)
@@ -64,10 +62,10 @@ struct OnboardingPaywall: View {
         }
 
         Button {
-          purchaseSelectedPackage()
+          purchaseModel.purchaseSelectedPackage(onSuccess: closePaywall)
         } label: {
           HStack(spacing: 8) {
-            if isPurchasing {
+            if purchaseModel.isPurchasing {
               ProgressView()
                 .tint(.brandInverted)
             }
@@ -81,11 +79,15 @@ struct OnboardingPaywall: View {
           .background(Color.brand)
           .clipShape(RoundedRectangle(cornerRadius: 4))
         }
-        .disabled(selectedPackage == nil || isPurchasing || isLoading)
-        .opacity(selectedPackage == nil || isLoading ? 0.55 : 1)
+        .disabled(
+          purchaseModel.selectedPackage == nil || purchaseModel.isPurchasing || purchaseModel.isLoading
+        )
+        .opacity(purchaseModel.selectedPackage == nil || purchaseModel.isLoading ? 0.55 : 1)
         .sameLevelBorder(radius: 4, color: .brand)
 
-        PaywallFooterLinks(onRestore: restorePurchases)
+        PaywallFooterLinks {
+          purchaseModel.restorePurchases(onActiveSubscription: closePaywall)
+        }
       }
       .padding(.top, 4)
     }
@@ -93,10 +95,10 @@ struct OnboardingPaywall: View {
       closeButtonOverlay
     }
     .task {
-      await loadPackages()
+      await purchaseModel.loadPackages()
     }
     .onAppear {
-      Analytics.shared.trackPaywallViewed(trigger: .onboarding)
+      Analytics.shared.trackPaywallViewed(trigger: trigger)
     }
   }
 
@@ -120,119 +122,13 @@ struct OnboardingPaywall: View {
   }
 
   private var primaryButtonTitle: String {
-    guard let selectedPackage else { return String(localized: "Continue") }
-    return hasFreeTrial(selectedPackage) ? String(localized: "Start Free Trial") : String(localized: "Continue with Pro")
-  }
-
-  @MainActor
-  private func loadPackages() async {
-    isLoading = true
-    errorMessage = nil
-
-    do {
-      let offerings = try await loadOfferings()
-      let offeringPackages = offerings.current?.availablePackages ?? []
-      packages = sortedPackages(offeringPackages)
-      selectedPackageID = preferredPackage(in: packages)?.identifier
-    } catch {
-      errorMessage = String(localized: "Couldn’t load plans. Check your connection and try again.")
-      packages = []
-    }
-
-    isLoading = false
-  }
-
-  private func purchaseSelectedPackage() {
-    guard let selectedPackage, !isPurchasing else { return }
-
-    Task { @MainActor in
-      isPurchasing = true
-      errorMessage = nil
-
-      do {
-        let result = try await Purchases.shared.purchase(package: selectedPackage)
-        AnalyticsState.shared.updatePremiumStatus(customerInfo: result.customerInfo)
-
-        if !result.userCancelled {
-          closePaywall()
-        }
-      } catch {
-        errorMessage = String(localized: "Purchase failed. Please try again.")
-      }
-
-      isPurchasing = false
-    }
-  }
-
-  private func restorePurchases() {
-    guard !isPurchasing else { return }
-
-    Task { @MainActor in
-      isPurchasing = true
-      errorMessage = nil
-
-      do {
-        let customerInfo = try await Purchases.shared.restorePurchases()
-        AnalyticsState.shared.updatePremiumStatus(customerInfo: customerInfo)
-
-        if isPremium(customerInfo: customerInfo) {
-          closePaywall()
-        } else {
-          errorMessage = String(localized: "No active subscription found.")
-        }
-      } catch {
-        errorMessage = String(localized: "Restore failed. Please try again.")
-      }
-
-      isPurchasing = false
-    }
-  }
-
-  private func preferredPackage(in packages: [Package]) -> Package? {
-    packages.first { $0.packageType == .annual } ?? packages.first
-  }
-
-  private func sortedPackages(_ packages: [Package]) -> [Package] {
-    packages.sorted { lhs, rhs in
-      packageSortRank(lhs) < packageSortRank(rhs)
-    }
-  }
-
-  private func packageSortRank(_ package: Package) -> Int {
-    switch package.packageType {
-    case .annual: return 0
-    case .weekly: return 1
-    case .monthly: return 2
-    default: return 10
-    }
-  }
-
-  private func hasFreeTrial(_ package: Package) -> Bool {
-    package.storeProduct.introductoryDiscount?.paymentMode == .freeTrial
+    purchaseModel.primaryButtonTitle
   }
 
   private func closePaywall() {
     onNext()
     dismiss()
   }
-
-  private func loadOfferings() async throws -> Offerings {
-    try await withCheckedThrowingContinuation { continuation in
-      Purchases.shared.getOfferings { offerings, error in
-        if let offerings {
-          continuation.resume(returning: offerings)
-        } else if let error {
-          continuation.resume(throwing: error)
-        } else {
-          continuation.resume(throwing: PaywallError.missingOfferings)
-        }
-      }
-    }
-  }
-}
-
-enum PaywallError: Error {
-  case missingOfferings
 }
 
 private struct PaywallCloseButtonSurface: ViewModifier {
@@ -264,7 +160,10 @@ private struct PaywallHeroContent: View {
         PaywallFeatureRow(title: "Deeper stats", subtitle: "see patterns over time")
         PaywallFeatureRow(title: "Unlimited habits", subtitle: "track every promise")
         PaywallFeatureRow(title: "Widgets", subtitle: "keep your dots on your Home Screen")
-        PaywallFeatureRow(title: "Support a solo-built app", subtitle: "Your upgrade helps me keep building Yearlit.")
+        PaywallFeatureRow(
+          title: "Support a solo-built app",
+          subtitle: "Your upgrade helps me keep building Yearlit."
+        )
       }
       .padding(.top, 34)
     }
@@ -298,7 +197,7 @@ private struct PaywallFeatureRow: View {
   }
 }
 
-private struct PaywallPlanCard: View {
+struct PaywallPlanCard: View {
   let package: Package
   let isSelected: Bool
   let onTap: () -> Void
@@ -411,7 +310,7 @@ private struct PaywallPlanCard: View {
   }
 }
 
-private struct PaywallLoadingCard: View {
+struct PaywallLoadingCard: View {
   var body: some View {
     HStack(spacing: 12) {
       ProgressView()
@@ -429,7 +328,7 @@ private struct PaywallLoadingCard: View {
   }
 }
 
-private struct PaywallEmptyCard: View {
+struct PaywallEmptyCard: View {
   let message: String
 
   var body: some View {
@@ -449,7 +348,7 @@ private struct PaywallEmptyCard: View {
   }
 }
 
-private struct PaywallFooterLinks: View {
+struct PaywallFooterLinks: View {
   let onRestore: () -> Void
 
   var body: some View {

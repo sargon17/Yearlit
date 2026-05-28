@@ -1,73 +1,81 @@
 import SwiftUI
 
 struct CalendarColorPickerSection: View {
-    struct Option: Identifiable {
-        let assetName: String
-        let accessibilityName: LocalizedStringKey
+  @Binding var selectedColor: String
 
-        var id: String { assetName }
+  var body: some View {
+    CustomSection(label: "Color") {
+      ColorSwatchPicker(selectedColor: $selectedColor, accessibilityHint: "Select calendar color")
     }
+  }
+}
 
-    static let options = [
-        Option(assetName: "mood-terrible", accessibilityName: "Red"),
-        Option(assetName: "mood-bad", accessibilityName: "Orange"),
-        Option(assetName: "qs-amber", accessibilityName: "Amber"),
-        Option(assetName: "mood-neutral", accessibilityName: "Yellow"),
-        Option(assetName: "qs-lime", accessibilityName: "Lime"),
-        Option(assetName: "mood-good", accessibilityName: "Green"),
-        Option(assetName: "qs-emerald", accessibilityName: "Emerald"),
-        Option(assetName: "qs-teal", accessibilityName: "Teal"),
-        Option(assetName: "qs-cyan", accessibilityName: "Cyan"),
-        Option(assetName: "qs-sky", accessibilityName: "Sky Blue"),
-        Option(assetName: "qs-blue", accessibilityName: "Blue"),
-        Option(assetName: "qs-indigo", accessibilityName: "Indigo"),
-        Option(assetName: "mood-excellent", accessibilityName: "Purple"),
-        Option(assetName: "qs-fuchsia", accessibilityName: "Fuchsia"),
-        Option(assetName: "qs-pink", accessibilityName: "Pink"),
-        Option(assetName: "qs-rose", accessibilityName: "Rose"),
-    ]
+struct ColorSwatchOption: Identifiable {
+  let assetName: String
+  let accessibilityName: LocalizedStringKey
 
-    @Binding var selectedColor: String
+  var id: String { assetName }
+}
 
-    var body: some View {
-        CustomSection(label: "Color") {
-            ScrollView(.horizontal, showsIndicators: false) {
-                HStack {
-                    ForEach(Self.options) { option in
-                        Button {
-                            withAnimation(.snappy) {
-                                selectedColor = option.assetName
-                            }
-                            Task {
-                                await hapticFeedback(.rigid)
-                            }
-                        } label: {
-                            ZStack {
-                                Circle()
-                                    .fill(Color(option.assetName))
-                                    .frame(width: 30, height: 30)
+struct ColorSwatchPicker: View {
+  static let defaultOptions = [
+    ColorSwatchOption(assetName: "mood-terrible", accessibilityName: "Red"),
+    ColorSwatchOption(assetName: "mood-bad", accessibilityName: "Orange"),
+    ColorSwatchOption(assetName: "qs-amber", accessibilityName: "Amber"),
+    ColorSwatchOption(assetName: "mood-neutral", accessibilityName: "Yellow"),
+    ColorSwatchOption(assetName: "qs-lime", accessibilityName: "Lime"),
+    ColorSwatchOption(assetName: "mood-good", accessibilityName: "Green"),
+    ColorSwatchOption(assetName: "qs-emerald", accessibilityName: "Emerald"),
+    ColorSwatchOption(assetName: "qs-teal", accessibilityName: "Teal"),
+    ColorSwatchOption(assetName: "qs-cyan", accessibilityName: "Cyan"),
+    ColorSwatchOption(assetName: "qs-sky", accessibilityName: "Sky Blue"),
+    ColorSwatchOption(assetName: "qs-blue", accessibilityName: "Blue"),
+    ColorSwatchOption(assetName: "qs-indigo", accessibilityName: "Indigo"),
+    ColorSwatchOption(assetName: "mood-excellent", accessibilityName: "Purple"),
+    ColorSwatchOption(assetName: "qs-fuchsia", accessibilityName: "Fuchsia"),
+    ColorSwatchOption(assetName: "qs-pink", accessibilityName: "Pink"),
+    ColorSwatchOption(assetName: "qs-rose", accessibilityName: "Rose")
+  ]
 
-                                Circle()
-                                    .stroke(.white, lineWidth: selectedColor == option.assetName ? 2 : 0)
-                                    .frame(width: 30, height: 30)
-                            }
-                            .frame(width: 44, height: 44)
-                        }
-                        .buttonStyle(.plain)
-                        .accessibilityLabel(option.accessibilityName)
-                        .accessibilityHint(Text("Select calendar color"))
-                        .accessibilityAddTraits(selectedColor == option.assetName ? .isSelected : [])
-                    }
-                }
-                .padding(2)
-                .padding(.horizontal, 10)
+  @Binding var selectedColor: String
+  let accessibilityHint: LocalizedStringKey
+
+  var body: some View {
+    ScrollView(.horizontal, showsIndicators: false) {
+      HStack {
+        ForEach(Self.defaultOptions) { option in
+          Button {
+            withAnimation(.snappy) {
+              selectedColor = option.assetName
             }
-            .padding(.vertical)
-            .scrollClipDisabled(true)
-            .sameLevelBorder(radius: 6, color: .black)
-            .patternStyle()
-            .cornerRadius(6)
-        }
-    }
+            Task {
+              await hapticFeedback(.rigid)
+            }
+          } label: {
+            ZStack {
+              Circle()
+                .fill(Color(option.assetName))
+                .frame(width: 30, height: 30)
 
+              Circle()
+                .stroke(.white, lineWidth: selectedColor == option.assetName ? 2 : 0)
+                .frame(width: 30, height: 30)
+            }
+            .frame(width: 44, height: 44)
+          }
+          .buttonStyle(.plain)
+          .accessibilityLabel(option.accessibilityName)
+          .accessibilityHint(Text(accessibilityHint))
+          .accessibilityAddTraits(selectedColor == option.assetName ? .isSelected : [])
+        }
+      }
+      .padding(2)
+      .padding(.horizontal, 10)
+    }
+    .padding(.vertical)
+    .scrollClipDisabled(true)
+    .sameLevelBorder(radius: 6, color: .black)
+    .patternStyle()
+    .cornerRadius(6)
+  }
 }

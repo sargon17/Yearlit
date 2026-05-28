@@ -1,4 +1,3 @@
-import RevenueCatUI
 import SwiftUI
 
 struct PremiumPaywallSheet: View {
@@ -11,10 +10,11 @@ struct PremiumPaywallSheet: View {
   }
 
   var body: some View {
-    PaywallView(displayCloseButton: displayCloseButton)
-      .ignoresSafeArea(.container, edges: .bottom)
-      .onAppear {
-        Analytics.shared.trackPaywallViewed(trigger: trigger)
-      }
+    OnboardingPaywall(
+      showsCloseButton: displayCloseButton,
+      isPresentedAsSheet: true,
+      trigger: trigger,
+      onNext: {}
+    )
   }
 }

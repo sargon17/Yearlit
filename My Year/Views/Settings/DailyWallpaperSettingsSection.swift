@@ -1,5 +1,4 @@
 import RevenueCat
-import RevenueCatUI
 import SwiftUI
 import SwiftfulRouting
 import UIKit
@@ -46,6 +45,14 @@ private struct DailyWallpaperSetupView: View {
     selectedTemplate.supportsMessage && isPremiumUser
   }
 
+  private var effectiveAccentColorName: String {
+    isPremiumUser ? selectedAccentColor : DailyWallpaperSettingsStore.defaultAccentColorName
+  }
+
+  private var effectiveAccentColor: Color {
+    Color(effectiveAccentColorName)
+  }
+
   init(customerInfo: CustomerInfo?) {
     let settings = DailyWallpaperSettingsStore.savedSettings()
     self.customerInfo = customerInfo
@@ -59,62 +66,55 @@ private struct DailyWallpaperSetupView: View {
   var body: some View {
     ScrollView {
       VStack(alignment: .leading, spacing: 26) {
-
         DailyWallpaperTemplatePager(
           visibleTemplate: $visibleTemplate,
           selectedTemplate: selectedTemplate,
           isPremiumUser: isPremiumUser,
+          accentColor: effectiveAccentColor,
           settings: previewSettings(for:),
           onSelect: selectTemplate
         )
-
         DailyWallpaperSettingsGroup("Theme") {
-          Picker(
-            "Theme",
-            selection: Binding(
-              get: { selectedTheme },
-              set: { theme in
-                selectedTheme = theme
-                DailyWallpaperSettingsStore.saveTheme(theme)
-              }
-            )
-          ) {
-            ForEach(DailyWallpaperTheme.allCases) { theme in
-              Text(theme.displayName)
-                .tag(theme)
-            }
+          WallpaperThemePicker(
+            selectedTheme: selectedTheme,
+            accentColor: effectiveAccentColor
+          ) { theme in
+            selectedTheme = theme
+            DailyWallpaperSettingsStore.saveTheme(theme)
           }
-          .pickerStyle(.segmented)
         }
-
         DailyWallpaperSettingsGroup(
           "Accent Color",
           footer: "The accent color changes the current-day dot and highlighted progress number."
         ) {
           if isPremiumUser {
-            WallpaperAccentColorPicker(selectedColor: $selectedAccentColor)
+            ColorSwatchPicker(
+              selectedColor: $selectedAccentColor,
+              accessibilityHint: "Select wallpaper accent color"
+            )
           } else {
             Button {
               showPremiumPaywall()
             } label: {
               LockedWallpaperOptionRow(
                 title: "Custom accent color",
-                iconName: "paintpalette.fill",
                 showsLock: true
               )
             }
             .buttonStyle(.plain)
           }
         }
-
         DailyWallpaperSettingsGroup(
-          "Message",
-          footer: "Premium message templates render up to two centered lines, 40 characters total."
+          "Message"
         ) {
           if selectedTemplateSupportsMessage {
-            TextField("One honest day at a time", text: messageBinding)
-              .font(AppFont.mono(12))
-              .textInputAutocapitalization(.sentences)
+            TextField(
+              "",
+              text: messageBinding,
+              prompt: Text("One honest day at a time").foregroundColor(.white.opacity(0.2))
+            )
+            .inputStyle(color: effectiveAccentColor)
+            .textInputAutocapitalization(.sentences)
           } else {
             Button {
               if !isPremiumUser {
@@ -123,7 +123,6 @@ private struct DailyWallpaperSetupView: View {
             } label: {
               LockedWallpaperOptionRow(
                 title: "Custom message",
-                iconName: "text.quote",
                 showsLock: !isPremiumUser
               )
             }
@@ -131,25 +130,31 @@ private struct DailyWallpaperSetupView: View {
             .disabled(isPremiumUser)
           }
         }
-
         DailyWallpaperSettingsGroup(
           "Installation",
-          footer:
-            "iOS does not allow apps to set wallpaper directly. Test final application on a physical iPhone."
+          footer: "iOS does not allow apps to set wallpaper directly."
         ) {
           Button {
             isInstallationGuidePresented = true
           } label: {
-            Label("Installation Guide", systemImage: "questionmark.circle")
-              .font(AppFont.mono(12))
+            LockedWallpaperOptionRow(
+              title: "How to set this up",
+              subtitle: "Read the Shortcuts and wallpaper setup steps.",
+              showsLock: false,
+              accentColor: effectiveAccentColor,
+              trailingIconName: "chevron.right"
+            )
           }
           .buttonStyle(.plain)
+          .accessibilityLabel(Text("How to set this up"))
+          .accessibilityHint(Text("Opens setup instructions for Daily Wallpaper"))
         }
       }
       .padding(.horizontal, 20)
       .padding(.vertical, 24)
     }
     .surfaceBackground(Color("surface-muted"), ignoresSafeArea: true)
+    .tint(effectiveAccentColor)
     .navigationTitle("Daily Wallpaper")
     .toolbarTitleDisplayMode(.inline)
     .toolbar {
@@ -164,7 +169,7 @@ private struct DailyWallpaperSetupView: View {
     }
     .sheet(isPresented: $isInstallationGuidePresented) {
       NavigationStack {
-        DailyWallpaperInstallationGuideView()
+        DailyWallpaperInstallationGuideView(accentColor: effectiveAccentColor)
       }
       .presentationDetents([.large])
       .presentationDragIndicator(.visible)
@@ -172,13 +177,10 @@ private struct DailyWallpaperSetupView: View {
   }
 
   private func previewSettings(for template: DailyWallpaperTemplate) -> DailyWallpaperSettings {
-    let accentColorName =
-      isPremiumUser ? selectedAccentColor : DailyWallpaperSettingsStore.defaultAccentColorName
-
     return DailyWallpaperSettings(
       template: template,
       theme: selectedTheme,
-      accentColorName: accentColorName,
+      accentColorName: effectiveAccentColorName,
       message: isPremiumUser && template.supportsMessage ? messageText : nil
     )
   }
@@ -227,20 +229,53 @@ private struct DailyWallpaperSettingsGroup<Content: View>: View {
   }
 
   var body: some View {
-    VStack(alignment: .leading, spacing: 10) {
-      Text(title)
-        .font(AppFont.mono(11, weight: .bold))
-        .foregroundColor(Color("text-secondary"))
-        .textCase(.uppercase)
-
+    CustomSection(label: title) {
       content()
 
       if let footer {
         Text(footer)
-          .font(AppFont.mono(11))
-          .foregroundColor(Color("text-secondary"))
+          .font(.footnote)
+          .foregroundStyle(.textTertiary)
+          .frame(maxWidth: .infinity, alignment: .leading)
+          .padding(.horizontal, 8)
+          .padding(.top, 8)
       }
     }
+  }
+}
+
+private struct WallpaperThemePicker: View {
+  let selectedTheme: DailyWallpaperTheme
+  let accentColor: Color
+  let onSelect: (DailyWallpaperTheme) -> Void
+
+  var body: some View {
+    HStack(spacing: 2) {
+      ForEach(DailyWallpaperTheme.allCases) { theme in
+        themeButton(for: theme)
+      }
+    }
+    .padding(.all, 2)
+    .frame(maxWidth: .greatestFiniteMagnitude)
+    .sameLevelGroupBackground()
+  }
+
+  private func themeButton(for theme: DailyWallpaperTheme) -> some View {
+    Button {
+      withAnimation(.snappy) { onSelect(theme) }
+      Task { await hapticFeedback(.rigid) }
+    } label: {
+      PickerOptionTile(isSelected: selectedTheme == theme, isEnabled: true) {
+        PickerOptionContent(
+          icon: theme.systemImageName,
+          title: theme.displayName,
+          accentColor: accentColor,
+          isSelected: selectedTheme == theme
+        )
+      }
+    }
+    .buttonStyle(.plain)
+    .accessibilityLabel(Text(theme.displayName))
   }
 }
 
@@ -248,6 +283,7 @@ private struct DailyWallpaperTemplatePager: View {
   @Binding var visibleTemplate: DailyWallpaperTemplate
   let selectedTemplate: DailyWallpaperTemplate
   let isPremiumUser: Bool
+  let accentColor: Color
   let settings: (DailyWallpaperTemplate) -> DailyWallpaperSettings
   let onSelect: (DailyWallpaperTemplate) -> Void
 
@@ -264,6 +300,7 @@ private struct DailyWallpaperTemplatePager: View {
                 template: template,
                 isSelected: selectedTemplate == template,
                 isLocked: template.isPremium && !isPremiumUser,
+                accentColor: accentColor,
                 settings: settings(template),
                 onSelect: onSelect
               )
@@ -296,23 +333,13 @@ private struct DailyWallpaperTemplatePage: View {
   let template: DailyWallpaperTemplate
   let isSelected: Bool
   let isLocked: Bool
+  let accentColor: Color
   let settings: DailyWallpaperSettings
   let onSelect: (DailyWallpaperTemplate) -> Void
 
   var body: some View {
     VStack(spacing: 12) {
       DailyWallpaperPreview(settings: settings)
-        .overlay(alignment: .topTrailing) {
-          if isLocked {
-            Image(systemName: "lock.fill")
-              .font(.system(size: 11, weight: .bold))
-              .foregroundColor(Color("text-primary"))
-              .padding(8)
-              .background(Color("surface-muted").opacity(0.88))
-              .clipShape(Circle())
-              .padding(10)
-          }
-        }
 
       HStack(spacing: 10) {
         Text(template.displayName)
@@ -327,6 +354,7 @@ private struct DailyWallpaperTemplatePage: View {
           template: template,
           isSelected: isSelected,
           isLocked: isLocked,
+          accentColor: accentColor,
           onSelect: onSelect
         )
       }
@@ -339,6 +367,7 @@ private struct WallpaperSelectionButton: View {
   let template: DailyWallpaperTemplate
   let isSelected: Bool
   let isLocked: Bool
+  let accentColor: Color
   let onSelect: (DailyWallpaperTemplate) -> Void
 
   var body: some View {
@@ -347,9 +376,9 @@ private struct WallpaperSelectionButton: View {
     } label: {
       Image(systemName: isLocked ? "lock.fill" : "checkmark")
         .font(.system(size: 10, weight: .bold))
-        .foregroundColor(isSelected ? .surfaceMuted : .qsOrange)
+        .foregroundColor(isSelected ? .surfaceMuted : accentColor)
         .frame(width: 20, height: 20)
-        .background(isSelected ? .qsOrange : .qsOrange.opacity(0.1))
+        .background(isSelected ? accentColor : accentColor.opacity(0.1))
         .clipShape(RoundedRectangle(cornerRadius: 8))
     }
     .buttonStyle(.plain)
@@ -361,19 +390,31 @@ private struct WallpaperSelectionButton: View {
 
 private struct LockedWallpaperOptionRow: View {
   let title: LocalizedStringKey
-  let iconName: String
+  var subtitle: LocalizedStringKey?
+  var iconName: String?
   let showsLock: Bool
+  var accentColor: Color?
+  var trailingIconName: String?
 
   var body: some View {
     HStack(spacing: 12) {
-      Image(systemName: iconName)
-        .font(.system(size: 15, weight: .semibold))
-        .foregroundColor(Color("text-secondary"))
-        .frame(width: 22)
+      if let iconName {
+        Image(systemName: iconName)
+          .font(.system(size: 15, weight: .semibold))
+          .foregroundColor(accentColor ?? Color("text-secondary"))
+          .frame(width: 22)
+      }
 
-      Text(title)
-        .font(AppFont.mono(12))
-        .foregroundColor(Color("text-primary"))
+      VStack(alignment: .leading, spacing: 4) {
+        Text(title)
+          .font(AppFont.mono(12, weight: subtitle == nil ? .regular : .bold))
+          .foregroundColor(Color("text-primary"))
+        if let subtitle {
+          Text(subtitle)
+            .font(.caption)
+            .foregroundStyle(.textTertiary)
+        }
+      }
 
       Spacer()
 
@@ -382,45 +423,16 @@ private struct LockedWallpaperOptionRow: View {
           .font(.system(size: 12, weight: .bold))
           .foregroundColor(Color("text-tertiary"))
       }
-    }
-    .padding(.vertical, 4)
-  }
-}
-
-private struct WallpaperAccentColorPicker: View {
-  @Binding var selectedColor: String
-
-  var body: some View {
-    ScrollView(.horizontal, showsIndicators: false) {
-      HStack {
-        ForEach(CalendarColorPickerSection.options) { option in
-          Button {
-            selectedColor = option.assetName
-            Task {
-              await hapticFeedback(.rigid)
-            }
-          } label: {
-            ZStack {
-              Circle()
-                .fill(Color(option.assetName))
-                .frame(width: 30, height: 30)
-
-              Circle()
-                .stroke(.white, lineWidth: selectedColor == option.assetName ? 2 : 0)
-                .frame(width: 30, height: 30)
-            }
-            .frame(width: 44, height: 44)
-          }
-          .buttonStyle(.plain)
-          .accessibilityLabel(option.accessibilityName)
-          .accessibilityHint(Text("Select wallpaper accent color"))
-          .accessibilityAddTraits(selectedColor == option.assetName ? .isSelected : [])
-        }
+      if let trailingIconName {
+        Image(systemName: trailingIconName)
+          .font(AppFont.mono(12))
+          .foregroundColor(accentColor ?? Color("text-tertiary"))
       }
-      .padding(2)
-      .padding(.horizontal, 10)
     }
-    .padding(.vertical)
+    .padding(.horizontal)
+    .padding(.vertical, 10)
+    .sameLevelBorder(isFlat: true)
+    .accessibilityElement(children: .combine)
   }
 }
 
@@ -457,6 +469,13 @@ extension DailyWallpaperTheme {
     switch self {
     case .dark: "Dark"
     case .light: "Light"
+    }
+  }
+
+  fileprivate var systemImageName: String {
+    switch self {
+    case .dark: "moon.fill"
+    case .light: "sun.max.fill"
     }
   }
 }
