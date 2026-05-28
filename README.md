@@ -18,6 +18,22 @@
 3. Select a simulator/device
 4. Build & Run (`⌘R`)
 
+## Zed + SourceKit
+Zed uses `sourcekit-lsp` for Swift completions, diagnostics, and go-to-definition. This project is an Xcode project, so SourceKit needs compiler arguments generated from an Xcode build.
+
+Run this after cloning, changing targets/build settings, adding Swift files, or when Zed stops resolving symbols correctly:
+
+```sh
+bun run sourcekit:refresh
+```
+
+The command builds the `My Year` scheme, refreshes `buildServer.json`, and updates `.compile` for `xcode-build-server`.
+
+Notes:
+- Install `xcode-build-server` first if the command says it is missing.
+- Restart Zed or restart the Swift language server after refreshing SourceKit config.
+- On macOS, use `⌘+Click` for go-to-definition. `Ctrl+Click` is not the Zed macOS shortcut and may open the system context menu.
+
 ## Widgets
 This repo contains multiple widget targets. After installing the app on a simulator/device:
 1. Long-press the Home Screen → **Edit** → **Add Widget**

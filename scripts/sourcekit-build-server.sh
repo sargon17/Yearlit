@@ -3,7 +3,8 @@ set -euo pipefail
 
 PROJECT="${PROJECT:-My Year.xcodeproj}"
 SCHEME="${SCHEME:-My Year}"
-DERIVED_DATA_PATH="${DERIVED_DATA_PATH:-DerivedData}"
+PROJECT_ROOT="$(pwd -P)"
+DERIVED_DATA_PATH="${DERIVED_DATA_PATH:-${PROJECT_ROOT}/DerivedData}"
 DESTINATION="${DESTINATION:-generic/platform=iOS Simulator}"
 
 xcode_build_server_path="$(command -v xcode-build-server || true)"
@@ -30,7 +31,7 @@ else
 fi
 
 echo "Parsing compiler arguments for SourceKit..."
-xcode-build-server parse "${build_log}" --skip-validate-bin
+xcode-build-server parse -a "${build_log}" --skip-validate-bin
 
 cat >buildServer.json <<JSON
 {
@@ -47,7 +48,7 @@ cat >buildServer.json <<JSON
   "argv": [
     "${xcode_build_server_path}"
   ],
-  "workspace": "${PROJECT}/project.xcworkspace",
+  "workspace": "${PROJECT_ROOT}/${PROJECT}/project.xcworkspace",
   "build_root": "${DERIVED_DATA_PATH}",
   "kind": "manual",
   "scheme": "${SCHEME}",

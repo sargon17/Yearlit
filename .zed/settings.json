@@ -3,12 +3,19 @@
 // For a full list of overridable settings, and general information on folder-specific settings,
 // see the documentation: https://zed.dev/docs/configuring-zed#settings-files
 {
-  "semantic_tokens": "off",
+  "semantic_tokens": "combined",
+  "show_completions_on_input": true,
+  "completions": {
+    "lsp": true,
+    "lsp_fetch_timeout_ms": 1000,
+    "words": "enabled",
+    "words_min_length": 2,
+  },
   "lsp": {
     "sourcekit-lsp": {
       "binary": {
-        "path": "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/sourcekit-lsp",
-        "arguments": ["--default-workspace-type", "buildServer"],
+        "path": "xcrun",
+        "arguments": ["sourcekit-lsp", "--default-workspace-type", "buildServer"],
       },
     },
   },

@@ -14,12 +14,22 @@ enum DailyWallpaperRenderer {
       ? CGSize(width: pointSize.width * screenScale, height: pointSize.height * screenScale)
       : screen.nativeBounds.size
 
-    return render(pixelSize: pixelSize, screenScale: screenScale, settings: settings, referenceDate: referenceDate)
+    return render(
+      pixelSize: pixelSize,
+      screenScale: screenScale,
+      settings: settings,
+      referenceDate: referenceDate
+    )
   }
 
   @MainActor
   static func renderPreview(settings: DailyWallpaperSettings, referenceDate: Date = Date()) -> UIImage? {
-    render(pixelSize: CGSize(width: 430, height: 932), screenScale: 1, settings: settings, referenceDate: referenceDate)
+    render(
+      pixelSize: CGSize(width: 430, height: 932),
+      screenScale: 1,
+      settings: settings,
+      referenceDate: referenceDate
+    )
   }
 
   static func render(
@@ -32,14 +42,18 @@ enum DailyWallpaperRenderer {
     format.scale = 1
     format.opaque = true
 
+    let traits = UITraitCollection(userInterfaceStyle: settings.theme.userInterfaceStyle)
+
     return UIGraphicsImageRenderer(size: pixelSize, format: format).image { context in
-      drawWallpaper(
-        in: context.cgContext,
-        size: pixelSize,
-        screenScale: screenScale,
-        settings: settings,
-        referenceDate: referenceDate
-      )
+      traits.performAsCurrent {
+        drawWallpaper(
+          in: context.cgContext,
+          size: pixelSize,
+          screenScale: screenScale,
+          settings: settings,
+          referenceDate: referenceDate
+        )
+      }
     }
   }
 
@@ -66,5 +80,14 @@ enum DailyWallpaperRenderer {
     )
 
     settings.template.draw(input)
+  }
+}
+
+private extension DailyWallpaperTheme {
+  var userInterfaceStyle: UIUserInterfaceStyle {
+    switch self {
+    case .dark: .dark
+    case .light: .light
+    }
   }
 }

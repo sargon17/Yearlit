@@ -12,9 +12,9 @@
   "argv": [
     "/opt/homebrew/bin/xcode-build-server"
   ],
-  "workspace": "My Year.xcodeproj/project.xcworkspace",
-  "build_root": "DerivedData",
+  "workspace": "/Users/g.cattorini/code/My Year/My Year.xcodeproj/project.xcworkspace",
+  "build_root": "/Users/g.cattorini/code/My Year/DerivedData",
   "kind": "manual",
   "scheme": "My Year",
-  "indexStorePath": "DerivedData/Index.noindex/DataStore"
+  "indexStorePath": "/Users/g.cattorini/code/My Year/DerivedData/Index.noindex/DataStore"
 }

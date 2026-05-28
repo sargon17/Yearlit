@@ -13,12 +13,15 @@ struct DailyWallpaperPalette {
   let futureDot: UIColor
 
   init(theme: DailyWallpaperTheme, accentColorName: String) {
+    let traits = UITraitCollection(userInterfaceStyle: theme.userInterfaceStyle)
+
     background = Self.background(for: theme)
     primaryText = Self.primaryText(for: theme)
     secondaryText = Self.secondaryText(for: theme)
     tertiaryText = Self.tertiaryText(for: theme)
     accent =
-      UIColor(named: accentColorName) ?? UIColor(named: DailyWallpaperSettingsStore.defaultAccentColorName)
+      Self.namedColor(accentColorName, compatibleWith: traits)
+      ?? Self.namedColor(DailyWallpaperSettingsStore.defaultAccentColorName, compatibleWith: traits)
       ?? Self.rgb(0xF9, 0x73, 0x16)
     separatorTop = Self.separatorTop(for: theme)
     separatorBottom = Self.separatorBottom(for: theme)
@@ -86,11 +89,15 @@ struct DailyWallpaperPalette {
   }
 
   private static func namedColor(_ name: String, userInterfaceStyle: UIUserInterfaceStyle) -> UIColor? {
+    namedColor(name, compatibleWith: UITraitCollection(userInterfaceStyle: userInterfaceStyle))
+  }
+
+  private static func namedColor(_ name: String, compatibleWith traits: UITraitCollection) -> UIColor? {
     UIColor(
       named: name,
       in: .main,
-      compatibleWith: UITraitCollection(userInterfaceStyle: userInterfaceStyle)
-    )
+      compatibleWith: traits
+    )?.resolvedColor(with: traits)
   }
 
   private static func blendedColor(base: UIColor, overlay: UIColor, ratio: CGFloat) -> UIColor {
@@ -113,5 +120,14 @@ struct DailyWallpaperPalette {
       blue: baseBlue + (overlayBlue - baseBlue) * clampedRatio,
       alpha: baseAlpha + (overlayAlpha - baseAlpha) * clampedRatio
     )
+  }
+}
+
+private extension DailyWallpaperTheme {
+  var userInterfaceStyle: UIUserInterfaceStyle {
+    switch self {
+    case .dark: .dark
+    case .light: .light
+    }
   }
 }
