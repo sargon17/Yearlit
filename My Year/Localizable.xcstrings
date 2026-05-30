@@ -29126,7 +29126,7 @@
         "uk": {
           "stringUnit": {
             "state": "translated",
-            "value": "Віха"
+            "value": "Досягнення"
           }
         },
         "es": {
@@ -29256,7 +29256,7 @@
         "uk": {
           "stringUnit": {
             "state": "translated",
-            "value": "Святкування віхи"
+            "value": "Святкування досягнення"
           }
         },
         "es": {
@@ -29386,7 +29386,7 @@
         "uk": {
           "stringUnit": {
             "state": "translated",
-            "value": "Святкування віх"
+            "value": "Святкування досягнень"
           }
         },
         "es": {
@@ -46377,7 +46377,7 @@
         "uk": {
           "stringUnit": {
             "state": "translated",
-            "value": "Показувати святкування віх"
+            "value": "Показувати святкування досягнень"
           }
         },
         "es": {
