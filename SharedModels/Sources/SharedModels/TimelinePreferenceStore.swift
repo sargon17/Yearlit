@@ -32,6 +32,11 @@ public enum TimelinePreferenceStore {
         defaults.set(mode.rawValue, forKey: timelineModeKey)
     }
 
+    public static func setDefaultModeIfNeeded(defaults: UserDefaults = appGroupDefaults) {
+        guard !hasStoredMode(defaults: defaults) else { return }
+        setMode(.your365, defaults: defaults)
+    }
+
     public static func hasStoredMode(defaults: UserDefaults = appGroupDefaults) -> Bool {
         storedMode(defaults: defaults) != nil
     }

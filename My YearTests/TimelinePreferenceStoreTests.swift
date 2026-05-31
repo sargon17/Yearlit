@@ -26,6 +26,18 @@ struct TimelinePreferenceStoreTests {
         #expect(TimelinePreferenceStore.mode(defaults: defaults) == .calendarYear)
     }
 
+    @Test func defaultModeWriteIsOnlyForMissingPreference() {
+        let defaults = makeDefaults()
+        defer { tearDownDefaults(defaults) }
+
+        TimelinePreferenceStore.setDefaultModeIfNeeded(defaults: defaults)
+        #expect(TimelinePreferenceStore.storedMode(defaults: defaults) == .your365)
+
+        TimelinePreferenceStore.setMode(.calendarYear, defaults: defaults)
+        TimelinePreferenceStore.setDefaultModeIfNeeded(defaults: defaults)
+        #expect(TimelinePreferenceStore.storedMode(defaults: defaults) == .calendarYear)
+    }
+
     @Test func rawValueParsingDefaultsToYour365ForMissingOrInvalidValues() {
         #expect(TimelinePreferenceStore.mode(rawValue: nil) == .your365)
         #expect(TimelinePreferenceStore.mode(rawValue: "") == .your365)

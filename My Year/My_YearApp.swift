@@ -171,7 +171,7 @@ struct My_YearApp: App {
         updateTimelinePreferencePresentation()
       }) {
         OnboardingView {
-          onboarding.markAsSeen()
+          completeOnboarding()
         }
       }
       .fullScreenCover(isPresented: $isTimelinePreferenceSheetPresented) {
@@ -204,9 +204,19 @@ struct My_YearApp: App {
       get: { !onboarding.hasSeenOnboarding },
       set: { isPresented in
         guard !isPresented else { return }
-        onboarding.markAsSeen()
+        completeOnboarding()
       }
     )
+  }
+
+  private func completeOnboarding() {
+    let isNewUser = !onboarding.hasSeenOnboarding
+    if isNewUser {
+      TimelinePreferenceStore.setDefaultModeIfNeeded()
+      TimelinePreferenceManager.shared.refresh()
+    }
+
+    onboarding.markAsSeen()
   }
 
   private func updateTimelinePreferencePresentation() {
