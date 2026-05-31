@@ -17,7 +17,7 @@ struct WidgetsShowcaseView: View {
   var body: some View {
     ScrollView {
       VStack(alignment: .leading, spacing: 20) {
-        Text("Yearlit widgets keep progress visible without opening the app.")
+        Text("Tap a widget for setup steps.")
           .font(AppFont.mono(13))
           .foregroundStyle(.textSecondary)
           .fixedSize(horizontal: false, vertical: true)
@@ -173,13 +173,13 @@ private struct WidgetInstallGuideSheet: View {
 
   var body: some View {
     VStack(alignment: .leading, spacing: 24) {
-      Text("iOS does not let apps open the widget picker directly. Add it from the Home Screen.")
+      Text("Add widgets from the Home Screen.")
         .font(AppFont.mono(13))
         .foregroundStyle(.textSecondary)
         .fixedSize(horizontal: false, vertical: true)
 
       VStack(alignment: .leading, spacing: 12) {
-        WidgetInstallStep(number: "01", text: String(localized: "Go to your Home Screen."))
+        WidgetInstallStep(number: "01", text: String(localized: "Open your Home Screen."))
         WidgetInstallStep(number: "02", text: String(localized: "Touch and hold an empty area."))
         WidgetInstallStep(number: "03", text: String(localized: "Tap Edit, then Add Widget."))
         WidgetInstallStep(number: "04", text: String(localized: "Search Yearlit and choose \(guide.title)."))

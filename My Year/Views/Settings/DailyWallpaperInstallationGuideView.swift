@@ -13,13 +13,13 @@ struct DailyWallpaperInstallationGuideView: View {
             DailyWallpaperSetupStepRow(
               number: 1,
               title: "Create Daily Wallpaper",
-              subtitle: "Add this action first. It creates the wallpaper image from your selected template.",
+              subtitle: "Add this first. It creates an image from your saved Yearlit wallpaper settings.",
               accentColor: accentColor
             )
             DailyWallpaperSetupStepRow(
               number: 2,
               title: "Set Wallpaper",
-              subtitle: "Add this after Create Daily Wallpaper. Use its output. Turn Show Preview off.",
+              subtitle: "Add this second. Use the image from Create Daily Wallpaper. Turn Show Preview off.",
               accentColor: accentColor
             )
           }
@@ -31,19 +31,19 @@ struct DailyWallpaperInstallationGuideView: View {
             DailyWallpaperSetupStepRow(
               number: 1,
               title: "Time of Day",
-              subtitle: "Choose Time of Day as the automation trigger.",
+              subtitle: "Choose when iOS should run the Shortcut.",
               accentColor: accentColor
             )
             DailyWallpaperSetupStepRow(
               number: 2,
               title: "Repeat Daily",
-              subtitle: "Set the automation to run every day.",
+              subtitle: "Run it every day.",
               accentColor: accentColor
             )
             DailyWallpaperSetupStepRow(
               number: 3,
               title: "Run Immediately",
-              subtitle: "Disable Ask Before Running so the wallpaper updates without confirmation.",
+              subtitle: "Turn off Ask Before Running if you want it to apply without confirmation.",
               accentColor: accentColor
             )
           }
@@ -52,7 +52,11 @@ struct DailyWallpaperInstallationGuideView: View {
 
         CustomSection(label: "Shortcuts") {
           VStack(alignment: .leading, spacing: 12) {
-            Text("Open Shortcuts, create a personal automation, then add the actions above in this order.")
+            Text("Open Shortcuts, create a personal automation, then add the actions above in order.")
+              .font(.footnote)
+              .foregroundStyle(.textTertiary)
+
+            Text("The wallpaper changes only when the Shortcut runs, on schedule or manually.")
               .font(.footnote)
               .foregroundStyle(.textTertiary)
 

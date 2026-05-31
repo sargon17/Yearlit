@@ -85,7 +85,7 @@ private struct DailyWallpaperSetupView: View {
         }
         DailyWallpaperSettingsGroup(
           "Accent Color",
-          footer: "The accent color changes the current-day dot and highlighted progress number."
+          footer: "Changes the current-day dot and highlighted progress number."
         ) {
           if isPremiumUser {
             ColorSwatchPicker(
@@ -132,14 +132,14 @@ private struct DailyWallpaperSetupView: View {
         }
         DailyWallpaperSettingsGroup(
           "Installation",
-          footer: "iOS does not allow apps to set wallpaper directly."
+          footer: "Your real wallpaper changes only when the Shortcut runs, on schedule or manually."
         ) {
           Button {
             isInstallationGuidePresented = true
           } label: {
             LockedWallpaperOptionRow(
               title: "How to set this up",
-              subtitle: "Read the Shortcuts and wallpaper setup steps.",
+              subtitle: "Create the Shortcut that applies the wallpaper.",
               showsLock: false,
               accentColor: effectiveAccentColor,
               trailingIconName: "chevron.right"
