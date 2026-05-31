@@ -81,6 +81,8 @@ struct CalendarShareSheet: View {
 
     private let sharePointSize = CGSize(width: 360, height: 450)
     private let shareScale: CGFloat = 3
+    private let previewHorizontalPadding: CGFloat = 32
+    private let previewVerticalPadding: CGFloat = 16
 
     var body: some View {
         NavigationStack {
@@ -134,21 +136,36 @@ struct CalendarShareSheet: View {
     }
 
     private var cardPager: some View {
-        TabView(selection: $selectedTemplate) {
-            ForEach(availableShareTemplates(for: calendar, today: Date())) { template in
-                cardView(for: template)
-                    .aspectRatio(4 / 5, contentMode: .fit)
-                    .shadow(color: .black.opacity(0.25), radius: 20, x: 0, y: 10)
-                    .padding(.horizontal, 32)
-                    .padding(.vertical, 16)
-                    .tag(template)
-                    .onTapGesture {
-                        guard template.isPremiumOnly, !isPremium else { return }
-                        isPaywallPresented = true
-                    }
+        GeometryReader { proxy in
+            let cardSize = previewCardSize(for: proxy.size)
+
+            TabView(selection: $selectedTemplate) {
+                ForEach(availableShareTemplates(for: calendar, today: Date())) { template in
+                    cardView(for: template)
+                        .frame(width: cardSize.width, height: cardSize.height)
+                        .shadow(color: .black.opacity(0.25), radius: 20, x: 0, y: 10)
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                        .tag(template)
+                        .onTapGesture {
+                            guard template.isPremiumOnly, !isPremium else { return }
+                            isPaywallPresented = true
+                        }
+                }
             }
+            .tabViewStyle(.page(indexDisplayMode: .never))
         }
-        .tabViewStyle(.page(indexDisplayMode: .never))
+        .frame(height: sharePointSize.height)
+        .padding(.horizontal, previewHorizontalPadding)
+        .padding(.vertical, previewVerticalPadding)
+    }
+
+    private func previewCardSize(for availableSize: CGSize) -> CGSize {
+        let availableWidth = max(0, availableSize.width)
+        let cardWidth = min(sharePointSize.width, availableWidth)
+        return CGSize(
+            width: cardWidth,
+            height: cardWidth * sharePointSize.height / sharePointSize.width
+        )
     }
 
     private var actionButtons: some View {
