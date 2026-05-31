@@ -26,6 +26,8 @@ struct MilestoneCelebrationSheet: View {
     private let stopAction = MilestoneCelebrationStopAction()
     private let sharePointSize = CGSize(width: 360, height: 450)
     private let shareScale: CGFloat = 3
+    private let previewHorizontalPadding: CGFloat = 32
+    private let previewVerticalPadding: CGFloat = 16
 
     init(
         calendar: CustomCalendar,
@@ -104,27 +106,42 @@ struct MilestoneCelebrationSheet: View {
     }
 
     private var cardView: some View {
-        StreakMilestoneCardView(
-            calendar: calendar,
-            milestone: milestone,
-            currentStreak: currentStreak,
-            dates: dates,
-            kind: kind,
-            glareOffset: CGSize(
-                width: motion.roll * 3,
-                height: -motion.pitch * 3
+        GeometryReader { proxy in
+            let cardSize = previewCardSize(for: proxy.size)
+
+            StreakMilestoneCardView(
+                calendar: calendar,
+                milestone: milestone,
+                currentStreak: currentStreak,
+                dates: dates,
+                kind: kind,
+                glareOffset: CGSize(
+                    width: motion.roll * 3,
+                    height: -motion.pitch * 3
+                )
             )
+            .frame(width: cardSize.width, height: cardSize.height)
+            .shadow(color: .black.opacity(0.25), radius: 20, x: 0, y: 10)
+            .rotation3DEffect(.degrees(motion.pitch), axis: (x: 1, y: 0, z: 0), perspective: 0.8)
+            .rotation3DEffect(.degrees(motion.roll), axis: (x: 0, y: 1, z: 0), perspective: 0.8)
+            .scaleEffect(isCardVisible ? 1 : 0.88)
+            .opacity(isCardVisible ? 1 : 0)
+            .offset(y: isCardVisible ? 0 : 28)
+            .blur(radius: isCardVisible ? 0 : 10)
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+        }
+        .frame(height: sharePointSize.height)
+        .padding(.horizontal, previewHorizontalPadding)
+        .padding(.vertical, previewVerticalPadding)
+    }
+
+    private func previewCardSize(for availableSize: CGSize) -> CGSize {
+        let availableWidth = max(0, availableSize.width)
+        let cardWidth = min(sharePointSize.width, availableWidth)
+        return CGSize(
+            width: cardWidth,
+            height: cardWidth * sharePointSize.height / sharePointSize.width
         )
-        .aspectRatio(4 / 5, contentMode: .fit)
-        .shadow(color: .black.opacity(0.25), radius: 20, x: 0, y: 10)
-        .rotation3DEffect(.degrees(motion.pitch), axis: (x: 1, y: 0, z: 0), perspective: 0.8)
-        .rotation3DEffect(.degrees(motion.roll), axis: (x: 0, y: 1, z: 0), perspective: 0.8)
-        .scaleEffect(isCardVisible ? 1 : 0.88)
-        .opacity(isCardVisible ? 1 : 0)
-        .offset(y: isCardVisible ? 0 : 28)
-        .blur(radius: isCardVisible ? 0 : 10)
-        .padding(.horizontal, 32)
-        .padding(.vertical, 16)
     }
 
     @ViewBuilder
