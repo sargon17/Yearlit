@@ -10,6 +10,7 @@ func updateCounterEntry(
     source: CalendarAnalyticsSource = .unknown
 ) {
     let calendar = calendarStore.snapshot.calendar(id: calendarId)
+    guard calendar?.isAppleHealthConnected != true else { return }
     let oldEntry = calendarStore.getEntry(calendarId: calendarId, date: date)
     var newEntry: CalendarEntry
 

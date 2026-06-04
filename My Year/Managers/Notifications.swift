@@ -1001,6 +1001,7 @@ public func handleNotificationAction(
 /// Quick log handler - logs an entry for today
 @MainActor
 private func handleQuickLog(for calendar: CustomCalendar, store: CustomCalendarStore) {
+    guard !calendar.isAppleHealthConnected else { return }
     let today = Date()
     let oldEntry = store.getEntry(calendarId: calendar.id, date: today)
 

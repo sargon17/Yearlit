@@ -34,6 +34,10 @@ struct DayEntryEditSheet: View {
     }
 
     private func saveEntry() {
+        guard !calendar.isAppleHealthConnected else {
+            dismiss()
+            return
+        }
         let existingEntry = store.getEntry(calendarId: calendar.id, date: date)
         let newEntry = CalendarEntry(date: date, count: entryCount, completed: entryCompleted)
         store.addEntry(calendarId: calendar.id, entry: newEntry)

@@ -37,6 +37,10 @@ struct EditCalendarView: View {
   @FocusState private var isNameFocused: Bool
   @Environment(\.router) private var router
 
+  private var isAppleHealthCalendar: Bool {
+    calendar.isAppleHealthConnected
+  }
+
   init(
     calendar: CustomCalendar, onSave: @escaping (CustomCalendar) -> Void,
     onDelete: @escaping (CustomCalendar) -> Void
@@ -134,7 +138,11 @@ struct EditCalendarView: View {
           .frame(maxWidth: .infinity, alignment: .leading)
           .padding(.horizontal, 8)
 
-        TrackingPicker(trackingType: $trackingType, color: Color(selectedColor))
+        if isAppleHealthCalendar {
+          lockedAppleHealthStepsSection
+        } else {
+          TrackingPicker(trackingType: $trackingType, color: Color(selectedColor))
+        }
 
         ZStack(alignment: .leading) {
           Text(trackingTypeDescription)
@@ -168,20 +176,25 @@ struct EditCalendarView: View {
                 .sameLevelBorder(isFlat: true)
               }
 
-              if trackingType == .counter || trackingType == .multipleDaily {
+              if !isAppleHealthCalendar && (trackingType == .counter || trackingType == .multipleDaily) {
                 HStack {
                   Text("Unit of Measure")
                     .labelStyle(type: .secondary)
                   Spacer()
-                  if selectedUnit == nil {
-                    Text("None")
-                  }
-                  Picker("Unit of Measure", selection: $selectedUnit) {
-                    ForEach(UnitOfMeasure.Category.allCases, id: \.self) {
-                      category in
-                      Section(header: Text(category.displayName)) {
-                        ForEach(UnitOfMeasure.allCasesGrouped[category] ?? [], id: \.self) { unit in
-                          Text(unit.displayName).tag(unit as UnitOfMeasure?)
+                  if isAppleHealthCalendar {
+                    Text(UnitOfMeasure.steps.displayName)
+                      .foregroundStyle(.textSecondary)
+                  } else {
+                    if selectedUnit == nil {
+                      Text("None")
+                    }
+                    Picker("Unit of Measure", selection: $selectedUnit) {
+                      ForEach(UnitOfMeasure.Category.allCases, id: \.self) {
+                        category in
+                        Section(header: Text(category.displayName)) {
+                          ForEach(UnitOfMeasure.allCasesGrouped[category] ?? [], id: \.self) { unit in
+                            Text(unit.displayName).tag(unit as UnitOfMeasure?)
+                          }
                         }
                       }
                     }
@@ -260,23 +273,25 @@ struct EditCalendarView: View {
           .padding(.all, 2)
         }
 
-        HabitHistorySection(
-          cadence: cadence,
-          trackingStartedAt: $trackingStartedAt,
-          earliestEntryDate: earliestExistingEntryDate,
-          autoAdjustedMessage: historyMessage,
-          onTrackingStartedAtChanged: { historyMessage = nil }
-        ) {
-          router.showScreen(.sheet) { _ in
-            ExistingStreakSheet(
-              cadence: cadence,
-              trackingType: trackingType,
-              dailyTarget: dailyTarget,
-              defaultDailyValue: defaultRecordValue,
-              existingEntries: entries,
-              accentColor: Color(selectedColor)
-            ) { newEntries in
-              applyExistingStreakEntries(newEntries)
+        if !isAppleHealthCalendar {
+          HabitHistorySection(
+            cadence: cadence,
+            trackingStartedAt: $trackingStartedAt,
+            earliestEntryDate: earliestExistingEntryDate,
+            autoAdjustedMessage: historyMessage,
+            onTrackingStartedAtChanged: { historyMessage = nil }
+          ) {
+            router.showScreen(.sheet) { _ in
+              ExistingStreakSheet(
+                cadence: cadence,
+                trackingType: trackingType,
+                dailyTarget: dailyTarget,
+                defaultDailyValue: defaultRecordValue,
+                existingEntries: entries,
+                accentColor: Color(selectedColor)
+              ) { newEntries in
+                applyExistingStreakEntries(newEntries)
+              }
             }
           }
         }
@@ -442,13 +457,13 @@ struct EditCalendarView: View {
 
   private func makeUpdatedCalendar(isArchived overrideArchived: Bool? = nil) -> CustomCalendar {
     let trimmedName = name.trimmingCharacters(in: .whitespacesAndNewlines)
-    return CustomCalendar(
+    let updatedCalendar = CustomCalendar(
       id: calendar.id,
       name: trimmedName,
       color: selectedColor,
-      cadence: cadence,
-      trackingType: trackingType,
-      trackingStartedAt: resolvedTrackingStartedAt(),
+      cadence: isAppleHealthCalendar ? .daily : cadence,
+      trackingType: isAppleHealthCalendar ? .multipleDaily : trackingType,
+      trackingStartedAt: isAppleHealthCalendar ? calendar.trackingStartedAt : resolvedTrackingStartedAt(),
       dailyTarget: dailyTarget,
       entries: entries,
       isArchived: overrideArchived ?? isArchived,
@@ -456,8 +471,9 @@ struct EditCalendarView: View {
       reminderTime: recurringReminderEnabled ? reminderTime : nil,
       order: calendar.order,
       reminderWeekday: recurringReminderEnabled && cadence == .weekly ? reminderWeekday : nil,
-      unit: (trackingType == .counter || trackingType == .multipleDaily) ? selectedUnit : nil,
-      defaultRecordValue: (trackingType == .counter || trackingType == .multipleDaily)
+      unit: isAppleHealthCalendar
+        ? .steps : (trackingType == .counter || trackingType == .multipleDaily) ? selectedUnit : nil,
+      defaultRecordValue: (!isAppleHealthCalendar && (trackingType == .counter || trackingType == .multipleDaily))
         ? defaultRecordValue : nil,
       currencySymbol: ((trackingType == .counter || trackingType == .multipleDaily)
         && selectedUnit == .currency) ? currencySymbol : nil,
@@ -466,7 +482,24 @@ struct EditCalendarView: View {
       suppressWhenCompleted: suppressWhenCompleted,
       additionalReminderTimes: additionalReminderTimes,
       streakProtectionEnabled: streakProtectionEnabled,
-      streakProtectionThreshold: streakProtectionThreshold
+      streakProtectionThreshold: streakProtectionThreshold,
+      source: calendar.source
     )
+    return isAppleHealthCalendar ? updatedCalendar.recomputingCompletionForTarget(dailyTarget) : updatedCalendar
+  }
+
+  private var lockedAppleHealthStepsSection: some View {
+    CustomSection(label: "Tracking Type") {
+      PickerOptionTile(isSelected: true, isEnabled: false) {
+        PickerOptionContent(
+          icon: TrackingType.multipleDaily.icon,
+          title: "Target",
+          accentColor: Color(selectedColor),
+          isSelected: true
+        )
+      }
+      .padding(.all, 2)
+      .sameLevelGroupBackground()
+    }
   }
 }

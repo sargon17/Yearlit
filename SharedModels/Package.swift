@@ -16,5 +16,9 @@ let package: Package = .init(
             name: "SharedModels",
             dependencies: []
         ),
+        .testTarget(
+            name: "SharedModelsTests",
+            dependencies: ["SharedModels"]
+        ),
     ]
 )

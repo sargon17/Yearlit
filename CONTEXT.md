@@ -92,6 +92,14 @@ _Avoid_: Sample dot, fake completion
 The Calendar a user starts during onboarding, or the earliest existing active Calendar if onboarding restarts after setup began.
 _Avoid_: Onboarding calendar, sample calendar
 
+**Apple Health connected Calendar**:
+A Calendar whose progress is filled from a supported Apple Health metric while remaining editable like a normal Calendar.
+_Avoid_: Health habit, Health tracker, Apple Health calendar
+
+**Apple Health Steps metric**:
+The first supported Apple Health metric for filling a Calendar from daily step counts.
+_Avoid_: Health integration, Apple Health data, activity data when only steps are meant
+
 **Daily Wallpaper**:
 A dark Yearlit-generated image intended to be applied as an iPhone wallpaper by a Shortcuts automation.
 _Avoid_: bg, background pipeline
@@ -163,6 +171,38 @@ _Avoid_: quote, caption, reminder text
 - Selecting a **Tiny habit** creates the user's **First Calendar**.
 - Marking the **First dot** creates a real **Check-in** for the **First Calendar**.
 - If the **Onboarding flow** restarts after setup began, an existing active **Calendar** is treated as the **First Calendar** instead of creating a duplicate.
+- An **Apple Health connected Calendar** is still a **Calendar**; Apple Health is only the source used to fill its progress.
+- The first Apple Health release stores the Calendar source as either manual or Apple Health steps.
+- In the first Apple Health release, **Apple Health connected Calendars** support only the **Apple Health Steps metric**.
+- In the first Apple Health release, **Apple Health connected Calendars** are daily-only.
+- The first Apple Health release does not support manual overrides on **Apple Health connected Calendars**.
+- Apple Health sync owns the Check-ins it creates for an **Apple Health connected Calendar**.
+- The first Apple Health release disables manual Check-in editing on **Apple Health connected Calendars**.
+- Users can edit **Apple Health connected Calendar** metadata such as name, color, target, reminders, archive state, and deletion.
+- The first Apple Health release does not let users edit the cadence, tracking type, unit, or source of an **Apple Health connected Calendar**.
+- Changing the target of an **Apple Health connected Calendar** recomputes Period completion from existing step counts.
+- The first Apple Health release does not support disconnecting Apple Health from an **Apple Health connected Calendar**.
+- A user who no longer wants an **Apple Health connected Calendar** deletes the Calendar.
+- The first Apple Health release introduces **Apple Health connected Calendars** through the normal Calendar creation flow only.
+- Onboarding, announcement sheets, and other surfaces may introduce **Apple Health connected Calendars** later, but are not part of the first implementation.
+- The 1.15 announcement sheet for **Apple Health connected Calendars** is deferred until the core Calendar creation path works.
+- Health access is free, but **Apple Health connected Calendars** count toward the same free Calendar limit as manual Calendars.
+- Yearlit checks the Calendar limit before requesting Apple Health permission.
+- Only the app reads Apple Health in the first Apple Health release; widgets read the resulting Calendar data.
+- The first Apple Health release syncs during Calendar creation and through an explicit Calendar-detail sync action only.
+- The first Apple Health release does not automatically sync on app launch or foreground.
+- Explicit Apple Health sync replaces current-year Apple Health-owned Check-ins from January 1 through today.
+- If Apple Health permission is revoked, sync leaves existing Check-ins unchanged and shows that permission is needed.
+- Apple Health import and sync suppress **Milestone celebrations** while silently remembering reached **Milestones**.
+- If Apple Health permission is denied during Calendar creation, Yearlit keeps the user in the creation flow and offers a manual Calendar fallback without automatically creating the Calendar.
+- If Apple Health permission is granted but no current-year step history exists, Yearlit still creates an empty **Apple Health connected Calendar**.
+- An **Apple Health Steps metric** Calendar is a target Calendar whose Period is completed when the daily step count reaches the Calendar target.
+- The default target for an **Apple Health Steps metric** Calendar is 8,000 steps per day.
+- An **Apple Health Steps metric** Calendar starts on January 1 of the current year for current-year backfill.
+- Days without Apple Health step samples remain empty.
+- The first Apple Health release does not convert existing manual Calendars into **Apple Health connected Calendars**.
+- The Apple Health source is chosen only when creating a new **Apple Health connected Calendar**.
+- Additional Apple Health metrics may be added later without changing the **Calendar** concept.
 - A **Daily Wallpaper Shortcut** produces one **Daily Wallpaper** each time it runs.
 - A **Daily Wallpaper** is applied by Shortcuts, not directly by Yearlit.
 - A **Daily Wallpaper** uses **Year Progress** data and is sized for the natural iPhone wallpaper aspect ratio.

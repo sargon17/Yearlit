@@ -85,8 +85,10 @@ struct CustomCalendarView: View {
   @State private var pendingMilestoneCheck: Bool = false
   @State private var isEntryEditSheetPresented: Bool = false
   @State private var optimisticEntryOverrides: [String: OptimisticEntryOverride] = [:]
+  @State private var isSyncingAppleHealthSteps: Bool = false
 
   private let milestoneCelebrationPolicy = MilestoneCelebrationPolicy.shared
+  private let healthStepsService = AppleHealthStepsService()
 
   private var shouldShowDeveloperControls: Bool {
     !cleanScreenshotsEnabled
@@ -103,6 +105,7 @@ struct CustomCalendarView: View {
   private func fillRandomEntries() {
     let state = renderSnapshot
     let activeCalendar = state.activeCalendar
+    guard !activeCalendar.isAppleHealthConnected else { return }
 
     // TODO: Implement clearEntries(calendarId:) in CustomCalendarStore to enable clearing before filling.
     store.clearEntries(calendarId: activeCalendar.id)
@@ -158,6 +161,7 @@ struct CustomCalendarView: View {
     guard !date.isInFuture else { return }
 
     let activeCalendar = renderSnapshot.activeCalendar
+    guard !activeCalendar.isAppleHealthConnected else { return }
 
     if activeCalendar.trackingType == .binary {
       let newEntry =
@@ -205,6 +209,7 @@ struct CustomCalendarView: View {
   private func handleQuickAdd() {
     let state = renderSnapshot
     let activeCalendar = state.activeCalendar
+    guard !activeCalendar.isAppleHealthConnected else { return }
     let entryDate = state.currentPeriodReferenceDate ?? Date()
 
     Task { @MainActor in
@@ -261,6 +266,60 @@ struct CustomCalendarView: View {
       kind: .allTime,
       referenceDate: referenceDate
     )
+  }
+
+  @MainActor
+  private func syncAppleHealthSteps(calendar: CustomCalendar) async {
+    guard calendar.source == .appleHealthSteps else { return }
+    guard !isSyncingAppleHealthSteps else { return }
+    isSyncingAppleHealthSteps = true
+    defer { isSyncingAppleHealthSteps = false }
+
+    do {
+      try await healthStepsService.requestAuthorization()
+      let stepCounts = try await healthStepsService.currentYearStepCounts()
+      let start = Self.currentYearStartDate()
+      let end = LocalDayCalendar.startOfDay(for: Date())
+      let entries = AppleHealthStepsEntryMapper.entries(from: stepCounts, target: calendar.dailyTarget)
+      guard !entries.isEmpty || !calendar.hasEntries(from: start, through: end) else {
+        calendarError = .appleHealthSyncFailed(AppleHealthStepsServiceError.noReadableStepData)
+        return
+      }
+      store.replaceAppleHealthEntries(calendarId: calendar.id, entries: entries, from: start, through: end)
+      rememberMilestonesSilently(for: calendar, replacingEntries: entries, from: start, through: end)
+    } catch {
+      calendarError = .appleHealthSyncFailed(error)
+    }
+  }
+
+  private func rememberMilestonesSilently(
+    for calendar: CustomCalendar,
+    replacingEntries entries: [String: CalendarEntry],
+    from start: Date,
+    through end: Date
+  ) {
+    var syncedCalendar = calendar
+    syncedCalendar.entries = calendar.entries.filter { _, entry in
+      entry.date < start || entry.date > end
+    }
+    syncedCalendar.entries.merge(entries) { _, new in new }
+    let currentStreak = currentStreak(for: syncedCalendar)
+    _ = milestoneCelebrationPolicy.decisionForStreakMilestone(
+      calendarId: calendar.id,
+      streak: currentStreak
+    )
+
+    let referenceDate = Date()
+    if syncedCalendar.cadence == .daily {
+      for kind in [ShowedUpMilestoneKind.currentMonth, .currentYear, .allTime] {
+        _ = milestoneCelebrationPolicy.decisionForShowedUpMilestone(
+          calendarId: calendar.id,
+          showedUpCount: ShowedUpMilestones.showedUpCount(for: syncedCalendar, kind: kind, today: referenceDate),
+          kind: kind,
+          periodKey: ShowedUpMilestones.periodKey(for: kind, today: referenceDate)
+        )
+      }
+    }
   }
 
   @discardableResult
@@ -412,7 +471,9 @@ struct CustomCalendarView: View {
                 }
 
                 let currentYear = Calendar.current.component(.year, from: Date())
-                if renderSnapshot.isShowingYour365 || valuationStore.selectedYear == currentYear {
+                if (renderSnapshot.isShowingYour365 || valuationStore.selectedYear == currentYear)
+                  && !activeCalendar.isAppleHealthConnected
+                {
                   let quickAddDate = renderSnapshot.currentPeriodReferenceDate ?? currentDayDate
                   let isCompletedToday =
                     store.getEntry(
@@ -492,6 +553,27 @@ struct CustomCalendarView: View {
                       }
                     )
                   }
+                }
+                if activeCalendar.isAppleHealthConnected {
+                  Text("•")
+                    .font(AppFont.mono(4, weight: .black))
+                    .foregroundColor(Color("text-tertiary"))
+                    .padding(.horizontal, 2)
+
+                  Button {
+                    Task {
+                      await syncAppleHealthSteps(calendar: activeCalendar)
+                    }
+                  } label: {
+                    HStack(spacing: 4) {
+                      Image(systemName: isSyncingAppleHealthSteps ? "arrow.triangle.2.circlepath" : "heart.text.square")
+                      Text(isSyncingAppleHealthSteps ? "Syncing" : "Sync now")
+                    }
+                    .font(AppFont.mono(12))
+                    .foregroundColor(Color("text-tertiary"))
+                  }
+                  .buttonStyle(.plain)
+                  .disabled(isSyncingAppleHealthSteps)
                 }
               }
             }
@@ -685,5 +767,20 @@ struct CustomCalendarView: View {
         return "\(key):\(entrySignature)"
       }
       .joined(separator: ",")
+  }
+
+  private static func currentYearStartDate() -> Date {
+    let calendar = LocalDayCalendar.calendar
+    let year = calendar.component(.year, from: Date())
+    return calendar.date(from: DateComponents(year: year, month: 1, day: 1))
+      ?? LocalDayCalendar.startOfDay(for: Date())
+  }
+}
+
+extension CustomCalendar {
+  fileprivate func hasEntries(from start: Date, through end: Date) -> Bool {
+    entries.values.contains { entry in
+      entry.date >= start && entry.date <= end
+    }
   }
 }

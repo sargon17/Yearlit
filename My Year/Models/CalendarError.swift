@@ -5,6 +5,7 @@ enum CalendarError: LocalizedError, Identifiable {
   case notificationPermissionDenied
   case notificationSchedulingFailed(Error)
   case errorAddingEntry(Error)
+  case appleHealthSyncFailed(Error)
 
   var id: String {
     localizedDescription
@@ -20,6 +21,8 @@ enum CalendarError: LocalizedError, Identifiable {
       return String(localized: "Notification Error")
     case .errorAddingEntry:
       return String(localized: "Entry Error")
+    case .appleHealthSyncFailed:
+      return String(localized: "Apple Health Error")
     }
   }
 
@@ -37,6 +40,8 @@ enum CalendarError: LocalizedError, Identifiable {
       return String(localized: "Failed to schedule notification: \(error.localizedDescription)")
     case .errorAddingEntry(let error):
       return String(localized: "Failed to add entry: \(error.localizedDescription)")
+    case .appleHealthSyncFailed(let error):
+      return String(localized: "Failed to read Apple Health steps: \(error.localizedDescription)")
     }
   }
 }

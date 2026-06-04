@@ -9,6 +9,7 @@ func updateMultipleDailyEntry(
     addValue: Int,
     source: CalendarAnalyticsSource = .unknown
 ) {
+    guard !calendar.isAppleHealthConnected else { return }
     let oldEntry = calendarStore.getEntry(calendarId: calendar.id, date: date)
     var newEntry: CalendarEntry
     let calendarId = calendar.id

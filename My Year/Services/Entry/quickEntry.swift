@@ -8,6 +8,8 @@ func quickEntry(
   calendarStore: CustomCalendarStore,
   source: CalendarAnalyticsSource = .unknown
 ) {
+  guard !calendar.isAppleHealthConnected else { return }
+
   let oldEntry = calendarStore.getEntry(calendarId: calendar.id, date: date)
   _ = calendarStore.quickLogEntry(calendarId: calendar.id, date: date)
   let newEntry = calendarStore.getEntry(calendarId: calendar.id, date: date)

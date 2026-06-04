@@ -239,6 +239,11 @@ public enum CalendarCadence: String, Codable, CaseIterable {
     }
 }
 
+public enum CalendarSource: String, Codable, CaseIterable {
+    case manual
+    case appleHealthSteps
+}
+
 public struct CustomCalendar: Codable, Identifiable {
     public let id: UUID
     public var name: String
@@ -265,6 +270,7 @@ public struct CustomCalendar: Codable, Identifiable {
     public var additionalReminderTimes: [ReminderTime] = [] // Additional reminder times (beyond primary reminderHour/reminderMinute)
     public var streakProtectionEnabled: Bool = true // Send late-day reminder if streak at risk
     public var streakProtectionThreshold: Int = 5 // Minimum streak length to trigger protection (default: 5 days)
+    public var source: CalendarSource
     public var entries: [String: CalendarEntry] // Date string -> Entry
 
     public init(
@@ -283,7 +289,8 @@ public struct CustomCalendar: Codable, Identifiable {
         suppressWhenCompleted: Bool = true,
         additionalReminderTimes: [ReminderTime] = [],
         streakProtectionEnabled: Bool = true,
-        streakProtectionThreshold: Int = 5
+        streakProtectionThreshold: Int = 5,
+        source: CalendarSource = .manual
     ) {
         self.id = id
         self.name = name
@@ -305,6 +312,7 @@ public struct CustomCalendar: Codable, Identifiable {
         self.additionalReminderTimes = additionalReminderTimes
         self.streakProtectionEnabled = streakProtectionEnabled
         self.streakProtectionThreshold = streakProtectionThreshold
+        self.source = source
         if let time = reminderTime {
             let calendar = Calendar.current
             reminderHour = calendar.component(.hour, from: time)
@@ -334,7 +342,8 @@ public struct CustomCalendar: Codable, Identifiable {
         suppressWhenCompleted: Bool = true,
         additionalReminderTimes: [ReminderTime] = [],
         streakProtectionEnabled: Bool = true,
-        streakProtectionThreshold: Int = 5
+        streakProtectionThreshold: Int = 5,
+        source: CalendarSource = .manual
     ) throws {
         // Validate hour and minute ranges
         if let hour = reminderHour, let minute = reminderMinute {
@@ -367,6 +376,7 @@ public struct CustomCalendar: Codable, Identifiable {
         self.additionalReminderTimes = additionalReminderTimes
         self.streakProtectionEnabled = streakProtectionEnabled
         self.streakProtectionThreshold = streakProtectionThreshold
+        self.source = source
         self.entries = entries
     }
 
@@ -410,6 +420,7 @@ public struct CustomCalendar: Codable, Identifiable {
         case additionalReminderTimes
         case streakProtectionEnabled
         case streakProtectionThreshold
+        case source
         case entries
     }
 
@@ -442,6 +453,7 @@ public struct CustomCalendar: Codable, Identifiable {
         additionalReminderTimes = try container.decodeIfPresent([ReminderTime].self, forKey: .additionalReminderTimes) ?? []
         streakProtectionEnabled = try container.decodeIfPresent(Bool.self, forKey: .streakProtectionEnabled) ?? true
         streakProtectionThreshold = try container.decodeIfPresent(Int.self, forKey: .streakProtectionThreshold) ?? 5
+        source = try container.decodeIfPresent(CalendarSource.self, forKey: .source) ?? .manual
         entries = decodedEntries
     }
 
@@ -469,6 +481,7 @@ public struct CustomCalendar: Codable, Identifiable {
         try container.encode(additionalReminderTimes, forKey: .additionalReminderTimes)
         try container.encode(streakProtectionEnabled, forKey: .streakProtectionEnabled)
         try container.encode(streakProtectionThreshold, forKey: .streakProtectionThreshold)
+        try container.encode(source, forKey: .source)
         try container.encode(entries, forKey: .entries)
     }
 
@@ -572,6 +585,38 @@ public struct CalendarEntry: Codable {
         self.date = date
         self.count = count
         self.completed = completed
+    }
+}
+
+extension CustomCalendar {
+    public var isAppleHealthConnected: Bool {
+        source == .appleHealthSteps
+    }
+
+    public func recomputingCompletionForTarget(_ target: Int) -> CustomCalendar {
+        var updated = self
+        let resolvedTarget = max(1, target)
+        updated.dailyTarget = resolvedTarget
+        updated.entries = entries.mapValues { entry in
+            CalendarEntry(date: entry.date, count: entry.count, completed: entry.count >= resolvedTarget)
+        }
+        return updated
+    }
+}
+
+public enum AppleHealthStepsEntryMapper {
+    public static func entries(from stepCountsByDate: [Date: Int], target: Int) -> [String: CalendarEntry] {
+        let resolvedTarget = max(1, target)
+        return stepCountsByDate.reduce(into: [String: CalendarEntry]()) { entries, pair in
+            let date = LocalDayCalendar.startOfDay(for: pair.key)
+            let count = max(0, pair.value)
+            guard count > 0 else { return }
+            entries[DayKeyFormatter.shared.string(from: date)] = CalendarEntry(
+                date: date,
+                count: count,
+                completed: count >= resolvedTarget
+            )
+        }
     }
 }
 
@@ -1004,6 +1049,16 @@ public final class CustomCalendarStore: ObservableObject {
             let entities = fetchCalendarEntities(id: calendar.id, in: context)
             guard let entity = entities.first else { return }
             var calendarToSave = calendar
+            let persistedSource = entity.calendarSource
+            calendarToSave.source = persistedSource
+            if persistedSource == .appleHealthSteps {
+                calendarToSave.cadence = .daily
+                calendarToSave.trackingType = .multipleDaily
+                calendarToSave.trackingStartedAt = entity.trackingStartedAt
+                calendarToSave.unit = .steps
+                calendarToSave.defaultRecordValue = nil
+                calendarToSave.currencySymbol = nil
+            }
             if entity.isArchived, !calendar.isArchived {
                 calendarToSave.order = activeCalendarCount(excluding: calendar.id, in: context)
             }
@@ -1012,6 +1067,16 @@ public final class CustomCalendarStore: ObservableObject {
             }
 
             let existingEntries = try fetchEntries(for: calendarToSave.id, in: context)
+            if persistedSource == .appleHealthSteps {
+                let target = max(1, calendarToSave.dailyTarget)
+                for entry in existingEntries {
+                    entry.completed = entry.count >= target
+                }
+                try persistNormalizedCalendarOrder(in: context)
+                try finishHabitMutationReloadingCalendars(in: context)
+                return
+            }
+
             var existingByKey = existingEntries.reduce(into: [String: CalendarEntryEntity]()) { partialResult, entry in
                 if let existing = partialResult[entry.dayKey] {
                     if entry.date > existing.date {
@@ -1103,6 +1168,7 @@ public final class CustomCalendarStore: ObservableObject {
         do {
             let context = makeContext()
             guard let calendarEntity = fetchCalendarEntity(id: calendarId, in: context) else { return }
+            guard !calendarEntity.isAppleHealthStepsSource else { return }
             let cadence = CalendarCadence(rawValue: calendarEntity.cadenceRawValue) ?? .daily
             let canonicalDate = canonicalEntryDate(for: entry.date, cadence: cadence)
             let dayKey = formatDate(date: canonicalDate, cadence: cadence)
@@ -1138,6 +1204,7 @@ public final class CustomCalendarStore: ObservableObject {
         do {
             let context = makeContext()
             guard let calendarEntity = fetchCalendarEntity(id: calendarId, in: context) else { return false }
+            guard !calendarEntity.isAppleHealthStepsSource else { return false }
 
             let cadence = CalendarCadence(rawValue: calendarEntity.cadenceRawValue) ?? .daily
             let trackingType = TrackingType(rawValue: calendarEntity.trackingTypeRawValue) ?? .binary
@@ -1214,6 +1281,8 @@ public final class CustomCalendarStore: ObservableObject {
     public func clearEntries(calendarId: UUID) {
         do {
             let context = makeContext()
+            guard let calendarEntity = fetchCalendarEntity(id: calendarId, in: context) else { return }
+            guard !calendarEntity.isAppleHealthStepsSource else { return }
             let entries = try fetchEntries(for: calendarId, in: context)
             for entry in entries {
                 context.delete(entry)
@@ -1227,6 +1296,8 @@ public final class CustomCalendarStore: ObservableObject {
     public func deleteEntry(calendarId: UUID, date: Date) {
         do {
             let context = makeContext()
+            guard let calendarEntity = fetchCalendarEntity(id: calendarId, in: context) else { return }
+            guard !calendarEntity.isAppleHealthStepsSource else { return }
             let cadence = resolveCadence(calendarId: calendarId, in: context)
             let dayKey = formatDate(date: date, cadence: cadence)
             let compositeKey = CalendarEntryEntity.makeCompositeKey(calendarId: calendarId, dayKey: dayKey)
@@ -1235,6 +1306,45 @@ public final class CustomCalendarStore: ObservableObject {
             try finishHabitMutationReloadingCalendars(in: context)
         } catch {
             NSLog("Failed to delete entry: \(error)")
+        }
+    }
+
+    public func replaceAppleHealthEntries(
+        calendarId: UUID,
+        entries replacementEntries: [String: CalendarEntry],
+        from start: Date,
+        through end: Date
+    ) {
+        do {
+            let context = makeContext()
+            guard let calendarEntity = fetchCalendarEntity(id: calendarId, in: context) else { return }
+            guard calendarEntity.isAppleHealthStepsSource else { return }
+            let start = LocalDayCalendar.startOfDay(for: start)
+            let end = LocalDayCalendar.startOfDay(for: end)
+            guard start <= end else { return }
+
+            let existingEntries = try fetchEntries(for: calendarId, in: context)
+            for entry in existingEntries where entry.date >= start && entry.date <= end {
+                context.delete(entry)
+            }
+
+            for (dayKey, entry) in replacementEntries {
+                let canonicalDate = LocalDayCalendar.startOfDay(for: entry.date)
+                guard canonicalDate >= start && canonicalDate <= end else { continue }
+                let entryEntity = CalendarEntryEntity(
+                    compositeKey: CalendarEntryEntity.makeCompositeKey(calendarId: calendarEntity.id, dayKey: dayKey),
+                    calendarId: calendarEntity.id,
+                    dayKey: dayKey,
+                    date: canonicalDate,
+                    count: entry.count,
+                    completed: entry.completed
+                )
+                context.insert(entryEntity)
+            }
+
+            try finishHabitMutationReloadingCalendars(in: context)
+        } catch {
+            NSLog("Failed to replace Apple Health entries: \(error)")
         }
     }
 

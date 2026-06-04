@@ -27,6 +27,7 @@ public final class HabitCalendarEntity {
     public var additionalReminderTimesJSON: String? // JSON-encoded [ReminderTime]
     public var streakProtectionEnabled: Bool = true
     public var streakProtectionThreshold: Int = 5
+    public var sourceRawValue: String?
     public var order: Int = 0
 
     public init(
@@ -51,6 +52,7 @@ public final class HabitCalendarEntity {
         additionalReminderTimesJSON: String? = nil,
         streakProtectionEnabled: Bool = true,
         streakProtectionThreshold: Int = 5,
+        sourceRawValue: String? = nil,
         order: Int = 0
     ) {
         self.id = id
@@ -74,6 +76,7 @@ public final class HabitCalendarEntity {
         self.additionalReminderTimesJSON = additionalReminderTimesJSON
         self.streakProtectionEnabled = streakProtectionEnabled
         self.streakProtectionThreshold = streakProtectionThreshold
+        self.sourceRawValue = sourceRawValue
         self.order = order
     }
 }
@@ -191,6 +194,14 @@ public final class HabitStackStepEntity {
 
 @available(iOS 17.0, macOS 14.0, *)
 extension HabitCalendarEntity {
+    var calendarSource: CalendarSource {
+        CalendarSource(rawValue: sourceRawValue ?? "") ?? .manual
+    }
+
+    var isAppleHealthStepsSource: Bool {
+        calendarSource == .appleHealthSteps
+    }
+
     /// Helper to decode additional reminder times from JSON
     private var decodedAdditionalReminderTimes: [ReminderTime] {
         guard let json = additionalReminderTimesJSON,
@@ -218,6 +229,7 @@ extension HabitCalendarEntity {
         let unit = unitRawValue.flatMap(UnitOfMeasure.init(rawValue:))
         let privacyMode = NotificationPrivacyMode(rawValue: notificationPrivacyModeRawValue) ?? .full
         let additionalTimes = decodedAdditionalReminderTimes
+        let source = calendarSource
 
         if let calendar = try? CustomCalendar(
             id: id,
@@ -242,7 +254,8 @@ extension HabitCalendarEntity {
             suppressWhenCompleted: suppressWhenCompleted,
             additionalReminderTimes: additionalTimes,
             streakProtectionEnabled: streakProtectionEnabled,
-            streakProtectionThreshold: streakProtectionThreshold
+            streakProtectionThreshold: streakProtectionThreshold,
+            source: source
         ) {
             return calendar
         }
@@ -269,7 +282,8 @@ extension HabitCalendarEntity {
             suppressWhenCompleted: suppressWhenCompleted,
             additionalReminderTimes: additionalTimes,
             streakProtectionEnabled: streakProtectionEnabled,
-            streakProtectionThreshold: streakProtectionThreshold
+            streakProtectionThreshold: streakProtectionThreshold,
+            source: source
         )
     }
 
@@ -294,6 +308,7 @@ extension HabitCalendarEntity {
         additionalReminderTimesJSON = Self.encodeAdditionalReminderTimes(model.additionalReminderTimes)
         streakProtectionEnabled = model.streakProtectionEnabled
         streakProtectionThreshold = model.streakProtectionThreshold
+        sourceRawValue = model.source.rawValue
         order = model.order
     }
 
@@ -320,6 +335,7 @@ extension HabitCalendarEntity {
             additionalReminderTimesJSON: encodeAdditionalReminderTimes(model.additionalReminderTimes),
             streakProtectionEnabled: model.streakProtectionEnabled,
             streakProtectionThreshold: model.streakProtectionThreshold,
+            sourceRawValue: model.source.rawValue,
             order: model.order
         )
     }
