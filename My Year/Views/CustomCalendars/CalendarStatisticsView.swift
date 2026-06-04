@@ -105,21 +105,21 @@ struct CalendarStatisticsView: View {
           if let currentPeriodCount {
             CompactStatTile(
               title: currentPeriodTitle,
-              value: "\(currentPeriodCount)",
+              value: compactStatsNumber(currentPeriodCount),
               accentColor: accentColor
             )
             .layoutPriority(1)
           }
           CompactStatTile(
             title: "Total",
-            value: "\(stats.totalCount)",
+            value: compactStatsNumber(stats.totalCount),
             accentColor: accentColor
           )
           .layoutPriority(1)
           if trackingType != .binary {
             CompactStatTile(
               title: bestPeriodTitle,
-              value: "\(stats.maxCount)",
+              value: compactStatsNumber(stats.maxCount),
               accentColor: accentColor
             )
             .layoutPriority(1)
@@ -140,21 +140,21 @@ struct CalendarStatisticsView: View {
         HStack {
           CompactStatTile(
             title: "Current",
-            value: "\(stats.currentStreak)",
+            value: compactStatsNumber(stats.currentStreak),
             accentColor: accentColor,
             onTap: onTapCurrentStreak
           )
           .layoutPriority(1)
           CompactStatTile(
             title: "Longest",
-            value: "\(stats.longestStreak)",
+            value: compactStatsNumber(stats.longestStreak),
             accentColor: accentColor
           )
           .layoutPriority(1)
 
           CompactStatTile(
             title: activePeriodsTitle,
-            value: "\(stats.activeDays)",
+            value: compactStatsNumber(stats.activeDays),
             accentColor: accentColor,
             onTap: onTapActiveDays
           )
@@ -374,6 +374,34 @@ private func weekdayName(_ idx: Int) -> String {
 private func percent(_ value: Double) -> String {
   let p = max(0, min(1, value))
   return String(format: "%.0f%%", p * 100)
+}
+
+func compactStatsNumber(_ value: Int) -> String {
+  let sign = value < 0 ? "-" : ""
+  var number = value == Int.min ? Double(Int.max) + 1 : Double(abs(value))
+  let units = ["", "K", "M", "B"]
+  var unitIndex = 0
+
+  while number >= 1_000, unitIndex < units.count - 1 {
+    number /= 1_000
+    unitIndex += 1
+  }
+
+  guard unitIndex > 0 else {
+    return "\(value)"
+  }
+
+  var rounded = (number * 10).rounded() / 10
+  if rounded >= 1_000, unitIndex < units.count - 1 {
+    rounded /= 1_000
+    unitIndex += 1
+  }
+
+  let text =
+    rounded >= 100 || rounded.rounded() == rounded
+    ? String(format: "%.0f", rounded)
+    : String(format: "%.1f", rounded)
+  return "\(sign)\(text)\(units[unitIndex])"
 }
 
 private func labeledValueRow(
