@@ -15,6 +15,7 @@
     "check:swift": "bun run build:ios",
     "check": "bun run check:swift",
     "dev": "scripts/ios-simulator.sh run",
+    "dev:ipad": "SIMULATOR_NAME='My Year iPad' SIMULATOR_OS=26.5 scripts/ios-simulator.sh run",
     "dev:device": "./scripts/ios-device.sh run"
   },
   "dependencies": {
