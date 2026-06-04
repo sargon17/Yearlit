@@ -522,36 +522,38 @@ struct CustomCalendarView: View {
                     .padding(.horizontal, 2)
                 }
 
-                HStack(alignment: .center, spacing: 4) {
-                  if activeCalendar.recurringReminderEnabled,
-                    let hour = activeCalendar.reminderHour,
-                    let minute = activeCalendar.reminderMinute
-                  {
-                    let reminderTime = String(format: "%02d:%02d", hour, minute)
-                    Image(systemName: "bell")
-                      .font(AppFont.mono(12))
-                      .foregroundColor(Color("text-tertiary"))
-                    Text(reminderTime)
-                      .font(AppFont.mono(12))
-                      .foregroundColor(Color("text-tertiary"))
-                  } else {
-                    Image(systemName: "bell.slash")
-                      .font(AppFont.mono(12))
-                      .foregroundColor(Color("text-tertiary"))
-                    Text("Off")
-                      .font(AppFont.mono(12))
-                      .foregroundColor(Color("text-tertiary"))
+                if !activeCalendar.isAppleHealthConnected {
+                  HStack(alignment: .center, spacing: 4) {
+                    if activeCalendar.recurringReminderEnabled,
+                      let hour = activeCalendar.reminderHour,
+                      let minute = activeCalendar.reminderMinute
+                    {
+                      let reminderTime = String(format: "%02d:%02d", hour, minute)
+                      Image(systemName: "bell")
+                        .font(AppFont.mono(12))
+                        .foregroundColor(Color("text-tertiary"))
+                      Text(reminderTime)
+                        .font(AppFont.mono(12))
+                        .foregroundColor(Color("text-tertiary"))
+                    } else {
+                      Image(systemName: "bell.slash")
+                        .font(AppFont.mono(12))
+                        .foregroundColor(Color("text-tertiary"))
+                      Text("Off")
+                        .font(AppFont.mono(12))
+                        .foregroundColor(Color("text-tertiary"))
+                    }
                   }
-                }
-                .onTapGesture {
-                  router.showScreen(.sheet) { _ in
-                    NotificationSettingsSheet(
-                      calendar: activeCalendar,
-                      customerInfo: customerInfo,
-                      onSave: { updatedCalendar in
-                        store.updateCalendar(updatedCalendar)
-                      }
-                    )
+                  .onTapGesture {
+                    router.showScreen(.sheet) { _ in
+                      NotificationSettingsSheet(
+                        calendar: activeCalendar,
+                        customerInfo: customerInfo,
+                        onSave: { updatedCalendar in
+                          store.updateCalendar(updatedCalendar)
+                        }
+                      )
+                    }
                   }
                 }
                 if activeCalendar.isAppleHealthConnected {

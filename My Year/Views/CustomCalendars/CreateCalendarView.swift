@@ -85,34 +85,38 @@ struct CreateCalendarView: View {
   }
 
   func createCalendar(entries: [String: CalendarEntry], source: CalendarSource, trackingStartedAt: Date) {
+    let isAppleHealthCalendar = source == .appleHealthSteps
+    let resolvedDailyTarget = isAppleHealthCalendar ? max(1, dailyTarget) : dailyTarget
     let resolvedAdditionalTimes =
-      (trackingType == .multipleDaily && isPremiumUser) ? additionalReminderTimes : []
+      (!isAppleHealthCalendar && trackingType == .multipleDaily && isPremiumUser) ? additionalReminderTimes : []
     let calendar = CustomCalendar(
       name: name,
       color: selectedColor,
       cadence: cadence,
       trackingType: trackingType,
       trackingStartedAt: trackingStartedAt,
-      dailyTarget: dailyTarget,
+      dailyTarget: resolvedDailyTarget,
       entries: entries,
       isArchived: false,
-      recurringReminderEnabled: recurringReminderEnabled,
-      reminderTime: recurringReminderEnabled ? reminderTime : nil,
-      reminderWeekday: recurringReminderEnabled && cadence == .weekly ? reminderWeekday : nil,
-      unit: (trackingType == .counter || trackingType == .multipleDaily) ? selectedUnit : nil,
-      defaultRecordValue: (trackingType == .counter || trackingType == .multipleDaily)
+      recurringReminderEnabled: isAppleHealthCalendar ? false : recurringReminderEnabled,
+      reminderTime: !isAppleHealthCalendar && recurringReminderEnabled ? reminderTime : nil,
+      reminderWeekday: !isAppleHealthCalendar && recurringReminderEnabled && cadence == .weekly ? reminderWeekday : nil,
+      unit: isAppleHealthCalendar ? .steps : (trackingType == .counter || trackingType == .multipleDaily) ? selectedUnit : nil,
+      defaultRecordValue: (!isAppleHealthCalendar && (trackingType == .counter || trackingType == .multipleDaily))
         ? defaultRecordValue : nil,
-      currencySymbol: ((trackingType == .counter || trackingType == .multipleDaily)
+      currencySymbol: (!isAppleHealthCalendar && (trackingType == .counter || trackingType == .multipleDaily)
         && selectedUnit == .currency) ? currencySymbol : nil,
       reminderTimeZone: TimeZone.current.identifier,
       notificationPrivacyMode: notificationPrivacyMode,
-      suppressWhenCompleted: suppressWhenCompleted,
+      suppressWhenCompleted: isAppleHealthCalendar ? false : suppressWhenCompleted,
       additionalReminderTimes: resolvedAdditionalTimes,
-      streakProtectionEnabled: streakProtectionEnabled,
+      streakProtectionEnabled: isAppleHealthCalendar ? false : streakProtectionEnabled,
       streakProtectionThreshold: streakProtectionThreshold,
       source: source
     )
-    scheduleNotifications(for: calendar, store: CustomCalendarStore.shared)
+    if !isAppleHealthCalendar {
+      scheduleNotifications(for: calendar, store: CustomCalendarStore.shared)
+    }
     onCreate(calendar)
   }
 
@@ -250,12 +254,14 @@ struct CreateCalendarView: View {
         }
         .animation(.snappy, value: trackingType)
 
-        if trackingType == .multipleDaily || trackingType == .counter {
-          CustomSection(label: "Settings for \(trackingTypeLabel)") {
+        if calendarSource == .appleHealthSteps || trackingType == .multipleDaily || trackingType == .counter {
+          CustomSection(
+            label: calendarSource == .appleHealthSteps ? "Settings for Apple Health Steps" : "Settings for \(trackingTypeLabel)"
+          ) {
             VStack(spacing: 2) {
-              if trackingType == .multipleDaily {
+              if calendarSource == .appleHealthSteps || trackingType == .multipleDaily {
                 HStack {
-                  Text(cadence.targetTitle)
+                  Text(calendarSource == .appleHealthSteps ? "Steps Threshold" : cadence.targetTitle)
                     .labelStyle(type: .secondary)
 
                   Spacer()
@@ -276,17 +282,12 @@ struct CreateCalendarView: View {
                     .labelStyle(type: .secondary)
 
                   Spacer()
-                  if calendarSource == .appleHealthSteps {
-                    Text(UnitOfMeasure.steps.displayName)
-                      .foregroundStyle(.textSecondary)
-                  } else {
-                    Picker("Unit of Measure", selection: $selectedUnit) {
-                      ForEach(UnitOfMeasure.Category.allCases, id: \.self) {
-                        category in
-                        Section(header: Text(category.displayName)) {
-                          ForEach(UnitOfMeasure.allCasesGrouped[category] ?? [], id: \.self) { unit in
-                            Text(unit.displayName).tag(unit as UnitOfMeasure?)
-                          }
+                  Picker("Unit of Measure", selection: $selectedUnit) {
+                    ForEach(UnitOfMeasure.Category.allCases, id: \.self) {
+                      category in
+                      Section(header: Text(category.displayName)) {
+                        ForEach(UnitOfMeasure.allCasesGrouped[category] ?? [], id: \.self) { unit in
+                          Text(unit.displayName).tag(unit as UnitOfMeasure?)
                         }
                       }
                     }
@@ -313,7 +314,7 @@ struct CreateCalendarView: View {
                 }
               }
 
-              if trackingType == .counter || trackingType == .multipleDaily {
+              if calendarSource == .manual && (trackingType == .counter || trackingType == .multipleDaily) {
                 HStack {
                   Text("Default Quick Add Value")
                     .labelStyle(type: .secondary)
@@ -335,36 +336,38 @@ struct CreateCalendarView: View {
           }
         }
 
-        CustomSection(label: "Notifications") {
-          VStack(spacing: 2) {
-            Button(action: { showingNotificationSettings = true }) {
-              HStack {
-                VStack(alignment: .leading, spacing: 4) {
-                  Text("Notification settings")
-                    .labelStyle(type: .secondary)
-                  Text(
-                    NotificationSettingsHelpers.reminderSummary(
-                      isEnabled: recurringReminderEnabled,
-                      cadence: cadence,
-                      reminderTime: reminderTime,
-                      reminderWeekday: reminderWeekday
+        if calendarSource == .manual {
+          CustomSection(label: "Notifications") {
+            VStack(spacing: 2) {
+              Button(action: { showingNotificationSettings = true }) {
+                HStack {
+                  VStack(alignment: .leading, spacing: 4) {
+                    Text("Notification settings")
+                      .labelStyle(type: .secondary)
+                    Text(
+                      NotificationSettingsHelpers.reminderSummary(
+                        isEnabled: recurringReminderEnabled,
+                        cadence: cadence,
+                        reminderTime: reminderTime,
+                        reminderWeekday: reminderWeekday
+                      )
                     )
-                  )
-                  .font(.caption)
-                  .foregroundStyle(.textTertiary)
+                    .font(.caption)
+                    .foregroundStyle(.textTertiary)
+                  }
+                  Spacer()
+                  Image(systemName: "chevron.right")
+                    .font(AppFont.mono(12))
+                    .foregroundStyle(.textTertiary)
                 }
-                Spacer()
-                Image(systemName: "chevron.right")
-                  .font(AppFont.mono(12))
-                  .foregroundStyle(.textTertiary)
+                .padding(.horizontal)
+                .padding(.vertical, 10)
               }
-              .padding(.horizontal)
-              .padding(.vertical, 10)
+              .buttonStyle(.plain)
+              .sameLevelBorder(isFlat: true)
             }
-            .buttonStyle(.plain)
-            .sameLevelBorder(isFlat: true)
+            .padding(.all, 2)
           }
-          .padding(.all, 2)
         }
         if calendarSource == .manual {
           HabitHistorySection(
@@ -462,7 +465,7 @@ struct CreateCalendarView: View {
       }
     }
     .onChange(of: dailyTarget) { _, _ in
-      if trackingType == .multipleDaily {
+      if calendarSource == .appleHealthSteps || trackingType == .multipleDaily {
         clearExistingStreakHistory()
       }
     }
@@ -497,8 +500,8 @@ struct CreateCalendarView: View {
     CustomSection(label: "Tracking Type") {
       PickerOptionTile(isSelected: true, isEnabled: false) {
         PickerOptionContent(
-          icon: TrackingType.multipleDaily.icon,
-          title: "Target",
+          icon: TrackingType.binary.icon,
+          title: "Binary Target",
           accentColor: Color(selectedColor),
           isSelected: true
         )
@@ -512,10 +515,14 @@ struct CreateCalendarView: View {
     guard source == .appleHealthSteps else { return }
     clearExistingStreakHistory()
     cadence = .daily
-    trackingType = .multipleDaily
+    trackingType = .binary
     dailyTarget = 8000
     selectedUnit = .steps
     defaultRecordValue = 1
+    recurringReminderEnabled = false
+    additionalReminderTimes = []
+    suppressWhenCompleted = false
+    streakProtectionEnabled = false
     trackingStartedAt = Self.currentYearStartDate()
   }
 

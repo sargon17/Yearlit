@@ -57,7 +57,7 @@ struct AppleHealthCalendarModelTests {
       name: "Walking",
       color: "qs-amber",
       cadence: .daily,
-      trackingType: .multipleDaily,
+      trackingType: .binary,
       trackingStartedAt: makeDate(year: 2026, month: 1, day: 1),
       dailyTarget: 8_000,
       entries: [
@@ -94,7 +94,7 @@ struct AppleHealthCalendarModelTests {
       name: "Walking",
       color: "qs-amber",
       cadence: .daily,
-      trackingType: .multipleDaily,
+      trackingType: .binary,
       trackingStartedAt: makeDate(year: 2026, month: 1, day: 1),
       dailyTarget: 8_000,
       entries: [
@@ -125,7 +125,7 @@ struct AppleHealthCalendarModelTests {
 
     #expect(updatedCalendar.sourceRawValue == CalendarSource.appleHealthSteps.rawValue)
     #expect(updatedCalendar.cadenceRawValue == CalendarCadence.daily.rawValue)
-    #expect(updatedCalendar.trackingTypeRawValue == TrackingType.multipleDaily.rawValue)
+    #expect(updatedCalendar.trackingTypeRawValue == TrackingType.binary.rawValue)
     #expect(updatedCalendar.unitRawValue == UnitOfMeasure.steps.rawValue)
     #expect(updatedCalendar.dailyTarget == 10_000)
     #expect(entries.count == 1)

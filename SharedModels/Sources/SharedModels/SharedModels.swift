@@ -1053,11 +1053,19 @@ public final class CustomCalendarStore: ObservableObject {
             calendarToSave.source = persistedSource
             if persistedSource == .appleHealthSteps {
                 calendarToSave.cadence = .daily
-                calendarToSave.trackingType = .multipleDaily
+                calendarToSave.trackingType = .binary
                 calendarToSave.trackingStartedAt = entity.trackingStartedAt
+                calendarToSave.dailyTarget = max(1, calendarToSave.dailyTarget)
                 calendarToSave.unit = .steps
                 calendarToSave.defaultRecordValue = nil
                 calendarToSave.currencySymbol = nil
+                calendarToSave.recurringReminderEnabled = false
+                calendarToSave.reminderHour = nil
+                calendarToSave.reminderMinute = nil
+                calendarToSave.reminderWeekday = nil
+                calendarToSave.additionalReminderTimes = []
+                calendarToSave.suppressWhenCompleted = false
+                calendarToSave.streakProtectionEnabled = false
             }
             if entity.isArchived, !calendar.isArchived {
                 calendarToSave.order = activeCalendarCount(excluding: calendar.id, in: context)

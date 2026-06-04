@@ -156,12 +156,14 @@ struct EditCalendarView: View {
         }
         .animation(.snappy, value: trackingType)
 
-        if trackingType == .multipleDaily || trackingType == .counter {
-          CustomSection(label: "Settings for \(trackingTypeLabel)") {
+        if isAppleHealthCalendar || trackingType == .multipleDaily || trackingType == .counter {
+          CustomSection(
+            label: isAppleHealthCalendar ? "Settings for Apple Health Steps" : "Settings for \(trackingTypeLabel)"
+          ) {
             VStack(spacing: 2) {
-              if trackingType == .multipleDaily {
+              if isAppleHealthCalendar || trackingType == .multipleDaily {
                 HStack {
-                  Text(cadence.targetTitle)
+                  Text(isAppleHealthCalendar ? "Steps Threshold" : cadence.targetTitle)
                     .labelStyle(type: .secondary)
 
                   Spacer()
@@ -181,20 +183,15 @@ struct EditCalendarView: View {
                   Text("Unit of Measure")
                     .labelStyle(type: .secondary)
                   Spacer()
-                  if isAppleHealthCalendar {
-                    Text(UnitOfMeasure.steps.displayName)
-                      .foregroundStyle(.textSecondary)
-                  } else {
-                    if selectedUnit == nil {
-                      Text("None")
-                    }
-                    Picker("Unit of Measure", selection: $selectedUnit) {
-                      ForEach(UnitOfMeasure.Category.allCases, id: \.self) {
-                        category in
-                        Section(header: Text(category.displayName)) {
-                          ForEach(UnitOfMeasure.allCasesGrouped[category] ?? [], id: \.self) { unit in
-                            Text(unit.displayName).tag(unit as UnitOfMeasure?)
-                          }
+                  if selectedUnit == nil {
+                    Text("None")
+                  }
+                  Picker("Unit of Measure", selection: $selectedUnit) {
+                    ForEach(UnitOfMeasure.Category.allCases, id: \.self) {
+                      category in
+                      Section(header: Text(category.displayName)) {
+                        ForEach(UnitOfMeasure.allCasesGrouped[category] ?? [], id: \.self) { unit in
+                          Text(unit.displayName).tag(unit as UnitOfMeasure?)
                         }
                       }
                     }
@@ -220,7 +217,7 @@ struct EditCalendarView: View {
                 }
               }
 
-              if trackingType == .counter || trackingType == .multipleDaily {
+              if !isAppleHealthCalendar && (trackingType == .counter || trackingType == .multipleDaily) {
                 HStack {
                   Text("Default Quick Add Value")
                     .labelStyle(type: .secondary)
@@ -241,36 +238,38 @@ struct EditCalendarView: View {
           }
         }
 
-        CustomSection(label: "Notifications") {
-          VStack(spacing: 2) {
-            Button(action: { showingNotificationSettings = true }) {
-              HStack {
-                VStack(alignment: .leading, spacing: 4) {
-                  Text("Notification settings")
-                    .labelStyle(type: .secondary)
-                  Text(
-                    NotificationSettingsHelpers.reminderSummary(
-                      isEnabled: recurringReminderEnabled,
-                      cadence: cadence,
-                      reminderTime: reminderTime,
-                      reminderWeekday: reminderWeekday
+        if !isAppleHealthCalendar {
+          CustomSection(label: "Notifications") {
+            VStack(spacing: 2) {
+              Button(action: { showingNotificationSettings = true }) {
+                HStack {
+                  VStack(alignment: .leading, spacing: 4) {
+                    Text("Notification settings")
+                      .labelStyle(type: .secondary)
+                    Text(
+                      NotificationSettingsHelpers.reminderSummary(
+                        isEnabled: recurringReminderEnabled,
+                        cadence: cadence,
+                        reminderTime: reminderTime,
+                        reminderWeekday: reminderWeekday
+                      )
                     )
-                  )
-                  .font(.caption)
-                  .foregroundStyle(.textTertiary)
+                    .font(.caption)
+                    .foregroundStyle(.textTertiary)
+                  }
+                  Spacer()
+                  Image(systemName: "chevron.right")
+                    .font(AppFont.mono(12))
+                    .foregroundStyle(.textTertiary)
                 }
-                Spacer()
-                Image(systemName: "chevron.right")
-                  .font(AppFont.mono(12))
-                  .foregroundStyle(.textTertiary)
+                .padding(.horizontal)
+                .padding(.vertical, 10)
               }
-              .padding(.horizontal)
-              .padding(.vertical, 10)
+              .buttonStyle(.plain)
+              .sameLevelBorder(isFlat: true)
             }
-            .buttonStyle(.plain)
-            .sameLevelBorder(isFlat: true)
+            .padding(.all, 2)
           }
-          .padding(.all, 2)
         }
 
         if !isAppleHealthCalendar {
@@ -462,26 +461,26 @@ struct EditCalendarView: View {
       name: trimmedName,
       color: selectedColor,
       cadence: isAppleHealthCalendar ? .daily : cadence,
-      trackingType: isAppleHealthCalendar ? .multipleDaily : trackingType,
+      trackingType: isAppleHealthCalendar ? .binary : trackingType,
       trackingStartedAt: isAppleHealthCalendar ? calendar.trackingStartedAt : resolvedTrackingStartedAt(),
       dailyTarget: dailyTarget,
       entries: entries,
       isArchived: overrideArchived ?? isArchived,
-      recurringReminderEnabled: recurringReminderEnabled,
-      reminderTime: recurringReminderEnabled ? reminderTime : nil,
+      recurringReminderEnabled: isAppleHealthCalendar ? false : recurringReminderEnabled,
+      reminderTime: !isAppleHealthCalendar && recurringReminderEnabled ? reminderTime : nil,
       order: calendar.order,
-      reminderWeekday: recurringReminderEnabled && cadence == .weekly ? reminderWeekday : nil,
+      reminderWeekday: !isAppleHealthCalendar && recurringReminderEnabled && cadence == .weekly ? reminderWeekday : nil,
       unit: isAppleHealthCalendar
         ? .steps : (trackingType == .counter || trackingType == .multipleDaily) ? selectedUnit : nil,
       defaultRecordValue: (!isAppleHealthCalendar && (trackingType == .counter || trackingType == .multipleDaily))
         ? defaultRecordValue : nil,
-      currencySymbol: ((trackingType == .counter || trackingType == .multipleDaily)
+      currencySymbol: (!isAppleHealthCalendar && (trackingType == .counter || trackingType == .multipleDaily)
         && selectedUnit == .currency) ? currencySymbol : nil,
       reminderTimeZone: calendar.reminderTimeZone,
       notificationPrivacyMode: notificationPrivacyMode,
-      suppressWhenCompleted: suppressWhenCompleted,
-      additionalReminderTimes: additionalReminderTimes,
-      streakProtectionEnabled: streakProtectionEnabled,
+      suppressWhenCompleted: isAppleHealthCalendar ? false : suppressWhenCompleted,
+      additionalReminderTimes: isAppleHealthCalendar ? [] : additionalReminderTimes,
+      streakProtectionEnabled: isAppleHealthCalendar ? false : streakProtectionEnabled,
       streakProtectionThreshold: streakProtectionThreshold,
       source: calendar.source
     )
@@ -492,8 +491,8 @@ struct EditCalendarView: View {
     CustomSection(label: "Tracking Type") {
       PickerOptionTile(isSelected: true, isEnabled: false) {
         PickerOptionContent(
-          icon: TrackingType.multipleDaily.icon,
-          title: "Target",
+          icon: TrackingType.binary.icon,
+          title: "Binary Target",
           accentColor: Color(selectedColor),
           isSelected: true
         )

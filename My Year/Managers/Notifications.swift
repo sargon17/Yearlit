@@ -643,6 +643,11 @@ public func scheduleNotifications(
     completion: @escaping (Result<Void, NotificationError>) -> Void = { _ in }
 ) {
     removePendingNotifications(for: calendar.id) {
+        guard !calendar.isAppleHealthConnected else {
+            completion(.success(()))
+            return
+        }
+
         // If calendar is archived or reminder disabled, we're done (already removed)
         guard !calendar.isArchived,
               calendar.recurringReminderEnabled
