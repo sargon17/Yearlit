@@ -89,6 +89,14 @@ struct DeveloperSettingsSection: View {
           }
         }
 
+        #if DEBUG
+          Button {
+            ReviewPrompter.shared.presentDebugPrompt()
+          } label: {
+            Label("Show Review Prompt", systemImage: "star.bubble")
+          }
+        #endif
+
         if isDeveloperModeEnabled {
           Button("Disable Developer Mode") {
             isDeveloperModeEnabled = false

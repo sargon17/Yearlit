@@ -5,29 +5,21 @@ import SwiftUI
 final class OnboardingCoordinator: ObservableObject {
   @Published private(set) var currentStep: OnboardingStep
   @Published var session: OnboardingSession
-  @Published private(set) var isRequestingReview = false
   @Published private(set) var isRequestingNotifications = false
 
   private let onFinish: () -> Void
   private let analytics: OnboardingAnalyticsTracking
-  private let reviewRequester: @MainActor () -> Void
-  private let reviewPromptDelayNanoseconds: UInt64
   private let notificationRequester: (@escaping (Result<Bool, Error>) -> Void) -> Void
   private var firstDotCalendar: CustomCalendar?
-  private var reviewRequestTask: Task<Void, Never>?
   private var trackedOnboardingActions: Set<OnboardingAction> = []
 
   init(
     onFinish: @escaping () -> Void,
     analytics: OnboardingAnalyticsTracking = Analytics.shared,
-    reviewRequester: @escaping @MainActor () -> Void = { ReviewPrompter.shared.requestReviewNow() },
-    reviewPromptDelayNanoseconds: UInt64 = 1_500_000_000,
     notificationRequester: @escaping (@escaping (Result<Bool, Error>) -> Void) -> Void = requestNotificationPermissions
   ) {
     self.onFinish = onFinish
     self.analytics = analytics
-    self.reviewRequester = reviewRequester
-    self.reviewPromptDelayNanoseconds = reviewPromptDelayNanoseconds
     self.notificationRequester = notificationRequester
     currentStep = .emotionalHook
     session = OnboardingSession()
@@ -73,7 +65,7 @@ final class OnboardingCoordinator: ObservableObject {
     let store = CustomCalendarStore.shared
     guard let calendar = resolvedFirstCalendar(in: store.snapshot) else { return }
     guard session.didCompleteFirstDot || isFirstDotCompletedToday(calendar: calendar) else { return }
-    transition(to: .preReviewGate)
+    transition(to: .notificationPermission)
   }
 
   private func setFirstDotDay(_ date: Date, completed: Bool) {
@@ -99,36 +91,6 @@ final class OnboardingCoordinator: ObservableObject {
     }
   }
 
-  func preReviewGateAnswered(_ answer: PreReviewGateAnswer?) {
-    session.preReviewGateWasPositive = answer?.isPositive == true
-    transition(to: session.preReviewGateWasPositive ? .reviewRequest : .notificationPermission)
-  }
-
-  func reviewRequestStarted() {
-    guard !isRequestingReview else { return }
-    isRequestingReview = true
-    reviewRequestTask?.cancel()
-    reviewRequestTask = Task { @MainActor [weak self] in
-      guard let self else { return }
-      self.reviewRequester()
-      if self.reviewPromptDelayNanoseconds > 0 {
-        try? await Task.sleep(nanoseconds: self.reviewPromptDelayNanoseconds)
-      }
-      guard !Task.isCancelled else { return }
-      self.reviewRequestAnswered()
-    }
-  }
-
-  func reviewRequestAnswered() {
-    reviewRequestTask?.cancel()
-    reviewRequestTask = nil
-    isRequestingReview = false
-    session.didRequestReview = true
-    trackOnboardingAction(.reviewRequested)
-    addPositiveEvent(.completedOnboarding)
-    transition(to: .notificationPermission)
-  }
-
   func notificationPermissionRequested() {
     guard !isRequestingNotifications else { return }
     isRequestingNotifications = true
@@ -148,15 +110,6 @@ final class OnboardingCoordinator: ObservableObject {
     session.didRequestNotifications = false
     trackOnboardingAction(.notificationsSkipped)
     transition(to: .readyWidgets)
-  }
-
-  func reviewRequestSkipped() {
-    reviewRequestTask?.cancel()
-    reviewRequestTask = nil
-    isRequestingReview = false
-    session.didRequestReview = false
-    trackOnboardingAction(.reviewSkipped)
-    transition(to: .notificationPermission)
   }
 
   func readyWidgetsCompleted() {
@@ -235,10 +188,6 @@ final class OnboardingCoordinator: ObservableObject {
       tinyHabitContinueTapped()
     case .firstDot:
       break
-    case .preReviewGate:
-      transition(to: session.preReviewGateWasPositive ? .reviewRequest : .notificationPermission)
-    case .reviewRequest:
-      reviewRequestStarted()
     case .notificationPermission:
       notificationPermissionRequested()
     case .readyWidgets:
