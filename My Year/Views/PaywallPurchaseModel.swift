@@ -20,7 +20,7 @@ final class PaywallPurchaseModel: ObservableObject {
   var primaryButtonTitle: String {
     guard let selectedPackage else { return String(localized: "Continue") }
     return hasFreeTrial(selectedPackage)
-      ? String(localized: "Start Free Trial")
+      ? String(localized: "Start for Free")
       : String(localized: "Continue with Pro")
   }
 

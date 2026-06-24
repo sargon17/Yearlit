@@ -91,7 +91,7 @@ struct OnboardingPaywall: View {
       }
       .padding(.top, 4)
     }
-    .overlay(alignment: .topTrailing) {
+    .overlay(alignment: .topLeading) {
       closeButtonOverlay
     }
     .task {
@@ -107,13 +107,12 @@ struct OnboardingPaywall: View {
     if showsCloseButton {
       Button(action: closePaywall) {
         Image(systemName: "xmark")
-          .font(.system(size: 15, weight: .semibold))
-          .foregroundColor(.textSecondary)
+          .font(.system(size: 12, weight: .semibold))
+          .foregroundColor(.textSecondary.opacity(0.6))
           .frame(width: 44, height: 44)
           .contentShape(Rectangle())
       }
       .buttonStyle(.plain)
-      .modifier(PaywallCloseButtonSurface())
       .padding(.top, 44)
       .padding(.trailing, 8)
       .accessibilityLabel("Close paywall")
@@ -131,19 +130,6 @@ struct OnboardingPaywall: View {
   }
 }
 
-private struct PaywallCloseButtonSurface: ViewModifier {
-  @ViewBuilder
-  func body(content: Content) -> some View {
-    if #available(iOS 26.0, *) {
-      content
-        .glassEffect(.regular.interactive(), in: .circle)
-    } else {
-      content
-        .background(.surfaceMuted.opacity(0.75), in: Circle())
-    }
-  }
-}
-
 private struct PaywallHeroContent: View {
   var body: some View {
     VStack(alignment: .leading) {
@@ -151,17 +137,18 @@ private struct PaywallHeroContent: View {
         .frame(maxWidth: .infinity, alignment: .leading)
 
       VStack(alignment: .leading, spacing: 4) {
-        OnboardingView.Caption("Keep your habits visible with widgets, unlimited")
-        OnboardingView.Caption("tracking, and tools built for consistency.")
+        OnboardingView.Caption("Become the kind of person who shows up —")
+        OnboardingView.Caption("every day, all year.")
       }
       .frame(maxWidth: .infinity, alignment: .leading)
 
       VStack(alignment: .leading, spacing: 22) {
-        PaywallFeatureRow(title: "Deeper stats", subtitle: "see patterns over time")
-        PaywallFeatureRow(title: "Unlimited habits", subtitle: "track every promise")
-        PaywallFeatureRow(title: "Widgets", subtitle: "keep your dots on your Home Screen")
         PaywallFeatureRow(
-          title: "Support a solo-built app",
+          title: "Know what's actually working", subtitle: "deeper stats reveal the patterns behind your streaks")
+        PaywallFeatureRow(title: "Keep every promise you make", subtitle: "track unlimited habits, not just a few")
+        PaywallFeatureRow(title: "Stay on track at a glance", subtitle: "widgets keep your dots on your Home Screen")
+        PaywallFeatureRow(
+          title: "Back the maker behind it",
           subtitle: "Your upgrade helps me keep building Yearlit."
         )
       }
@@ -218,24 +205,27 @@ struct PaywallPlanCard: View {
                 .font(AppFont.sans(16, weight: .semibold))
                 .foregroundStyle(.textPrimary)
 
-              if let badge {
-                Text(badge)
-                  .font(AppFont.pixelCircle(14))
-                  .foregroundStyle(Color.brand)
-              }
+            }
+            if let badge {
+              Text(badge)
+                .font(AppFont.sans(14, weight: .bold))
+                .padding(.horizontal, 4)
+                .padding(.vertical, 2)
+                .foregroundStyle(Color.surfaceMuted)
+                .background(Color.brand)
             }
           }
 
           Spacer()
 
-          if isSelected {
-            Image(systemName: "checkmark")
-              .font(.system(size: 15, weight: .bold))
-              .foregroundStyle(Color.brandInverted)
-              .frame(width: 28, height: 28)
-              .background(Color.brand)
-              .clipShape(Circle())
-          }
+          // if isSelected {
+          //   Image(systemName: "checkmark")
+          //     .font(.system(size: 15, weight: .bold))
+          //     .foregroundStyle(Color.brandInverted)
+          //     .frame(width: 28, height: 28)
+          //     .background(Color.brand)
+          //     .clipShape(Circle())
+          // }
         }
 
         if isFeatured {
@@ -243,8 +233,8 @@ struct PaywallPlanCard: View {
         }
 
         Text(footer)
-          .font(AppFont.sans(16))
-          .foregroundStyle(.textPrimary.opacity(0.8))
+          .font(AppFont.sans(12))
+          .foregroundStyle(.textSecondary.opacity(0.8))
       }
       .frame(maxWidth: .infinity, maxHeight: isFeatured ? 156 : nil, alignment: .leading)
       .padding(12)
@@ -368,6 +358,7 @@ struct PaywallFooterLinks: View {
     .foregroundStyle(.textSecondary)
     .frame(maxWidth: .infinity)
     .padding(.top, 8)
+    .padding(.bottom, -12)
   }
 
   private func footerLabel(_ title: LocalizedStringKey) -> some View {
@@ -375,7 +366,6 @@ struct PaywallFooterLinks: View {
       .font(AppFont.sans(12))
       .lineLimit(1)
       .minimumScaleFactor(0.75)
-      .frame(minHeight: 44)
       .contentShape(Rectangle())
   }
 }
