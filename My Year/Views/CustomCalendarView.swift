@@ -163,7 +163,11 @@ struct CustomCalendarView: View {
   private func triggerCheckInRipple(from date: Date) {
     checkInRippleOriginDate = date
     checkInRippleTrigger += 1
-    Task {
+    Task { @MainActor in
+      guard CHHapticEngine.capabilitiesForHardware().supportsHaptics else {
+        await hapticFeedback(.soft)
+        return
+      }
       await hapticFeedback(.customCurve(events: checkInHapticEvents, parameterCurves: checkInHapticCurves))
     }
   }
@@ -173,8 +177,8 @@ struct CustomCalendarView: View {
       CHHapticEvent(
         eventType: .hapticContinuous,
         parameters: [
-          CHHapticEventParameter(parameterID: .hapticIntensity, value: 0.36),
-          CHHapticEventParameter(parameterID: .hapticSharpness, value: 0.14)
+          CHHapticEventParameter(parameterID: .hapticIntensity, value: 0.5),
+          CHHapticEventParameter(parameterID: .hapticSharpness, value: 0.16)
         ],
         relativeTime: 0,
         duration: 1.25
@@ -187,11 +191,11 @@ struct CustomCalendarView: View {
       CHHapticParameterCurve(
         parameterID: .hapticIntensityControl,
         controlPoints: [
-          CHHapticParameterCurve.ControlPoint(relativeTime: 0, value: 0.12),
-          CHHapticParameterCurve.ControlPoint(relativeTime: 0.1, value: 0.62),
-          CHHapticParameterCurve.ControlPoint(relativeTime: 0.34, value: 0.48),
-          CHHapticParameterCurve.ControlPoint(relativeTime: 0.68, value: 0.28),
-          CHHapticParameterCurve.ControlPoint(relativeTime: 1.0, value: 0.12),
+          CHHapticParameterCurve.ControlPoint(relativeTime: 0, value: 0.16),
+          CHHapticParameterCurve.ControlPoint(relativeTime: 0.1, value: 0.72),
+          CHHapticParameterCurve.ControlPoint(relativeTime: 0.34, value: 0.52),
+          CHHapticParameterCurve.ControlPoint(relativeTime: 0.68, value: 0.3),
+          CHHapticParameterCurve.ControlPoint(relativeTime: 1.0, value: 0.14),
           CHHapticParameterCurve.ControlPoint(relativeTime: 1.25, value: 0)
         ],
         relativeTime: 0
