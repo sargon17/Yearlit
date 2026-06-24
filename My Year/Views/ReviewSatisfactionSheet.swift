@@ -17,13 +17,13 @@ struct ReviewSatisfactionSheet: View {
     NavigationStack {
       VStack(alignment: .leading, spacing: 20) {
         VStack(alignment: .leading, spacing: 10) {
-          Text("Are you liking Yearlit so far?")
+          Text("Enjoying Yearlit so far?")
             .font(AppFont.pixelCircle(26))
             .foregroundStyle(.textPrimary)
             .multilineTextAlignment(.leading)
             .fixedSize(horizontal: false, vertical: true)
 
-          Text("Your answer helps decide what happens next.")
+          Text("Tell us how it's going — it only takes a tap.")
             .font(AppFont.mono(14))
             .foregroundStyle(.textSecondary)
             .fixedSize(horizontal: false, vertical: true)
@@ -62,12 +62,12 @@ struct ReviewSatisfactionSheet: View {
 
   private var answerButtons: some View {
     VStack(spacing: 12) {
-      styledButton("Yes", style: .primary) {
+      styledButton("Love it", style: .primary) {
         trackAnswer("yes")
         requestReviewAfterDismissal()
       }
 
-      styledButton("No", style: .secondary) {
+      styledButton("Not really", style: .secondary) {
         trackAnswer("no")
         isCollectingFeedback = true
       }
@@ -81,11 +81,11 @@ struct ReviewSatisfactionSheet: View {
 
   private var feedbackForm: some View {
     VStack(alignment: .leading, spacing: 14) {
-      Text("What is not working?")
+      Text("What would make it better?")
         .font(AppFont.mono(16, weight: .bold))
         .foregroundStyle(.textPrimary)
 
-      TextField("Tell us what felt wrong or missing", text: $feedbackText, axis: .vertical)
+      TextField("Share what's frustrating or missing", text: $feedbackText, axis: .vertical)
         .lineLimit(5...9)
         .inputStyle(color: .textPrimary)
         .onChange(of: feedbackText) { _, newValue in
@@ -93,7 +93,7 @@ struct ReviewSatisfactionSheet: View {
         }
 
       styledButton(
-        isSubmittingFeedback ? "Sending" : "Send feedback",
+        isSubmittingFeedback ? "Sending…" : "Send feedback",
         style: .primary,
         isDisabled: isSubmittingFeedback || trimmedFeedback.isEmpty
       ) {
