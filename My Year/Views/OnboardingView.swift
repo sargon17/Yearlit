@@ -43,10 +43,6 @@ struct OnboardingView: View {
       )
     case .firstDot:
       firstDotView
-    case .preReviewGate:
-      preReviewGateView
-    case .reviewRequest:
-      reviewRequestView
     case .notificationPermission:
       NotificationPermissionView(
         isRequestingNotifications: coordinator.isRequestingNotifications,
@@ -77,29 +73,6 @@ struct OnboardingView: View {
       onMarkDayOne: coordinator.firstDotMarkDayOneTapped,
       onDayTapped: coordinator.firstDotDayTapped,
       onContinue: coordinator.firstDotContinueTapped
-    )
-  }
-
-  private var preReviewGateView: some View {
-    let firstDotCalendar = resolvedFirstDotCalendar
-
-    return PreReviewGateView(
-      calendar: firstDotCalendar,
-      completedDates: completedDates(in: firstDotCalendar),
-      onPositive: { coordinator.preReviewGateAnswered(.positive) },
-      onSkip: { coordinator.preReviewGateAnswered(.negative) }
-    )
-  }
-
-  private var reviewRequestView: some View {
-    let firstDotCalendar = resolvedFirstDotCalendar
-
-    return ReviewRequestView(
-      calendar: firstDotCalendar,
-      completedDates: completedDates(in: firstDotCalendar),
-      isRequestingReview: coordinator.isRequestingReview,
-      onLeaveReview: coordinator.reviewRequestStarted,
-      onNotNow: coordinator.reviewRequestSkipped
     )
   }
 

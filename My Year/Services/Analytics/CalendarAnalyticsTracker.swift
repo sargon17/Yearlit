@@ -102,6 +102,10 @@ final class CalendarAnalyticsTracker {
         properties: entryProperties(calendar, period: transition.period, source: source)
       )
     }
+
+    if transition.checkinCompleted || transition.periodCompleted {
+      addPositiveEvent(.completedCheckIn)
+    }
   }
 
   private func calendarProperties(_ calendar: CustomCalendar) -> [String: AnalyticsPropertyValue] {

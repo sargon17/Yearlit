@@ -31,6 +31,13 @@ enum AnalyticsEvent: String, CaseIterable {
 
   case paywallViewed = "paywall_viewed"
   case shareSheetViewed = "share_sheet_viewed"
+
+  case reviewSatisfactionPromptViewed = "review_satisfaction_prompt_viewed"
+  case reviewSatisfactionPromptAnswered = "review_satisfaction_prompt_answered"
+  case reviewFeedbackStarted = "review_feedback_started"
+  case reviewFeedbackSubmitted = "review_feedback_submitted"
+  case reviewFeedbackSubmitFailed = "review_feedback_submit_failed"
+  case appStoreReviewRequested = "app_store_review_requested"
 }
 
 enum PaywallTrigger: String, CaseIterable {
@@ -53,8 +60,6 @@ enum OnboardingAction: String, CaseIterable {
   case identityCompleted = "identity_completed"
   case tinyHabitCreated = "tiny_habit_created"
   case firstDotMarked = "first_dot_marked"
-  case reviewRequested = "review_requested"
-  case reviewSkipped = "review_skipped"
   case notificationsRequested = "notifications_requested"
   case notificationsSkipped = "notifications_skipped"
   case readyContinued = "ready_continued"

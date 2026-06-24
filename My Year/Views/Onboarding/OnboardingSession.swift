@@ -5,8 +5,6 @@ struct OnboardingSession {
   var selectedTinyHabitName: String?
   var tinyHabitCalendarId: UUID?
   var didCompleteFirstDot = false
-  var preReviewGateWasPositive = false
-  var didRequestReview = false
   var didRequestNotifications = false
 
   mutating func toggleIdentityCommitment(_ commitment: IdentityCommitment) {

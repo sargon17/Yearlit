@@ -90,6 +90,7 @@ struct My_YearApp: App {
   @StateObject private var featureRequest = FeatureRequestManager(
     config: AppConfig.wishConfiguration
   )
+  @StateObject private var reviewPrompter = ReviewPrompter.shared
   @Environment(\.scenePhase) private var scenePhase
   @State private var isTimelinePreferenceSheetPresented = false
   @State private var hasTrackedOnboardingStarted = false
@@ -117,7 +118,7 @@ struct My_YearApp: App {
     ReviewPrompter.shared.rules = .init(
       minEvents: 3,
       cooldownDays: 30,
-      oncePerVersion: true
+      oncePerVersion: false
     )
 
     let appearance = UINavigationBarAppearance()
@@ -167,6 +168,7 @@ struct My_YearApp: App {
       }
       .environmentObject(onboarding)
       .environmentObject(featureRequest)
+      .environmentObject(reviewPrompter)
       .fullScreenCover(isPresented: onboardingPresentation, onDismiss: {
         updateTimelinePreferencePresentation()
       }) {
@@ -179,6 +181,10 @@ struct My_YearApp: App {
           TimelinePreferenceManager.shared.setMode(mode)
           isTimelinePreferenceSheetPresented = false
         }
+      }
+      .sheet(item: $reviewPrompter.activePrompt) { context in
+        ReviewSatisfactionSheet(prompter: reviewPrompter, context: context)
+          .environmentObject(featureRequest)
       }
       .onAppear {
         updateTimelinePreferencePresentation()
