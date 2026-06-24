@@ -304,7 +304,9 @@ struct EditCalendarView: View {
             Button(action: {
               isArchived.toggle()
               let updatedCalendar = makeUpdatedCalendar(isArchived: isArchived)
-              scheduleNotifications(for: updatedCalendar, store: CustomCalendarStore.shared)
+              if !isAppleHealthCalendar {
+                scheduleNotifications(for: updatedCalendar, store: CustomCalendarStore.shared)
+              }
               onSave(updatedCalendar)
               CalendarAnalyticsTracker.shared.trackArchiveStateChange(
                 calendar: updatedCalendar,
@@ -391,7 +393,9 @@ struct EditCalendarView: View {
             return
           }
           let updatedCalendar = makeUpdatedCalendar()
-          scheduleNotifications(for: updatedCalendar, store: CustomCalendarStore.shared)
+          if !isAppleHealthCalendar {
+            scheduleNotifications(for: updatedCalendar, store: CustomCalendarStore.shared)
+          }
           onSave(updatedCalendar)
           if calendar.isArchived != updatedCalendar.isArchived {
             CalendarAnalyticsTracker.shared.trackArchiveStateChange(
@@ -402,7 +406,7 @@ struct EditCalendarView: View {
           }
           dismiss()
         }
-        .disabled(name.isEmpty)
+        .disabled(name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
       }
     }
     .sheet(isPresented: $showingNotificationSettings) {

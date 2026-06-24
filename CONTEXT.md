@@ -56,6 +56,14 @@ _Avoid_: Day when the Calendar may be weekly
 A Period reaches the Calendar's completion criteria. Binary Calendars complete when checked off. Target Calendars complete when the target count is reached. Counter Calendars do not have completion semantics unless a target is added.
 _Avoid_: Day completed for weekly-capable behavior
 
+**Calendar automation**:
+A Calendar setup where Check-ins are filled without direct user logging.
+_Avoid_: Automatic Calendar when naming the user-facing choice
+
+**Connected Calendar**:
+A Calendar whose Check-ins are filled from an external data source.
+_Avoid_: Automated habit, manual alternative
+
 **Mood Tracking**:
 The optional feature where users record whether a day felt terrible, bad, neutral, good, or excellent, with optional journal text.
 _Avoid_: Tracking mood values in analytics unless explicitly scoped
@@ -171,14 +179,39 @@ _Avoid_: quote, caption, reminder text
 - Selecting a **Tiny habit** creates the user's **First Calendar**.
 - Marking the **First dot** creates a real **Check-in** for the **First Calendar**.
 - If the **Onboarding flow** restarts after setup began, an existing active **Calendar** is treated as the **First Calendar** instead of creating a duplicate.
+- A **Calendar automation** is any Calendar setup where Check-ins are filled without direct user logging.
+- A **Connected Calendar** is a kind of **Calendar automation** backed by an external data source.
+- The Calendar creation flow first asks whether the user wants to log Check-ins themselves or create a **Connected Calendar**.
+- The Calendar creation entry screen is titled "Create Calendar" and asks "How do you want to track progress?"
+- Choosing to track Check-ins manually opens the existing Calendar creation form rather than a new multi-step flow.
+- The self-tracked Calendar creation form does not show data source selection because the source is already resolved.
+- The self-tracked Calendar creation form is named as a manual Calendar creation flow in code, not as the generic Calendar creation flow.
+- Yearlit checks the Calendar limit immediately after the user chooses to create a **Connected Calendar**, before source selection or permission prompts.
+- **Connected Calendar** source selection shows available sources only until future sources are ready to configure.
+- **Connected Calendar** source selection is a stable creation step even when only one source is currently available.
+- The first **Connected Calendar** source picker uses a flat list rather than grouping sources by family.
+- Yearlit requests external data access during **Connected Calendar** source setup, before the final Calendar configuration step.
+- Apple Health permission setup has one primary action: connecting Apple Health.
+- Apple Health source setup tells users that Yearlit only reads step counts and does not write to Apple Health.
+- **Connected Calendar** setup explains what will be imported, but does not preview imported Check-ins before final creation.
+- Creating an **Apple Health connected Calendar** imports current-year step history as part of the final create action.
+- Apple Health Steps Calendar configuration explains that Yearlit imports step counts from January 1 through today and leaves days without Apple Health data empty.
+- After creating a Calendar, Yearlit shows the newly created Calendar immediately.
+- Yearlit does not prevent users from creating multiple Calendars from the same connected source.
 - An **Apple Health connected Calendar** is still a **Calendar**; Apple Health is only the source used to fill its progress.
+- Apple Health connected Calendar detail screens show the Apple Health Steps source subtly enough to explain sync and disabled manual editing.
+- Apple Health Steps Calendar configuration only asks for Calendar name, color, and step target.
+- The default name for an Apple Health Steps Calendar is "Daily Steps".
 - The first Apple Health release stores the Calendar source as either manual or Apple Health steps.
 - In the first Apple Health release, **Apple Health connected Calendars** support only the **Apple Health Steps metric**.
 - In the first Apple Health release, **Apple Health connected Calendars** are daily-only.
 - The first Apple Health release does not support manual overrides on **Apple Health connected Calendars**.
 - Apple Health sync owns the Check-ins it creates for an **Apple Health connected Calendar**.
 - The first Apple Health release disables manual Check-in editing on **Apple Health connected Calendars**.
-- Users can edit **Apple Health connected Calendar** metadata such as name, color, target, reminders, archive state, and deletion.
+- **Apple Health Steps metric** imports daily step counts and completes a Period when the count reaches the Calendar target.
+- Apple Health Steps Calendars do not use Calendar Check-in reminders.
+- Users can edit **Apple Health connected Calendar** metadata such as name, color, target, archive state, and deletion.
+- Apple Health connected Calendar edit screens do not show Calendar Check-in reminder settings.
 - The first Apple Health release does not let users edit the cadence, tracking type, unit, or source of an **Apple Health connected Calendar**.
 - Changing the target of an **Apple Health connected Calendar** recomputes Period completion from existing step counts.
 - The first Apple Health release does not support disconnecting Apple Health from an **Apple Health connected Calendar**.
@@ -195,6 +228,7 @@ _Avoid_: quote, caption, reminder text
 - If Apple Health permission is revoked, sync leaves existing Check-ins unchanged and shows that permission is needed.
 - Apple Health import and sync suppress **Milestone celebrations** while silently remembering reached **Milestones**.
 - If Apple Health permission is denied during Calendar creation, Yearlit keeps the user in the creation flow and offers a manual Calendar fallback without automatically creating the Calendar.
+- If Apple Health permission is denied during **Connected Calendar** source setup, Yearlit shows a permission-needed state with actions to open Settings or switch to tracking manually.
 - If Apple Health permission is granted but no current-year step history exists, Yearlit still creates an empty **Apple Health connected Calendar**.
 - An **Apple Health Steps metric** Calendar is a target Calendar whose Period is completed when the daily step count reaches the Calendar target.
 - The default target for an **Apple Health Steps metric** Calendar is 8,000 steps per day.

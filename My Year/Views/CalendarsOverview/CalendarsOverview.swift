@@ -45,7 +45,7 @@ struct CalendarsOverview: View {
             Section {
                 Button(action: {
                     router.showScreen(.sheet) { _ in
-                        CreateCalendarView { newCalendar in
+                        CreateCalendarChoiceView { newCalendar in
                             let isFirstCalendar = store.snapshot.calendars.isEmpty
                             store.addCalendar(newCalendar)
                             CalendarAnalyticsTracker.shared.trackCalendarCreated(
@@ -53,8 +53,6 @@ struct CalendarsOverview: View {
                                 isFirstCalendar: isFirstCalendar
                             )
                             scrollPosition.scrollTo(id: newCalendar.id.uuidString)
-
-                            router.dismissScreen()
 
                             addPositiveEvent(.createdCalendar)
                         }
