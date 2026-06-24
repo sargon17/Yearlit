@@ -331,6 +331,7 @@ extension FeatureRequestManager {
   func createRequest(
     text: String,
     description: String?,
+    kind: FeatureRequestKind? = nil,
     onSuccess: (() -> Void)? = nil,
     onError: (() -> Void)? = nil
   ) async {
@@ -358,7 +359,8 @@ extension FeatureRequestManager {
           text: trimmedText,
           description: trimmedDescription?.isEmpty == true ? nil : trimmedDescription,
           clientId: user.id.uuidString,
-          project: projectID
+          project: projectID,
+          kind: kind
         )
       )
 
