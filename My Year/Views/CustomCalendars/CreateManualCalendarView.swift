@@ -1,10 +1,9 @@
 import RevenueCat
-import RevenueCatUI
 import SharedModels
 import SwiftUI
 import SwiftfulRouting
 
-struct CreateCalendarView: View {
+struct CreateManualCalendarView: View {
   @Environment(\.locale) private var locale
   let onCreate: (CustomCalendar) -> Void
 
@@ -30,17 +29,16 @@ struct CreateCalendarView: View {
   @State private var streakProtectionEnabled: Bool = true
   @State private var streakProtectionThreshold: Int = 5
   @State private var showingNotificationSettings: Bool = false
-  @State private var calendarSource: CalendarSource = .manual
-  @State private var isCreatingCalendar: Bool = false
-  @State private var calendarError: CalendarError?
 
   @FocusState private var isNameFocused: Bool
   @Environment(\.router) private var router
 
-  private let healthStepsService = AppleHealthStepsService()
-
   private var isPremiumUser: Bool {
     isPremium(customerInfo: customerInfo)
+  }
+
+  private var trimmedName: String {
+    name.trimmingCharacters(in: .whitespacesAndNewlines)
   }
 
   private var trackingTypeLabel: String {
@@ -55,10 +53,6 @@ struct CreateCalendarView: View {
   }
 
   private var trackingTypeDescription: LocalizedStringKey {
-    if calendarSource == .appleHealthSteps {
-      return "Yearlit fills this Calendar from your Apple Health step history."
-    }
-
     switch trackingType {
     case .binary:
       return cadence == .daily
@@ -80,43 +74,31 @@ struct CreateCalendarView: View {
   }
 
   func createCalendar() {
-    createCalendar(
-      entries: existingStreakEntries, source: calendarSource, trackingStartedAt: resolvedTrackingStartedAt())
-  }
-
-  func createCalendar(entries: [String: CalendarEntry], source: CalendarSource, trackingStartedAt: Date) {
-    let isAppleHealthCalendar = source == .appleHealthSteps
-    let resolvedDailyTarget = isAppleHealthCalendar ? max(1, dailyTarget) : dailyTarget
-    let resolvedAdditionalTimes =
-      (!isAppleHealthCalendar && trackingType == .multipleDaily && isPremiumUser) ? additionalReminderTimes : []
     let calendar = CustomCalendar(
-      name: name,
+      name: trimmedName,
       color: selectedColor,
       cadence: cadence,
       trackingType: trackingType,
-      trackingStartedAt: trackingStartedAt,
-      dailyTarget: resolvedDailyTarget,
-      entries: entries,
+      trackingStartedAt: resolvedTrackingStartedAt(),
+      dailyTarget: dailyTarget,
+      entries: existingStreakEntries,
       isArchived: false,
-      recurringReminderEnabled: isAppleHealthCalendar ? false : recurringReminderEnabled,
-      reminderTime: !isAppleHealthCalendar && recurringReminderEnabled ? reminderTime : nil,
-      reminderWeekday: !isAppleHealthCalendar && recurringReminderEnabled && cadence == .weekly ? reminderWeekday : nil,
-      unit: isAppleHealthCalendar ? .steps : (trackingType == .counter || trackingType == .multipleDaily) ? selectedUnit : nil,
-      defaultRecordValue: (!isAppleHealthCalendar && (trackingType == .counter || trackingType == .multipleDaily))
-        ? defaultRecordValue : nil,
-      currencySymbol: (!isAppleHealthCalendar && (trackingType == .counter || trackingType == .multipleDaily)
-        && selectedUnit == .currency) ? currencySymbol : nil,
+      recurringReminderEnabled: recurringReminderEnabled,
+      reminderTime: recurringReminderEnabled ? reminderTime : nil,
+      reminderWeekday: recurringReminderEnabled && cadence == .weekly ? reminderWeekday : nil,
+      unit: (trackingType == .counter || trackingType == .multipleDaily) ? selectedUnit : nil,
+      defaultRecordValue: (trackingType == .counter || trackingType == .multipleDaily) ? defaultRecordValue : nil,
+      currencySymbol: (trackingType == .counter || trackingType == .multipleDaily) && selectedUnit == .currency
+        ? currencySymbol : nil,
       reminderTimeZone: TimeZone.current.identifier,
       notificationPrivacyMode: notificationPrivacyMode,
-      suppressWhenCompleted: isAppleHealthCalendar ? false : suppressWhenCompleted,
-      additionalReminderTimes: resolvedAdditionalTimes,
-      streakProtectionEnabled: isAppleHealthCalendar ? false : streakProtectionEnabled,
+      suppressWhenCompleted: suppressWhenCompleted,
+      additionalReminderTimes: trackingType == .multipleDaily && isPremiumUser ? additionalReminderTimes : [],
+      streakProtectionEnabled: streakProtectionEnabled,
       streakProtectionThreshold: streakProtectionThreshold,
-      source: source
+      source: .manual
     )
-    if !isAppleHealthCalendar {
-      scheduleNotifications(for: calendar, store: CustomCalendarStore.shared)
-    }
+    scheduleNotifications(for: calendar, store: CustomCalendarStore.shared)
     onCreate(calendar)
   }
 
@@ -159,23 +141,6 @@ struct CreateCalendarView: View {
       return false
     }
 
-    if calendarSource == .appleHealthSteps {
-      do {
-        try await healthStepsService.requestAuthorization()
-        let stepCounts = try await healthStepsService.currentYearStepCounts()
-        let entries = AppleHealthStepsEntryMapper.entries(from: stepCounts, target: dailyTarget)
-        createCalendar(
-          entries: entries,
-          source: .appleHealthSteps,
-          trackingStartedAt: Self.currentYearStartDate()
-        )
-        return true
-      } catch {
-        calendarError = .appleHealthSyncFailed(error)
-        return false
-      }
-    }
-
     createCalendar()
     return true
   }
@@ -197,27 +162,7 @@ struct CreateCalendarView: View {
 
         CalendarColorPickerSection(selectedColor: $selectedColor)
 
-        CustomSection(label: "Data Source") {
-          VStack(alignment: .leading, spacing: 8) {
-            HStack(spacing: 2) {
-              sourceButton(source: .manual, title: "Manual", icon: "hand.tap")
-              sourceButton(source: .appleHealthSteps, title: "Apple Health Steps", icon: "figure.walk")
-            }
-            .padding(.all, 2)
-            .sameLevelGroupBackground()
-
-            Text(
-              calendarSource == .appleHealthSteps
-                ? "Fill this Calendar from current-year step history."
-                : "Log progress yourself."
-            )
-            .font(.footnote)
-            .foregroundStyle(.textTertiary)
-            .padding(.horizontal, 8)
-          }
-        }
-
-        CalendarCadencePicker(cadence: cadence, color: Color(selectedColor), isEditable: calendarSource == .manual) {
+        CalendarCadencePicker(cadence: cadence, color: Color(selectedColor), isEditable: true) {
           selectedCadence in
           if selectedCadence != cadence {
             clearExistingStreakHistory()
@@ -236,11 +181,7 @@ struct CreateCalendarView: View {
         }
         .animation(.snappy, value: cadence)
 
-        if calendarSource == .manual {
-          TrackingPicker(trackingType: $trackingType, color: Color(selectedColor))
-        } else {
-          lockedAppleHealthStepsSection
-        }
+        TrackingPicker(trackingType: $trackingType, color: Color(selectedColor))
 
         ZStack(alignment: .leading) {
           Text(trackingTypeDescription)
@@ -254,14 +195,12 @@ struct CreateCalendarView: View {
         }
         .animation(.snappy, value: trackingType)
 
-        if calendarSource == .appleHealthSteps || trackingType == .multipleDaily || trackingType == .counter {
-          CustomSection(
-            label: calendarSource == .appleHealthSteps ? "Settings for Apple Health Steps" : "Settings for \(trackingTypeLabel)"
-          ) {
+        if trackingType == .multipleDaily || trackingType == .counter {
+          CustomSection(label: "Settings for \(trackingTypeLabel)") {
             VStack(spacing: 2) {
-              if calendarSource == .appleHealthSteps || trackingType == .multipleDaily {
+              if trackingType == .multipleDaily {
                 HStack {
-                  Text(calendarSource == .appleHealthSteps ? "Steps Threshold" : cadence.targetTitle)
+                  Text(cadence.targetTitle)
                     .labelStyle(type: .secondary)
 
                   Spacer()
@@ -276,7 +215,7 @@ struct CreateCalendarView: View {
                 .sameLevelBorder(isFlat: true)
               }
 
-              if calendarSource == .manual && (trackingType == .counter || trackingType == .multipleDaily) {
+              if trackingType == .counter || trackingType == .multipleDaily {
                 HStack {
                   Text("Unit of Measure")
                     .labelStyle(type: .secondary)
@@ -314,7 +253,7 @@ struct CreateCalendarView: View {
                 }
               }
 
-              if calendarSource == .manual && (trackingType == .counter || trackingType == .multipleDaily) {
+              if trackingType == .counter || trackingType == .multipleDaily {
                 HStack {
                   Text("Default Quick Add Value")
                     .labelStyle(type: .secondary)
@@ -336,58 +275,55 @@ struct CreateCalendarView: View {
           }
         }
 
-        if calendarSource == .manual {
-          CustomSection(label: "Notifications") {
-            VStack(spacing: 2) {
-              Button(action: { showingNotificationSettings = true }) {
-                HStack {
-                  VStack(alignment: .leading, spacing: 4) {
-                    Text("Notification settings")
-                      .labelStyle(type: .secondary)
-                    Text(
-                      NotificationSettingsHelpers.reminderSummary(
-                        isEnabled: recurringReminderEnabled,
-                        cadence: cadence,
-                        reminderTime: reminderTime,
-                        reminderWeekday: reminderWeekday
-                      )
+        CustomSection(label: "Notifications") {
+          VStack(spacing: 2) {
+            Button(action: { showingNotificationSettings = true }) {
+              HStack {
+                VStack(alignment: .leading, spacing: 4) {
+                  Text("Notification settings")
+                    .labelStyle(type: .secondary)
+                  Text(
+                    NotificationSettingsHelpers.reminderSummary(
+                      isEnabled: recurringReminderEnabled,
+                      cadence: cadence,
+                      reminderTime: reminderTime,
+                      reminderWeekday: reminderWeekday
                     )
-                    .font(.caption)
-                    .foregroundStyle(.textTertiary)
-                  }
-                  Spacer()
-                  Image(systemName: "chevron.right")
-                    .font(AppFont.mono(12))
-                    .foregroundStyle(.textTertiary)
+                  )
+                  .font(.caption)
+                  .foregroundStyle(.textTertiary)
                 }
-                .padding(.horizontal)
-                .padding(.vertical, 10)
+                Spacer()
+                Image(systemName: "chevron.right")
+                  .font(AppFont.mono(12))
+                  .foregroundStyle(.textTertiary)
               }
-              .buttonStyle(.plain)
-              .sameLevelBorder(isFlat: true)
+              .padding(.horizontal)
+              .padding(.vertical, 10)
             }
-            .padding(.all, 2)
+            .buttonStyle(.plain)
+            .sameLevelBorder(isFlat: true)
           }
+          .padding(.all, 2)
         }
-        if calendarSource == .manual {
-          HabitHistorySection(
-            cadence: cadence,
-            trackingStartedAt: $trackingStartedAt,
-            earliestEntryDate: earliestExistingEntryDate,
-            autoAdjustedMessage: historyMessage ?? (!existingStreakEntries.isEmpty ? backfillSummary : nil),
-            onTrackingStartedAtChanged: { historyMessage = nil }
-          ) {
-            router.showScreen(.sheet) { _ in
-              ExistingStreakSheet(
-                cadence: cadence,
-                trackingType: trackingType,
-                dailyTarget: dailyTarget,
-                defaultDailyValue: defaultRecordValue,
-                existingEntries: existingStreakEntries,
-                accentColor: Color(selectedColor)
-              ) { entries in
-                applyExistingStreakEntries(entries)
-              }
+
+        HabitHistorySection(
+          cadence: cadence,
+          trackingStartedAt: $trackingStartedAt,
+          earliestEntryDate: earliestExistingEntryDate,
+          autoAdjustedMessage: historyMessage ?? (!existingStreakEntries.isEmpty ? backfillSummary : nil),
+          onTrackingStartedAtChanged: { historyMessage = nil }
+        ) {
+          router.showScreen(.sheet) { _ in
+            ExistingStreakSheet(
+              cadence: cadence,
+              trackingType: trackingType,
+              dailyTarget: dailyTarget,
+              defaultDailyValue: defaultRecordValue,
+              existingEntries: existingStreakEntries,
+              accentColor: Color(selectedColor)
+            ) { entries in
+              applyExistingStreakEntries(entries)
             }
           }
         }
@@ -408,24 +344,15 @@ struct CreateCalendarView: View {
     .navigationTitle("New Calendar")
     .navigationBarTitleDisplayMode(.large)
     .toolbar {
-      ToolbarItem(placement: .cancellationAction) {
-        Button("Cancel") {
-          router.dismissScreen()
-        }
-      }
       ToolbarItem(placement: .confirmationAction) {
         Button("Create") {
           Task {
-            guard !isCreatingCalendar else { return }
-            isCreatingCalendar = true
-            let didCreate = await handleCreateCalendar()
-            isCreatingCalendar = false
-            if didCreate {
-              router.dismissScreen()
+            if await handleCreateCalendar() {
+              router.dismissEnvironment()
             }
           }
         }
-        .disabled(name.isEmpty || isCreatingCalendar)
+        .disabled(trimmedName.isEmpty)
       }
     }
     .onAppear {
@@ -451,13 +378,6 @@ struct CreateCalendarView: View {
         reminderWeekday: $reminderWeekday
       )
     }
-    .alert(item: $calendarError) { error in
-      Alert(
-        title: Text(error.title),
-        message: Text(error.message),
-        dismissButton: .default(Text("OK"))
-      )
-    }
     .onChange(of: trackingType) { _, _ in
       clearExistingStreakHistory()
       if trackingType != .multipleDaily {
@@ -465,72 +385,10 @@ struct CreateCalendarView: View {
       }
     }
     .onChange(of: dailyTarget) { _, _ in
-      if calendarSource == .appleHealthSteps || trackingType == .multipleDaily {
+      if trackingType == .multipleDaily {
         clearExistingStreakHistory()
       }
     }
-    .onChange(of: calendarSource) { _, source in
-      applyCalendarSourceDefaults(source)
-    }
-  }
-
-  private func sourceButton(source: CalendarSource, title: LocalizedStringKey, icon: String) -> some View {
-    Button {
-      withAnimation(.snappy) {
-        calendarSource = source
-      }
-      Task {
-        await hapticFeedback(.rigid)
-      }
-    } label: {
-      PickerOptionTile(isSelected: calendarSource == source, isEnabled: true) {
-        PickerOptionContent(
-          icon: icon,
-          title: title,
-          accentColor: Color(selectedColor),
-          isSelected: calendarSource == source
-        )
-      }
-    }
-    .buttonStyle(.plain)
-    .accessibilityLabel(Text(title))
-  }
-
-  private var lockedAppleHealthStepsSection: some View {
-    CustomSection(label: "Tracking Type") {
-      PickerOptionTile(isSelected: true, isEnabled: false) {
-        PickerOptionContent(
-          icon: TrackingType.binary.icon,
-          title: "Binary Target",
-          accentColor: Color(selectedColor),
-          isSelected: true
-        )
-      }
-      .padding(.all, 2)
-      .sameLevelGroupBackground()
-    }
-  }
-
-  private func applyCalendarSourceDefaults(_ source: CalendarSource) {
-    guard source == .appleHealthSteps else { return }
-    clearExistingStreakHistory()
-    cadence = .daily
-    trackingType = .binary
-    dailyTarget = 8000
-    selectedUnit = .steps
-    defaultRecordValue = 1
-    recurringReminderEnabled = false
-    additionalReminderTimes = []
-    suppressWhenCompleted = false
-    streakProtectionEnabled = false
-    trackingStartedAt = Self.currentYearStartDate()
-  }
-
-  private static func currentYearStartDate() -> Date {
-    let calendar = LocalDayCalendar.calendar
-    let year = calendar.component(.year, from: Date())
-    return calendar.date(from: DateComponents(year: year, month: 1, day: 1))
-      ?? LocalDayCalendar.startOfDay(for: Date())
   }
 
   private var backfillSummary: String {

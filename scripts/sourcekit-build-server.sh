@@ -31,7 +31,23 @@ else
 fi
 
 echo "Parsing compiler arguments for SourceKit..."
-xcode-build-server parse -a "${build_log}" --skip-validate-bin
+activity_log="$(
+  find "${DERIVED_DATA_PATH}/Logs/Build" -name "*.xcactivitylog" -size +0 -print0 2>/dev/null \
+    | xargs -0 ls -t 2>/dev/null \
+    | head -n 1
+)"
+
+if [[ -z "${activity_log}" ]]; then
+  echo "No Xcode activity log found under ${DERIVED_DATA_PATH}/Logs/Build." >&2
+  exit 1
+fi
+
+xcode-build-server parse -l "${activity_log}" --skip-validate-bin >/dev/null 2>&1
+
+if [[ ! -s .compile ]] || [[ "$(tr -d '[:space:]' <.compile)" == "[]" ]]; then
+  echo "xcode-build-server produced an empty .compile file." >&2
+  exit 1
+fi
 
 cat >buildServer.json <<JSON
 {

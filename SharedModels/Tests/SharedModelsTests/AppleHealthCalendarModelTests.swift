@@ -32,11 +32,11 @@ struct AppleHealthCalendarModelTests {
     #expect(calendar.source == .manual)
   }
 
-  @Test func appleHealthStepsMapperCreatesTargetEntries() {
+  @Test func appleHealthMetricMapperCreatesTargetEntries() {
     let belowTarget = makeDate(year: 2026, month: 1, day: 2)
     let aboveTarget = makeDate(year: 2026, month: 1, day: 3)
 
-    let entries = AppleHealthStepsEntryMapper.entries(
+    let entries = AppleHealthMetricEntryMapper.entries(
       from: [
         belowTarget: 7_999,
         aboveTarget: 8_001,
@@ -52,6 +52,18 @@ struct AppleHealthCalendarModelTests {
     #expect(entries["2026-01-04"] == nil)
   }
 
+  @Test func appleHealthMetricResolvesSourceAndDefaults() {
+    #expect(AppleHealthMetric(source: .manual) == nil)
+    #expect(AppleHealthMetric(source: .appleHealthSteps) == .steps)
+    #expect(AppleHealthMetric(source: .appleHealthActiveEnergy) == .activeEnergy)
+    #expect(AppleHealthMetric(source: .appleHealthExerciseMinutes) == .exerciseMinutes)
+    #expect(AppleHealthMetric(source: .appleHealthWalkingRunningDistance) == .walkingRunningDistance)
+    #expect(AppleHealthMetric(source: .appleHealthFlightsClimbed) == .flightsClimbed)
+    #expect(AppleHealthMetric.activeEnergy.source == .appleHealthActiveEnergy)
+    #expect(AppleHealthMetric.activeEnergy.defaultTarget == 300)
+    #expect(AppleHealthMetric.activeEnergy.unit == .calories)
+  }
+
   @Test func targetRecomputeUpdatesCompletionWithoutChangingCounts() {
     let calendar = CustomCalendar(
       name: "Walking",
@@ -61,8 +73,16 @@ struct AppleHealthCalendarModelTests {
       trackingStartedAt: makeDate(year: 2026, month: 1, day: 1),
       dailyTarget: 8_000,
       entries: [
-        "2026-01-02": CalendarEntry(date: makeDate(year: 2026, month: 1, day: 2), count: 7_000, completed: false),
-        "2026-01-03": CalendarEntry(date: makeDate(year: 2026, month: 1, day: 3), count: 9_000, completed: true)
+        "2026-01-02": CalendarEntry(
+          date: makeDate(year: 2026, month: 1, day: 2),
+          count: 7_000,
+          completed: false
+        ),
+        "2026-01-03": CalendarEntry(
+          date: makeDate(year: 2026, month: 1, day: 3),
+          count: 9_000,
+          completed: true
+        )
       ],
       unit: .steps,
       source: .appleHealthSteps
@@ -75,6 +95,44 @@ struct AppleHealthCalendarModelTests {
     #expect(updated.entries["2026-01-02"]?.completed == false)
     #expect(updated.entries["2026-01-03"]?.count == 9_000)
     #expect(updated.entries["2026-01-03"]?.completed == true)
+  }
+
+  @MainActor
+  @Test func updateCalendarPreservesAppleHealthMetricUnit() throws {
+    let container = try makeContainer()
+    let store = CustomCalendarStore(
+      container: container,
+      dependencies: CustomCalendarStoreDependencies(
+        fetchCalendars: { _ in [] },
+        runMigration: { _ in }
+      )
+    )
+    let calendar = CustomCalendar(
+      name: "Active Energy",
+      color: "qs-orange",
+      cadence: .daily,
+      trackingType: .binary,
+      trackingStartedAt: makeDate(year: 2026, month: 1, day: 1),
+      dailyTarget: 300,
+      unit: .calories,
+      source: .appleHealthActiveEnergy
+    )
+
+    store.addCalendar(calendar)
+    var maliciousUpdate = calendar
+    maliciousUpdate.source = .manual
+    maliciousUpdate.unit = .steps
+    maliciousUpdate.dailyTarget = 400
+
+    store.updateCalendar(maliciousUpdate)
+
+    let context = ModelContext(container)
+    let calendars = try context.fetch(FetchDescriptor<HabitCalendarEntity>())
+    let updatedCalendar = try #require(calendars.first)
+
+    #expect(updatedCalendar.sourceRawValue == CalendarSource.appleHealthActiveEnergy.rawValue)
+    #expect(updatedCalendar.unitRawValue == UnitOfMeasure.calories.rawValue)
+    #expect(updatedCalendar.dailyTarget == 400)
   }
 
   @MainActor

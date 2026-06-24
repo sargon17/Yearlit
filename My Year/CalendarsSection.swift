@@ -113,7 +113,7 @@ struct CalendarsSection: View {
               .id("add_calendar")
               .onTapGesture {
                 router.showScreen(.sheet) { _ in
-                  CreateCalendarView { newCalendar in
+                  CreateCalendarChoiceView { newCalendar in
                     pendingCalendarId = newCalendar.id.uuidString
                     let isFirstCalendar = store.snapshot.calendars.isEmpty
                     store.addCalendar(newCalendar)
@@ -121,7 +121,6 @@ struct CalendarsSection: View {
                       calendar: newCalendar,
                       isFirstCalendar: isFirstCalendar
                     )
-                    router.dismissScreen()
                     addPositiveEvent(.createdCalendar)
                   }
                 }

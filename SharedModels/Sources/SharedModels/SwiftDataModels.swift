@@ -198,8 +198,8 @@ extension HabitCalendarEntity {
         CalendarSource(rawValue: sourceRawValue ?? "") ?? .manual
     }
 
-    var isAppleHealthStepsSource: Bool {
-        calendarSource == .appleHealthSteps
+    var isAppleHealthSource: Bool {
+        AppleHealthMetric(source: calendarSource) != nil
     }
 
     /// Helper to decode additional reminder times from JSON

@@ -7,6 +7,21 @@ SCHEME="${SCHEME:-My Year}"
 DERIVED_DATA_PATH="${DERIVED_DATA_PATH:-DerivedData}"
 SIMULATOR_NAME="${SIMULATOR_NAME:-iPhone 17 Pro Max}"
 SIMULATOR_OS="${SIMULATOR_OS:-26.5}"
+JOBS="${JOBS:-$(sysctl -n hw.ncpu)}"
+COMPILER_INDEX_STORE_ENABLE="${COMPILER_INDEX_STORE_ENABLE:-NO}"
+ENABLE_PREVIEWS="${ENABLE_PREVIEWS:-NO}"
+
+XCODEBUILD_COMMON_ARGS=(
+  -project "${PROJECT}"
+  -scheme "${SCHEME}"
+  -derivedDataPath "${DERIVED_DATA_PATH}"
+  -parallelizeTargets
+  -jobs "${JOBS}"
+  -skipPackagePluginValidation
+  -skipMacroValidation
+  COMPILER_INDEX_STORE_ENABLE="${COMPILER_INDEX_STORE_ENABLE}"
+  ENABLE_PREVIEWS="${ENABLE_PREVIEWS}"
+)
 
 find_device_id() {
   local preferred_id
@@ -43,10 +58,8 @@ find_device_id() {
 build_setting() {
   local key="$1"
   xcodebuild -showBuildSettings \
-    -project "${PROJECT}" \
-    -scheme "${SCHEME}" \
     -destination "platform=iOS Simulator,id=${DEVICE_ID}" \
-    -derivedDataPath "${DERIVED_DATA_PATH}" \
+    "${XCODEBUILD_COMMON_ARGS[@]}" \
     2>/dev/null \
     | awk -F'= ' -v key="${key}" '$1 ~ "^[[:space:]]*" key "[[:space:]]*$" { print $2; exit }'
 }
@@ -79,10 +92,8 @@ open -a Simulator
 if [[ "${COMMAND}" == "build" || "${COMMAND}" == "run" ]]; then
   echo "Building ${SCHEME} for ${SIMULATOR_NAME} iOS ${SIMULATOR_OS}..."
   run_xcodebuild build \
-    -project "${PROJECT}" \
-    -scheme "${SCHEME}" \
     -destination "platform=iOS Simulator,id=${DEVICE_ID}" \
-    -derivedDataPath "${DERIVED_DATA_PATH}"
+    "${XCODEBUILD_COMMON_ARGS[@]}"
   echo "Build succeeded."
 fi
 
@@ -112,10 +123,8 @@ if [[ "${COMMAND}" == "run" ]]; then
 elif [[ "${COMMAND}" == "test" ]]; then
   echo "Testing ${SCHEME} on ${SIMULATOR_NAME} iOS ${SIMULATOR_OS}..."
   run_xcodebuild test \
-    -project "${PROJECT}" \
-    -scheme "${SCHEME}" \
     -destination "platform=iOS Simulator,id=${DEVICE_ID}" \
-    -derivedDataPath "${DERIVED_DATA_PATH}"
+    "${XCODEBUILD_COMMON_ARGS[@]}"
   echo "Tests succeeded."
 elif [[ "${COMMAND}" != "boot" && "${COMMAND}" != "build" ]]; then
   echo "Unknown command: ${COMMAND}. Use 'boot', 'build', 'run', or 'test'." >&2
