@@ -187,12 +187,27 @@ struct CustomCalendarView: View {
     Task {
       await hapticFeedback()
     }
+    presentEntryEditSheet(calendar: activeCalendar, date: date)
+  }
+
+  private func handleCheckInButtonTap(calendar: CustomCalendar, date: Date?) {
+    guard let date else { return }
+    guard !date.isInFuture else { return }
+    guard !calendar.isAppleHealthConnected else { return }
+
+    Task {
+      await hapticFeedback()
+    }
+    presentEntryEditSheet(calendar: calendar, date: date)
+  }
+
+  private func presentEntryEditSheet(calendar: CustomCalendar, date: Date) {
     isEntryEditSheetPresented = true
     router.showScreen(
       .sheetConfig(config: shortSheetConfig)
     ) { _ in
       DayEntryEditSheet(
-        calendar: activeCalendar,
+        calendar: calendar,
         date: date,
         store: store,
         onSave: {
@@ -200,7 +215,7 @@ struct CustomCalendarView: View {
         },
         onDismiss: {
           isEntryEditSheetPresented = false
-          evaluateMilestonesIfNeeded(calendarId: activeCalendar.id)
+          evaluateMilestonesIfNeeded(calendarId: calendar.id)
         }
       )
     }
@@ -595,6 +610,26 @@ struct CustomCalendarView: View {
 
         let currentPeriodLogCount: Int? = renderSnapshot.currentPeriodReferenceDate.map {
           entry(for: activeCalendar, date: $0)?.count ?? 0
+        }
+        let checkInDate = renderSnapshot.currentPeriodReferenceDate
+        let hasCurrentPeriodLog = (currentPeriodLogCount ?? 0) > 0
+
+        if !activeCalendar.isAppleHealthConnected, checkInDate != nil {
+          Button {
+            handleCheckInButtonTap(calendar: activeCalendar, date: checkInDate)
+          } label: {
+            HStack(spacing: 8) {
+              Image(systemName: hasCurrentPeriodLog ? "square.and.pencil" : "checkmark")
+              Text(hasCurrentPeriodLog ? "Edit Check-in" : "Check in")
+            }
+            .frame(maxWidth: .infinity)
+            .fontWeight(.bold)
+            .padding()
+          }
+          .sameLevelBorder()
+          .foregroundStyle(.textSecondary)
+          .padding(.horizontal)
+          .padding(.top, 4)
         }
 
         if let bundle = statsBundle {
