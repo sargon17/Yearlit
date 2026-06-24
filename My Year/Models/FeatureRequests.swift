@@ -29,6 +29,12 @@ struct CreateRequest: Codable {
     let description: String?
     let clientId: String
     let project: String // riferimento a un id di projects
+    let kind: FeatureRequestKind?
+}
+
+enum FeatureRequestKind: String, Codable {
+    case request
+    case complaint
 }
 
 struct Request: Codable, Identifiable {

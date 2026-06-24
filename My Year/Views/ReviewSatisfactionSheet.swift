@@ -130,6 +130,7 @@ struct ReviewSatisfactionSheet: View {
         Source: in-app satisfaction prompt after a positive app event.
         User selected: No.
         """,
+        kind: .complaint,
         onSuccess: {
           trackFeedbackSubmitted(characterCount: feedbackLength)
           close()
