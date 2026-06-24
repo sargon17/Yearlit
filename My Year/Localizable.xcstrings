@@ -2948,7 +2948,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Steh hinter dem Macher dahinter"
+            "value" : "Unterstütze den Macher dahinter"
           }
         },
         "en" : {
@@ -2960,7 +2960,7 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Apoya a quien hay detrás"
+            "value" : "Apoya a quien está detrás"
           }
         },
         "es-MX" : {
@@ -2984,7 +2984,7 @@
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Soutenez celui qui la crée"
+            "value" : "Soutenez le créateur derrière l'app"
           }
         },
         "hr" : {
@@ -3084,7 +3084,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Werde der Mensch, der wirklich dranbleibt –"
+            "value" : "Werde jemand, der wirklich dranbleibt –"
           }
         },
         "en" : {
@@ -3220,7 +3220,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Tiefere Statistiken zeigen dir die Muster hinter deinen Serien"
+            "value" : "Detaillierte Statistiken zeigen dir die Muster hinter deinen Serien"
           }
         },
         "en" : {
@@ -3232,7 +3232,7 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "estadísticas más profundas revelan los patrones detrás de tus rachas"
+            "value" : "estadísticas más detalladas revelan los patrones detrás de tus rachas"
           }
         },
         "es-MX" : {
@@ -3256,7 +3256,7 @@
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "des stats plus poussées révèlent les schémas derrière vos séries"
+            "value" : "des stats plus poussées révèlent les tendances derrière vos séries"
           }
         },
         "hr" : {
@@ -3304,7 +3304,7 @@
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "estatísticas mais a fundo revelam os padrões por trás das suas sequências"
+            "value" : "estatísticas mais detalhadas revelam os padrões por trás das suas sequências"
           }
         },
         "ro" : {
@@ -3764,7 +3764,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Alles auf einen Blick im Griff"
+            "value" : "Bleib auf Kurs – mit einem Blick"
           }
         },
         "en" : {
@@ -3776,7 +3776,7 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "No pierdas el ritmo de un vistazo"
+            "value" : "Mantén el rumbo de un vistazo"
           }
         },
         "es-MX" : {
@@ -3848,7 +3848,7 @@
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Fique no ritmo num relance"
+            "value" : "Fique no controle num relance"
           }
         },
         "ro" : {
@@ -3984,7 +3984,7 @@
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "acompanhe hábitos sem limite, não só alguns"
+            "value" : "acompanhe quantos hábitos quiser, não só alguns"
           }
         },
         "ro" : {
