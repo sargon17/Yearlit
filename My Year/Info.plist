@@ -38,7 +38,7 @@
 	<key>ITSAppUsesNonExemptEncryption</key>
 	<false/>
 	<key>NSHealthShareUsageDescription</key>
-	<string>Yearlit uses your step history to fill Apple Health connected Calendars.</string>
+	<string>Yearlit reads selected Apple Health activity metrics to fill Apple Health connected Calendars.</string>
 	<key>NSHealthUpdateUsageDescription</key>
 	<string>Yearlit does not write or update Apple Health data.</string>
 	<key>POSTHOG_ENABLED</key>

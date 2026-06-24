@@ -85,10 +85,10 @@ struct CustomCalendarView: View {
   @State private var pendingMilestoneCheck: Bool = false
   @State private var isEntryEditSheetPresented: Bool = false
   @State private var optimisticEntryOverrides: [String: OptimisticEntryOverride] = [:]
-  @State private var isSyncingAppleHealthSteps: Bool = false
+  @State private var isSyncingAppleHealth: Bool = false
 
   private let milestoneCelebrationPolicy = MilestoneCelebrationPolicy.shared
-  private let healthStepsService = AppleHealthStepsService()
+  private let appleHealthSyncService = AppleHealthCalendarSyncService()
 
   private var shouldShowDeveloperControls: Bool {
     !cleanScreenshotsEnabled
@@ -269,26 +269,25 @@ struct CustomCalendarView: View {
   }
 
   @MainActor
-  private func syncAppleHealthSteps(calendar: CustomCalendar) async {
-    guard calendar.source == .appleHealthSteps else { return }
-    guard !isSyncingAppleHealthSteps else { return }
-    isSyncingAppleHealthSteps = true
-    defer { isSyncingAppleHealthSteps = false }
+  private func syncAppleHealth(calendar: CustomCalendar, showsErrors: Bool = false) async {
+    guard calendar.isAppleHealthConnected else { return }
+    guard !isSyncingAppleHealth else { return }
+    isSyncingAppleHealth = true
+    defer { isSyncingAppleHealth = false }
 
     do {
-      try await healthStepsService.requestAuthorization()
-      let stepCounts = try await healthStepsService.currentYearStepCounts()
-      let start = Self.currentYearStartDate()
-      let end = LocalDayCalendar.startOfDay(for: Date())
-      let entries = AppleHealthStepsEntryMapper.entries(from: stepCounts, target: calendar.dailyTarget)
-      guard !entries.isEmpty || !calendar.hasEntries(from: start, through: end) else {
-        calendarError = .appleHealthSyncFailed(AppleHealthStepsServiceError.noReadableStepData)
-        return
+      if let result = try await appleHealthSyncService.sync(calendar: calendar) {
+        rememberMilestonesSilently(
+          for: result.calendar,
+          replacingEntries: result.entries,
+          from: result.start,
+          through: result.end
+        )
       }
-      store.replaceAppleHealthEntries(calendarId: calendar.id, entries: entries, from: start, through: end)
-      rememberMilestonesSilently(for: calendar, replacingEntries: entries, from: start, through: end)
     } catch {
-      calendarError = .appleHealthSyncFailed(error)
+      if showsErrors {
+        calendarError = .appleHealthSyncFailed(error)
+      }
     }
   }
 
@@ -556,7 +555,7 @@ struct CustomCalendarView: View {
                     }
                   }
                 }
-                if activeCalendar.isAppleHealthConnected {
+                if activeCalendar.isAppleHealthConnected && shouldShowDeveloperControls {
                   Text("•")
                     .font(AppFont.mono(4, weight: .black))
                     .foregroundColor(Color("text-tertiary"))
@@ -564,18 +563,18 @@ struct CustomCalendarView: View {
 
                   Button {
                     Task {
-                      await syncAppleHealthSteps(calendar: activeCalendar)
+                      await syncAppleHealth(calendar: activeCalendar, showsErrors: true)
                     }
                   } label: {
                     HStack(spacing: 4) {
-                      Image(systemName: isSyncingAppleHealthSteps ? "arrow.triangle.2.circlepath" : "heart.text.square")
-                      Text(isSyncingAppleHealthSteps ? "Syncing" : "Sync now")
+                      Image(systemName: isSyncingAppleHealth ? "arrow.triangle.2.circlepath" : "heart.text.square")
+                      Text(isSyncingAppleHealth ? "Syncing" : "Debug sync")
                     }
                     .font(AppFont.mono(12))
                     .foregroundColor(Color("text-tertiary"))
                   }
                   .buttonStyle(.plain)
-                  .disabled(isSyncingAppleHealthSteps)
+                  .disabled(isSyncingAppleHealth)
                 }
               }
             }
@@ -723,12 +722,18 @@ struct CustomCalendarView: View {
         self.customerInfo = info
       }
       today = Calendar.current.startOfDay(for: Date())
+      Task {
+        await syncAppleHealth(calendar: renderSnapshot.activeCalendar)
+      }
     }
     .onChange(of: scenePhase) { _, newPhase in
       guard newPhase == .active else { return }
       let newToday = Calendar.current.startOfDay(for: Date())
       if newToday != today {
         today = newToday
+      }
+      Task {
+        await syncAppleHealth(calendar: renderSnapshot.activeCalendar)
       }
     }
     .onChange(of: store.snapshot.dataVersion) { _, _ in
@@ -771,18 +776,4 @@ struct CustomCalendarView: View {
       .joined(separator: ",")
   }
 
-  private static func currentYearStartDate() -> Date {
-    let calendar = LocalDayCalendar.calendar
-    let year = calendar.component(.year, from: Date())
-    return calendar.date(from: DateComponents(year: year, month: 1, day: 1))
-      ?? LocalDayCalendar.startOfDay(for: Date())
-  }
-}
-
-extension CustomCalendar {
-  fileprivate func hasEntries(from start: Date, through end: Date) -> Bool {
-    entries.values.contains { entry in
-      entry.date >= start && entry.date <= end
-    }
-  }
 }

@@ -41,7 +41,7 @@ enum CalendarError: LocalizedError, Identifiable {
     case .errorAddingEntry(let error):
       return String(localized: "Failed to add entry: \(error.localizedDescription)")
     case .appleHealthSyncFailed(let error):
-      return String(localized: "Failed to read Apple Health steps: \(error.localizedDescription)")
+      return String(localized: "Failed to read Apple Health data: \(error.localizedDescription)")
     }
   }
 }

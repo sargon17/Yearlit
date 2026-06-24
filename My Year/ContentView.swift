@@ -14,6 +14,7 @@ struct ContentView: View {
     @State private var notificationCoordinator = NotificationRefreshCoordinator()
     @Environment(\.scenePhase) private var scenePhase
     @EnvironmentObject private var onboarding: OnboardingManager
+    private let appleHealthSyncService = AppleHealthCalendarSyncService()
 
     var body: some View {
         let snapshot = store.snapshot
@@ -24,10 +25,14 @@ struct ContentView: View {
             }
             .task {
                 await notificationCoordinator.appLaunched(onboardingSeen: onboarding.hasSeenOnboarding)
+                await appleHealthSyncService.syncAllConnectedCalendars()
             }
             .onChange(of: scenePhase) { _, newPhase in
                 guard newPhase == .active else { return }
                 notificationCoordinator.appBecameActive(onboardingSeen: onboarding.hasSeenOnboarding)
+                Task {
+                    await appleHealthSyncService.syncAllConnectedCalendars()
+                }
             }
             .onChange(of: onboarding.hasSeenOnboarding) { _, hasSeenOnboarding in
                 notificationCoordinator.onboardingSeenChanged(to: hasSeenOnboarding)

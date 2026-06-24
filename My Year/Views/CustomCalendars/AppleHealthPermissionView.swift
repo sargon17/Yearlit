@@ -4,6 +4,7 @@ import SwiftfulRouting
 import UIKit
 
 struct AppleHealthPermissionView: View {
+  let metric: AppleHealthMetric
   let onCreate: (CustomCalendar) -> Void
 
   @State private var isConnecting = false
@@ -12,7 +13,7 @@ struct AppleHealthPermissionView: View {
   @Environment(\.router) private var router
   @Environment(\.openURL) private var openURL
 
-  private let healthStepsService = AppleHealthStepsService()
+  private let healthService = AppleHealthMetricService()
 
   var body: some View {
     ScrollView {
@@ -25,11 +26,14 @@ struct AppleHealthPermissionView: View {
             .font(.headline)
             .foregroundStyle(.textPrimary)
 
-          Text("Yearlit only reads step counts. It does not write to Apple Health.")
+          Text(
+            "Yearlit only reads \(metric.defaultCalendarName.lowercased()). "
+              + "It does not write to Apple Health."
+          )
             .font(.footnote)
             .foregroundStyle(.textTertiary)
 
-          Text("After connecting, you will choose the Calendar name, color, and step target.")
+          Text("After connecting, you will choose the Calendar name, color, and daily target.")
             .font(.footnote)
             .foregroundStyle(.textTertiary)
         }
@@ -113,9 +117,9 @@ struct AppleHealthPermissionView: View {
     defer { isConnecting = false }
 
     do {
-      try await healthStepsService.requestAuthorization()
+      try await healthService.requestAuthorization(for: metric)
       router.showScreen(.push) { _ in
-        AppleHealthStepsCalendarConfigView(onCreate: onCreate)
+        AppleHealthMetricCalendarConfigView(metric: metric, onCreate: onCreate)
       }
     } catch {
       needsSettings = true

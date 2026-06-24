@@ -2,25 +2,34 @@ import SharedModels
 import SwiftUI
 import SwiftfulRouting
 
-struct AppleHealthStepsCalendarConfigView: View {
+struct AppleHealthMetricCalendarConfigView: View {
+  let metric: AppleHealthMetric
   let onCreate: (CustomCalendar) -> Void
 
-  @State private var name = "Daily Steps"
-  @State private var selectedColor = "qs-amber"
-  @State private var dailyTarget = 8000
+  @State private var name: String
+  @State private var selectedColor: String
+  @State private var dailyTarget: Int
   @State private var isCreatingCalendar = false
   @State private var calendarError: CalendarError?
   @FocusState private var isNameFocused: Bool
   @Environment(\.router) private var router
 
-  private let healthStepsService = AppleHealthStepsService()
+  private let healthService = AppleHealthMetricService()
+
+  init(metric: AppleHealthMetric, onCreate: @escaping (CustomCalendar) -> Void) {
+    self.metric = metric
+    self.onCreate = onCreate
+    _name = State(initialValue: metric.defaultCalendarName)
+    _selectedColor = State(initialValue: metric.defaultColor)
+    _dailyTarget = State(initialValue: metric.defaultTarget)
+  }
 
   private var trimmedName: String {
     name.trimmingCharacters(in: .whitespacesAndNewlines)
   }
 
   private var targetValidationMessage: LocalizedStringKey? {
-    dailyTarget < 1 ? "Step target must be at least 1." : nil
+    dailyTarget < 1 ? "Target must be at least 1." : nil
   }
 
   private var canCreate: Bool {
@@ -37,7 +46,7 @@ struct AppleHealthStepsCalendarConfigView: View {
           TextField(
             "",
             text: $name,
-            prompt: Text("Daily Steps").foregroundColor(.white.opacity(0.2))
+            prompt: Text(metric.defaultCalendarName).foregroundColor(.white.opacity(0.2))
           )
           .inputStyle(color: Color(selectedColor))
           .focused($isNameFocused)
@@ -45,10 +54,10 @@ struct AppleHealthStepsCalendarConfigView: View {
 
         CalendarColorPickerSection(selectedColor: $selectedColor)
 
-        CustomSection(label: "Step Target") {
+        CustomSection(label: "Daily Target") {
           VStack(alignment: .leading, spacing: 8) {
             HStack {
-              Text("Steps per day")
+              Text(metric.targetLabel)
                 .labelStyle(type: .secondary)
 
               Spacer()
@@ -75,7 +84,7 @@ struct AppleHealthStepsCalendarConfigView: View {
         }
 
         Text(
-          "Yearlit imports step counts from January 1 through today. "
+          "Yearlit imports \(metric.defaultCalendarName.lowercased()) from January 1 through today. "
             + "Days without Apple Health data stay empty."
         )
         .font(.footnote)
@@ -96,7 +105,7 @@ struct AppleHealthStepsCalendarConfigView: View {
     .scrollContentBackground(.hidden)
     .scrollIndicators(.hidden)
     .surfaceBackground(Color("surface-muted"), ignoresSafeArea: true)
-    .navigationTitle("Daily Steps")
+    .navigationTitle(metric.defaultCalendarName)
     .navigationBarTitleDisplayMode(.large)
     .toolbar {
       ToolbarItem(placement: .confirmationAction) {
@@ -127,9 +136,9 @@ struct AppleHealthStepsCalendarConfigView: View {
     defer { isCreatingCalendar = false }
 
     do {
-      try await healthStepsService.requestAuthorization()
-      let stepCounts = try await healthStepsService.currentYearStepCounts()
-      let entries = AppleHealthStepsEntryMapper.entries(from: stepCounts, target: dailyTarget)
+      try await healthService.requestAuthorization(for: metric)
+      let values = try await healthService.currentYearValues(for: metric)
+      let entries = AppleHealthMetricEntryMapper.entries(from: values, target: dailyTarget)
       let calendar = CustomCalendar(
         name: trimmedName,
         color: selectedColor,
@@ -140,7 +149,7 @@ struct AppleHealthStepsCalendarConfigView: View {
         entries: entries,
         isArchived: false,
         recurringReminderEnabled: false,
-        unit: .steps,
+        unit: metric.unit,
         defaultRecordValue: nil,
         currencySymbol: nil,
         reminderTimeZone: TimeZone.current.identifier,
@@ -148,7 +157,7 @@ struct AppleHealthStepsCalendarConfigView: View {
         suppressWhenCompleted: false,
         additionalReminderTimes: [],
         streakProtectionEnabled: false,
-        source: .appleHealthSteps
+        source: metric.source
       )
       onCreate(calendar)
       router.dismissEnvironment()

@@ -8,8 +8,8 @@ struct ConnectedCalendarSourcePickerView: View {
   @ObservedObject private var store = CustomCalendarStore.shared
   @Environment(\.router) private var router
 
-  private var hasAppleHealthStepsConnection: Bool {
-    store.snapshot.calendars.contains { $0.source == .appleHealthSteps }
+  private func hasConnection(for metric: AppleHealthMetric) -> Bool {
+    store.snapshot.calendars.contains { $0.source == metric.source }
   }
 
   var body: some View {
@@ -30,33 +30,35 @@ struct ConnectedCalendarSourcePickerView: View {
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(.horizontal, 8)
 
-        Button {
-          if hasAppleHealthStepsConnection {
-            router.showScreen(.push) { _ in
-              AppleHealthStepsCalendarConfigView(onCreate: onCreate)
+        ForEach(AppleHealthMetric.allCases) { metric in
+          Button {
+            if hasConnection(for: metric) {
+              router.showScreen(.push) { _ in
+                AppleHealthMetricCalendarConfigView(metric: metric, onCreate: onCreate)
+              }
+            } else {
+              router.showScreen(.push) { _ in
+                AppleHealthPermissionView(metric: metric, onCreate: onCreate)
+              }
             }
-          } else {
-            router.showScreen(.push) { _ in
-              AppleHealthPermissionView(onCreate: onCreate)
-            }
-          }
-        } label: {
-          VStack(alignment: .leading, spacing: 6) {
-            Text("Apple Health Steps")
-              .font(.headline)
-              .foregroundStyle(.textPrimary)
-              .frame(maxWidth: .infinity, alignment: .leading)
+          } label: {
+            VStack(alignment: .leading, spacing: 6) {
+              Text(metric.title)
+                .font(.headline)
+                .foregroundStyle(.textPrimary)
+                .frame(maxWidth: .infinity, alignment: .leading)
 
-            Text("Import daily step counts and complete Periods when you reach your target.")
-              .font(.footnote)
-              .foregroundStyle(.textTertiary)
-              .frame(maxWidth: .infinity, alignment: .leading)
+              Text(metric.description)
+                .font(.footnote)
+                .foregroundStyle(.textTertiary)
+                .frame(maxWidth: .infinity, alignment: .leading)
+            }
+            .padding()
+            .frame(maxWidth: .infinity, minHeight: 76, alignment: .leading)
+            .sameLevelBorder()
           }
-          .padding()
-          .frame(maxWidth: .infinity, minHeight: 76, alignment: .leading)
-          .sameLevelBorder()
+          .buttonStyle(.plain)
         }
-        .buttonStyle(.plain)
 
         CustomSeparator()
           .padding(.horizontal, -16)
