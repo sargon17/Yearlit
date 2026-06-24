@@ -1,3 +1,4 @@
+import CoreHaptics
 import RevenueCat
 import RevenueCatUI
 import SharedModels
@@ -86,6 +87,8 @@ struct CustomCalendarView: View {
   @State private var isEntryEditSheetPresented: Bool = false
   @State private var optimisticEntryOverrides: [String: OptimisticEntryOverride] = [:]
   @State private var isSyncingAppleHealth: Bool = false
+  @State private var checkInRippleTrigger: Int = 0
+  @State private var checkInRippleOriginDate: Date?
 
   private let milestoneCelebrationPolicy = MilestoneCelebrationPolicy.shared
   private let appleHealthSyncService = AppleHealthCalendarSyncService()
@@ -157,6 +160,54 @@ struct CustomCalendarView: View {
     )
   }
 
+  private func triggerCheckInRipple(from date: Date) {
+    checkInRippleOriginDate = date
+    checkInRippleTrigger += 1
+    Task {
+      await hapticFeedback(.customCurve(events: checkInHapticEvents, parameterCurves: checkInHapticCurves))
+    }
+  }
+
+  private var checkInHapticEvents: [CHHapticEvent] {
+    [
+      CHHapticEvent(
+        eventType: .hapticContinuous,
+        parameters: [
+          CHHapticEventParameter(parameterID: .hapticIntensity, value: 0.36),
+          CHHapticEventParameter(parameterID: .hapticSharpness, value: 0.14)
+        ],
+        relativeTime: 0,
+        duration: 1.25
+      )
+    ]
+  }
+
+  private var checkInHapticCurves: [CHHapticParameterCurve] {
+    [
+      CHHapticParameterCurve(
+        parameterID: .hapticIntensityControl,
+        controlPoints: [
+          CHHapticParameterCurve.ControlPoint(relativeTime: 0, value: 0.12),
+          CHHapticParameterCurve.ControlPoint(relativeTime: 0.1, value: 0.62),
+          CHHapticParameterCurve.ControlPoint(relativeTime: 0.34, value: 0.48),
+          CHHapticParameterCurve.ControlPoint(relativeTime: 0.68, value: 0.28),
+          CHHapticParameterCurve.ControlPoint(relativeTime: 1.0, value: 0.12),
+          CHHapticParameterCurve.ControlPoint(relativeTime: 1.25, value: 0)
+        ],
+        relativeTime: 0
+      ),
+      CHHapticParameterCurve(
+        parameterID: .hapticSharpnessControl,
+        controlPoints: [
+          CHHapticParameterCurve.ControlPoint(relativeTime: 0, value: -0.35),
+          CHHapticParameterCurve.ControlPoint(relativeTime: 0.3, value: -0.2),
+          CHHapticParameterCurve.ControlPoint(relativeTime: 1.25, value: -0.5)
+        ],
+        relativeTime: 0
+      )
+    ]
+  }
+
   private func handleDayTap(_ date: Date) {
     guard !date.isInFuture else { return }
 
@@ -164,8 +215,9 @@ struct CustomCalendarView: View {
     guard !activeCalendar.isAppleHealthConnected else { return }
 
     if activeCalendar.trackingType == .binary {
+      let isCheckingIn = activeCalendar.entry(for: date) == nil
       let newEntry =
-        activeCalendar.entry(for: date) == nil
+        isCheckingIn
         ? defaultEntry(date: date, trackingType: .binary)
         : nil
       setOptimisticEntryOverride(calendar: activeCalendar, date: date, entry: newEntry)
@@ -178,12 +230,19 @@ struct CustomCalendarView: View {
           calendarStore: store,
           source: .calendar
         )
+        if isCheckingIn {
+          triggerCheckInRipple(from: date)
+        }
         scheduleMilestoneCheck()
         checkIfReachedThreeDays(activeCalendar)
       }
       return
     }
 
+    presentEntryEditSheet(calendar: activeCalendar, date: date)
+  }
+
+  private func presentEntryEditSheet(calendar: CustomCalendar, date: Date) {
     Task {
       await hapticFeedback()
     }
@@ -192,15 +251,18 @@ struct CustomCalendarView: View {
       .sheetConfig(config: shortSheetConfig)
     ) { _ in
       DayEntryEditSheet(
-        calendar: activeCalendar,
+        calendar: calendar,
         date: date,
         store: store,
-        onSave: {
+        onSave: { entry in
+          if entry.count > 0 {
+            triggerCheckInRipple(from: date)
+          }
           scheduleMilestoneCheck()
         },
         onDismiss: {
           isEntryEditSheetPresented = false
-          evaluateMilestonesIfNeeded(calendarId: activeCalendar.id)
+          evaluateMilestonesIfNeeded(calendarId: calendar.id)
         }
       )
     }
@@ -587,13 +649,31 @@ struct CustomCalendarView: View {
         GridView(
           handleDayTap: handleDayTap,
           mappedDays: renderSnapshot.mappedGridDays,
-          disabledDates: renderSnapshot.disabledGridDates
+          disabledDates: renderSnapshot.disabledGridDates,
+          rippleOriginDate: checkInRippleOriginDate,
+          rippleTrigger: checkInRippleTrigger
         )
         .id(renderSnapshot.timelineMode.rawValue)
-        .frame(height: UIScreen.main.bounds.height * 0.55)
+        .frame(height: UIScreen.main.bounds.height * 0.62)
 
         let currentPeriodLogCount: Int? = renderSnapshot.currentPeriodReferenceDate.map {
           entry(for: activeCalendar, date: $0)?.count ?? 0
+        }
+        let checkInDate = renderSnapshot.currentPeriodReferenceDate ?? Date()
+
+        if !activeCalendar.isAppleHealthConnected {
+          Button {
+            presentEntryEditSheet(calendar: activeCalendar, date: checkInDate)
+          } label: {
+            Text("check in")
+              .frame(maxWidth: .infinity)
+              .fontWeight(.medium)
+              .padding(.vertical, 12)
+              .padding(.horizontal)
+          }
+          .sameLevelBorder(radius: 4, isFlat: true)
+          .padding(.horizontal)
+          .padding(.top, 4)
         }
 
         if let bundle = statsBundle {

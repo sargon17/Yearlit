@@ -9,7 +9,7 @@ struct DayEntryEditSheet: View {
     let calendar: CustomCalendar
     let date: Date
     let store: CustomCalendarStore // Receive the store
-    let onSave: (() -> Void)?
+    let onSave: ((CalendarEntry) -> Void)?
     let onDismiss: (() -> Void)?
 
     @State private var entryCount: Int
@@ -19,7 +19,7 @@ struct DayEntryEditSheet: View {
         calendar: CustomCalendar,
         date: Date,
         store: CustomCalendarStore,
-        onSave: (() -> Void)? = nil,
+        onSave: ((CalendarEntry) -> Void)? = nil,
         onDismiss: (() -> Void)? = nil
     ) {
         self.calendar = calendar
@@ -39,7 +39,7 @@ struct DayEntryEditSheet: View {
             return
         }
         let existingEntry = store.getEntry(calendarId: calendar.id, date: date)
-        let newEntry = CalendarEntry(date: date, count: entryCount, completed: entryCompleted)
+        let newEntry = normalizedEntry()
         store.addEntry(calendarId: calendar.id, entry: newEntry)
         CalendarAnalyticsTracker.shared.trackEntryMutation(
             calendar: calendar,
@@ -47,8 +47,19 @@ struct DayEntryEditSheet: View {
             newEntry: newEntry,
             source: .editSheet
         )
-        onSave?()
+        onSave?(newEntry)
         dismiss()
+    }
+
+    private func normalizedEntry() -> CalendarEntry {
+        switch calendar.trackingType {
+        case .binary:
+            return CalendarEntry(date: date, count: entryCompleted ? 1 : 0, completed: entryCompleted)
+        case .counter:
+            return CalendarEntry(date: date, count: entryCount, completed: entryCount > 0)
+        case .multipleDaily:
+            return CalendarEntry(date: date, count: entryCount, completed: entryCount >= calendar.dailyTarget)
+        }
     }
 
     var body: some View {
