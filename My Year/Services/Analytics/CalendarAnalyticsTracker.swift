@@ -5,6 +5,7 @@ enum CalendarAnalyticsSource: String {
   case calendar
   case notification
   case quickAddDeeplink = "quick_add_deeplink"
+  case shortcut
   case editSheet = "edit_sheet"
   case unknown
 }
@@ -161,7 +162,7 @@ final class CalendarAnalyticsTracker {
     case .binary:
       return entry.completed
     case .counter, .multipleDaily:
-      return entry.count > 0
+      return entry.count >= 1
     }
   }
 

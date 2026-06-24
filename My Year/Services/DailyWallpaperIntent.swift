@@ -22,22 +22,6 @@ struct CreateDailyWallpaperIntent: AppIntent {
   }
 }
 
-struct DailyWallpaperShortcuts: AppShortcutsProvider {
-  static var shortcutTileColor: ShortcutTileColor = .orange
-
-  static var appShortcuts: [AppShortcut] {
-    AppShortcut(
-      intent: CreateDailyWallpaperIntent(),
-      phrases: [
-        "Create \(.applicationName) daily wallpaper",
-        "Create \(.applicationName) wallpaper"
-      ],
-      shortTitle: "Daily Wallpaper",
-      systemImageName: "calendar"
-    )
-  }
-}
-
 enum DailyWallpaperError: Error, CustomLocalizedStringResourceConvertible {
   case renderFailed
 

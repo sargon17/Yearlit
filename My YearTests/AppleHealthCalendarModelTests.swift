@@ -30,11 +30,11 @@ struct AppleHealthCalendarModelTests {
     #expect(calendar.source == .manual)
   }
 
-  @Test func appleHealthStepsMapperCreatesTargetEntries() {
+  @Test func appleHealthMetricMapperCreatesTargetEntries() {
     let belowTarget = makeDate(year: 2026, month: 1, day: 2)
     let aboveTarget = makeDate(year: 2026, month: 1, day: 3)
 
-    let entries = AppleHealthStepsEntryMapper.entries(
+    let entries = AppleHealthMetricEntryMapper.entries(
       from: [
         belowTarget: 7_999,
         aboveTarget: 8_001,
@@ -59,8 +59,16 @@ struct AppleHealthCalendarModelTests {
       trackingStartedAt: makeDate(year: 2026, month: 1, day: 1),
       dailyTarget: 8_000,
       entries: [
-        "2026-01-02": CalendarEntry(date: makeDate(year: 2026, month: 1, day: 2), count: 7_000, completed: false),
-        "2026-01-03": CalendarEntry(date: makeDate(year: 2026, month: 1, day: 3), count: 9_000, completed: true)
+        "2026-01-02": CalendarEntry(
+          date: makeDate(year: 2026, month: 1, day: 2),
+          count: 7_000,
+          completed: false
+        ),
+        "2026-01-03": CalendarEntry(
+          date: makeDate(year: 2026, month: 1, day: 3),
+          count: 9_000,
+          completed: true
+        )
       ],
       unit: .steps,
       source: .appleHealthSteps
