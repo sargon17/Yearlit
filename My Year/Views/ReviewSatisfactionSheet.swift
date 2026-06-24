@@ -15,16 +15,18 @@ struct ReviewSatisfactionSheet: View {
 
   var body: some View {
     NavigationStack {
-      VStack(alignment: .leading, spacing: 18) {
-        VStack(alignment: .leading, spacing: 8) {
+      VStack(alignment: .leading, spacing: 20) {
+        VStack(alignment: .leading, spacing: 10) {
           Text("Are you liking Yearlit so far?")
-            .font(AppFont.sans(28))
-            .fontWeight(.black)
-            .foregroundColor(.textPrimary)
+            .font(AppFont.pixelCircle(26))
+            .foregroundStyle(.textPrimary)
+            .multilineTextAlignment(.leading)
+            .fixedSize(horizontal: false, vertical: true)
 
           Text("Your answer helps decide what happens next.")
-            .body()
-            .foregroundColor(.textSecondary)
+            .font(AppFont.mono(14))
+            .foregroundStyle(.textSecondary)
+            .fixedSize(horizontal: false, vertical: true)
         }
 
         if isCollectingFeedback {
@@ -40,9 +42,13 @@ struct ReviewSatisfactionSheet: View {
       .navigationBarTitleDisplayMode(.inline)
       .toolbar {
         ToolbarItem(placement: .cancellationAction) {
-          Button("Not now") {
+          Button {
             trackAnswer("not_now")
             close()
+          } label: {
+            Text("Not now")
+              .font(AppFont.mono(14, weight: .medium))
+              .foregroundStyle(.textSecondary)
           }
         }
       }
@@ -55,60 +61,114 @@ struct ReviewSatisfactionSheet: View {
   }
 
   private var answerButtons: some View {
-    VStack(spacing: 10) {
-      Button {
+    VStack(spacing: 12) {
+      styledButton("Yes", style: .primary) {
         trackAnswer("yes")
         requestReviewAfterDismissal()
-      } label: {
-        Label("Yes", systemImage: "heart.fill")
-          .frame(maxWidth: .infinity)
       }
-      .buttonStyle(.borderedProminent)
-      .controlSize(.large)
 
-      Button {
+      styledButton("No", style: .secondary) {
         trackAnswer("no")
         isCollectingFeedback = true
-      } label: {
-        Label("No", systemImage: "exclamationmark.bubble")
-          .frame(maxWidth: .infinity)
       }
-      .buttonStyle(.bordered)
-      .controlSize(.large)
 
-      Button {
+      styledButton("Maybe later", style: .link) {
         trackAnswer("maybe")
         close()
-      } label: {
-        Label("Maybe", systemImage: "clock")
-          .frame(maxWidth: .infinity)
       }
-      .buttonStyle(.bordered)
-      .controlSize(.large)
     }
   }
 
   private var feedbackForm: some View {
-    VStack(alignment: .leading, spacing: 12) {
+    VStack(alignment: .leading, spacing: 14) {
       Text("What is not working?")
-        .h4()
+        .font(AppFont.mono(16, weight: .bold))
+        .foregroundStyle(.textPrimary)
 
       TextField("Tell us what felt wrong or missing", text: $feedbackText, axis: .vertical)
-        .textFieldStyle(.roundedBorder)
         .lineLimit(5...9)
+        .inputStyle(color: .textPrimary)
         .onChange(of: feedbackText) { _, newValue in
           trackFeedbackStartedIfNeeded(newValue)
         }
 
-      Button {
+      styledButton(
+        isSubmittingFeedback ? "Sending" : "Send feedback",
+        style: .primary,
+        isDisabled: isSubmittingFeedback || trimmedFeedback.isEmpty
+      ) {
         submitFeedback()
-      } label: {
-        Label(isSubmittingFeedback ? "Sending" : "Send feedback", systemImage: "paperplane")
-          .frame(maxWidth: .infinity)
       }
-      .buttonStyle(.borderedProminent)
-      .controlSize(.large)
-      .disabled(isSubmittingFeedback || trimmedFeedback.isEmpty)
+    }
+  }
+
+  private enum AnswerButtonStyle {
+    case primary
+    case secondary
+    case link
+  }
+
+  @ViewBuilder
+  private func styledButton(
+    _ title: LocalizedStringKey,
+    style: AnswerButtonStyle,
+    isDisabled: Bool = false,
+    action: @escaping () -> Void
+  ) -> some View {
+    let button = Button(action: action) {
+      Text(title)
+        .font(AppFont.mono(style == .primary ? 18 : 16, weight: .bold))
+        .foregroundStyle(foregroundColor(for: style))
+        .underline(style == .link)
+        .padding(.horizontal, style == .link ? 0 : 14)
+        .padding(.vertical, style == .link ? 6 : 16)
+        .frame(maxWidth: .infinity, alignment: .center)
+        .background(backgroundColor(for: style))
+    }
+    .buttonStyle(.plain)
+    .disabled(isDisabled)
+    .opacity(isDisabled ? 0.5 : 1)
+    .accessibilityLabel(Text(title))
+
+    switch style {
+    case .primary:
+      VStack {
+        button
+          .clipShape(RoundedRectangle(cornerRadius: 4))
+          .sameLevelBorder(radius: 4, color: .brand)
+      }
+      .padding(2)
+    case .secondary:
+      VStack {
+        button
+          .clipShape(RoundedRectangle(cornerRadius: 4))
+          .sameLevelBorder(radius: 4, color: .buttonBackground)
+      }
+      .padding(2)
+    case .link:
+      button
+    }
+  }
+
+  private func foregroundColor(for style: AnswerButtonStyle) -> Color {
+    switch style {
+    case .primary:
+      return .brandInverted
+    case .secondary:
+      return .buttonForeground
+    case .link:
+      return .textTertiary
+    }
+  }
+
+  private func backgroundColor(for style: AnswerButtonStyle) -> Color {
+    switch style {
+    case .primary:
+      return .brand
+    case .secondary:
+      return .buttonBackground
+    case .link:
+      return .clear
     }
   }
 
