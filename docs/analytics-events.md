@@ -34,6 +34,8 @@ Every app-owned event should include the standard analytics snapshot:
 - `app_version`
 - `build_number`
 - `app_locale_language`
+- `revenuecat_app_user_id`
+- `apple_ads_adservices_enabled`
 - `is_premium`
 - `premium_status_known`
 - `mood_tracking_enabled`
@@ -52,6 +54,7 @@ Every app-owned event should include the standard analytics snapshot:
 - `target_calendar_count`
 - `calendar_with_reminder_count`
 - `has_reminders_enabled`
+- `has_completed_activation`
 - `has_completed_first_checkin`
 - `has_completed_first_period`
 
@@ -120,6 +123,7 @@ Owned by #90.
 | `calendar_created` | Include `cadence`, `tracking_type`, `has_reminder_enabled`, `has_backfilled_history`, `is_first_calendar`. |
 | `calendar_archived` | Include `source`, `cadence`, `tracking_type`. Allowed sources: `drag_action`, `edit_calendar`, `unknown`. |
 | `calendar_unarchived` | Include `source`, `cadence`, `tracking_type`. Allowed sources: `drag_action`, `edit_calendar`, `unknown`. |
+| `activation_completed` | First meaningful activation once per install/user identity. Include `activation_source`. Allowed sources: `onboarding_first_dot`, `calendar_checkin`. |
 | `checkin_completed` | First transition from no progress to progress for a period. Include `cadence`, `tracking_type`, `period`, `source`. Allowed sources: `calendar`, `notification`, `quick_add_deeplink`, `edit_sheet`, `unknown`. |
 | `first_checkin_completed` | First check-in once per install/user identity. |
 | `checkin_removed` | Progress removed from a period. Include `cadence`, `tracking_type`, `period`, `source`. |
@@ -127,6 +131,8 @@ Owned by #90.
 | `period_uncompleted` | Completed period becomes incomplete. Include `cadence`, `tracking_type`, `period`, `source`. |
 
 Allowed check-in `source` values: `calendar`, `notification`, `quick_add_deeplink`, `edit_sheet`, `unknown`.
+
+Allowed activation `activation_source` values: `onboarding_first_dot`, `calendar_checkin`.
 
 ## Feature and reflective events
 

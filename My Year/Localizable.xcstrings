@@ -16466,24 +16466,23 @@
       }
     },
     "Best for building consistency" : {
-      "extractionState" : "stale",
       "localizations" : {
         "cs" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Nejlepší pro budování pravidelnosti"
+            "value" : "Nejlepší pro pravidelnost"
           }
         },
         "da" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Bedst til at bygge vedholdenhed"
+            "value" : "Bedst til at holde rytmen"
           }
         },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Am besten für Beständigkeit"
+            "value" : "Am besten für mehr Beständigkeit"
           }
         },
         "en" : {
@@ -16495,7 +16494,7 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "La mejor opción para ser constante"
+            "value" : "Ideal para crear constancia"
           }
         },
         "es-MX" : {
@@ -16519,7 +16518,7 @@
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Idéal pour renforcer la cohérence"
+            "value" : "Idéal pour tenir sur la durée"
           }
         },
         "hr" : {
@@ -16531,7 +16530,7 @@
         "hu" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "A legjobb a következetesség építéséhez"
+            "value" : "A legjobb a következetességhez"
           }
         },
         "it" : {
@@ -16543,31 +16542,31 @@
         "lv" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Labākais ritma veidošanai"
+            "value" : "Labākais regularitātes veidošanai"
           }
         },
         "nb" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Best når du vil holde rytmen"
+            "value" : "Best for å holde rytmen"
           }
         },
         "nl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Beste om consistentie op te bouwen"
+            "value" : "Beste keuze voor regelmaat"
           }
         },
         "pl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Najlepszy do budowania konsekwencji"
+            "value" : "Najlepszy do budowania regularności"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Melhor para criar consistência"
+            "value" : "Melhor para criar constância"
           }
         },
         "ro" : {
@@ -16579,13 +16578,13 @@
         "sk" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Najlepšie na budovanie pravidelnosti"
+            "value" : "Najlepšie na pravidelnosť"
           }
         },
         "sl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Najboljše za gradnjo doslednosti"
+            "value" : "Najboljše za doslednost"
           }
         },
         "sv" : {
@@ -20001,7 +20000,6 @@
       }
     },
     "Close paywall" : {
-      "extractionState" : "stale",
       "localizations" : {
         "cs" : {
           "stringUnit" : {
@@ -20012,121 +20010,127 @@
         "da" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Luk betalingsmur"
+            "value" : "Luk Pro-tilbuddet"
           }
         },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Paywall schließen"
+            "value" : "Pro-Angebot schließen"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Close paywall"
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Cerrar pantalla de Pro"
+            "value" : "Cerrar oferta Pro"
           }
         },
         "es-MX" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Cerrar muro de pago"
+            "value" : "Cerrar oferta Pro"
           }
         },
         "et" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Sulge makseaken"
+            "value" : "Sulge Pro pakkumine"
           }
         },
         "fi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Sulje maksunäkymä"
+            "value" : "Sulje Pro-tarjous"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Fermer l’écran d’abonnement"
+            "value" : "Fermer l’offre Pro"
           }
         },
         "hr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Zatvori ponudu"
+            "value" : "Zatvori Pro ponudu"
           }
         },
         "hu" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Zárja be a fizetőfalat"
+            "value" : "Pro ajánlat bezárása"
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Chiudi paywall"
+            "value" : "Chiudi offerta Pro"
           }
         },
         "lv" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Aizvērt abonēšanas ekrānu"
+            "value" : "Aizvērt Pro piedāvājumu"
           }
         },
         "nb" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Lukk betalingsmur"
+            "value" : "Lukk Pro-tilbudet"
           }
         },
         "nl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Sluit paywall"
+            "value" : "Sluit Pro-aanbod"
           }
         },
         "pl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Zamknij ekran Pro"
+            "value" : "Zamknij ofertę Pro"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Fechar acesso pago"
+            "value" : "Fechar oferta Pro"
           }
         },
         "ro" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Închide paywall-ul"
+            "value" : "Închide oferta Pro"
           }
         },
         "sk" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Zavrieť paywall"
+            "value" : "Zavrieť ponuku Pro"
           }
         },
         "sl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Zapri plačilni zid"
+            "value" : "Zapri ponudbo Pro"
           }
         },
         "sv" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Stäng betalväggen"
+            "value" : "Stäng Pro-erbjudandet"
           }
         },
         "uk" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Закрити систему оплати"
+            "value" : "Закрити пропозицію Pro"
           }
         }
       }
@@ -35237,7 +35241,6 @@
       }
     },
     "Flexible access" : {
-      "extractionState" : "stale",
       "localizations" : {
         "cs" : {
           "stringUnit" : {
@@ -35326,7 +35329,7 @@
         "nl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Flexibel instappen"
+            "value" : "Flexibele toegang"
           }
         },
         "pl" : {
@@ -45484,7 +45487,7 @@
         "cs" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Načítám tarify…"
+            "value" : "Načítání tarifů…"
           }
         },
         "da" : {
@@ -45496,7 +45499,13 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Pläne werden geladen…"
+            "value" : "Tarife werden geladen…"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Loading plans…"
           }
         },
         "es" : {
@@ -45514,7 +45523,7 @@
         "et" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Paketid laadivad…"
+            "value" : "Pakette laaditakse…"
           }
         },
         "fi" : {
@@ -45526,25 +45535,25 @@
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Chargement des plans…"
+            "value" : "Chargement des forfaits…"
           }
         },
         "hr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Učitavanje planova..."
+            "value" : "Učitavanje planova…"
           }
         },
         "hu" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Ajánlatok betöltése…"
+            "value" : "Csomagok betöltése…"
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Caricamento piani..."
+            "value" : "Caricamento piani…"
           }
         },
         "lv" : {
@@ -45556,7 +45565,7 @@
         "nb" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Laster abonnementer …"
+            "value" : "Laster abonnementer…"
           }
         },
         "nl" : {
@@ -45568,7 +45577,7 @@
         "pl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Wczytuję plany…"
+            "value" : "Wczytywanie planów…"
           }
         },
         "pt-BR" : {
@@ -45592,7 +45601,7 @@
         "sl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Nalaganje ponudb ..."
+            "value" : "Nalaganje ponudb…"
           }
         },
         "sv" : {
@@ -63742,7 +63751,13 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Pläne nicht verfügbar"
+            "value" : "Tarife nicht verfügbar"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Plans unavailable"
           }
         },
         "es" : {
@@ -63784,7 +63799,7 @@
         "hu" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Az ajánlatok nem érhetők el"
+            "value" : "A csomagok nem érhetők el"
           }
         },
         "it" : {
@@ -63802,13 +63817,13 @@
         "nb" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Abonnementer utilgjengelige"
+            "value" : "Abonnementer er utilgjengelige"
           }
         },
         "nl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Plannen niet beschikbaar"
+            "value" : "Abonnementen niet beschikbaar"
           }
         },
         "pl" : {
@@ -69244,7 +69259,6 @@
       }
     },
     "Restore purchases" : {
-      "extractionState" : "stale",
       "localizations" : {
         "cs" : {
           "stringUnit" : {
@@ -69261,7 +69275,13 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Einkäufe wiederherstellen"
+            "value" : "Käufe wiederherstellen"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Restore purchases"
           }
         },
         "es" : {
@@ -69297,7 +69317,7 @@
         "hr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Vratite kupnje"
+            "value" : "Vrati kupnje"
           }
         },
         "hu" : {
@@ -69309,7 +69329,7 @@
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Ripristina gli acquisti"
+            "value" : "Ripristina acquisti"
           }
         },
         "lv" : {
@@ -75709,7 +75729,6 @@
       }
     },
     "Simple monthly plan" : {
-      "extractionState" : "stale",
       "localizations" : {
         "cs" : {
           "stringUnit" : {
@@ -91975,7 +91994,6 @@
       }
     },
     "Unlock every Pro tool" : {
-      "extractionState" : "stale",
       "localizations" : {
         "cs" : {
           "stringUnit" : {
@@ -91992,7 +92010,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Schalte jedes Pro-Tool frei"
+            "value" : "Schalte alle Pro-Werkzeuge frei"
           }
         },
         "en" : {
@@ -92028,19 +92046,19 @@
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Débloquez tous les outils Pro"
+            "value" : "Débloque tous les outils Pro"
           }
         },
         "hr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Otključajte svaki Pro alat"
+            "value" : "Otključaj sve Pro alate"
           }
         },
         "hu" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Nyisd meg az összes Pro eszközt"
+            "value" : "Oldd fel az összes Pro eszközt"
           }
         },
         "it" : {
@@ -92088,7 +92106,7 @@
         "sk" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Odomknúť všetky nástroje Pro"
+            "value" : "Odomkni všetky nástroje Pro"
           }
         },
         "sl" : {
@@ -108356,6 +108374,1910 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Спробуй пізніше ще раз."
+          }
+        }
+      }
+    },
+    "Protect the year you just started." : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Udrž si rok, který jsi právě začal."
+          }
+        },
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pas på året, du lige er startet på."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Halte fest an dem Jahr, das du gerade begonnen hast."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Protect the year you just started."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cuida el año que acabas de empezar."
+          }
+        },
+        "es-MX" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cuida el año que acabas de empezar."
+          }
+        },
+        "et" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hoia aastat, millega just alustasid."
+          }
+        },
+        "fi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pidä kiinni vuodesta, jonka juuri aloitit."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Garde le cap sur l’année que tu viens de commencer."
+          }
+        },
+        "hr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sačuvaj godinu koju si upravo započeo."
+          }
+        },
+        "hu" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vigyázz az évre, amit most kezdtél el."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Proteggi l’anno che hai appena iniziato."
+          }
+        },
+        "lv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nosargā gadu, ko tikko sāki."
+          }
+        },
+        "nb" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ta vare på året du nettopp startet."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Houd vast aan het jaar dat je net bent begonnen."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zadbaj o rok, który właśnie zaczynasz."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cuide do ano que você acabou de começar."
+          }
+        },
+        "ro" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ai grijă de anul pe care tocmai l-ai început."
+          }
+        },
+        "sk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Udrž si rok, ktorý si práve začal."
+          }
+        },
+        "sl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Obvaruj leto, ki si ga pravkar začel."
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ta hand om året du just har börjat."
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Бережи рік, який ти щойно почав."
+          }
+        }
+      }
+    },
+    "Your first habit is ready." : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tvůj první návyk je připravený."
+          }
+        },
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Din første vane er klar."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Deine erste Gewohnheit ist bereit."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your first habit is ready."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tu primer hábito ya está listo."
+          }
+        },
+        "es-MX" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tu primer hábito ya está listo."
+          }
+        },
+        "et" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sinu esimene harjumus on valmis."
+          }
+        },
+        "fi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ensimmäinen tapasi on valmis."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ta première habitude est prête."
+          }
+        },
+        "hr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tvoja prva navika je spremna."
+          }
+        },
+        "hu" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Az első szokásod készen áll."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La tua prima abitudine è pronta."
+          }
+        },
+        "lv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tavs pirmais ieradums ir gatavs."
+          }
+        },
+        "nb" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Din første vane er klar."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Je eerste gewoonte staat klaar."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Twój pierwszy nawyk jest gotowy."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Seu primeiro hábito está pronto."
+          }
+        },
+        "ro" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Primul tău obicei este gata."
+          }
+        },
+        "sk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tvoj prvý návyk je pripravený."
+          }
+        },
+        "sl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tvoja prva navada je pripravljena."
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Din första vana är klar."
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Твоя перша звичка готова."
+          }
+        }
+      }
+    },
+    "Pro helps you keep it visible, track the pattern, and come back tomorrow." : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pro ti ho pomůže mít na očích, sledovat rytmus a zítra se vrátit."
+          }
+        },
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pro hjælper dig med at holde den synlig, følge rytmen og vende tilbage i morgen."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pro hilft dir, sie sichtbar zu halten, den Rhythmus zu erkennen und morgen wiederzukommen."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pro helps you keep it visible, track the pattern, and come back tomorrow."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pro te ayuda a tenerlo presente, ver el ritmo y volver mañana."
+          }
+        },
+        "es-MX" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pro te ayuda a tenerlo presente, ver el ritmo y volver mañana."
+          }
+        },
+        "et" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pro aitab seda nähtaval hoida, rütmi märgata ja homme tagasi tulla."
+          }
+        },
+        "fi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pro auttaa pitämään sen näkyvillä, seuraamaan rytmiä ja palaamaan huomenna."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pro t’aide à la garder sous les yeux, à suivre le rythme et à revenir demain."
+          }
+        },
+        "hr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pro ti pomaže da ti ostane pred očima, da pratiš ritam i vratiš se sutra."
+          }
+        },
+        "hu" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A Pro segít szem előtt tartani, látni a ritmust, és holnap visszatérni."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pro ti aiuta a tenerla sott’occhio, seguire il ritmo e tornare domani."
+          }
+        },
+        "lv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pro palīdz to turēt acu priekšā, sekot ritmam un atgriezties rīt."
+          }
+        },
+        "nb" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pro hjelper deg å holde den synlig, følge rytmen og komme tilbake i morgen."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pro helpt je hem in beeld te houden, het ritme te zien en morgen terug te komen."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pro pomaga mieć go pod ręką, zobaczyć rytm i wrócić jutro."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "O Pro ajuda você a manter isso à vista, acompanhar o ritmo e voltar amanhã."
+          }
+        },
+        "ro" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pro te ajută să îl ții la vedere, să urmărești ritmul și să revii mâine."
+          }
+        },
+        "sk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pro ti ho pomôže mať na očiach, sledovať rytmus a vrátiť sa zajtra."
+          }
+        },
+        "sl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pro ti pomaga, da ostane pred očmi, da slediš ritmu in se jutri vrneš."
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pro hjälper dig att hålla den synlig, följa rytmen och komma tillbaka i morgon."
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pro допомагає тримати її перед очима, бачити ритм і повернутися завтра."
+          }
+        }
+      }
+    },
+    "Keep your first habit visible" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Měj první návyk na očích"
+          }
+        },
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hold din første vane synlig"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Behalte deine erste Gewohnheit im Blick"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Keep your first habit visible"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ten tu primer hábito a la vista"
+          }
+        },
+        "es-MX" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ten tu primer hábito a la vista"
+          }
+        },
+        "et" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hoia esimene harjumus nähtaval"
+          }
+        },
+        "fi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pidä ensimmäinen tapa näkyvillä"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Garde ta première habitude sous les yeux"
+          }
+        },
+        "hr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Neka ti prva navika bude pred očima"
+          }
+        },
+        "hu" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tartsd szem előtt az első szokásod"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tieni la tua prima abitudine in vista"
+          }
+        },
+        "lv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Turi pirmo ieradumu acu priekšā"
+          }
+        },
+        "nb" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hold din første vane synlig"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Houd je eerste gewoonte in beeld"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Miej pierwszy nawyk na widoku"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mantenha seu primeiro hábito à vista"
+          }
+        },
+        "ro" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ține primul obicei la vedere"
+          }
+        },
+        "sk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Maj prvý návyk na očiach"
+          }
+        },
+        "sl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Naj bo tvoja prva navada vedno vidna"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Håll din första vana synlig"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Тримай першу звичку перед очима"
+          }
+        }
+      }
+    },
+    "widgets put your promise where you will see it" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "widgety dají tvůj slib tam, kde ho uvidíš"
+          }
+        },
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "widgets lægger dit løfte dér, hvor du ser det"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Widgets zeigen dein Versprechen dort, wo du es siehst"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "widgets put your promise where you will see it"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "los widgets ponen tu promesa donde la vas a ver"
+          }
+        },
+        "es-MX" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "los widgets ponen tu promesa donde la vas a ver"
+          }
+        },
+        "et" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "vidinad panevad lubaduse sinna, kus sa seda näed"
+          }
+        },
+        "fi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "widgetit tuovat lupauksesi paikkaan, jossa näet sen"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "les widgets placent ta promesse là où tu la verras"
+          }
+        },
+        "hr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "widgeti stavljaju tvoje obećanje tamo gdje ćeš ga vidjeti"
+          }
+        },
+        "hu" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "a widgetek oda teszik az ígéreted, ahol biztosan látod"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "i widget mettono la promessa dove la vedrai"
+          }
+        },
+        "lv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "logrīki noliek tavu solījumu tur, kur to redzēsi"
+          }
+        },
+        "nb" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "widgeter legger løftet ditt der du ser det"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "widgets zetten je belofte waar je hem ziet"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "widżety pokazują obietnicę tam, gdzie ją zobaczysz"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "widgets colocam sua promessa onde você vai vê-la"
+          }
+        },
+        "ro" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "widgeturile pun promisiunea acolo unde o vei vedea"
+          }
+        },
+        "sk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "widgety dajú tvoj sľub tam, kde ho uvidíš"
+          }
+        },
+        "sl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "pripomočki postavijo obljubo tja, kjer jo boš videl"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "widgetar placerar ditt löfte där du ser det"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "віджети показують твою обіцянку там, де ти її побачиш"
+          }
+        }
+      }
+    },
+    "See the pattern behind your streak" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Uvidíš rytmus za svou sérií"
+          }
+        },
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Se rytmen bag din stime"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Erkenne den Rhythmus hinter deiner Serie"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "See the pattern behind your streak"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ve el ritmo detrás de tu racha"
+          }
+        },
+        "es-MX" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ve el ritmo detrás de tu racha"
+          }
+        },
+        "et" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Näe oma seeria rütmi"
+          }
+        },
+        "fi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Näe putkesi taustalla oleva rytmi"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vois le rythme derrière ta série"
+          }
+        },
+        "hr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vidi ritam iza svog niza"
+          }
+        },
+        "hu" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lásd a sorozatod ritmusát"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vedi il ritmo dietro la tua serie"
+          }
+        },
+        "lv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Redzi savas sērijas ritmu"
+          }
+        },
+        "nb" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Se rytmen bak rekken din"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zie het ritme achter je reeks"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zobacz rytm swojej serii"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Veja o ritmo por trás da sua sequência"
+          }
+        },
+        "ro" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vezi ritmul din spatele seriei tale"
+          }
+        },
+        "sk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pozri si rytmus svojej série"
+          }
+        },
+        "sl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Poglej ritem za svojim nizom"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Se rytmen bakom din svit"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Побач ритм своєї серії"
+          }
+        }
+      }
+    },
+    "stats show what is working before motivation fades" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "statistiky ukážou, co funguje, dřív než motivace opadne"
+          }
+        },
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "statistik viser, hvad der virker, før motivationen falmer"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Statistiken zeigen dir, was funktioniert, bevor die Motivation nachlässt"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "stats show what is working before motivation fades"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "las estadísticas te muestran qué funciona antes de que baje la motivación"
+          }
+        },
+        "es-MX" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "las estadísticas te muestran qué funciona antes de que baje la motivación"
+          }
+        },
+        "et" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "statistika näitab, mis toimib, enne kui motivatsioon vaibub"
+          }
+        },
+        "fi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "tilastot näyttävät, mikä toimii ennen kuin motivaatio hiipuu"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "les stats montrent ce qui marche avant que la motivation retombe"
+          }
+        },
+        "hr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "statistika pokazuje što funkcionira prije nego motivacija oslabi"
+          }
+        },
+        "hu" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "a statisztikák megmutatják, mi működik, mielőtt a lendület alábbhagy"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "le statistiche mostrano cosa funziona prima che la motivazione cali"
+          }
+        },
+        "lv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "statistika parāda, kas strādā, pirms motivācija noplok"
+          }
+        },
+        "nb" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "statistikk viser hva som fungerer før motivasjonen falmer"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "statistieken laten zien wat werkt voordat je motivatie wegzakt"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "statystyki pokazują, co działa, zanim motywacja opadnie"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "as estatísticas mostram o que funciona antes que a motivação caia"
+          }
+        },
+        "ro" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "statisticile arată ce funcționează înainte să scadă motivația"
+          }
+        },
+        "sk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "štatistiky ukážu, čo funguje, skôr než motivácia opadne"
+          }
+        },
+        "sl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "statistika pokaže, kaj deluje, preden motivacija popusti"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "statistik visar vad som fungerar innan motivationen avtar"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "статистика показує, що працює, перш ніж мотивація згасне"
+          }
+        }
+      }
+    },
+    "Track every promise" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sleduj každý slib"
+          }
+        },
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Følg hvert løfte"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Verfolge jedes Versprechen"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Track every promise"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sigue cada promesa"
+          }
+        },
+        "es-MX" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sigue cada promesa"
+          }
+        },
+        "et" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Jälgi iga lubadust"
+          }
+        },
+        "fi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Seuraa jokaista lupausta"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Suis chaque promesse"
+          }
+        },
+        "hr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Prati svako obećanje"
+          }
+        },
+        "hu" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kövess minden ígéretet"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Segui ogni promessa"
+          }
+        },
+        "lv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Seko katram solījumam"
+          }
+        },
+        "nb" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Følg hvert løfte"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Volg elke belofte"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Śledź każdą obietnicę"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Acompanhe cada promessa"
+          }
+        },
+        "ro" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Urmărește fiecare promisiune"
+          }
+        },
+        "sk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sleduj každý sľub"
+          }
+        },
+        "sl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Spremljaj vsako obljubo"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Följ varje löfte"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Відстежуй кожну обіцянку"
+          }
+        }
+      }
+    },
+    "unlimited calendars for every habit that matters" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "neomezené kalendáře pro každý návyk, na kterém záleží"
+          }
+        },
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ubegrænsede kalendere til alle vaner, der betyder noget"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "unbegrenzte Kalender für jede Gewohnheit, die dir wichtig ist"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "unlimited calendars for every habit that matters"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "calendarios ilimitados para cada hábito que importa"
+          }
+        },
+        "es-MX" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "calendarios ilimitados para cada hábito que importa"
+          }
+        },
+        "et" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "piiramatu arv kalendreid iga olulise harjumuse jaoks"
+          }
+        },
+        "fi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "rajattomat kalenterit jokaiselle tärkeälle tavalle"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "des calendriers illimités pour chaque habitude qui compte"
+          }
+        },
+        "hr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "neograničeni kalendari za svaku naviku koja ti je važna"
+          }
+        },
+        "hu" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "korlátlan naptár minden fontos szokáshoz"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "calendari illimitati per ogni abitudine che conta"
+          }
+        },
+        "lv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "neierobežoti kalendāri katram svarīgam ieradumam"
+          }
+        },
+        "nb" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ubegrensede kalendere for hver vane som betyr noe"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "onbeperkte kalenders voor elke gewoonte die telt"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "nielimitowane kalendarze dla każdego ważnego nawyku"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "calendários ilimitados para cada hábito que importa"
+          }
+        },
+        "ro" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "calendare nelimitate pentru fiecare obicei important"
+          }
+        },
+        "sk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "neobmedzené kalendáre pre každý dôležitý návyk"
+          }
+        },
+        "sl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "neomejeni koledarji za vsako pomembno navado"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "obegränsade kalendrar för varje vana som räknas"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "необмежені календарі для кожної важливої звички"
+          }
+        }
+      }
+    },
+    "Start free, stay in control" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Začni zdarma a měj vše pod kontrolou"
+          }
+        },
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Start gratis, og behold kontrollen"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kostenlos starten, Kontrolle behalten"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Start free, stay in control"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Empieza gratis y mantén el control"
+          }
+        },
+        "es-MX" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Empieza gratis y mantén el control"
+          }
+        },
+        "et" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Alusta tasuta ja hoia kontroll enda käes"
+          }
+        },
+        "fi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aloita ilmaiseksi ja pysy ohjissa"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Commence gratuitement, garde le contrôle"
+          }
+        },
+        "hr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Počni besplatno i zadrži kontrolu"
+          }
+        },
+        "hu" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kezdj ingyen, és maradj te irányításban"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Inizia gratis, resta in controllo"
+          }
+        },
+        "lv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sāc bez maksas un saglabā kontroli"
+          }
+        },
+        "nb" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Start gratis, og behold kontrollen"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Begin gratis en houd controle"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zacznij za darmo i zachowaj kontrolę"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Comece grátis e mantenha o controle"
+          }
+        },
+        "ro" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Începe gratuit și păstrează controlul"
+          }
+        },
+        "sk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Začni zadarmo a maj kontrolu"
+          }
+        },
+        "sl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Začni brezplačno in ohrani nadzor"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Börja gratis och behåll kontrollen"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Почни безкоштовно й зберігай контроль"
+          }
+        }
+      }
+    },
+    "try Pro and cancel anytime from your App Store subscription settings" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "vyzkoušej Pro a kdykoli zruš v nastavení předplatného v App Storu"
+          }
+        },
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "prøv Pro, og opsig når som helst i App Stores abonnementsindstillinger"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "teste Pro und kündige jederzeit in deinen App Store-Abonnementeinstellungen"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "try Pro and cancel anytime from your App Store subscription settings"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "prueba Pro y cancela cuando quieras desde las suscripciones del App Store"
+          }
+        },
+        "es-MX" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "prueba Pro y cancela cuando quieras desde las suscripciones del App Store"
+          }
+        },
+        "et" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "proovi Pro’d ja tühista igal ajal App Store’i tellimuste seadetes"
+          }
+        },
+        "fi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "kokeile Prota ja peru milloin tahansa App Storen tilausasetuksista"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "essaie Pro et annule à tout moment dans les réglages d’abonnement de l’App Store"
+          }
+        },
+        "hr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "isprobaj Pro i otkaži bilo kada u postavkama pretplata App Storea"
+          }
+        },
+        "hu" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "próbáld ki a Prót, és bármikor lemondhatod az App Store előfizetései között"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "prova Pro e annulla quando vuoi dalle impostazioni abbonamenti dell’App Store"
+          }
+        },
+        "lv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "izmēģini Pro un jebkurā laikā atcel App Store abonementu iestatījumos"
+          }
+        },
+        "nb" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "prøv Pro og avslutt når som helst i abonnementsinnstillingene i App Store"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "probeer Pro en annuleer wanneer je wilt via je App Store-abonnementen"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "wypróbuj Pro i anuluj w dowolnej chwili w ustawieniach subskrypcji App Store"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "experimente o Pro e cancele quando quiser nos ajustes de assinatura da App Store"
+          }
+        },
+        "ro" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "încearcă Pro și anulează oricând din setările abonamentelor App Store"
+          }
+        },
+        "sk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "vyskúšaj Pro a kedykoľvek ho zruš v nastaveniach predplatného App Storu"
+          }
+        },
+        "sl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "preizkusi Pro in kadar koli prekliči v nastavitvah naročnin App Store"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "prova Pro och avsluta när som helst i App Stores prenumerationsinställningar"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "спробуй Pro і скасуй будь-коли в налаштуваннях підписок App Store"
+          }
+        }
+      }
+    },
+    "Terms" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Podmínky"
+          }
+        },
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vilkår"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bedingungen"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Terms"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Términos"
+          }
+        },
+        "es-MX" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Términos"
+          }
+        },
+        "et" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tingimused"
+          }
+        },
+        "fi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ehdot"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Conditions"
+          }
+        },
+        "hr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Uvjeti"
+          }
+        },
+        "hu" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Feltételek"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Termini"
+          }
+        },
+        "lv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Noteikumi"
+          }
+        },
+        "nb" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vilkår"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Voorwaarden"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Warunki"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Termos"
+          }
+        },
+        "ro" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Termeni"
+          }
+        },
+        "sk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Podmienky"
+          }
+        },
+        "sl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pogoji"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Villkor"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Умови"
+          }
+        }
+      }
+    },
+    "Pro" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pro"
+          }
+        },
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pro"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pro"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pro"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pro"
+          }
+        },
+        "es-MX" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pro"
+          }
+        },
+        "et" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pro"
+          }
+        },
+        "fi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pro"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pro"
+          }
+        },
+        "hr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pro"
+          }
+        },
+        "hu" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pro"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pro"
+          }
+        },
+        "lv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pro"
+          }
+        },
+        "nb" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pro"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pro"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pro"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pro"
+          }
+        },
+        "ro" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pro"
+          }
+        },
+        "sk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pro"
+          }
+        },
+        "sl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pro"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pro"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pro"
+          }
+        }
+      }
+    },
+    "First %@" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nejdřív %@"
+          }
+        },
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ først"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Erst %@"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "First %@"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Primero %@"
+          }
+        },
+        "es-MX" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Primero %@"
+          }
+        },
+        "et" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Esmalt %@"
+          }
+        },
+        "fi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ensin %@"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "D’abord %@"
+          }
+        },
+        "hr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Prvo %@"
+          }
+        },
+        "hu" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Először %@"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Prima %@"
+          }
+        },
+        "lv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vispirms %@"
+          }
+        },
+        "nb" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ først"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Eerst %@"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Najpierw %@"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Primeiro %@"
+          }
+        },
+        "ro" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mai întâi %@"
+          }
+        },
+        "sk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Najprv %@"
+          }
+        },
+        "sl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Najprej %@"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ först"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Спочатку %@"
           }
         }
       }

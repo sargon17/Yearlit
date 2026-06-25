@@ -5,6 +5,7 @@ import SharedModels
 protocol OnboardingAnalyticsTracking {
   func trackOnboardingStepViewed(stepId: String)
   func trackOnboardingAction(_ action: OnboardingAction)
+  func markActivationCompleted(source: ActivationSource)
 }
 
 @MainActor
@@ -153,6 +154,19 @@ final class Analytics {
     )
   }
 
+  func markActivationCompleted(source: ActivationSource) {
+    guard !state.hasCompletedActivation else { return }
+
+    state.markActivationCompleted()
+    track(
+      .activationCompleted,
+      properties: [
+        "activation_source": .string(source.rawValue)
+      ]
+    )
+    updatePersonProperties()
+  }
+
   func flushQueuedWidgetEvents() {
     let queuedEvents = WidgetAnalyticsQueue.shared.drain()
     guard !queuedEvents.isEmpty else { return }
@@ -180,6 +194,7 @@ final class Analytics {
 
     state.markFirstCheckinCompleted()
     track(.firstCheckinCompleted)
+    markActivationCompleted(source: .calendarCheckin)
     updatePersonProperties()
   }
 

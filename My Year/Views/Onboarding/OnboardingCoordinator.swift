@@ -83,6 +83,7 @@ final class OnboardingCoordinator: ObservableObject {
       session.didCompleteFirstDot = completed
       if completed {
         trackOnboardingAction(.firstDotMarked)
+        analytics.markActivationCompleted(source: .onboardingFirstDot)
       }
     }
 

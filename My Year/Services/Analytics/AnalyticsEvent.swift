@@ -4,6 +4,7 @@ enum AnalyticsEvent: String, CaseIterable {
   case onboardingCompleted = "onboarding_completed"
   case onboardingStepViewed = "onboarding_step_viewed"
   case onboardingActionPerformed = "onboarding_action_performed"
+  case activationCompleted = "activation_completed"
 
   case calendarCreated = "calendar_created"
   case calendarArchived = "calendar_archived"
@@ -78,6 +79,11 @@ enum PaywallErrorCategory: String, CaseIterable {
   case unknown
 }
 
+enum ActivationSource: String, CaseIterable {
+  case onboardingFirstDot = "onboarding_first_dot"
+  case calendarCheckin = "calendar_checkin"
+}
+
 struct PaywallPackageAnalyticsContext {
   let identifier: String
   let type: PaywallPackageType
@@ -112,6 +118,8 @@ enum AnalyticsCatalog {
     "app_version",
     "build_number",
     "app_locale_language",
+    "revenuecat_app_user_id",
+    "apple_ads_adservices_enabled",
     "is_premium",
     "premium_status_known",
     "mood_tracking_enabled",
@@ -130,6 +138,7 @@ enum AnalyticsCatalog {
     "target_calendar_count",
     "calendar_with_reminder_count",
     "has_reminders_enabled",
+    "has_completed_activation",
     "has_completed_first_checkin",
     "has_completed_first_period"
   ]

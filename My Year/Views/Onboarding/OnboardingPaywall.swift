@@ -55,6 +55,7 @@ struct OnboardingPaywall: View {
             ForEach(purchaseModel.packages, id: \.identifier) { package in
               PaywallPlanCard(
                 package: package,
+                comparisonPackage: comparisonPackage(for: package),
                 isSelected: purchaseModel.selectedPackage?.identifier == package.identifier,
                 onTap: { selectPackage(package) }
               )
@@ -148,6 +149,13 @@ struct OnboardingPaywall: View {
       package: package.paywallAnalyticsContext
     )
   }
+
+  private func comparisonPackage(for package: Package) -> Package? {
+    guard package.packageType == .annual else { return nil }
+
+    return purchaseModel.packages.first { $0.packageType == .weekly }
+      ?? purchaseModel.packages.first { $0.packageType == .monthly }
+  }
 }
 
 private struct PaywallHeroContent: View {
@@ -212,6 +220,7 @@ private struct PaywallFeatureRow: View {
 
 struct PaywallPlanCard: View {
   let package: Package
+  let comparisonPackage: Package?
   let isSelected: Bool
   let onTap: () -> Void
 
@@ -227,31 +236,41 @@ struct PaywallPlanCard: View {
               .foregroundStyle(isSelected ? Color.brand : Color.textPrimary)
 
             HStack(spacing: 10) {
-              Text(priceLine)
-                .font(AppFont.sans(16, weight: .semibold))
-                .foregroundStyle(.textPrimary)
+              if let comparisonPriceLine {
+                Text(comparisonPriceLine)
+                  .font(AppFont.sans(15, weight: .semibold))
+                  .foregroundStyle(.textSecondary.opacity(0.55))
+                  .strikethrough(true, color: .textSecondary.opacity(0.55))
 
+                Text(currentPriceLine)
+                  .font(AppFont.sans(16, weight: .bold))
+                  .foregroundStyle(.textPrimary)
+              } else {
+                Text(priceLine)
+                  .font(AppFont.sans(16, weight: .semibold))
+                  .foregroundStyle(.textPrimary)
+              }
+
+              if let badge {
+                Text(badge)
+                  .font(AppFont.sans(14, weight: .bold))
+                  .padding(.horizontal, 4)
+                  .padding(.vertical, 2)
+                  .foregroundStyle(Color.surfaceMuted)
+                  .background(Color.brand)
+              }
             }
-            if let badge {
-              Text(badge)
-                .font(AppFont.sans(14, weight: .bold))
-                .padding(.horizontal, 4)
-                .padding(.vertical, 2)
-                .foregroundStyle(Color.surfaceMuted)
-                .background(Color.brand)
+
+            if let trialLine {
+              Text(trialLine)
+                .font(AppFont.sans(13, weight: .semibold))
+                .foregroundStyle(.textSecondary.opacity(0.8))
+                .lineLimit(1)
+                .minimumScaleFactor(0.85)
             }
           }
 
           Spacer()
-
-          // if isSelected {
-          //   Image(systemName: "checkmark")
-          //     .font(.system(size: 15, weight: .bold))
-          //     .foregroundStyle(Color.brandInverted)
-          //     .frame(width: 28, height: 28)
-          //     .background(Color.brand)
-          //     .clipShape(Circle())
-          // }
         }
 
         if isFeatured {
@@ -280,7 +299,7 @@ struct PaywallPlanCard: View {
     case .annual: return String(localized: "Yearly")
     case .weekly: return String(localized: "Weekly")
     case .monthly: return String(localized: "Monthly")
-    default: return package.storeProduct.localizedTitle.nilIfEmpty ?? "Pro"
+    default: return package.storeProduct.localizedTitle.nilIfEmpty ?? String(localized: "Pro")
     }
   }
 
@@ -290,6 +309,10 @@ struct PaywallPlanCard: View {
     }
 
     return "\(package.localizedPriceString)\(periodSuffix)"
+  }
+
+  private var currentPriceLine: String {
+    "\(package.localizedPriceString)\(periodSuffix)"
   }
 
   private var periodSuffix: String {
@@ -313,7 +336,18 @@ struct PaywallPlanCard: View {
   }
 
   private var badge: String? {
-    package.packageType == .annual ? String(localized: "Save 51%") : nil
+    guard let discountPercentage else { return nil }
+    return "-\(discountPercentage)%"
+  }
+
+  private var comparisonPriceLine: String? {
+    guard let comparisonPackage else { return nil }
+    return annualizedPriceString(for: comparisonPackage).map { "\($0)\(periodSuffix)" }
+  }
+
+  private var trialLine: String? {
+    guard package.packageType == .annual, let trialText else { return nil }
+    return String(localized: "First \(trialText)")
   }
 
   private var footer: String {
@@ -324,6 +358,49 @@ struct PaywallPlanCard: View {
     default: return String(localized: "Unlock every Pro tool")
     }
   }
+
+  private var discountPercentage: Int? {
+    guard
+      let comparisonPackage,
+      let annualizedComparisonPrice = annualizedPrice(for: comparisonPackage)
+    else { return nil }
+
+    let annualPrice = NSDecimalNumber(decimal: package.storeProduct.price)
+    guard annualizedComparisonPrice.compare(annualPrice) == .orderedDescending else { return nil }
+
+    let savings = annualizedComparisonPrice.subtracting(annualPrice)
+    let discount = savings.dividing(by: annualizedComparisonPrice).multiplying(by: 100)
+    return discount.rounding(accordingToBehavior: PaywallPlanCard.discountRoundingBehavior).intValue
+  }
+
+  private func annualizedPrice(for package: Package) -> NSDecimalNumber? {
+    let price = NSDecimalNumber(decimal: package.storeProduct.price)
+
+    switch package.packageType {
+    case .annual:
+      return price
+    case .monthly:
+      return price.multiplying(by: 12)
+    case .weekly:
+      return price.multiplying(by: 52)
+    default:
+      return nil
+    }
+  }
+
+  private func annualizedPriceString(for package: Package) -> String? {
+    guard let price = annualizedPrice(for: package) else { return nil }
+    return package.storeProduct.priceFormatter?.string(from: price)
+  }
+
+  private static let discountRoundingBehavior = NSDecimalNumberHandler(
+    roundingMode: .plain,
+    scale: 0,
+    raiseOnExactness: false,
+    raiseOnOverflow: false,
+    raiseOnUnderflow: false,
+    raiseOnDivideByZero: false
+  )
 }
 
 struct PaywallLoadingCard: View {

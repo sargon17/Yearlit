@@ -443,6 +443,10 @@ struct OnboardingSessionTests {
             events.append((event: .onboardingActionPerformed, properties: ["action": .string(action.rawValue)]))
         }
 
+        func markActivationCompleted(source: ActivationSource) {
+            events.append((event: .activationCompleted, properties: ["activation_source": .string(source.rawValue)]))
+        }
+
         var actions: [OnboardingAction] {
             events.compactMap { event, properties in
                 guard event == .onboardingActionPerformed,

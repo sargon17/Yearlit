@@ -105,10 +105,11 @@ struct AnalyticsTests {
     analytics.markFirstCheckinCompleted()
     analytics.markFirstCheckinCompleted()
 
-    #expect(spy.trackedEvents.map(\.event) == [.firstCheckinCompleted])
+    #expect(spy.trackedEvents.map(\.event) == [.firstCheckinCompleted, .activationCompleted])
     #expect(spy.identifyCalls.isEmpty)
-    #expect(spy.personPropertyCalls.count == 2)
+    #expect(spy.personPropertyCalls.count == 3)
     #expect(spy.personPropertyCalls.last?["has_completed_first_checkin"] == .bool(true))
+    #expect(spy.personPropertyCalls.last?["has_completed_activation"] == .bool(true))
   }
 
   @Test func paywallViewedUsesProvidedVariant() {
@@ -178,6 +179,10 @@ struct AnalyticsTests {
     for shareType in ShareType.allCases {
       #expect(isLowercaseSnakeCase(shareType.rawValue))
     }
+
+    for activationSource in ActivationSource.allCases {
+      #expect(isLowercaseSnakeCase(activationSource.rawValue))
+    }
   }
 
   @Test func docsListPrivacyBoundariesAndCatalogValues() throws {
@@ -208,6 +213,10 @@ struct AnalyticsTests {
     }
 
     for value in ShareType.allCases.map(\.rawValue) {
+      #expect(document.contains("`\(value)`"))
+    }
+
+    for value in ActivationSource.allCases.map(\.rawValue) {
       #expect(document.contains("`\(value)`"))
     }
 

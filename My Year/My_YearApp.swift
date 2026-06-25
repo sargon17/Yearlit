@@ -106,6 +106,7 @@ struct My_YearApp: App {
     Purchases.configure(withAPIKey: AppConfig.revenueCatAPIKey)
     AppStorageMigration.run()
     Analytics.shared.configure()
+    configureAcquisitionAttribution()
     Analytics.shared.flushQueuedWidgetEvents()
     Purchases.shared.getCustomerInfo { info, _ in
       Task { @MainActor in
@@ -223,6 +224,20 @@ struct My_YearApp: App {
     }
 
     onboarding.markAsSeen()
+  }
+
+  private func configureAcquisitionAttribution() {
+    let revenueCatAppUserID = Purchases.shared.appUserID
+    let postHogDistinctID = AnalyticsState.shared.distinctID
+
+    AnalyticsState.shared.updateRevenueCatAppUserID(revenueCatAppUserID)
+    AnalyticsState.shared.markAppleAdsAdServicesEnabled()
+    Purchases.shared.attribution.setAttributes([
+      "posthog_distinct_id": postHogDistinctID,
+      "revenuecat_app_user_id": revenueCatAppUserID
+    ])
+    Purchases.shared.attribution.enableAdServicesAttributionTokenCollection()
+    Analytics.shared.updatePersonProperties()
   }
 
   private func updateTimelinePreferencePresentation() {

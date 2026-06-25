@@ -9,8 +9,11 @@ final class AnalyticsState {
   private let defaults: UserDefaults
   private let installDateKey = "analytics.install_date"
   private let distinctIDKey = "analytics.distinct_id"
+  private let activationCompletedKey = "analytics.has_completed_activation"
   private let firstCheckinCompletedKey = "analytics.has_completed_first_checkin"
   private let firstPeriodCompletedKey = "analytics.has_completed_first_period"
+  private let revenueCatAppUserIDKey = "analytics.revenuecat_app_user_id"
+  private let appleAdsAdServicesEnabledKey = "analytics.apple_ads_adservices_enabled"
 
   private(set) var isPremiumUser = false
   private(set) var premiumStatusKnown = false
@@ -54,6 +57,22 @@ final class AnalyticsState {
     Analytics.shared.updatePersonProperties()
   }
 
+  var hasCompletedActivation: Bool {
+    defaults.bool(forKey: activationCompletedKey)
+  }
+
+  func markActivationCompleted() {
+    defaults.set(true, forKey: activationCompletedKey)
+  }
+
+  func updateRevenueCatAppUserID(_ appUserID: String) {
+    defaults.set(appUserID, forKey: revenueCatAppUserIDKey)
+  }
+
+  func markAppleAdsAdServicesEnabled() {
+    defaults.set(true, forKey: appleAdsAdServicesEnabledKey)
+  }
+
   var hasCompletedFirstCheckin: Bool {
     defaults.bool(forKey: firstCheckinCompletedKey)
   }
@@ -74,13 +93,15 @@ final class AnalyticsState {
     let snapshot = CustomCalendarStore.shared.snapshot
     let activeCalendars = snapshot.activeCalendars
 
-    return [
+    var properties: [String: AnalyticsPropertyValue] = [
       "days_since_install": .int(daysSinceInstall),
       "app_version": .string(
         Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "unknown"),
       "build_number": .string(
         Bundle.main.object(forInfoDictionaryKey: "CFBundleVersion") as? String ?? "unknown"),
       "app_locale_language": .string(Locale.current.language.languageCode?.identifier ?? "unknown"),
+      "revenuecat_app_user_id": .string(defaults.string(forKey: revenueCatAppUserIDKey) ?? "unknown"),
+      "apple_ads_adservices_enabled": .bool(defaults.bool(forKey: appleAdsAdServicesEnabledKey)),
       "is_premium": .bool(isPremiumUser),
       "premium_status_known": .bool(premiumStatusKnown),
       "mood_tracking_enabled": .bool(defaults.bool(forKey: AppStorageKeys.isMoodTrackingEnabled)),
@@ -103,8 +124,11 @@ final class AnalyticsState {
       "target_calendar_count": .int(activeCalendars.filter { $0.trackingType == .multipleDaily }.count),
       "calendar_with_reminder_count": .int(activeCalendars.filter(\.recurringReminderEnabled).count),
       "has_reminders_enabled": .bool(activeCalendars.contains(where: \.recurringReminderEnabled)),
+      "has_completed_activation": .bool(hasCompletedActivation),
       "has_completed_first_checkin": .bool(hasCompletedFirstCheckin),
       "has_completed_first_period": .bool(hasCompletedFirstPeriod)
     ]
+
+    return properties
   }
 }
