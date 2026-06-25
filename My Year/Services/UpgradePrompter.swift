@@ -78,10 +78,18 @@ final class UpgradePrompter: ObservableObject {
     load()
   }
 
-  func recordAndConsiderPrompt(_ event: PositiveEvent) {
+  func record(_: PositiveEvent) {
     state.totalPositiveEventCount += 1
     save()
+  }
+
+  func considerPrompt(for event: PositiveEvent) {
     considerPositiveEventPrompt(for: event)
+  }
+
+  func recordAndConsiderPrompt(_ event: PositiveEvent) {
+    record(event)
+    considerPrompt(for: event)
   }
 
   func considerTimedPrompt() {

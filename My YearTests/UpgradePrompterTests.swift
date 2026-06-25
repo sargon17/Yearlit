@@ -63,6 +63,38 @@ struct UpgradePrompterTests {
     #expect(spy.trackedEvents.last?.properties["result"] == .string("cooldown"))
   }
 
+  @Test func recordedEventsCountEvenWhenPromptConsiderationIsDeferred() throws {
+    let defaults = makeTestDefaults()
+    defer { cleanupTestDefaults(defaults) }
+    let analytics = makeAnalytics(defaults: defaults)
+    let spy = RecordingAnalyticsClient()
+    analytics.replaceClient(spy)
+    let prompter = UpgradePrompter(
+      defaults: defaults,
+      analytics: analytics,
+      isEligibleForPrompt: { true },
+      daysSinceInstall: { 10 },
+      now: { Date(timeIntervalSince1970: 1_000) },
+      random: { 0 }
+    )
+    prompter.rules = .init(
+      minPositiveEvents: 2, cooldownDays: 7, minDaysSinceInstallForTimedPrompt: 3, timedPromptChance: 1)
+
+    prompter.record(.createdCalendar)
+    prompter.considerPrompt(for: .completedCheckIn)
+
+    #expect(prompter.activePrompt == nil)
+    #expect(spy.trackedEvents.last?.properties["result"] == .string("not_enough_positive_events"))
+    #expect(spy.trackedEvents.last?.properties["total_positive_event_count"] == .int(1))
+
+    prompter.record(.completedCheckIn)
+    prompter.considerPrompt(for: .completedCheckIn)
+
+    let context = try #require(prompter.activePrompt)
+    #expect(context.totalPositiveEventCount == 2)
+    #expect(spy.trackedEvents.last?.properties["result"] == .string("presented"))
+  }
+
   @Test func timedPromptUsesInstallAgeAndRandomGate() {
     let defaults = makeTestDefaults()
     defer { cleanupTestDefaults(defaults) }
