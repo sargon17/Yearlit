@@ -30,6 +30,7 @@ enum AnalyticsEvent: String, CaseIterable {
   case widgetQuickAddPerformed = "widget_quick_add_performed"
   case widgetQuickAddOpened = "widget_quick_add_opened"
 
+  case paywallPromptConsidered = "paywall_prompt_considered"
   case paywallViewed = "paywall_viewed"
   case paywallPackageSelected = "paywall_package_selected"
   case paywallPurchaseStarted = "paywall_purchase_started"
@@ -57,6 +58,8 @@ enum PaywallTrigger: String, CaseIterable {
   case statsGate = "stats_gate"
   case notificationGate = "notification_gate"
   case settingsSupport = "settings_support"
+  case automaticPositiveEvent = "automatic_positive_event"
+  case automaticTimed = "automatic_timed"
   case unknown
 }
 

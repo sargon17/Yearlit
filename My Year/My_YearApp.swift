@@ -91,6 +91,7 @@ struct My_YearApp: App {
     config: AppConfig.wishConfiguration
   )
   @StateObject private var reviewPrompter = ReviewPrompter.shared
+  @StateObject private var upgradePrompter = UpgradePrompter.shared
   @Environment(\.scenePhase) private var scenePhase
   @State private var isTimelinePreferenceSheetPresented = false
   @State private var hasTrackedOnboardingStarted = false
@@ -120,6 +121,12 @@ struct My_YearApp: App {
       minEvents: 3,
       cooldownDays: 30,
       oncePerVersion: false
+    )
+    UpgradePrompter.shared.rules = .init(
+      minPositiveEvents: 2,
+      cooldownDays: 7,
+      minDaysSinceInstallForTimedPrompt: 3,
+      timedPromptChance: 0.08
     )
 
     let appearance = UINavigationBarAppearance()
@@ -170,9 +177,13 @@ struct My_YearApp: App {
       .environmentObject(onboarding)
       .environmentObject(featureRequest)
       .environmentObject(reviewPrompter)
-      .fullScreenCover(isPresented: onboardingPresentation, onDismiss: {
-        updateTimelinePreferencePresentation()
-      }) {
+      .environmentObject(upgradePrompter)
+      .fullScreenCover(
+        isPresented: onboardingPresentation,
+        onDismiss: {
+          updateTimelinePreferencePresentation()
+        }
+      ) {
         OnboardingView {
           completeOnboarding()
         }
@@ -186,6 +197,13 @@ struct My_YearApp: App {
       .sheet(item: $reviewPrompter.activePrompt) { context in
         ReviewSatisfactionSheet(prompter: reviewPrompter, context: context)
           .environmentObject(featureRequest)
+      }
+      .sheet(item: $upgradePrompter.activePrompt) { context in
+        PremiumPaywallSheet(
+          displayCloseButton: true,
+          trigger: context.trigger,
+          analyticsProperties: context.analyticsProperties
+        )
       }
       .onAppear {
         updateTimelinePreferencePresentation()
@@ -202,6 +220,9 @@ struct My_YearApp: App {
         guard phase == .active else { return }
         Analytics.shared.flushQueuedWidgetEvents()
         Analytics.shared.track(.appOpened)
+        if onboarding.hasSeenOnboarding, reviewPrompter.activePrompt == nil {
+          upgradePrompter.considerTimedPrompt()
+        }
       }
     }
   }

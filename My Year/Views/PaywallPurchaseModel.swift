@@ -15,10 +15,16 @@ final class PaywallPurchaseModel: ObservableObject {
 
   private let trigger: PaywallTrigger
   private let variant: PaywallVariant
+  private let analyticsProperties: [String: AnalyticsPropertyValue]
 
-  init(trigger: PaywallTrigger, variant: PaywallVariant) {
+  init(
+    trigger: PaywallTrigger,
+    variant: PaywallVariant,
+    analyticsProperties: [String: AnalyticsPropertyValue] = [:]
+  ) {
     self.trigger = trigger
     self.variant = variant
+    self.analyticsProperties = analyticsProperties
   }
 
   var selectedPackage: Package? {
@@ -58,7 +64,8 @@ final class PaywallPurchaseModel: ObservableObject {
       Analytics.shared.trackPaywallPurchaseStarted(
         trigger: trigger,
         variant: variant,
-        package: packageContext
+        package: packageContext,
+        properties: analyticsProperties
       )
 
       do {
@@ -69,13 +76,15 @@ final class PaywallPurchaseModel: ObservableObject {
           Analytics.shared.trackPaywallPurchaseCancelled(
             trigger: trigger,
             variant: variant,
-            package: packageContext
+            package: packageContext,
+            properties: analyticsProperties
           )
         } else {
           Analytics.shared.trackPaywallPurchaseSucceeded(
             trigger: trigger,
             variant: variant,
-            package: packageContext
+            package: packageContext,
+            properties: analyticsProperties
           )
           onSuccess()
         }
@@ -84,14 +93,16 @@ final class PaywallPurchaseModel: ObservableObject {
           Analytics.shared.trackPaywallPurchaseCancelled(
             trigger: trigger,
             variant: variant,
-            package: packageContext
+            package: packageContext,
+            properties: analyticsProperties
           )
         } else {
           Analytics.shared.trackPaywallPurchaseFailed(
             trigger: trigger,
             variant: variant,
             package: packageContext,
-            errorCategory: purchaseErrorCategory(error)
+            errorCategory: purchaseErrorCategory(error),
+            properties: analyticsProperties
           )
           errorMessage = String(localized: "Purchase failed. Please try again.")
         }
@@ -107,20 +118,29 @@ final class PaywallPurchaseModel: ObservableObject {
     Task { @MainActor in
       isPurchasing = true
       errorMessage = nil
-      Analytics.shared.trackPaywallRestoreStarted(trigger: trigger, variant: variant)
+      Analytics.shared.trackPaywallRestoreStarted(
+        trigger: trigger,
+        variant: variant,
+        properties: analyticsProperties
+      )
 
       do {
         let customerInfo = try await Purchases.shared.restorePurchases()
         AnalyticsState.shared.updatePremiumStatus(customerInfo: customerInfo)
 
         if isPremium(customerInfo: customerInfo) {
-          Analytics.shared.trackPaywallRestoreSucceeded(trigger: trigger, variant: variant)
+          Analytics.shared.trackPaywallRestoreSucceeded(
+            trigger: trigger,
+            variant: variant,
+            properties: analyticsProperties
+          )
           onActiveSubscription()
         } else {
           Analytics.shared.trackPaywallRestoreFailed(
             trigger: trigger,
             variant: variant,
-            errorCategory: .restoreFailed
+            errorCategory: .restoreFailed,
+            properties: analyticsProperties
           )
           errorMessage = String(localized: "No active subscription found.")
         }
@@ -128,7 +148,8 @@ final class PaywallPurchaseModel: ObservableObject {
         Analytics.shared.trackPaywallRestoreFailed(
           trigger: trigger,
           variant: variant,
-          errorCategory: restoreErrorCategory(error)
+          errorCategory: restoreErrorCategory(error),
+          properties: analyticsProperties
         )
         errorMessage = String(localized: "Restore failed. Please try again.")
       }

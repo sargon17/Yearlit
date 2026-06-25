@@ -6,8 +6,10 @@ struct OnboardingPaywall: View {
   let isPresentedAsSheet: Bool
   let trigger: PaywallTrigger
   let variant: PaywallVariant
+  let analyticsProperties: [String: AnalyticsPropertyValue]
   let onNext: () -> Void
   @StateObject private var purchaseModel: PaywallPurchaseModel
+  @State private var didTrackClose = false
   @Environment(\.dismiss) private var dismiss
   private let heroTopSpacing: CGFloat = 86
 
@@ -16,6 +18,7 @@ struct OnboardingPaywall: View {
     isPresentedAsSheet: Bool = false,
     trigger: PaywallTrigger = .onboarding,
     variant: PaywallVariant? = nil,
+    analyticsProperties: [String: AnalyticsPropertyValue] = [:],
     onNext: @escaping () -> Void
   ) {
     let resolvedVariant = variant ?? (trigger == .onboarding ? .commitmentProtectionV1 : .default)
@@ -24,9 +27,14 @@ struct OnboardingPaywall: View {
     self.isPresentedAsSheet = isPresentedAsSheet
     self.trigger = trigger
     self.variant = resolvedVariant
+    self.analyticsProperties = analyticsProperties
     self.onNext = onNext
     _purchaseModel = StateObject(
-      wrappedValue: PaywallPurchaseModel(trigger: trigger, variant: resolvedVariant)
+      wrappedValue: PaywallPurchaseModel(
+        trigger: trigger,
+        variant: resolvedVariant,
+        analyticsProperties: analyticsProperties
+      )
     )
   }
   var body: some View {
@@ -107,14 +115,19 @@ struct OnboardingPaywall: View {
       await purchaseModel.loadPackages()
     }
     .onAppear {
-      Analytics.shared.trackPaywallViewed(trigger: trigger, variant: variant)
+      Analytics.shared.trackPaywallViewed(trigger: trigger, variant: variant, properties: analyticsProperties)
+    }
+    .onDisappear {
+      trackCloseIfNeeded()
     }
   }
 
   @ViewBuilder
   private var closeButtonOverlay: some View {
     if showsCloseButton {
-      Button(action: closePaywall) {
+      Button {
+        closePaywall()
+      } label: {
         Image(systemName: "xmark")
           .font(.system(size: 12, weight: .semibold))
           .foregroundColor(.textSecondary.opacity(0.6))
@@ -134,9 +147,15 @@ struct OnboardingPaywall: View {
   }
 
   private func closePaywall() {
-    Analytics.shared.trackPaywallClosed(trigger: trigger, variant: variant)
+    trackCloseIfNeeded()
     onNext()
     dismiss()
+  }
+
+  private func trackCloseIfNeeded() {
+    guard !didTrackClose else { return }
+    didTrackClose = true
+    Analytics.shared.trackPaywallClosed(trigger: trigger, variant: variant, properties: analyticsProperties)
   }
 
   private func selectPackage(_ package: Package) {
@@ -146,7 +165,8 @@ struct OnboardingPaywall: View {
     Analytics.shared.trackPaywallPackageSelected(
       trigger: trigger,
       variant: variant,
-      package: package.paywallAnalyticsContext
+      package: package.paywallAnalyticsContext,
+      properties: analyticsProperties
     )
   }
 

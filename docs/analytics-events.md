@@ -62,7 +62,7 @@ The same non-sensitive state may be set as PostHog person properties.
 
 ## Catalog hardening
 
-Allowed `paywall_trigger` values: `onboarding`, `calendar_limit`, `share_gate`, `stats_gate`, `notification_gate`, `settings_support`, `unknown`.
+Allowed `paywall_trigger` values: `onboarding`, `calendar_limit`, `share_gate`, `stats_gate`, `notification_gate`, `settings_support`, `automatic_positive_event`, `automatic_timed`, `unknown`.
 
 Allowed `paywall_variant` values: `default`, `commitment_protection_v1`.
 
@@ -156,8 +156,9 @@ Owned by #92.
 
 | Event | Notes |
 | --- | --- |
-| `paywall_viewed` | Fires only when the paywall UI actually appears. Include `paywall_trigger` and `paywall_variant`. |
-| `paywall_package_selected` | Fires when the user changes the selected package. Include `paywall_trigger`, `paywall_variant`, `package_identifier`, `package_type`, `has_free_trial`, and `localized_price` when already available from StoreKit/RevenueCat. |
+| `paywall_prompt_considered` | Fires when the automatic upgrade prompter presents the paywall or skips a positive-event prompt. Include `paywall_trigger`, `result`, `paywall_prompt_kind`, and `total_positive_event_count`. Positive-event prompts also include `positive_event`. Results include `presented`, `not_enough_positive_events`, `cooldown`, `already_active`, and `not_eligible`. |
+| `paywall_viewed` | Fires only when the paywall UI actually appears. Include `paywall_trigger` and `paywall_variant`. Automatic prompts also include `paywall_prompt_kind`, `prompt_count`, `total_positive_event_count`, and `positive_event` when relevant. |
+| `paywall_package_selected` | Fires when the user changes the selected package. Include `paywall_trigger`, `paywall_variant`, `package_identifier`, `package_type`, `has_free_trial`, and `localized_price` when already available from StoreKit/RevenueCat. Automatic prompts also include prompt context when relevant. |
 | `paywall_purchase_started` | Fires once per purchase attempt before calling RevenueCat. Include the same package properties as `paywall_package_selected`. |
 | `paywall_purchase_succeeded` | Terminal event for a successful purchase attempt. Include the same package properties as `paywall_package_selected`. |
 | `paywall_purchase_cancelled` | Terminal event for a user-cancelled purchase attempt. Include the same package properties as `paywall_package_selected` plus `is_user_cancelled`. |
@@ -168,7 +169,9 @@ Owned by #92.
 | `paywall_closed` | Fires when the paywall closes. Include `paywall_trigger` and `paywall_variant`. |
 | `share_sheet_viewed` | Fires when a share sheet is opened. Include `share_type`. Do not send stats, names, notes, or share content in v1. |
 
-Allowed `paywall_trigger` values: `onboarding`, `calendar_limit`, `share_gate`, `stats_gate`, `notification_gate`, `settings_support`, `unknown`.
+Allowed `paywall_trigger` values: `onboarding`, `calendar_limit`, `share_gate`, `stats_gate`, `notification_gate`, `settings_support`, `automatic_positive_event`, `automatic_timed`, `unknown`.
+
+Allowed `paywall_prompt_kind` values: `positive_event`, `timed_random`.
 
 Allowed `paywall_variant` values: `default`, `commitment_protection_v1`.
 
@@ -209,6 +212,6 @@ Allowed `timeline_mode` values: `your365`, `calendarYear`, `unknown`.
 - Autocapture
 - Acquisition source/campaign attribution
 - Detailed onboarding step analytics (#87)
-- Custom paywall/deep paywall funnel (#88)
+- Detailed paywall funnel analysis beyond prompt, impression, and lifecycle events
 - Milestone celebration exposure/funnel
 - Mood values
