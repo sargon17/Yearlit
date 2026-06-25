@@ -5,8 +5,9 @@ struct OnboardingPaywall: View {
   let showsCloseButton: Bool
   let isPresentedAsSheet: Bool
   let trigger: PaywallTrigger
+  let variant: PaywallVariant
   let onNext: () -> Void
-  @StateObject private var purchaseModel = PaywallPurchaseModel()
+  @StateObject private var purchaseModel: PaywallPurchaseModel
   @Environment(\.dismiss) private var dismiss
   private let heroTopSpacing: CGFloat = 86
 
@@ -14,12 +15,19 @@ struct OnboardingPaywall: View {
     showsCloseButton: Bool = true,
     isPresentedAsSheet: Bool = false,
     trigger: PaywallTrigger = .onboarding,
+    variant: PaywallVariant? = nil,
     onNext: @escaping () -> Void
   ) {
+    let resolvedVariant = variant ?? (trigger == .onboarding ? .commitmentProtectionV1 : .default)
+
     self.showsCloseButton = showsCloseButton
     self.isPresentedAsSheet = isPresentedAsSheet
     self.trigger = trigger
+    self.variant = resolvedVariant
     self.onNext = onNext
+    _purchaseModel = StateObject(
+      wrappedValue: PaywallPurchaseModel(trigger: trigger, variant: resolvedVariant)
+    )
   }
   var body: some View {
     OnboardingStepContainer(overlayHeight: 0.9, actionsBottomPadding: isPresentedAsSheet ? 4 : 16) {
@@ -48,7 +56,7 @@ struct OnboardingPaywall: View {
               PaywallPlanCard(
                 package: package,
                 isSelected: purchaseModel.selectedPackage?.identifier == package.identifier,
-                onTap: { purchaseModel.selectedPackageID = package.identifier }
+                onTap: { selectPackage(package) }
               )
             }
           }
@@ -98,7 +106,7 @@ struct OnboardingPaywall: View {
       await purchaseModel.loadPackages()
     }
     .onAppear {
-      Analytics.shared.trackPaywallViewed(trigger: trigger)
+      Analytics.shared.trackPaywallViewed(trigger: trigger, variant: variant)
     }
   }
 
@@ -125,31 +133,49 @@ struct OnboardingPaywall: View {
   }
 
   private func closePaywall() {
+    Analytics.shared.trackPaywallClosed(trigger: trigger, variant: variant)
     onNext()
     dismiss()
+  }
+
+  private func selectPackage(_ package: Package) {
+    guard purchaseModel.selectedPackageID != package.identifier else { return }
+
+    purchaseModel.selectedPackageID = package.identifier
+    Analytics.shared.trackPaywallPackageSelected(
+      trigger: trigger,
+      variant: variant,
+      package: package.paywallAnalyticsContext
+    )
   }
 }
 
 private struct PaywallHeroContent: View {
   var body: some View {
     VStack(alignment: .leading) {
-      OnboardingView.Title("Build your year with Pro.", lineLimit: 3)
+      OnboardingView.Title("Protect the year you just started.", lineLimit: 3)
         .frame(maxWidth: .infinity, alignment: .leading)
 
       VStack(alignment: .leading, spacing: 4) {
-        OnboardingView.Caption("Become the kind of person who shows up —")
-        OnboardingView.Caption("every day, all year.")
+        OnboardingView.Caption("Your first habit is ready.")
+        OnboardingView.Caption("Pro helps you keep it visible, track the pattern, and come back tomorrow.")
       }
       .frame(maxWidth: .infinity, alignment: .leading)
 
       VStack(alignment: .leading, spacing: 22) {
         PaywallFeatureRow(
-          title: "Know what's actually working", subtitle: "deeper stats reveal the patterns behind your streaks")
-        PaywallFeatureRow(title: "Keep every promise you make", subtitle: "track unlimited habits, not just a few")
-        PaywallFeatureRow(title: "Stay on track at a glance", subtitle: "widgets keep your dots on your Home Screen")
+          title: "Keep your first habit visible", subtitle: "widgets put your promise where you will see it")
         PaywallFeatureRow(
-          title: "Back the maker behind it",
-          subtitle: "Your upgrade helps me keep building Yearlit."
+          title: "See the pattern behind your streak",
+          subtitle: "stats show what is working before motivation fades"
+        )
+        PaywallFeatureRow(
+          title: "Track every promise",
+          subtitle: "unlimited calendars for every habit that matters"
+        )
+        PaywallFeatureRow(
+          title: "Start free, stay in control",
+          subtitle: "try Pro and cancel anytime from your App Store subscription settings"
         )
       }
       .padding(.top, 34)

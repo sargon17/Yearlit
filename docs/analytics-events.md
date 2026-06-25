@@ -61,6 +61,12 @@ The same non-sensitive state may be set as PostHog person properties.
 
 Allowed `paywall_trigger` values: `onboarding`, `calendar_limit`, `share_gate`, `stats_gate`, `notification_gate`, `settings_support`, `unknown`.
 
+Allowed `paywall_variant` values: `default`, `commitment_protection_v1`.
+
+Allowed `package_type` values: `annual`, `monthly`, `weekly`, `unknown`.
+
+Allowed paywall `error_category` values: `network`, `purchase_failed`, `restore_failed`, `unknown`.
+
 Allowed `share_type` values: `calendar`, `recap`, `unknown`.
 
 Forbidden sensitive content categories:
@@ -144,10 +150,25 @@ Owned by #92.
 
 | Event | Notes |
 | --- | --- |
-| `paywall_viewed` | Fires only when the paywall UI actually appears. Include `paywall_trigger` and `paywall_variant: default`. |
+| `paywall_viewed` | Fires only when the paywall UI actually appears. Include `paywall_trigger` and `paywall_variant`. |
+| `paywall_package_selected` | Fires when the user changes the selected package. Include `paywall_trigger`, `paywall_variant`, `package_identifier`, `package_type`, `has_free_trial`, and `localized_price` when already available from StoreKit/RevenueCat. |
+| `paywall_purchase_started` | Fires once per purchase attempt before calling RevenueCat. Include the same package properties as `paywall_package_selected`. |
+| `paywall_purchase_succeeded` | Terminal event for a successful purchase attempt. Include the same package properties as `paywall_package_selected`. |
+| `paywall_purchase_cancelled` | Terminal event for a user-cancelled purchase attempt. Include the same package properties as `paywall_package_selected` plus `is_user_cancelled`. |
+| `paywall_purchase_failed` | Terminal event for a failed purchase attempt. Include the same package properties as `paywall_package_selected` plus coarse `error_category`. Never include raw error strings. |
+| `paywall_restore_started` | Fires once per restore attempt before calling RevenueCat. Include `paywall_trigger` and `paywall_variant`. |
+| `paywall_restore_succeeded` | Terminal event when restore finds active premium access. Include `paywall_trigger` and `paywall_variant`. |
+| `paywall_restore_failed` | Terminal event when restore fails or finds no active subscription. Include `paywall_trigger`, `paywall_variant`, and coarse `error_category`. Never include raw error strings. |
+| `paywall_closed` | Fires when the paywall closes. Include `paywall_trigger` and `paywall_variant`. |
 | `share_sheet_viewed` | Fires when a share sheet is opened. Include `share_type`. Do not send stats, names, notes, or share content in v1. |
 
 Allowed `paywall_trigger` values: `onboarding`, `calendar_limit`, `share_gate`, `stats_gate`, `notification_gate`, `settings_support`, `unknown`.
+
+Allowed `paywall_variant` values: `default`, `commitment_protection_v1`.
+
+Allowed `package_type` values: `annual`, `monthly`, `weekly`, `unknown`.
+
+Allowed paywall `error_category` values: `network`, `purchase_failed`, `restore_failed`, `unknown`.
 
 Allowed `share_type` values: `calendar`, `recap`, `unknown`.
 
@@ -180,7 +201,6 @@ Allowed `timeline_mode` values: `your365`, `calendarYear`, `unknown`.
 
 - Session replay
 - Autocapture
-- Purchase/subscription lifecycle events in PostHog
 - Acquisition source/campaign attribution
 - Detailed onboarding step analytics (#87)
 - Custom paywall/deep paywall funnel (#88)

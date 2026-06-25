@@ -13,6 +13,14 @@ final class PaywallPurchaseModel: ObservableObject {
   @Published var isPurchasing = false
   @Published var errorMessage: String?
 
+  private let trigger: PaywallTrigger
+  private let variant: PaywallVariant
+
+  init(trigger: PaywallTrigger, variant: PaywallVariant) {
+    self.trigger = trigger
+    self.variant = variant
+  }
+
   var selectedPackage: Package? {
     packages.first { $0.identifier == selectedPackageID } ?? preferredPackage(in: packages)
   }
@@ -42,20 +50,51 @@ final class PaywallPurchaseModel: ObservableObject {
 
   func purchaseSelectedPackage(onSuccess: @escaping () -> Void) {
     guard let selectedPackage, !isPurchasing else { return }
+    let packageContext = selectedPackage.paywallAnalyticsContext
 
     Task { @MainActor in
       isPurchasing = true
       errorMessage = nil
+      Analytics.shared.trackPaywallPurchaseStarted(
+        trigger: trigger,
+        variant: variant,
+        package: packageContext
+      )
 
       do {
         let result = try await Purchases.shared.purchase(package: selectedPackage)
         AnalyticsState.shared.updatePremiumStatus(customerInfo: result.customerInfo)
 
-        if !result.userCancelled {
+        if result.userCancelled {
+          Analytics.shared.trackPaywallPurchaseCancelled(
+            trigger: trigger,
+            variant: variant,
+            package: packageContext
+          )
+        } else {
+          Analytics.shared.trackPaywallPurchaseSucceeded(
+            trigger: trigger,
+            variant: variant,
+            package: packageContext
+          )
           onSuccess()
         }
       } catch {
-        errorMessage = String(localized: "Purchase failed. Please try again.")
+        if isPurchaseCancelled(error) {
+          Analytics.shared.trackPaywallPurchaseCancelled(
+            trigger: trigger,
+            variant: variant,
+            package: packageContext
+          )
+        } else {
+          Analytics.shared.trackPaywallPurchaseFailed(
+            trigger: trigger,
+            variant: variant,
+            package: packageContext,
+            errorCategory: purchaseErrorCategory(error)
+          )
+          errorMessage = String(localized: "Purchase failed. Please try again.")
+        }
       }
 
       isPurchasing = false
@@ -68,17 +107,29 @@ final class PaywallPurchaseModel: ObservableObject {
     Task { @MainActor in
       isPurchasing = true
       errorMessage = nil
+      Analytics.shared.trackPaywallRestoreStarted(trigger: trigger, variant: variant)
 
       do {
         let customerInfo = try await Purchases.shared.restorePurchases()
         AnalyticsState.shared.updatePremiumStatus(customerInfo: customerInfo)
 
         if isPremium(customerInfo: customerInfo) {
+          Analytics.shared.trackPaywallRestoreSucceeded(trigger: trigger, variant: variant)
           onActiveSubscription()
         } else {
+          Analytics.shared.trackPaywallRestoreFailed(
+            trigger: trigger,
+            variant: variant,
+            errorCategory: .restoreFailed
+          )
           errorMessage = String(localized: "No active subscription found.")
         }
       } catch {
+        Analytics.shared.trackPaywallRestoreFailed(
+          trigger: trigger,
+          variant: variant,
+          errorCategory: restoreErrorCategory(error)
+        )
         errorMessage = String(localized: "Restore failed. Please try again.")
       }
 
@@ -121,5 +172,47 @@ final class PaywallPurchaseModel: ObservableObject {
 
   private func hasFreeTrial(_ package: Package) -> Bool {
     package.storeProduct.introductoryDiscount?.paymentMode == .freeTrial
+  }
+
+  private func purchaseErrorCategory(_ error: Error) -> PaywallErrorCategory {
+    return networkErrorCategory(error) ?? .purchaseFailed
+  }
+
+  private func isPurchaseCancelled(_ error: Error) -> Bool {
+    ErrorCode(_bridgedNSError: error as NSError) == .purchaseCancelledError
+  }
+
+  private func restoreErrorCategory(_ error: Error) -> PaywallErrorCategory {
+    networkErrorCategory(error) ?? .restoreFailed
+  }
+
+  private func networkErrorCategory(_ error: Error) -> PaywallErrorCategory? {
+    let revenueCatCode = ErrorCode(_bridgedNSError: error as NSError)
+    if revenueCatCode == .networkError || revenueCatCode == .offlineConnectionError {
+      return .network
+    }
+
+    let nsError = error as NSError
+    return nsError.domain == NSURLErrorDomain ? .network : nil
+  }
+}
+
+extension Package {
+  var paywallAnalyticsContext: PaywallPackageAnalyticsContext {
+    PaywallPackageAnalyticsContext(
+      identifier: identifier,
+      type: paywallAnalyticsPackageType,
+      hasFreeTrial: storeProduct.introductoryDiscount?.paymentMode == .freeTrial,
+      localizedPrice: localizedPriceString
+    )
+  }
+
+  private var paywallAnalyticsPackageType: PaywallPackageType {
+    switch packageType {
+    case .annual: return .annual
+    case .monthly: return .monthly
+    case .weekly: return .weekly
+    default: return .unknown
+    }
   }
 }

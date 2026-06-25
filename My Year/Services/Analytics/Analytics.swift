@@ -43,14 +43,87 @@ final class Analytics {
     client.track(event, properties: Self.sanitizedProperties(merged))
   }
 
-  func trackPaywallViewed(trigger: PaywallTrigger) {
+  func trackPaywallViewed(trigger: PaywallTrigger, variant: PaywallVariant = .default) {
     track(
       .paywallViewed,
-      properties: [
-        "paywall_trigger": .string(trigger.rawValue),
-        "paywall_variant": .string("default")
-      ]
+      properties: paywallProperties(trigger: trigger, variant: variant)
     )
+  }
+
+  func trackPaywallPackageSelected(
+    trigger: PaywallTrigger,
+    variant: PaywallVariant,
+    package: PaywallPackageAnalyticsContext
+  ) {
+    track(
+      .paywallPackageSelected,
+      properties: paywallPackageProperties(trigger: trigger, variant: variant, package: package)
+    )
+  }
+
+  func trackPaywallPurchaseStarted(
+    trigger: PaywallTrigger,
+    variant: PaywallVariant,
+    package: PaywallPackageAnalyticsContext
+  ) {
+    track(
+      .paywallPurchaseStarted,
+      properties: paywallPackageProperties(trigger: trigger, variant: variant, package: package)
+    )
+  }
+
+  func trackPaywallPurchaseSucceeded(
+    trigger: PaywallTrigger,
+    variant: PaywallVariant,
+    package: PaywallPackageAnalyticsContext
+  ) {
+    track(
+      .paywallPurchaseSucceeded,
+      properties: paywallPackageProperties(trigger: trigger, variant: variant, package: package)
+    )
+  }
+
+  func trackPaywallPurchaseCancelled(
+    trigger: PaywallTrigger,
+    variant: PaywallVariant,
+    package: PaywallPackageAnalyticsContext
+  ) {
+    var properties = paywallPackageProperties(trigger: trigger, variant: variant, package: package)
+    properties["is_user_cancelled"] = .bool(true)
+    track(.paywallPurchaseCancelled, properties: properties)
+  }
+
+  func trackPaywallPurchaseFailed(
+    trigger: PaywallTrigger,
+    variant: PaywallVariant,
+    package: PaywallPackageAnalyticsContext,
+    errorCategory: PaywallErrorCategory
+  ) {
+    var properties = paywallPackageProperties(trigger: trigger, variant: variant, package: package)
+    properties["error_category"] = .string(errorCategory.rawValue)
+    track(.paywallPurchaseFailed, properties: properties)
+  }
+
+  func trackPaywallRestoreStarted(trigger: PaywallTrigger, variant: PaywallVariant) {
+    track(.paywallRestoreStarted, properties: paywallProperties(trigger: trigger, variant: variant))
+  }
+
+  func trackPaywallRestoreSucceeded(trigger: PaywallTrigger, variant: PaywallVariant) {
+    track(.paywallRestoreSucceeded, properties: paywallProperties(trigger: trigger, variant: variant))
+  }
+
+  func trackPaywallRestoreFailed(
+    trigger: PaywallTrigger,
+    variant: PaywallVariant,
+    errorCategory: PaywallErrorCategory
+  ) {
+    var properties = paywallProperties(trigger: trigger, variant: variant)
+    properties["error_category"] = .string(errorCategory.rawValue)
+    track(.paywallRestoreFailed, properties: properties)
+  }
+
+  func trackPaywallClosed(trigger: PaywallTrigger, variant: PaywallVariant) {
+    track(.paywallClosed, properties: paywallProperties(trigger: trigger, variant: variant))
   }
 
   func trackShareSheetViewed(type: ShareType) {
@@ -129,18 +202,43 @@ final class Analytics {
     _ value: WidgetAnalyticsPropertyValue
   ) -> AnalyticsPropertyValue {
     switch value {
-    case let .string(value):
+    case .string(let value):
       return .string(value)
-    case let .int(value):
+    case .int(let value):
       return .int(value)
-    case let .double(value):
+    case .double(let value):
       return .double(value)
-    case let .bool(value):
+    case .bool(let value):
       return .bool(value)
     }
   }
 
   private static let widgetEventTimestampFormatter = ISO8601DateFormatter()
+
+  private func paywallProperties(
+    trigger: PaywallTrigger,
+    variant: PaywallVariant
+  ) -> [String: AnalyticsPropertyValue] {
+    [
+      "paywall_trigger": .string(trigger.rawValue),
+      "paywall_variant": .string(variant.rawValue)
+    ]
+  }
+
+  private func paywallPackageProperties(
+    trigger: PaywallTrigger,
+    variant: PaywallVariant,
+    package: PaywallPackageAnalyticsContext
+  ) -> [String: AnalyticsPropertyValue] {
+    var properties = paywallProperties(trigger: trigger, variant: variant)
+    properties["package_identifier"] = .string(package.identifier)
+    properties["package_type"] = .string(package.type.rawValue)
+    properties["has_free_trial"] = .bool(package.hasFreeTrial)
+    if let localizedPrice = package.localizedPrice {
+      properties["localized_price"] = .string(localizedPrice)
+    }
+    return properties
+  }
 
   private static func sanitizedProperties(
     _ properties: [String: AnalyticsPropertyValue]
@@ -149,9 +247,8 @@ final class Analytics {
     let sensitiveKeys = Set(properties.keys).intersection(forbiddenKeys)
 
     if !sensitiveKeys.isEmpty {
-      assertionFailure(
-        "Analytics properties include forbidden sensitive keys: \(sensitiveKeys.sorted().joined(separator: ", "))"
-      )
+      let keys = sensitiveKeys.sorted().joined(separator: ", ")
+      assertionFailure("Analytics properties include forbidden sensitive keys: \(keys)")
       return properties.filter { !forbiddenKeys.contains($0.key) }
     }
 

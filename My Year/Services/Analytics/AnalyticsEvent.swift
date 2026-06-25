@@ -30,6 +30,15 @@ enum AnalyticsEvent: String, CaseIterable {
   case widgetQuickAddOpened = "widget_quick_add_opened"
 
   case paywallViewed = "paywall_viewed"
+  case paywallPackageSelected = "paywall_package_selected"
+  case paywallPurchaseStarted = "paywall_purchase_started"
+  case paywallPurchaseSucceeded = "paywall_purchase_succeeded"
+  case paywallPurchaseCancelled = "paywall_purchase_cancelled"
+  case paywallPurchaseFailed = "paywall_purchase_failed"
+  case paywallRestoreStarted = "paywall_restore_started"
+  case paywallRestoreSucceeded = "paywall_restore_succeeded"
+  case paywallRestoreFailed = "paywall_restore_failed"
+  case paywallClosed = "paywall_closed"
   case shareSheetViewed = "share_sheet_viewed"
 
   case reviewSatisfactionPromptViewed = "review_satisfaction_prompt_viewed"
@@ -48,6 +57,32 @@ enum PaywallTrigger: String, CaseIterable {
   case notificationGate = "notification_gate"
   case settingsSupport = "settings_support"
   case unknown
+}
+
+enum PaywallVariant: String, CaseIterable {
+  case `default`
+  case commitmentProtectionV1 = "commitment_protection_v1"
+}
+
+enum PaywallPackageType: String, CaseIterable {
+  case annual
+  case monthly
+  case weekly
+  case unknown
+}
+
+enum PaywallErrorCategory: String, CaseIterable {
+  case network
+  case purchaseFailed = "purchase_failed"
+  case restoreFailed = "restore_failed"
+  case unknown
+}
+
+struct PaywallPackageAnalyticsContext {
+  let identifier: String
+  let type: PaywallPackageType
+  let hasFreeTrial: Bool
+  let localizedPrice: String?
 }
 
 enum ShareType: String, CaseIterable {

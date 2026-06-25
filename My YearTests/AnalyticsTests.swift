@@ -1,7 +1,8 @@
 import Foundation
 import SharedModels
-@testable import My_Year
 import Testing
+
+@testable import My_Year
 
 @MainActor
 struct AnalyticsTests {
@@ -43,7 +44,7 @@ struct AnalyticsTests {
     #expect(spy.trackedEvents.count == 1)
     #expect(spy.trackedEvents.first?.event == .widgetOpenedApp)
     let timestamp = try #require(spy.trackedEvents.first?.properties["widget_event_timestamp"])
-    guard case let .string(value) = timestamp else {
+    guard case .string(let value) = timestamp else {
       Issue.record("Expected widget_event_timestamp to be a string")
       return
     }
@@ -56,7 +57,9 @@ struct AnalyticsTests {
 
     let standardDefaults = UserDefaults.standard
     let originalMoodTracking = standardDefaults.object(forKey: AppStorageKeys.isMoodTrackingEnabled)
-    defer { restore(originalMoodTracking, forKey: AppStorageKeys.isMoodTrackingEnabled, in: standardDefaults) }
+    defer {
+      restore(originalMoodTracking, forKey: AppStorageKeys.isMoodTrackingEnabled, in: standardDefaults)
+    }
 
     standardDefaults.set(false, forKey: AppStorageKeys.isMoodTrackingEnabled)
     defaults.set(true, forKey: AppStorageKeys.isMoodTrackingEnabled)
@@ -108,6 +111,49 @@ struct AnalyticsTests {
     #expect(spy.personPropertyCalls.last?["has_completed_first_checkin"] == .bool(true))
   }
 
+  @Test func paywallViewedUsesProvidedVariant() {
+    let analytics = makeAnalytics()
+    let spy = SpyAnalyticsClient()
+    analytics.replaceClient(spy)
+
+    analytics.trackPaywallViewed(trigger: .onboarding, variant: .commitmentProtectionV1)
+
+    #expect(spy.trackedEvents.first?.event == .paywallViewed)
+    #expect(spy.trackedEvents.first?.properties["paywall_trigger"] == .string("onboarding"))
+    #expect(spy.trackedEvents.first?.properties["paywall_variant"] == .string("commitment_protection_v1"))
+  }
+
+  @Test func paywallPurchaseEventsUseCoarseSafePackageProperties() {
+    let analytics = makeAnalytics()
+    let spy = SpyAnalyticsClient()
+    analytics.replaceClient(spy)
+    let package = PaywallPackageAnalyticsContext(
+      identifier: "$rc_annual",
+      type: .annual,
+      hasFreeTrial: true,
+      localizedPrice: "$19.99"
+    )
+
+    analytics.trackPaywallPurchaseStarted(
+      trigger: .onboarding,
+      variant: .commitmentProtectionV1,
+      package: package
+    )
+    analytics.trackPaywallPurchaseFailed(
+      trigger: .onboarding,
+      variant: .commitmentProtectionV1,
+      package: package,
+      errorCategory: .purchaseFailed
+    )
+
+    #expect(spy.trackedEvents.map(\.event) == [.paywallPurchaseStarted, .paywallPurchaseFailed])
+    #expect(spy.trackedEvents.first?.properties["package_identifier"] == .string("$rc_annual"))
+    #expect(spy.trackedEvents.first?.properties["package_type"] == .string("annual"))
+    #expect(spy.trackedEvents.first?.properties["has_free_trial"] == .bool(true))
+    #expect(spy.trackedEvents.first?.properties["localized_price"] == .string("$19.99"))
+    #expect(spy.trackedEvents.last?.properties["error_category"] == .string("purchase_failed"))
+  }
+
   @Test func eventAndCatalogValuesUseLowercaseSnakeCase() {
     for event in AnalyticsEvent.allCases {
       #expect(isLowercaseSnakeCase(event.rawValue))
@@ -115,6 +161,18 @@ struct AnalyticsTests {
 
     for trigger in PaywallTrigger.allCases {
       #expect(isLowercaseSnakeCase(trigger.rawValue))
+    }
+
+    for variant in PaywallVariant.allCases {
+      #expect(isLowercaseSnakeCase(variant.rawValue))
+    }
+
+    for packageType in PaywallPackageType.allCases {
+      #expect(isLowercaseSnakeCase(packageType.rawValue))
+    }
+
+    for errorCategory in PaywallErrorCategory.allCases {
+      #expect(isLowercaseSnakeCase(errorCategory.rawValue))
     }
 
     for shareType in ShareType.allCases {
@@ -134,6 +192,18 @@ struct AnalyticsTests {
     }
 
     for value in PaywallTrigger.allCases.map(\.rawValue) {
+      #expect(document.contains("`\(value)`"))
+    }
+
+    for value in PaywallVariant.allCases.map(\.rawValue) {
+      #expect(document.contains("`\(value)`"))
+    }
+
+    for value in PaywallPackageType.allCases.map(\.rawValue) {
+      #expect(document.contains("`\(value)`"))
+    }
+
+    for value in PaywallErrorCategory.allCases.map(\.rawValue) {
       #expect(document.contains("`\(value)`"))
     }
 
@@ -199,7 +269,8 @@ struct AnalyticsTests {
 
   private static let analyticsEventsDocPath: String = {
     let fileURL = URL(fileURLWithPath: #filePath)
-    let repoRoot = fileURL
+    let repoRoot =
+      fileURL
       .deletingLastPathComponent()
       .deletingLastPathComponent()
     return repoRoot.appendingPathComponent("docs/analytics-events.md").path
