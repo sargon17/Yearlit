@@ -5,8 +5,10 @@ struct OnboardingPaywall: View {
   let showsCloseButton: Bool
   let isPresentedAsSheet: Bool
   let trigger: PaywallTrigger
+  let analyticsProperties: [String: AnalyticsPropertyValue]
   let onNext: () -> Void
   @StateObject private var purchaseModel = PaywallPurchaseModel()
+  @State private var didTrackTerminalAction = false
   @Environment(\.dismiss) private var dismiss
   private let heroTopSpacing: CGFloat = 86
 
@@ -14,11 +16,13 @@ struct OnboardingPaywall: View {
     showsCloseButton: Bool = true,
     isPresentedAsSheet: Bool = false,
     trigger: PaywallTrigger = .onboarding,
+    analyticsProperties: [String: AnalyticsPropertyValue] = [:],
     onNext: @escaping () -> Void
   ) {
     self.showsCloseButton = showsCloseButton
     self.isPresentedAsSheet = isPresentedAsSheet
     self.trigger = trigger
+    self.analyticsProperties = analyticsProperties
     self.onNext = onNext
   }
   var body: some View {
@@ -62,7 +66,18 @@ struct OnboardingPaywall: View {
         }
 
         Button {
-          purchaseModel.purchaseSelectedPackage(onSuccess: closePaywall)
+          Analytics.shared.trackPaywallAction(.primaryTapped, trigger: trigger, properties: analyticsProperties)
+          purchaseModel.purchaseSelectedPackage(
+            onSuccess: {
+              closePaywall(action: .purchaseCompleted)
+            },
+            onCancel: {
+              Analytics.shared.trackPaywallAction(.purchaseCancelled, trigger: trigger, properties: analyticsProperties)
+            },
+            onFailure: {
+              Analytics.shared.trackPaywallAction(.purchaseFailed, trigger: trigger, properties: analyticsProperties)
+            }
+          )
         } label: {
           HStack(spacing: 8) {
             if purchaseModel.isPurchasing {
@@ -86,7 +101,15 @@ struct OnboardingPaywall: View {
         .sameLevelBorder(radius: 4, color: .brand)
 
         PaywallFooterLinks {
-          purchaseModel.restorePurchases(onActiveSubscription: closePaywall)
+          Analytics.shared.trackPaywallAction(.restoreTapped, trigger: trigger, properties: analyticsProperties)
+          purchaseModel.restorePurchases(
+            onActiveSubscription: {
+              closePaywall(action: .restoreCompleted)
+            },
+            onFailure: {
+              Analytics.shared.trackPaywallAction(.restoreFailed, trigger: trigger, properties: analyticsProperties)
+            }
+          )
         }
       }
       .padding(.top, 4)
@@ -98,14 +121,21 @@ struct OnboardingPaywall: View {
       await purchaseModel.loadPackages()
     }
     .onAppear {
-      Analytics.shared.trackPaywallViewed(trigger: trigger)
+      Analytics.shared.trackPaywallViewed(trigger: trigger, properties: analyticsProperties)
+    }
+    .onDisappear {
+      guard !didTrackTerminalAction else { return }
+      didTrackTerminalAction = true
+      Analytics.shared.trackPaywallAction(.dismissed, trigger: trigger, properties: analyticsProperties)
     }
   }
 
   @ViewBuilder
   private var closeButtonOverlay: some View {
     if showsCloseButton {
-      Button(action: closePaywall) {
+      Button {
+        closePaywall(action: .dismissed)
+      } label: {
         Image(systemName: "xmark")
           .font(.system(size: 15, weight: .semibold))
           .foregroundColor(.textSecondary)
@@ -125,7 +155,9 @@ struct OnboardingPaywall: View {
     purchaseModel.primaryButtonTitle
   }
 
-  private func closePaywall() {
+  private func closePaywall(action: PaywallAction) {
+    didTrackTerminalAction = true
+    Analytics.shared.trackPaywallAction(action, trigger: trigger, properties: analyticsProperties)
     onNext()
     dismiss()
   }

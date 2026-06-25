@@ -59,7 +59,7 @@ The same non-sensitive state may be set as PostHog person properties.
 
 ## Catalog hardening
 
-Allowed `paywall_trigger` values: `onboarding`, `calendar_limit`, `share_gate`, `stats_gate`, `notification_gate`, `settings_support`, `unknown`.
+Allowed `paywall_trigger` values: `onboarding`, `calendar_limit`, `share_gate`, `stats_gate`, `notification_gate`, `settings_support`, `automatic_positive_event`, `automatic_timed`, `unknown`.
 
 Allowed `share_type` values: `calendar`, `recap`, `unknown`.
 
@@ -144,10 +144,16 @@ Owned by #92.
 
 | Event | Notes |
 | --- | --- |
+| `paywall_prompt_considered` | Fires when the automatic upgrade prompter presents the paywall or skips a positive-event prompt. Include `paywall_trigger`, `result`, `paywall_prompt_kind`, and `total_positive_event_count`. Positive-event prompts also include `positive_event`. Results include `presented`, `not_enough_positive_events`, `cooldown`, `already_active`, and `not_eligible`. |
 | `paywall_viewed` | Fires only when the paywall UI actually appears. Include `paywall_trigger` and `paywall_variant: default`. |
+| `paywall_action_performed` | Fires for user actions inside the paywall. Include `paywall_trigger` and `action`. Automatic prompts also include `paywall_prompt_kind`, `prompt_count`, `total_positive_event_count`, and `positive_event` when relevant. |
 | `share_sheet_viewed` | Fires when a share sheet is opened. Include `share_type`. Do not send stats, names, notes, or share content in v1. |
 
-Allowed `paywall_trigger` values: `onboarding`, `calendar_limit`, `share_gate`, `stats_gate`, `notification_gate`, `settings_support`, `unknown`.
+Allowed `paywall_trigger` values: `onboarding`, `calendar_limit`, `share_gate`, `stats_gate`, `notification_gate`, `settings_support`, `automatic_positive_event`, `automatic_timed`, `unknown`.
+
+Allowed `action` values for `paywall_action_performed`: `dismissed`, `primary_tapped`, `purchase_completed`, `purchase_cancelled`, `purchase_failed`, `restore_tapped`, `restore_completed`, `restore_failed`.
+
+Allowed `paywall_prompt_kind` values: `positive_event`, `timed_random`.
 
 Allowed `share_type` values: `calendar`, `recap`, `unknown`.
 
@@ -183,6 +189,6 @@ Allowed `timeline_mode` values: `your365`, `calendarYear`, `unknown`.
 - Purchase/subscription lifecycle events in PostHog
 - Acquisition source/campaign attribution
 - Detailed onboarding step analytics (#87)
-- Custom paywall/deep paywall funnel (#88)
+- Detailed paywall funnel analysis beyond prompt, impression, and action events
 - Milestone celebration exposure/funnel
 - Mood values

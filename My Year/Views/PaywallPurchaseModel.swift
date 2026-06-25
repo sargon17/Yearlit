@@ -40,7 +40,11 @@ final class PaywallPurchaseModel: ObservableObject {
     isLoading = false
   }
 
-  func purchaseSelectedPackage(onSuccess: @escaping () -> Void) {
+  func purchaseSelectedPackage(
+    onSuccess: @escaping () -> Void,
+    onCancel: @escaping () -> Void,
+    onFailure: @escaping () -> Void
+  ) {
     guard let selectedPackage, !isPurchasing else { return }
 
     Task { @MainActor in
@@ -51,18 +55,24 @@ final class PaywallPurchaseModel: ObservableObject {
         let result = try await Purchases.shared.purchase(package: selectedPackage)
         AnalyticsState.shared.updatePremiumStatus(customerInfo: result.customerInfo)
 
-        if !result.userCancelled {
+        if result.userCancelled {
+          onCancel()
+        } else {
           onSuccess()
         }
       } catch {
         errorMessage = String(localized: "Purchase failed. Please try again.")
+        onFailure()
       }
 
       isPurchasing = false
     }
   }
 
-  func restorePurchases(onActiveSubscription: @escaping () -> Void) {
+  func restorePurchases(
+    onActiveSubscription: @escaping () -> Void,
+    onFailure: @escaping () -> Void
+  ) {
     guard !isPurchasing else { return }
 
     Task { @MainActor in
@@ -77,9 +87,11 @@ final class PaywallPurchaseModel: ObservableObject {
           onActiveSubscription()
         } else {
           errorMessage = String(localized: "No active subscription found.")
+          onFailure()
         }
       } catch {
         errorMessage = String(localized: "Restore failed. Please try again.")
+        onFailure()
       }
 
       isPurchasing = false

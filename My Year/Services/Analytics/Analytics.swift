@@ -43,13 +43,44 @@ final class Analytics {
     client.track(event, properties: Self.sanitizedProperties(merged))
   }
 
-  func trackPaywallViewed(trigger: PaywallTrigger) {
+  func trackPaywallPromptConsidered(
+    trigger: PaywallTrigger,
+    result: String,
+    properties: [String: AnalyticsPropertyValue] = [:]
+  ) {
+    track(
+      .paywallPromptConsidered,
+      properties: properties.merging([
+        "paywall_trigger": .string(trigger.rawValue),
+        "result": .string(result)
+      ]) { _, new in new }
+    )
+  }
+
+  func trackPaywallViewed(
+    trigger: PaywallTrigger,
+    properties: [String: AnalyticsPropertyValue] = [:]
+  ) {
     track(
       .paywallViewed,
-      properties: [
+      properties: properties.merging([
         "paywall_trigger": .string(trigger.rawValue),
         "paywall_variant": .string("default")
-      ]
+      ]) { _, new in new }
+    )
+  }
+
+  func trackPaywallAction(
+    _ action: PaywallAction,
+    trigger: PaywallTrigger,
+    properties: [String: AnalyticsPropertyValue] = [:]
+  ) {
+    track(
+      .paywallActionPerformed,
+      properties: properties.merging([
+        "paywall_trigger": .string(trigger.rawValue),
+        "action": .string(action.rawValue)
+      ]) { _, new in new }
     )
   }
 

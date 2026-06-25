@@ -29,7 +29,9 @@ enum AnalyticsEvent: String, CaseIterable {
   case widgetQuickAddPerformed = "widget_quick_add_performed"
   case widgetQuickAddOpened = "widget_quick_add_opened"
 
+  case paywallPromptConsidered = "paywall_prompt_considered"
   case paywallViewed = "paywall_viewed"
+  case paywallActionPerformed = "paywall_action_performed"
   case shareSheetViewed = "share_sheet_viewed"
 
   case reviewSatisfactionPromptViewed = "review_satisfaction_prompt_viewed"
@@ -47,7 +49,20 @@ enum PaywallTrigger: String, CaseIterable {
   case statsGate = "stats_gate"
   case notificationGate = "notification_gate"
   case settingsSupport = "settings_support"
+  case automaticPositiveEvent = "automatic_positive_event"
+  case automaticTimed = "automatic_timed"
   case unknown
+}
+
+enum PaywallAction: String, CaseIterable {
+  case dismissed
+  case primaryTapped = "primary_tapped"
+  case purchaseCompleted = "purchase_completed"
+  case purchaseCancelled = "purchase_cancelled"
+  case purchaseFailed = "purchase_failed"
+  case restoreTapped = "restore_tapped"
+  case restoreCompleted = "restore_completed"
+  case restoreFailed = "restore_failed"
 }
 
 enum ShareType: String, CaseIterable {

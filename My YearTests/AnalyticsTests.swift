@@ -117,6 +117,10 @@ struct AnalyticsTests {
       #expect(isLowercaseSnakeCase(trigger.rawValue))
     }
 
+    for action in PaywallAction.allCases {
+      #expect(isLowercaseSnakeCase(action.rawValue))
+    }
+
     for shareType in ShareType.allCases {
       #expect(isLowercaseSnakeCase(shareType.rawValue))
     }
@@ -134,6 +138,10 @@ struct AnalyticsTests {
     }
 
     for value in PaywallTrigger.allCases.map(\.rawValue) {
+      #expect(document.contains("`\(value)`"))
+    }
+
+    for value in PaywallAction.allCases.map(\.rawValue) {
       #expect(document.contains("`\(value)`"))
     }
 
