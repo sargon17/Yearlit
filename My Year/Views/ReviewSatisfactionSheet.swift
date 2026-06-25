@@ -12,26 +12,28 @@ struct ReviewSatisfactionSheet: View {
   @State private var submitFailed = false
   @State private var hasTrackedFeedbackStarted = false
   @State private var hasTrackedAnswer = false
+  @FocusState private var isFeedbackFocused: Bool
 
   var body: some View {
-    OnboardingStepContainer(overlayHeight: 0.9, actionsBottomPadding: 24) {
+    OnboardingStepContainer(overlayHeight: 0.9, actionsBottomPadding: 2) {
       heroContent
     } content: {
     } actions: {
-      if isCollectingFeedback {
-        feedbackForm
-      } else {
-        answerButtons
-      }
-    }
-    .overlay(alignment: .topTrailing) {
-      closeButton
+      VStack {
+
+        if isCollectingFeedback {
+          feedbackForm
+        } else {
+          answerButtons
+        }
+      }.padding(.top, 12)
     }
     .alert("Could not send feedback", isPresented: $submitFailed) {
       Button("OK", role: .cancel) {}
     } message: {
       Text("Please try again later.")
     }
+    .ignoresSafeArea(.container)
   }
 
   private var heroContent: some View {
@@ -54,33 +56,36 @@ struct ReviewSatisfactionSheet: View {
   }
 
   private var answerButtons: some View {
-    VStack(spacing: 12) {
-      reviewActionButton(
+    VStack(spacing: 2) {
+      OnboardingView.ForwardButton(
         title: "Love it",
-        systemImage: "heart.fill",
-        style: .primary
-      ) {
-        trackAnswer("yes")
-        requestReviewAfterDismissal()
-      }
+        onTap: {
+          trackAnswer("yes")
+          requestReviewAfterDismissal()
+        }
+      )
 
-      reviewActionButton(
+      OnboardingView.ForwardButton(
         title: "Not really",
-        systemImage: "exclamationmark.bubble",
+        onTap: {
+          trackAnswer("no")
+          isCollectingFeedback = true
+        },
         style: .secondary
-      ) {
-        trackAnswer("no")
-        isCollectingFeedback = true
-      }
+      )
 
-      reviewActionButton(
-        title: "Maybe later",
-        systemImage: "clock",
-        style: .secondary
-      ) {
+      Button {
         trackAnswer("maybe")
         close()
+      } label: {
+        Text("Maybe later")
+          .font(AppFont.mono(14, weight: .medium))
+          .foregroundStyle(.textTertiary)
+          .frame(maxWidth: .infinity)
+          .padding(.vertical, 10)
+          .contentShape(Rectangle())
       }
+      .buttonStyle(.plain)
     }
   }
 
@@ -98,18 +103,20 @@ struct ReviewSatisfactionSheet: View {
         .clipShape(RoundedRectangle(cornerRadius: 4))
         .sameLevelBorder(radius: 4, color: .surfaceMuted, isFlat: true)
         .lineLimit(5...9)
+        .focused($isFeedbackFocused)
+        .task {
+          await Task.yield()
+          isFeedbackFocused = true
+        }
         .onChange(of: feedbackText) { _, newValue in
           trackFeedbackStartedIfNeeded(newValue)
         }
 
-      reviewActionButton(
+      OnboardingView.ForwardButton(
         title: isSubmittingFeedback ? "Sending…" : "Send feedback",
-        systemImage: "paperplane",
+        onTap: submitFeedback,
         style: trimmedFeedback.isEmpty || isSubmittingFeedback ? .disabled : .primary
-      ) {
-        submitFeedback()
-      }
-      .disabled(isSubmittingFeedback || trimmedFeedback.isEmpty)
+      )
     }
   }
 
@@ -129,35 +136,6 @@ struct ReviewSatisfactionSheet: View {
     .accessibilityLabel("Not now")
     .padding(.top, 18)
     .padding(.trailing, 10)
-  }
-
-  private func reviewActionButton(
-    title: LocalizedStringKey,
-    systemImage: String,
-    style: ReviewActionButtonStyle,
-    action: @escaping () -> Void
-  ) -> some View {
-    Button(action: action) {
-      HStack(spacing: 12) {
-        Image(systemName: systemImage)
-          .font(.system(size: 16, weight: .bold))
-          .frame(width: 30, height: 30)
-          .foregroundStyle(style.iconForeground)
-          .background(style.iconBackground, in: Circle())
-
-        Text(title)
-          .font(AppFont.sans(18, weight: .bold))
-          .foregroundStyle(style.titleColor)
-
-        Spacer(minLength: 8)
-      }
-      .padding(14)
-      .frame(maxWidth: .infinity, alignment: .leading)
-      .background(style.backgroundColor)
-      .clipShape(RoundedRectangle(cornerRadius: 4))
-    }
-    .buttonStyle(.plain)
-    .sameLevelBorder(radius: 4, color: style.borderColor, isFlat: style == .secondary)
   }
 
   private var trimmedFeedback: String {
@@ -248,64 +226,5 @@ struct ReviewSatisfactionSheet: View {
       "positive_event": .string(context.event.rawValue),
       "trigger": .string(context.trigger.rawValue)
     ]
-  }
-}
-
-private enum ReviewActionButtonStyle: Equatable {
-  case primary
-  case secondary
-  case disabled
-
-  var backgroundColor: Color {
-    switch self {
-    case .primary:
-      return .brand
-    case .secondary, .disabled:
-      return .surfaceMuted
-    }
-  }
-
-  var borderColor: Color {
-    switch self {
-    case .primary:
-      return .brand
-    case .secondary:
-      return .surfaceMuted
-    case .disabled:
-      return .surfaceMuted.opacity(0.55)
-    }
-  }
-
-  var titleColor: Color {
-    switch self {
-    case .primary:
-      return .brandInverted
-    case .secondary:
-      return .textPrimary
-    case .disabled:
-      return .textTertiary.opacity(0.65)
-    }
-  }
-
-  var iconForeground: Color {
-    switch self {
-    case .primary:
-      return .brand
-    case .secondary:
-      return .brandInverted
-    case .disabled:
-      return .textTertiary.opacity(0.6)
-    }
-  }
-
-  var iconBackground: Color {
-    switch self {
-    case .primary:
-      return .brandInverted
-    case .secondary:
-      return .brand
-    case .disabled:
-      return .surfaceMuted
-    }
   }
 }
