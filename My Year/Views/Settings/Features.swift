@@ -63,6 +63,8 @@ struct DeveloperSettingsSection: View {
   @AppStorage(AppStorageKeys.runtimeDebugEnabled) var runtimeDebugEnabled: Bool = false
   @AppStorage(AppStorageKeys.cleanScreenshotsEnabled) var cleanScreenshotsEnabled: Bool = false
   @AppStorage(AppStorageKeys.wandFillForce) var wandFillForce: Double = 0.5
+  @AppStorage(AppStorageKeys.appleHealthIntegrationEnabled) var appleHealthIntegrationEnabled = false
+  @AppStorage(AppStorageKeys.checkInSheetEnabled) var checkInSheetEnabled = false
 
   private var shouldShowDeveloperSettings: Bool {
     My_YearApp.isDebugMode || isDeveloperModeEnabled
@@ -81,6 +83,8 @@ struct DeveloperSettingsSection: View {
         #endif
 
         Toggle("Clean Screenshots", isOn: $cleanScreenshotsEnabled)
+        Toggle("Apple Health Integration", isOn: $appleHealthIntegrationEnabled)
+        Toggle("Check-in Sheet", isOn: $checkInSheetEnabled)
 
         if shouldShowWandSettings {
           VStack(alignment: .leading, spacing: 8) {

@@ -7,6 +7,8 @@ struct CreateCalendarChoiceView: View {
   let onCreate: (CustomCalendar) -> Void
 
   @State private var customerInfo: CustomerInfo?
+  @AppStorage(AppStorageKeys.appleHealthIntegrationEnabled)
+  private var appleHealthIntegrationEnabled = false
   @ObservedObject private var store = CustomCalendarStore.shared
   @Environment(\.router) private var router
 
@@ -42,19 +44,21 @@ struct CreateCalendarChoiceView: View {
           }
         }
 
-        creationPathButton(
-          title: "Connect a data source",
-          description: "Fill Check-ins from Apple Health and other sources."
-        ) {
-          guard userCanCreateCalendar() else {
-            router.showScreen(.sheet) { _ in
-              PremiumPaywallSheet(displayCloseButton: true, trigger: .calendarLimit)
+        if appleHealthIntegrationEnabled {
+          creationPathButton(
+            title: "Connect a data source",
+            description: "Fill Check-ins from Apple Health and other sources."
+          ) {
+            guard userCanCreateCalendar() else {
+              router.showScreen(.sheet) { _ in
+                PremiumPaywallSheet(displayCloseButton: true, trigger: .calendarLimit)
+              }
+              return
             }
-            return
-          }
 
-          router.showScreen(.push) { _ in
-            ConnectedCalendarSourcePickerView(onCreate: onCreate)
+            router.showScreen(.push) { _ in
+              ConnectedCalendarSourcePickerView(onCreate: onCreate)
+            }
           }
         }
       }

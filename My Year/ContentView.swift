@@ -14,6 +14,8 @@ struct ContentView: View {
     @State private var notificationCoordinator = NotificationRefreshCoordinator()
     @Environment(\.scenePhase) private var scenePhase
     @EnvironmentObject private var onboarding: OnboardingManager
+    @AppStorage(AppStorageKeys.appleHealthIntegrationEnabled)
+    private var appleHealthIntegrationEnabled = false
     private let appleHealthSyncService = AppleHealthCalendarSyncService()
 
     var body: some View {
@@ -25,11 +27,13 @@ struct ContentView: View {
             }
             .task {
                 await notificationCoordinator.appLaunched(onboardingSeen: onboarding.hasSeenOnboarding)
+                guard appleHealthIntegrationEnabled else { return }
                 await appleHealthSyncService.syncAllConnectedCalendars()
             }
             .onChange(of: scenePhase) { _, newPhase in
                 guard newPhase == .active else { return }
                 notificationCoordinator.appBecameActive(onboardingSeen: onboarding.hasSeenOnboarding)
+                guard appleHealthIntegrationEnabled else { return }
                 Task {
                     await appleHealthSyncService.syncAllConnectedCalendars()
                 }

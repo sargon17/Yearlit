@@ -48,6 +48,10 @@ struct CustomCalendarView: View {
   @AppStorage(AppStorageKeys.cleanScreenshotsEnabled) private var cleanScreenshotsEnabled: Bool = false
   @AppStorage(AppStorageKeys.wandFillForce) private var wandFillForce: Double = 0.5
   @AppStorage(AppStorageKeys.isDeveloperModeEnabled) private var isDeveloperModeEnabled: Bool = false
+  @AppStorage(AppStorageKeys.appleHealthIntegrationEnabled)
+  private var appleHealthIntegrationEnabled = false
+  @AppStorage(AppStorageKeys.checkInSheetEnabled)
+  private var checkInSheetEnabled = false
   @State private var today: Date = Calendar.current.startOfDay(for: Date())
   @Environment(\.scenePhase) private var scenePhase
 
@@ -96,6 +100,14 @@ struct CustomCalendarView: View {
   private var shouldShowDeveloperControls: Bool {
     !cleanScreenshotsEnabled
       && ((My_YearApp.isDebugMode && runtimeDebugEnabled) || isDeveloperModeEnabled)
+  }
+
+  private func canPresentEntryEditSheet(for calendar: CustomCalendar) -> Bool {
+    checkInSheetEnabled && !calendar.isAppleHealthConnected
+  }
+
+  private func canShowAppleHealthDebugControls(for calendar: CustomCalendar) -> Bool {
+    appleHealthIntegrationEnabled && calendar.isAppleHealthConnected && shouldShowDeveloperControls
   }
 
   @Environment(\.router) private var router
@@ -243,10 +255,12 @@ struct CustomCalendarView: View {
       return
     }
 
+    guard canPresentEntryEditSheet(for: activeCalendar) else { return }
     presentEntryEditSheet(calendar: activeCalendar, date: date)
   }
 
   private func presentEntryEditSheet(calendar: CustomCalendar, date: Date) {
+    guard canPresentEntryEditSheet(for: calendar) else { return }
     Task {
       await hapticFeedback()
     }
@@ -336,6 +350,7 @@ struct CustomCalendarView: View {
 
   @MainActor
   private func syncAppleHealth(calendar: CustomCalendar, showsErrors: Bool = false) async {
+    guard appleHealthIntegrationEnabled else { return }
     guard calendar.isAppleHealthConnected else { return }
     guard !isSyncingAppleHealth else { return }
     isSyncingAppleHealth = true
@@ -621,7 +636,7 @@ struct CustomCalendarView: View {
                     }
                   }
                 }
-                if activeCalendar.isAppleHealthConnected && shouldShowDeveloperControls {
+                if canShowAppleHealthDebugControls(for: activeCalendar) {
                   Text("•")
                     .font(AppFont.mono(4, weight: .black))
                     .foregroundColor(Color("text-tertiary"))
@@ -665,7 +680,7 @@ struct CustomCalendarView: View {
         }
         let checkInDate = renderSnapshot.currentPeriodReferenceDate ?? Date()
 
-        if !activeCalendar.isAppleHealthConnected {
+        if canPresentEntryEditSheet(for: activeCalendar) {
           Button {
             presentEntryEditSheet(calendar: activeCalendar, date: checkInDate)
           } label: {
