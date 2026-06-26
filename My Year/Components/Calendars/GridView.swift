@@ -224,7 +224,7 @@ struct GridView: View {
   }
 }
 
-private struct CalendarGridLayout {
+struct CalendarGridLayout {
   static let dotSize: CGFloat = 10
 
   let columns: Int
