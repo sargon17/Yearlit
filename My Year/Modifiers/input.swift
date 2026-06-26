@@ -14,12 +14,15 @@ struct InputModifier: ViewModifier {
     func body(content: Content) -> some View {
         content
             .padding(padding)
-            .sameLevelBorder(radius: radius, color: .black)
-            .outerSameLevelShadow(radius: radius)
             .foregroundColor(color)
             .font(AppFont.mono(fontSize, weight: .regular))
-            .patternStyle()
-            .cornerRadius(radius)
+            .lcdScreenEffect(
+                clipShape: RoundedRectangle(cornerRadius: radius),
+                diffusion: 0.1,
+                dotOpacity: 0.28
+            )
+            .sameLevelBorder(radius: radius, color: .black)
+            .outerSameLevelShadow(radius: radius)
     }
 
     var padding: CGFloat {

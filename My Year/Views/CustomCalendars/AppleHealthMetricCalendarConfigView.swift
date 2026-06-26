@@ -83,17 +83,12 @@ struct AppleHealthMetricCalendarConfigView: View {
         CustomSeparator()
           .padding(.horizontal, -16)
 
-        CustomSection(label: "Calendar Name") {
-          TextField(
-            "",
-            text: $name,
-            prompt: Text(metric.defaultCalendarName).foregroundColor(.white.opacity(0.2))
-          )
-          .inputStyle(color: Color(selectedColor))
-          .focused($isNameFocused)
-        }
-
-        CalendarColorPickerSection(selectedColor: $selectedColor)
+        CalendarIdentityLCDSection(
+          name: $name,
+          selectedColor: $selectedColor,
+          prompt: metric.defaultCalendarName,
+          isNameFocused: $isNameFocused
+        )
 
         CustomSection(label: "Daily Target") {
           VStack(alignment: .leading, spacing: 8) {

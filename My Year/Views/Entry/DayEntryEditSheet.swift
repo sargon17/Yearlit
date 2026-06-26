@@ -79,10 +79,14 @@ struct DayEntryEditSheet: View {
   }
 
   var body: some View {
-    VStack(alignment: .leading, spacing: 18) {
+    CheckInDeviceScreen {
       entryEditor
 
-      HStack(alignment: .top, spacing: 12) {
+      Rectangle()
+        .fill(Color.textTertiary.opacity(0.35))
+        .frame(height: 1)
+
+      HStack(alignment: .top, spacing: 0) {
         VerticalDateWheelModule(
           calendar: calendar,
           selectedDate: $selectedDate,
@@ -90,14 +94,30 @@ struct DayEntryEditSheet: View {
         )
 
         if calendar.trackingType != .binary {
+          Rectangle()
+            .fill(Color.textTertiary.opacity(0.35))
+            .frame(width: 1)
+            .padding(.vertical, 12)
+
           VerticalAmountWheelModule(
             calendar: calendar,
             entryCount: $entryCount,
-            accentColor: Color(calendar.color)
+            accentColor: Color(calendar.color),
+            label: compactCountLabel
           )
         }
       }
-      .frame(height: 280)
+      .frame(height: 250)
+    } actions: {
+      HStack(spacing: 10) {
+        DeviceActionButton(title: "Cancel", action: { dismiss() })
+        DeviceActionButton(
+          title: "Save",
+          accentColor: Color(calendar.color),
+          labelColor: .brandInverted,
+          action: saveEntry
+        )
+      }
     }
     .padding()
     .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
@@ -109,39 +129,45 @@ struct DayEntryEditSheet: View {
     .onChange(of: selectedDate) { _, newDate in
       fillExistingProgressIfPresent(for: newDate)
     }
-    .toolbar {
-      ToolbarItem(placement: .cancellationAction) {
-        Button("Cancel") { dismiss() }
-      }
-      ToolbarItem(placement: .confirmationAction) {
-        Button("Save") { saveEntry() }
-      }
-    }
   }
 
   @ViewBuilder
   private var entryEditor: some View {
     switch calendar.trackingType {
     case .binary:
-      CustomSection(label: "Entry") {
+      VStack(alignment: .leading, spacing: 10) {
+        screenLabel("Entry")
         Toggle(isOn: $entryCompleted) {
           Text("Completed")
             .textDefault()
         }
         .tint(Color(calendar.color))
-        .padding(12)
-        .sameLevelBorder(radius: 6, isFlat: true)
-        .outerSameLevelShadow(radius: 6)
       }
+      .padding(14)
     case .counter, .multipleDaily:
-      CustomSection(label: LocalizedStringKey(countLabel)) {
+      VStack(alignment: .leading, spacing: 8) {
+        screenLabel(LocalizedStringKey(countLabel))
         TextField("", value: $entryCount, formatter: countFormatter)
           .multilineTextAlignment(.center)
           .frame(maxWidth: .infinity)
-          .inputStyle(color: Color(calendar.color))
+          .font(AppFont.pixelCircle(72))
+          .foregroundStyle(Color(calendar.color))
+          .textFieldStyle(.plain)
           .keyboardType(.numberPad)
+          .contentTransition(.numericText())
       }
+      .padding(.horizontal, 14)
+      .padding(.top, 12)
+      .padding(.bottom, 14)
     }
+  }
+
+  private func screenLabel(_ label: LocalizedStringKey) -> some View {
+    Text(label)
+      .font(AppFont.mono(10, weight: .bold))
+      .foregroundStyle(.textTertiary)
+      .textCase(.uppercase)
+      .tracking(1.2)
   }
 
   private func fillExistingProgressIfPresent(for date: Date) {
@@ -168,6 +194,13 @@ struct DayEntryEditSheet: View {
     return String(localized: "Count")
   }
 
+  private var compactCountLabel: String {
+    guard let unit = calendar.unit, unit != .none else {
+      return String(localized: "Count")
+    }
+    return unit == .currency ? (calendar.currencySymbol ?? "$") : unit.rawValue
+  }
+
   private static func bucketDate(for date: Date, cadence: CalendarCadence) -> Date {
     switch cadence {
     case .daily:
@@ -175,6 +208,101 @@ struct DayEntryEditSheet: View {
     case .weekly:
       return LocalDayCalendar.startOfWeek(for: date)
     }
+  }
+}
+
+private struct CheckInDeviceScreen<Content: View, Actions: View>: View {
+  @ViewBuilder let content: () -> Content
+  @ViewBuilder let actions: () -> Actions
+
+  var body: some View {
+    VStack(spacing: 0) {
+      VStack(spacing: 0) {
+        content()
+      }
+      .lcdScreenEffect(
+        clipShape: UnevenRoundedRectangle(topLeadingRadius: 12, topTrailingRadius: 12)
+      )
+
+      Rectangle()
+        .fill(Color.textTertiary.opacity(0.35))
+        .frame(height: 1)
+
+      actions()
+        .padding(12)
+    }
+    .frame(maxWidth: .infinity)
+    .background(
+      RoundedRectangle(cornerRadius: 12)
+        .fill(
+          LinearGradient(
+            colors: [
+              Color.black.opacity(0.98),
+              Color.black.opacity(0.95),
+              Color.black.opacity(0.9)
+            ],
+            startPoint: .top,
+            endPoint: .bottom
+          )
+        )
+    )
+    .clipShape(RoundedRectangle(cornerRadius: 12))
+    .overlay {
+      RoundedRectangle(cornerRadius: 12)
+        .stroke(Color.white.opacity(0.16), lineWidth: 1)
+        .padding(1)
+    }
+    .overlay {
+      RoundedRectangle(cornerRadius: 12)
+        .stroke(Color.black.opacity(0.85), lineWidth: 2)
+    }
+    .overlay(alignment: .topLeading) {
+      LinearGradient(
+        colors: [
+          Color.white.opacity(0.12),
+          Color.white.opacity(0)
+        ],
+        startPoint: .topLeading,
+        endPoint: .bottomTrailing
+      )
+      .clipShape(RoundedRectangle(cornerRadius: 12))
+      .allowsHitTesting(false)
+    }
+    .shadow(color: .black.opacity(0.38), radius: 14, x: 0, y: 8)
+  }
+}
+
+private struct ScreenControlLabel: View {
+  let label: LocalizedStringKey
+
+  var body: some View {
+    Text(label)
+      .font(AppFont.mono(10, weight: .bold))
+      .foregroundStyle(.textTertiary)
+      .textCase(.uppercase)
+      .tracking(1.2)
+      .frame(maxWidth: .infinity, alignment: .leading)
+  }
+}
+
+private struct DeviceActionButton: View {
+  let title: LocalizedStringKey
+  var accentColor: Color = .surfaceMuted
+  var labelColor: Color = .textSecondary
+  let action: () -> Void
+
+  var body: some View {
+    Button(action: action) {
+      Text(title)
+        .font(AppFont.mono(12, weight: .bold))
+        .textCase(.uppercase)
+        .tracking(1)
+        .foregroundStyle(labelColor)
+        .frame(maxWidth: .infinity)
+        .padding(.vertical, 14)
+        .sameLevelBorder(radius: 4, color: accentColor)
+    }
+    .buttonStyle(.plain)
   }
 }
 
@@ -188,6 +316,8 @@ private struct VerticalDateWheelModule: View {
   let calendar: CustomCalendar
   @Binding var selectedDate: Date
   let accentColor: Color
+
+  @State private var selectedOffset: Int?
 
   private var values: [DateWheelValue] {
     let calendarSystem = LocalDayCalendar.calendar
@@ -203,48 +333,60 @@ private struct VerticalDateWheelModule: View {
   }
 
   var body: some View {
-    CustomSection(label: calendar.cadence == .weekly ? "Week" : "Day") {
-      VerticalTickWheel(
-        values: values.map(\.offset),
-        selectedID: Binding(
-          get: { selectedOffset },
-          set: { newValue in
-            guard let value = values.first(where: { $0.offset == newValue }) else { return }
-            selectedDate = value.date
-          }
+    VStack(alignment: .leading, spacing: 10) {
+      ScreenControlLabel(label: calendar.cadence == .weekly ? "Week" : "Day")
+
+      CenterTrackedDateWheel(
+        offsets: values.map(\.offset),
+        selectedOffset: Binding(
+          get: { selectedOffset ?? offset(for: selectedDate) },
+          set: { updateSelection(to: $0) }
         ),
         accentColor: accentColor,
-        showsSelectionIndicator: false
-      ) { offset, isSelected in
-        let date = values.first(where: { $0.offset == offset })?.date ?? selectedDate
-        Text(relativeLabel(for: date, offset: offset))
-          .font(AppFont.mono(isSelected ? 16 : 13, weight: isSelected ? .bold : .regular))
-          .foregroundStyle(isSelected ? accentColor : .textSecondary)
-          .lineLimit(1)
-          .minimumScaleFactor(0.7)
-        .frame(maxWidth: .infinity)
-      }
+        label: { offset in
+          let date = values.first(where: { $0.offset == offset })?.date ?? selectedDate
+          return relativeLabel(for: date, offset: offset)
+        }
+      )
       .accessibilityLabel(calendar.cadence == .weekly ? "Selected week" : "Selected day")
-      .frame(height: 248)
+      .frame(height: 218)
+    }
+    .padding(12)
+    .frame(maxWidth: .infinity)
+    .onAppear {
+      selectedOffset = offset(for: selectedDate)
+    }
+    .onChange(of: selectedDate) { _, newValue in
+      let newOffset = offset(for: newValue)
+      if selectedOffset != newOffset {
+        selectedOffset = newOffset
+      }
     }
   }
 
-  private var selectedOffset: Int {
-    let selectedBucket = bucketDate(for: selectedDate)
+  private func offset(for date: Date) -> Int {
+    let selectedBucket = bucketDate(for: date)
     return values.first(where: { $0.date == selectedBucket })?.offset ?? 0
+  }
+
+  private func updateSelection(to offset: Int) {
+    guard selectedOffset != offset else { return }
+    selectedOffset = offset
+    guard let value = values.first(where: { $0.offset == offset }) else {
+      return
+    }
+    selectedDate = value.date
   }
 
   private func relativeLabel(for date: Date, offset: Int) -> String {
     if calendar.cadence == .weekly {
       if offset == 0 { return String(localized: "This week") }
       if offset == 1 { return String(localized: "Last week") }
-      if offset < 8 { return String(localized: "\(offset) weeks ago") }
       return weekRangeLabel(for: date)
     }
 
     if offset == 0 { return String(localized: "Today") }
     if offset == 1 { return String(localized: "Yesterday") }
-    if offset < 7 { return String(localized: "\(offset) days ago") }
     return shortDateFormatter.string(from: date)
   }
 
@@ -263,36 +405,120 @@ private struct VerticalDateWheelModule: View {
   }
 }
 
+private struct CenterTrackedDateWheel: View {
+  let offsets: [Int]
+  @Binding var selectedOffset: Int
+  let accentColor: Color
+  let label: (Int) -> String
+
+  @State private var lastHapticOffset: Int?
+
+  private let rowHeight: CGFloat = 44
+  private let coordinateSpaceName = "date-wheel-scroll"
+
+  var body: some View {
+    GeometryReader { geometry in
+      let verticalPadding = max(0, (geometry.size.height - rowHeight) / 2)
+      let centerY = geometry.size.height / 2
+
+      ScrollViewReader { proxy in
+        ScrollView(.vertical) {
+          LazyVStack(spacing: 0) {
+            ForEach(offsets, id: \.self) { offset in
+              Text(label(offset))
+                .font(AppFont.mono(18, weight: .bold))
+                .foregroundStyle(offset == selectedOffset ? accentColor : .textSecondary)
+                .lineLimit(1)
+                .minimumScaleFactor(0.7)
+                .frame(maxWidth: .infinity)
+                .frame(height: rowHeight)
+                .id(offset)
+                .background {
+                  GeometryReader { rowGeometry in
+                    Color.clear.preference(
+                      key: DateWheelRowCentersPreferenceKey.self,
+                      value: [offset: rowGeometry.frame(in: .named(coordinateSpaceName)).midY]
+                    )
+                  }
+                }
+                .scrollTransition(.interactive, axis: .vertical) { content, phase in
+                  content
+                    .opacity(phase.isIdentity ? 1 : 0.48)
+                    .rotation3DEffect(
+                      .degrees(Double(phase.value) * -28),
+                      axis: (x: 1, y: 0, z: 0),
+                      perspective: 0.55
+                    )
+                }
+            }
+          }
+          .padding(.vertical, verticalPadding)
+        }
+        .coordinateSpace(name: coordinateSpaceName)
+        .scrollIndicators(.hidden)
+        .mask { WheelFadeMask() }
+        .onPreferenceChange(DateWheelRowCentersPreferenceKey.self) { centers in
+          guard let closest = centers.min(by: { abs($0.value - centerY) < abs($1.value - centerY) })?.key else {
+            return
+          }
+          guard closest != selectedOffset else { return }
+          selectedOffset = closest
+          if closest != lastHapticOffset {
+            lastHapticOffset = closest
+            Task {
+              await hapticFeedback(.light)
+            }
+          }
+        }
+        .onAppear {
+          proxy.scrollTo(selectedOffset, anchor: .center)
+          lastHapticOffset = selectedOffset
+        }
+      }
+    }
+  }
+}
+
+private struct DateWheelRowCentersPreferenceKey: PreferenceKey {
+  static var defaultValue: [Int: CGFloat] = [:]
+
+  static func reduce(value: inout [Int: CGFloat], nextValue: () -> [Int: CGFloat]) {
+    value.merge(nextValue(), uniquingKeysWith: { _, new in new })
+  }
+}
+
 private struct VerticalAmountWheelModule: View {
   let calendar: CustomCalendar
   @Binding var entryCount: Int
   let accentColor: Color
+  let label: String
 
   @State private var maxValue: Int
 
-  init(calendar: CustomCalendar, entryCount: Binding<Int>, accentColor: Color) {
+  init(calendar: CustomCalendar, entryCount: Binding<Int>, accentColor: Color, label: String) {
     self.calendar = calendar
     _entryCount = entryCount
     self.accentColor = accentColor
+    self.label = label
     let baseMax = max(entryCount.wrappedValue + 200, 200)
     let boostedMax = max(baseMax, calendar.dailyTarget * 5)
     _maxValue = State(initialValue: boostedMax)
   }
 
-  private var values: [Int] {
-    Array(0...maxValue)
-  }
-
   var body: some View {
-    CustomSection(label: "Amount") {
+    VStack(alignment: .leading, spacing: 10) {
+      ScreenControlLabel(label: LocalizedStringKey(label))
+
       VerticalAmountTickWheel(
         value: $entryCount,
         maxValue: $maxValue,
         accentColor: accentColor,
       )
       .accessibilityLabel("Entry amount")
-      .frame(height: 248)
+      .frame(height: 218)
     }
+    .padding(12)
+    .frame(maxWidth: .infinity)
   }
 }
 
@@ -329,40 +555,14 @@ private struct VerticalAmountTickWheel: View {
       }
       .scrollIndicators(.hidden)
       .scrollPosition(id: $selection, anchor: .center)
-      .overlay(alignment: .top) {
-        LinearGradient(
-          colors: [
-            Color("surface-muted"),
-            Color("surface-muted").opacity(0.85),
-            Color("surface-muted").opacity(0)
-          ],
-          startPoint: .top,
-          endPoint: .bottom
-        )
-        .frame(height: max(24, geometry.size.height * 0.18))
-        .allowsHitTesting(false)
-      }
-      .overlay(alignment: .bottom) {
-        LinearGradient(
-          colors: [
-            Color("surface-muted").opacity(0),
-            Color("surface-muted").opacity(0.85),
-            Color("surface-muted")
-          ],
-          startPoint: .top,
-          endPoint: .bottom
-        )
-        .frame(height: max(24, geometry.size.height * 0.18))
-        .allowsHitTesting(false)
-      }
+      .scrollTargetBehavior(.viewAligned)
+      .mask { WheelFadeMask() }
       .overlay(alignment: .center) {
         RoundedRectangle(cornerRadius: 1)
           .fill(accentColor)
           .frame(height: 2)
           .padding(.horizontal, 14)
       }
-      .sameLevelBorder(radius: 6, isFlat: true)
-      .outerSameLevelShadow(radius: 6)
       .onChange(of: selection) { _, newValue in
         guard let newValue else { return }
         if value != newValue {
@@ -371,7 +571,7 @@ private struct VerticalAmountTickWheel: View {
         if newValue != lastHapticValue {
           lastHapticValue = newValue
           Task {
-            await hapticFeedback(.light)
+            await hapticFeedback(newValue % 5 == 0 ? .light : .soft)
           }
         }
         if newValue >= maxValue - 20 {
@@ -384,8 +584,11 @@ private struct VerticalAmountTickWheel: View {
         }
       }
       .onAppear {
-        selection = value
+        selection = nil
         lastHapticValue = value
+        Task { @MainActor in
+          selection = value
+        }
       }
     }
   }
@@ -414,6 +617,15 @@ private struct VerticalTickWheel<Value: Hashable, Label: View>: View {
             label(value, value == selectedID)
               .frame(height: rowHeight)
               .id(value)
+              .scrollTransition(.interactive, axis: .vertical) { content, phase in
+                content
+                  .opacity(phase.isIdentity ? 1 : 0.48)
+                  .rotation3DEffect(
+                    .degrees(Double(phase.value) * -28),
+                    axis: (x: 1, y: 0, z: 0),
+                    perspective: 0.55
+                  )
+              }
           }
         }
         .scrollTargetLayout()
@@ -421,32 +633,8 @@ private struct VerticalTickWheel<Value: Hashable, Label: View>: View {
       }
       .scrollIndicators(.hidden)
       .scrollPosition(id: $selection, anchor: .center)
-      .overlay(alignment: .top) {
-        LinearGradient(
-          colors: [
-            Color("surface-muted"),
-            Color("surface-muted").opacity(0.85),
-            Color("surface-muted").opacity(0)
-          ],
-          startPoint: .top,
-          endPoint: .bottom
-        )
-        .frame(height: max(24, geometry.size.height * 0.18))
-        .allowsHitTesting(false)
-      }
-      .overlay(alignment: .bottom) {
-        LinearGradient(
-          colors: [
-            Color("surface-muted").opacity(0),
-            Color("surface-muted").opacity(0.85),
-            Color("surface-muted")
-          ],
-          startPoint: .top,
-          endPoint: .bottom
-        )
-        .frame(height: max(24, geometry.size.height * 0.18))
-        .allowsHitTesting(false)
-      }
+      .scrollTargetBehavior(.viewAligned)
+      .mask { WheelFadeMask() }
       .overlay(alignment: .center) {
         if showsSelectionIndicator {
           RoundedRectangle(cornerRadius: 1)
@@ -455,8 +643,6 @@ private struct VerticalTickWheel<Value: Hashable, Label: View>: View {
             .padding(.horizontal, 14)
         }
       }
-      .sameLevelBorder(radius: 6, isFlat: true)
-      .outerSameLevelShadow(radius: 6)
       .onChange(of: selection) { _, newValue in
         guard let newValue else { return }
         if selectedID != newValue {
@@ -480,6 +666,21 @@ private struct VerticalTickWheel<Value: Hashable, Label: View>: View {
         lastHapticValue = selectedID
       }
     }
+  }
+}
+
+private struct WheelFadeMask: View {
+  var body: some View {
+    LinearGradient(
+      stops: [
+        .init(color: .clear, location: 0),
+        .init(color: .black, location: 0.18),
+        .init(color: .black, location: 0.82),
+        .init(color: .clear, location: 1)
+      ],
+      startPoint: .top,
+      endPoint: .bottom
+    )
   }
 }
 

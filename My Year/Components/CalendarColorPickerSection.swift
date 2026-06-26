@@ -39,34 +39,25 @@ struct ColorSwatchPicker: View {
 
   @Binding var selectedColor: String
   let accessibilityHint: LocalizedStringKey
+  var isScreenStyled: Bool = true
 
+  @ViewBuilder
   var body: some View {
+    if isScreenStyled {
+      swatches
+        .sameLevelBorder(radius: 6, color: .black)
+        .patternStyle()
+        .cornerRadius(6)
+    } else {
+      swatches
+    }
+  }
+
+  private var swatches: some View {
     ScrollView(.horizontal, showsIndicators: false) {
       HStack {
         ForEach(Self.defaultOptions) { option in
-          Button {
-            withAnimation(.snappy) {
-              selectedColor = option.assetName
-            }
-            Task {
-              await hapticFeedback(.rigid)
-            }
-          } label: {
-            ZStack {
-              Circle()
-                .fill(Color(option.assetName))
-                .frame(width: 30, height: 30)
-
-              Circle()
-                .stroke(.white, lineWidth: selectedColor == option.assetName ? 2 : 0)
-                .frame(width: 30, height: 30)
-            }
-            .frame(width: 44, height: 44)
-          }
-          .buttonStyle(.plain)
-          .accessibilityLabel(option.accessibilityName)
-          .accessibilityHint(Text(accessibilityHint))
-          .accessibilityAddTraits(selectedColor == option.assetName ? .isSelected : [])
+          swatchButton(for: option)
         }
       }
       .padding(2)
@@ -74,8 +65,31 @@ struct ColorSwatchPicker: View {
     }
     .padding(.vertical)
     .scrollClipDisabled(true)
-    .sameLevelBorder(radius: 6, color: .black)
-    .patternStyle()
-    .cornerRadius(6)
+  }
+
+  private func swatchButton(for option: ColorSwatchOption) -> some View {
+    Button {
+      withAnimation(.snappy) {
+        selectedColor = option.assetName
+      }
+      Task {
+        await hapticFeedback(.rigid)
+      }
+    } label: {
+      ZStack {
+        Circle()
+          .fill(Color(option.assetName))
+          .frame(width: 30, height: 30)
+
+        Circle()
+          .stroke(.white, lineWidth: selectedColor == option.assetName ? 2 : 0)
+          .frame(width: 30, height: 30)
+      }
+      .frame(width: 44, height: 44)
+    }
+    .buttonStyle(.plain)
+    .accessibilityLabel(option.accessibilityName)
+    .accessibilityHint(Text(accessibilityHint))
+    .accessibilityAddTraits(selectedColor == option.assetName ? .isSelected : [])
   }
 }
