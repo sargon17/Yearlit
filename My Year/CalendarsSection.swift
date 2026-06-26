@@ -323,7 +323,7 @@ struct CalendarsSection: View {
     lastHapticSlideId = slideId
 
     Task {
-      await hapticFeedback(.soft)
+      await hapticFeedback(.rigid)
     }
   }
 }
