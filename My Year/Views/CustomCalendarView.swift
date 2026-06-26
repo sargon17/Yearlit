@@ -217,7 +217,7 @@ struct CustomCalendarView: View {
     }
     isEntryEditSheetPresented = true
     router.showScreen(
-      .sheetConfig(config: shortSheetConfig)
+      .sheetConfig(config: entryEditSheetConfig)
     ) { _ in
       DayEntryEditSheet(
         calendar: calendar,
@@ -225,7 +225,7 @@ struct CustomCalendarView: View {
         store: store,
         onSave: { entry in
           if isPositiveEntry(entry) {
-            triggerCheckInRipple(from: date)
+            triggerCheckInRipple(from: entry.date)
           }
           scheduleMilestoneCheck()
         },
