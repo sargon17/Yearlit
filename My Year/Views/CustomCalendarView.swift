@@ -664,47 +664,12 @@ struct CustomCalendarView: View {
             averageProgressTrailingShortWindow: bundle.averageProgressTrailingShortWindow,
             averageProgressTrailingLongWindow: bundle.averageProgressTrailingLongWindow,
             volatilityStdDev: bundle.volatilityStd,
+            currentMissedPeriods: bundle.currentMissedPeriods,
+            averageRecoveryPeriods: bundle.averageRecoveryPeriods,
             isPremium: isPremium(customerInfo: customerInfo),
             onUpgrade: { isPaywallPresented = true },
             cadence: activeCalendar.cadence,
             trackingType: activeCalendar.trackingType,
-            onTapCurrentStreak: {
-              guard
-                let milestone = StreakMilestones.latestMilestone(
-                  for: currentStreak(for: activeCalendar)
-                )
-              else { return }
-              router.showScreen(.sheet) { _ in
-                MilestoneCelebrationSheet(
-                  calendar: activeCalendar,
-                  milestone: milestone,
-                  currentStreak: currentStreak(for: activeCalendar),
-                  kind: .streak,
-                  dates: renderSnapshot.visibleGridDates,
-                  allowsStopShowing: false,
-                  showedUpPeriodKey: nil
-                )
-              }
-            },
-            onTapActiveDays: {
-              let showedUpCount = showedUpCount(for: activeCalendar)
-              guard
-                let milestone = ShowedUpMilestones.latestMilestone(
-                  for: showedUpCount
-                )
-              else { return }
-              router.showScreen(.sheet) { _ in
-                MilestoneCelebrationSheet(
-                  calendar: activeCalendar,
-                  milestone: milestone,
-                  currentStreak: currentStreak(for: activeCalendar),
-                  kind: .showedUp,
-                  dates: renderSnapshot.visibleGridDates,
-                  allowsStopShowing: false,
-                  showedUpPeriodKey: ShowedUpMilestones.periodKey(for: .allTime)
-                )
-              }
-            },
             onTapShare: {
               router.showScreen(.sheet) { _ in
                 CalendarShareSheet(
