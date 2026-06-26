@@ -5,8 +5,6 @@ enum AppStorageKeys {
   static let runtimeDebugEnabled = "runtimeDebugEnabled"
   static let cleanScreenshotsEnabled = "cleanScreenshotsEnabled"
   static let wandFillForce = "wandFillForce"
-  static let appleHealthIntegrationEnabled = "appleHealthIntegrationEnabled"
-  static let checkInSheetEnabled = "checkInSheetEnabled"
   static let milestoneCelebrationsEnabled = "milestoneCelebrationsEnabled"
   static let streakMilestoneCelebrationsEnabled = "streakMilestoneCelebrationsEnabled"
   static let showedUpMilestoneCelebrationsEnabled = "showedUpMilestoneCelebrationsEnabled"

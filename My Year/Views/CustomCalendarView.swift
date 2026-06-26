@@ -47,10 +47,6 @@ struct CustomCalendarView: View {
   @AppStorage(AppStorageKeys.cleanScreenshotsEnabled) private var cleanScreenshotsEnabled: Bool = false
   @AppStorage(AppStorageKeys.wandFillForce) private var wandFillForce: Double = 0.5
   @AppStorage(AppStorageKeys.isDeveloperModeEnabled) private var isDeveloperModeEnabled: Bool = false
-  @AppStorage(AppStorageKeys.appleHealthIntegrationEnabled)
-  private var appleHealthIntegrationEnabled = false
-  @AppStorage(AppStorageKeys.checkInSheetEnabled)
-  private var checkInSheetEnabled = false
   @State private var today: Date = Calendar.current.startOfDay(for: Date())
   @Environment(\.scenePhase) private var scenePhase
 
@@ -101,13 +97,8 @@ struct CustomCalendarView: View {
       && ((My_YearApp.isDebugMode && runtimeDebugEnabled) || isDeveloperModeEnabled)
   }
 
-  private func canPresentEntryEditSheet(for calendar: CustomCalendar) -> Bool {
-    guard !calendar.isAppleHealthConnected else { return false }
-    return checkInSheetEnabled || calendar.trackingType != .binary
-  }
-
   private func canShowAppleHealthDebugControls(for calendar: CustomCalendar) -> Bool {
-    appleHealthIntegrationEnabled && calendar.isAppleHealthConnected && shouldShowDeveloperControls
+    calendar.isAppleHealthConnected && shouldShowDeveloperControls
   }
 
   @Environment(\.router) private var router
@@ -220,7 +211,7 @@ struct CustomCalendarView: View {
   }
 
   private func presentEntryEditSheet(calendar: CustomCalendar, date: Date) {
-    guard canPresentEntryEditSheet(for: calendar) else { return }
+    guard !calendar.isAppleHealthConnected else { return }
     Task {
       await hapticFeedback()
     }
@@ -243,14 +234,6 @@ struct CustomCalendarView: View {
           evaluateMilestonesIfNeeded(calendarId: calendar.id)
         }
       )
-    }
-  }
-
-  private func handleCheckInButtonTap(calendar: CustomCalendar, date: Date) {
-    if canPresentEntryEditSheet(for: calendar) {
-      presentEntryEditSheet(calendar: calendar, date: date)
-    } else {
-      handleQuickAdd(calendar: calendar, date: date)
     }
   }
 
@@ -323,7 +306,6 @@ struct CustomCalendarView: View {
 
   @MainActor
   private func syncAppleHealth(calendar: CustomCalendar, showsErrors: Bool = false) async {
-    guard appleHealthIntegrationEnabled else { return }
     guard calendar.isAppleHealthConnected else { return }
     guard !isSyncingAppleHealth else { return }
     isSyncingAppleHealth = true
@@ -655,7 +637,7 @@ struct CustomCalendarView: View {
 
         if !activeCalendar.isAppleHealthConnected {
           Button {
-            handleCheckInButtonTap(calendar: activeCalendar, date: checkInDate)
+            presentEntryEditSheet(calendar: activeCalendar, date: checkInDate)
           } label: {
             Text("check in")
               .frame(maxWidth: .infinity)
