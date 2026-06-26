@@ -173,6 +173,11 @@ struct CustomCalendarView: View {
     )
   }
 
+  private func isPositiveEntry(_ entry: CalendarEntry?) -> Bool {
+    guard let entry else { return false }
+    return entry.count > 0 || entry.completed
+  }
+
   private func triggerCheckInRipple(from date: Date) {
     checkInRippleOriginDate = date
     checkInRippleTrigger += 1
@@ -273,7 +278,7 @@ struct CustomCalendarView: View {
         date: date,
         store: store,
         onSave: { entry in
-          if entry.count > 0 {
+          if isPositiveEntry(entry) {
             triggerCheckInRipple(from: date)
           }
           scheduleMilestoneCheck()
@@ -310,6 +315,9 @@ struct CustomCalendarView: View {
         calendarStore: store,
         source: .calendar
       )
+      if isPositiveEntry(store.getEntry(calendarId: calendar.id, date: date)) {
+        triggerCheckInRipple(from: date)
+      }
 
       checkIfReachedThreeDays(calendar)
       scheduleMilestoneCheck()
