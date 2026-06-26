@@ -90,11 +90,7 @@ struct FirstDotView: View {
     rippleTrigger += 1
 
     Task {
-      await hapticFeedback(.success)
-      try? await Task.sleep(nanoseconds: 140_000_000)
-      await hapticFeedback(.light)
-      try? await Task.sleep(nanoseconds: 180_000_000)
-      await hapticFeedback(.light)
+      await checkInRippleHapticFeedback()
     }
   }
 
