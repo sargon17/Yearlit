@@ -149,39 +149,31 @@ struct MoodTrackingCalendar: View {
       CustomSeparator()
 
       GeometryReader { geometry in
-        let dotSize: CGFloat = 10
-        let padding: CGFloat = 20
+        let layout = CalendarGridLayout(size: geometry.size, dayCount: store.numberOfDaysInYear)
 
-        let availableWidth = geometry.size.width - (padding * 2)
-        let availableHeight = geometry.size.height - (padding * 2)
-
-        let dimensions = calculateGridDimensions(
-          availableWidth: availableWidth,
-          availableHeight: availableHeight,
-          dotSize: dotSize
-        )
-
-        VStack(spacing: dimensions.verticalSpacing) {
-          ForEach(0..<dimensions.rows, id: \.self) { row in
-            HStack(spacing: dimensions.horizontalSpacing) {
-              ForEach(0..<dimensions.columns, id: \.self) { col in
-                let day = row * dimensions.columns + col
-                if day < store.numberOfDaysInYear {
-                  RoundedRectangle(cornerRadius: 3)
-                    .fill(colorForDay(day))
-                    .frame(width: dotSize, height: dotSize)
-                    .onTapGesture {
-                      handleDayTap(day)
-                    }
-                } else {
-                  Color.clear.frame(width: dotSize, height: dotSize)
-                }
-              }
-            }
+        Canvas { context, _ in
+          for day in 0..<store.numberOfDaysInYear {
+            let center = layout.center(for: day)
+            let rect = CGRect(
+              x: center.x - (CalendarGridLayout.dotSize / 2),
+              y: center.y - (CalendarGridLayout.dotSize / 2),
+              width: CalendarGridLayout.dotSize,
+              height: CalendarGridLayout.dotSize
+            )
+            context.fill(Path(roundedRect: rect, cornerRadius: 3), with: .color(colorForDay(day)))
           }
         }
+        .contentShape(Rectangle())
+        .gesture(
+          SpatialTapGesture()
+            .onEnded { value in
+              guard let day = layout.index(nearest: value.location), day < store.numberOfDaysInYear else {
+                return
+              }
+              handleDayTap(day)
+            }
+        )
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .padding(.horizontal)
       }
       .frame(height: UIScreen.main.bounds.height - 270)
     }.overlay {
@@ -219,21 +211,6 @@ struct MoodTrackingCalendar: View {
       }
   }
 
-  private func calculateGridDimensions(
-    availableWidth: CGFloat, availableHeight: CGFloat, dotSize: CGFloat
-  ) -> (columns: Int, rows: Int, horizontalSpacing: CGFloat, verticalSpacing: CGFloat) {
-    // Calculate grid dimensions based on aspect ratio, exactly as in widget
-    let aspectRatio = availableWidth / availableHeight
-    let targetColumns = Int(sqrt(Double(365) * aspectRatio))
-    let columns = min(targetColumns, 365)
-    let rows = Int(ceil(Double(365) / Double(columns)))
-
-    // Calculate spacings to fill the widget, exactly as in widget
-    let horizontalSpacing = (availableWidth - (dotSize * CGFloat(columns))) / CGFloat(columns - 1)
-    let verticalSpacing = (availableHeight - (dotSize * CGFloat(rows))) / CGFloat(rows - 1)
-
-    return (columns, rows, horizontalSpacing, verticalSpacing)
-  }
 }
 
 enum VisualizationType {
