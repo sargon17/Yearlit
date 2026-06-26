@@ -59,7 +59,6 @@ struct GridView: View {
       }
     }
     .frame(maxWidth: .infinity, maxHeight: .infinity)
-    .padding(.horizontal)
   }
 
   private func gridCanvas(
@@ -236,9 +235,9 @@ private struct CalendarGridLayout {
   private let origin: CGPoint
 
   init(size: CGSize, dayCount: Int) {
-    let padding: CGFloat = 20
-    let availableWidth = max(0, size.width - (padding * 2))
-    let availableHeight = max(1, size.height - (padding * 2))
+    let edgeInset: CGFloat = 4
+    let availableWidth = max(0, size.width - (edgeInset * 2))
+    let availableHeight = max(1, size.height - (edgeInset * 2))
     let aspectRatio = max(0.001, availableWidth / availableHeight)
     let targetColumns = Int(sqrt(Double(dayCount) * aspectRatio))
     columns = max(min(targetColumns, dayCount), 1)
@@ -248,7 +247,7 @@ private struct CalendarGridLayout {
     verticalSpacing =
       max(0, (availableHeight - (Self.dotSize * CGFloat(rows))) / CGFloat(max(1, rows - 1)))
     hitSize = Self.dotSize + max(0, min(horizontalSpacing, verticalSpacing))
-    origin = CGPoint(x: padding + (Self.dotSize / 2), y: padding + (Self.dotSize / 2))
+    origin = CGPoint(x: edgeInset + (Self.dotSize / 2), y: edgeInset + (Self.dotSize / 2))
   }
 
   func center(for index: Int) -> CGPoint {
