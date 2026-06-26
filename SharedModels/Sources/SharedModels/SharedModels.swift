@@ -1307,27 +1307,31 @@ public final class CustomCalendarStore: ObservableObject {
             let canonicalDate = canonicalEntryDate(for: entry.date, cadence: cadence)
             let dayKey = formatDate(date: canonicalDate, cadence: cadence)
             let compositeKey = CalendarEntryEntity.makeCompositeKey(calendarId: calendarId, dayKey: dayKey)
+            let normalizedEntry = CalendarEntry(
+                date: canonicalDate,
+                count: entry.count,
+                completed: entry.completed
+            )
 
             if let entryEntity = fetchEntry(compositeKey: compositeKey, in: context) {
-                let normalizedEntry = CalendarEntry(
-                    date: canonicalDate,
-                    count: entry.count,
-                    completed: entry.completed
-                )
                 entryEntity.apply(from: normalizedEntry, calendarId: calendarId, overrideDayKey: dayKey)
             } else {
                 let entryEntity = CalendarEntryEntity(
                     compositeKey: compositeKey,
                     calendarId: calendarId,
                     dayKey: dayKey,
-                    date: canonicalDate,
-                    count: entry.count,
-                    completed: entry.completed
+                    date: normalizedEntry.date,
+                    count: normalizedEntry.count,
+                    completed: normalizedEntry.completed
                 )
                 context.insert(entryEntity)
             }
 
-            try finishHabitMutationReloadingCalendars(in: context)
+            try finishEntryMutationPublishingSnapshot(in: context, calendarId: calendarId) { calendar in
+                var updated = calendar
+                updated.entries[dayKey] = normalizedEntry
+                return updated
+            }
         } catch {
             NSLog("Failed to add entry: \(error)")
         }
@@ -1348,11 +1352,13 @@ public final class CustomCalendarStore: ObservableObject {
             let dayKey = formatDate(date: canonicalDate, cadence: cadence)
             let compositeKey = CalendarEntryEntity.makeCompositeKey(calendarId: calendarId, dayKey: dayKey)
             let existingEntry = fetchEntry(compositeKey: compositeKey, in: context)
+            let updatedEntry: CalendarEntry?
 
             switch trackingType {
             case .binary:
                 if let existingEntry {
                     context.delete(existingEntry)
+                    updatedEntry = nil
                 } else {
                     let entryEntity = CalendarEntryEntity(
                         compositeKey: compositeKey,
@@ -1363,6 +1369,7 @@ public final class CustomCalendarStore: ObservableObject {
                         completed: true
                     )
                     context.insert(entryEntity)
+                    updatedEntry = CalendarEntry(date: canonicalDate, count: 1, completed: true)
                 }
             case .counter:
                 let newCount = (existingEntry?.count ?? 0) + defaultRecordValue
@@ -1379,6 +1386,7 @@ public final class CustomCalendarStore: ObservableObject {
                     existingEntry: existingEntry,
                     context: context
                 )
+                updatedEntry = normalizedEntry
             case .multipleDaily:
                 let newCount = (existingEntry?.count ?? 0) + defaultRecordValue
                 let normalizedEntry = CalendarEntry(
@@ -1394,9 +1402,18 @@ public final class CustomCalendarStore: ObservableObject {
                     existingEntry: existingEntry,
                     context: context
                 )
+                updatedEntry = normalizedEntry
             }
 
-            try finishHabitMutationReloadingCalendars(in: context)
+            try finishEntryMutationPublishingSnapshot(in: context, calendarId: calendarId) { calendar in
+                var updated = calendar
+                if let updatedEntry {
+                    updated.entries[dayKey] = updatedEntry
+                } else {
+                    updated.entries.removeValue(forKey: dayKey)
+                }
+                return updated
+            }
             return true
         } catch {
             NSLog("Failed to quick log entry: \(error)")
@@ -1421,7 +1438,11 @@ public final class CustomCalendarStore: ObservableObject {
             for entry in entries {
                 context.delete(entry)
             }
-            try finishHabitMutationReloadingCalendars(in: context)
+            try finishEntryMutationPublishingSnapshot(in: context, calendarId: calendarId) { calendar in
+                var updated = calendar
+                updated.entries.removeAll()
+                return updated
+            }
         } catch {
             NSLog("Failed to clear entries: \(error)")
         }
@@ -1437,7 +1458,11 @@ public final class CustomCalendarStore: ObservableObject {
             let compositeKey = CalendarEntryEntity.makeCompositeKey(calendarId: calendarId, dayKey: dayKey)
             guard let target = fetchEntry(compositeKey: compositeKey, in: context) else { return }
             context.delete(target)
-            try finishHabitMutationReloadingCalendars(in: context)
+            try finishEntryMutationPublishingSnapshot(in: context, calendarId: calendarId) { calendar in
+                var updated = calendar
+                updated.entries.removeValue(forKey: dayKey)
+                return updated
+            }
         } catch {
             NSLog("Failed to delete entry: \(error)")
         }
@@ -1462,21 +1487,35 @@ public final class CustomCalendarStore: ObservableObject {
                 context.delete(entry)
             }
 
+            var acceptedReplacementEntries: [String: CalendarEntry] = [:]
             for (dayKey, entry) in replacementEntries {
                 let canonicalDate = LocalDayCalendar.startOfDay(for: entry.date)
                 guard canonicalDate >= start && canonicalDate <= end else { continue }
-                let entryEntity = CalendarEntryEntity(
-                    compositeKey: CalendarEntryEntity.makeCompositeKey(calendarId: calendarEntity.id, dayKey: dayKey),
-                    calendarId: calendarEntity.id,
-                    dayKey: dayKey,
+                let normalizedEntry = CalendarEntry(
                     date: canonicalDate,
                     count: entry.count,
                     completed: entry.completed
                 )
+                acceptedReplacementEntries[dayKey] = normalizedEntry
+                let entryEntity = CalendarEntryEntity(
+                    compositeKey: CalendarEntryEntity.makeCompositeKey(calendarId: calendarEntity.id, dayKey: dayKey),
+                    calendarId: calendarEntity.id,
+                    dayKey: dayKey,
+                    date: normalizedEntry.date,
+                    count: normalizedEntry.count,
+                    completed: normalizedEntry.completed
+                )
                 context.insert(entryEntity)
             }
 
-            try finishHabitMutationReloadingCalendars(in: context)
+            try finishEntryMutationPublishingSnapshot(in: context, calendarId: calendarId) { calendar in
+                var updated = calendar
+                updated.entries = calendar.entries.filter { _, entry in
+                    entry.date < start || entry.date > end
+                }
+                updated.entries.merge(acceptedReplacementEntries) { _, new in new }
+                return updated
+            }
         } catch {
             NSLog("Failed to replace Apple Health entries: \(error)")
         }
@@ -1566,6 +1605,28 @@ public final class CustomCalendarStore: ObservableObject {
         try persistChanges(in: context)
         let nextVersion = reserveNextDataVersion()
         loadCalendars(showLoadingIndicator: false, targetVersion: nextVersion)
+        WidgetReload.scheduleHabitWidgetsReload()
+    }
+
+    private func finishEntryMutationPublishingSnapshot(
+        in context: ModelContext,
+        calendarId: UUID,
+        updateCalendar: (CustomCalendar) -> CustomCalendar
+    ) throws {
+        try persistChanges(in: context)
+        let nextVersion = reserveNextDataVersion()
+        updateLatestReloadToken(UUID())
+
+        guard !snapshot.isLoading, snapshot.calendars.contains(where: { $0.id == calendarId }) else {
+            loadCalendars(showLoadingIndicator: false, targetVersion: nextVersion)
+            WidgetReload.scheduleHabitWidgetsReload()
+            return
+        }
+
+        let updatedCalendars = snapshot.calendars.map { calendar in
+            calendar.id == calendarId ? updateCalendar(calendar) : calendar
+        }
+        publishSnapshot(calendars: updatedCalendars, isLoading: false, dataVersion: nextVersion)
         WidgetReload.scheduleHabitWidgetsReload()
     }
 

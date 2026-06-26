@@ -98,6 +98,7 @@ struct OnboardingSessionTests {
         }
 
         coordinator.session.tinyHabitCalendarId = calendar.id
+        _ = coordinator.resolvedFirstCalendarForView(in: CustomCalendarStoreSnapshot(calendars: [calendar]))
 
         coordinator.firstDotMarkDayOneTapped()
         coordinator.firstDotMarkDayOneTapped()
@@ -118,6 +119,7 @@ struct OnboardingSessionTests {
         }
 
         coordinator.session.tinyHabitCalendarId = calendar.id
+        _ = coordinator.resolvedFirstCalendarForView(in: CustomCalendarStoreSnapshot(calendars: [calendar]))
 
         coordinator.firstDotMarkDayOneTapped()
 
@@ -150,78 +152,6 @@ struct OnboardingSessionTests {
         #expect(coordinator.currentStep == .firstDot)
         #expect(coordinator.session.tinyHabitCalendarId != nil)
         #expect(resolved?.id == coordinator.session.tinyHabitCalendarId)
-    }
-
-    @Test func positivePreReviewGateRoutesToReviewRequest() {
-        let coordinator = OnboardingCoordinator(onFinish: {})
-
-        coordinator.preReviewGateAnswered(.positive)
-
-        #expect(coordinator.session.preReviewGateWasPositive)
-        #expect(coordinator.currentStep == .reviewRequest)
-    }
-
-    @Test func nonPositivePreReviewGateRoutesToNotifications() {
-        let coordinator = OnboardingCoordinator(onFinish: {})
-
-        coordinator.preReviewGateAnswered(.negative)
-
-        #expect(!coordinator.session.preReviewGateWasPositive)
-        #expect(coordinator.currentStep == .notificationPermission)
-    }
-
-    @Test func skippedPreReviewGateRoutesToNotifications() {
-        let coordinator = OnboardingCoordinator(onFinish: {})
-
-        coordinator.preReviewGateAnswered(nil)
-
-        #expect(!coordinator.session.preReviewGateWasPositive)
-        #expect(coordinator.currentStep == .notificationPermission)
-    }
-
-    @Test func reviewNotNowAdvancesWithoutMarkingReviewRequested() {
-        let coordinator = OnboardingCoordinator(onFinish: {})
-
-        coordinator.reviewRequestSkipped()
-
-        #expect(!coordinator.session.didRequestReview)
-        #expect(coordinator.currentStep == .notificationPermission)
-    }
-
-    @Test func reviewRequestWaitsBeforeAdvancing() async {
-        var requestCount = 0
-        let coordinator = OnboardingCoordinator(
-            onFinish: {},
-            reviewRequester: { requestCount += 1 },
-            reviewPromptDelayNanoseconds: 1_000_000
-        )
-
-        coordinator.reviewRequestStarted()
-
-        #expect(requestCount == 1)
-        #expect(coordinator.isRequestingReview)
-        #expect(coordinator.currentStep == .emotionalHook)
-
-        try? await Task.sleep(nanoseconds: 2_000_000)
-
-        #expect(!coordinator.isRequestingReview)
-        #expect(coordinator.session.didRequestReview)
-        #expect(coordinator.currentStep == .notificationPermission)
-    }
-
-    @Test func reviewSkipTracksSkippedActionOnce() {
-        let analytics = SpyAnalytics()
-        let coordinator = OnboardingCoordinator(onFinish: {}, analytics: analytics)
-
-        coordinator.reviewRequestSkipped()
-        coordinator.reviewRequestSkipped()
-
-        #expect(analytics.actions == [.reviewSkipped])
-        #expect(analytics.events.map(\.event) == [
-            .onboardingStepViewed,
-            .onboardingActionPerformed,
-            .onboardingStepViewed
-        ])
     }
 
     @Test func notificationSkipAdvancesWithoutRecordingDecline() {
@@ -312,9 +242,6 @@ struct OnboardingSessionTests {
         coordinator.firstDotMarkDayOneTapped()
         coordinator.firstDotMarkDayOneTapped()
         coordinator.firstDotContinueTapped()
-        coordinator.preReviewGateAnswered(.positive)
-        coordinator.reviewRequestAnswered()
-        coordinator.reviewRequestAnswered()
         coordinator.notificationPermissionSkipped()
         coordinator.notificationPermissionSkipped()
         coordinator.readyWidgetsCompleted()
@@ -332,11 +259,11 @@ struct OnboardingSessionTests {
             .onboardingActionPerformed,
             .onboardingStepViewed,
             .onboardingActionPerformed,
+            .activationCompleted,
             .onboardingStepViewed,
             .onboardingActionPerformed,
             .onboardingStepViewed,
             .onboardingActionPerformed,
-            .onboardingStepViewed,
             .onboardingActionPerformed,
             .onboardingStepViewed,
             .onboardingActionPerformed
@@ -345,7 +272,6 @@ struct OnboardingSessionTests {
             .identityCompleted,
             .tinyHabitCreated,
             .firstDotMarked,
-            .reviewRequested,
             .notificationsSkipped,
             .readyContinued,
             .paywallBoundaryReached,
@@ -387,8 +313,6 @@ struct OnboardingSessionTests {
             "identity_commitment",
             "tiny_habit_selection",
             "first_dot",
-            "pre_review_gate",
-            "review_request",
             "notification_permission",
             "ready_widgets",
             "paywall"

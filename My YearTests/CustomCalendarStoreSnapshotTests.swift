@@ -21,9 +21,10 @@ struct CustomCalendarStoreSnapshotTests {
         let shell = makeCalendar(id: fixedID(1), name: "Run")
         var hydrated = shell
         hydrated.entries = [key: entry]
+        let hydratedCalendar = hydrated
 
         let store = makeStore(
-            fetchCalendarsLoader: { _ in [hydrated] },
+            fetchCalendarsLoader: { _ in [hydratedCalendar] },
             fetchCalendarShellsLoader: { _ in [shell] }
         )
 
@@ -68,6 +69,31 @@ struct CustomCalendarStoreSnapshotTests {
         )
         #expect(store.snapshot.dataVersion == startingVersion + 1)
         #expect(store.snapshot.calendars.first(where: { $0.id == calendar.id })?.entry(for: entry.date)?.count == 1)
+    }
+
+    @Test func addEntryUpdatesSnapshotWithoutRefetchingAllCalendars() async throws {
+        let loader = FetchCountingLoader()
+        let store = makeStore(fetchCalendarsLoader: loader.loader)
+        try await waitUntilLoaded(store)
+
+        let calendar = makeCalendar(name: "No Refetch")
+        store.addCalendar(calendar)
+        try await waitUntilLoaded(store) { snapshot in
+            snapshot.calendars.contains(where: { $0.id == calendar.id })
+        }
+
+        loader.reset()
+        let startingVersion = store.snapshot.dataVersion
+        let entry = CalendarEntry(date: makeDate(year: 2026, month: 1, day: 4), count: 1, completed: true)
+        store.addEntry(calendarId: calendar.id, entry: entry)
+
+        try await waitUntilLoaded(store, minimumVersion: startingVersion + 1) { snapshot in
+            snapshot.calendars.first(where: { $0.id == calendar.id })?.entry(for: entry.date)?.count == 1
+        }
+
+        #expect(!loader.didFetch)
+        #expect(!store.snapshot.isLoading)
+        #expect(store.snapshot.dataVersion == startingVersion + 1)
     }
 
     @Test func staleReloadCannotOverwriteNewerMutation() async throws {
@@ -176,6 +202,32 @@ struct CustomCalendarStoreSnapshotTests {
 
     private func fixedID(_ value: UInt8) -> UUID {
         UUID(uuidString: String(format: "00000000-0000-0000-0000-%012d", Int(value)))!
+    }
+}
+
+private final class FetchCountingLoader: @unchecked Sendable {
+    private let lock = NSLock()
+    private var fetchCount = 0
+
+    var didFetch: Bool {
+        lock.lock()
+        defer { lock.unlock() }
+        return fetchCount > 0
+    }
+
+    var loader: @Sendable (ModelContainer) throws -> [CustomCalendar] {
+        { [self] container in
+            lock.lock()
+            fetchCount += 1
+            lock.unlock()
+            return CustomCalendarStore.fetchCalendarsSnapshot(container: container)
+        }
+    }
+
+    func reset() {
+        lock.lock()
+        fetchCount = 0
+        lock.unlock()
     }
 }
 

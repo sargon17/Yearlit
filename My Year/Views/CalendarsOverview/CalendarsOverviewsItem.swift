@@ -12,9 +12,8 @@ import SwiftUI
 
 struct CalendarsOverviewsItem: View {
     let calendar: CustomCalendar
-    @ObservedObject var store: CustomCalendarStore
+    let store: CustomCalendarStore
     @State private var showDeleteConfirmation = false
-    @Environment(\.colorScheme) private var colorScheme
 
     private let latestSlotsCount = 56
     private let rowsCount = 4
@@ -120,39 +119,12 @@ extension CalendarsOverviewsItem {
     }
 
     private var latestSlotColors: [Color] {
-        let cachePrefix = "\(calendar.id.uuidString)|"
-        CacheStore.shared.removeMatching(scope: .overviewSlots) { identifier in
-            identifier.hasPrefix(cachePrefix) && identifier != latestSlotsCacheIdentifier
-        }
-
-        let cacheKey = CacheKey(scope: .overviewSlots, identifier: latestSlotsCacheIdentifier)
-        if let cached: [Color] = CacheStore.shared.get(cacheKey) { return cached }
-
-        let colors = buildLatestSlotColors()
-        CacheStore.shared.set(cacheKey, value: colors)
-        return colors
-    }
-
-    private var latestSlotsCacheIdentifier: String {
-        let snapshot = store.snapshot
-        let daySeedKey = dayKey(for: todayStart)
-        let schemeKey = colorScheme == .dark ? "dark" : "light"
-        let timeZoneKey = TimeZone.autoupdatingCurrent.identifier
-        let hydrationKey = snapshot.isLoading ? "loading" : "hydrated"
-        return [
-            calendar.id.uuidString,
-            "\(snapshot.dataVersion)",
-            hydrationKey,
-            calendar.cadence.rawValue,
-            daySeedKey,
-            "\(latestSlotsCount)",
-            schemeKey,
-            timeZoneKey
-        ].joined(separator: "|")
+        buildLatestSlotColors()
     }
 
     private func buildLatestSlotColors() -> [Color] {
         let counts = calendar.entries.values.map { $0.count }
+        let scale = precomputeRobustDotScale(for: counts)
         let futureColor = futureDayColor()
         let todayColor = activeDayColor()
         let missedColor = missedDayColor()
@@ -169,7 +141,7 @@ extension CalendarsOverviewsItem {
                 return entry.completed ? Color(calendar.color) : emptyColor
             case .counter:
                 if entry.count > 0 {
-                    let ratio = counterDotFillRatio(count: entry.count, counts: counts)
+                    let ratio = counterDotFillRatio(count: entry.count, precomputedScale: scale)
                     return GarnishColor.blend(.surfaceMuted, with: Color(calendar.color), ratio: ratio)
                 }
                 return emptyColor

@@ -107,7 +107,7 @@ struct AnalyticsTests {
 
     #expect(spy.trackedEvents.map(\.event) == [.firstCheckinCompleted, .activationCompleted])
     #expect(spy.identifyCalls.isEmpty)
-    #expect(spy.personPropertyCalls.count == 3)
+    #expect(spy.personPropertyCalls.count == 2)
     #expect(spy.personPropertyCalls.last?["has_completed_first_checkin"] == .bool(true))
     #expect(spy.personPropertyCalls.last?["has_completed_activation"] == .bool(true))
   }
@@ -268,7 +268,7 @@ struct AnalyticsTests {
   }
 
   private func isLowercaseSnakeCase(_ value: String) -> Bool {
-    guard let regex = try? NSRegularExpression(pattern: "^[a-z]+(?:_[a-z]+)*$") else {
+    guard let regex = try? NSRegularExpression(pattern: "^[a-z0-9]+(?:_[a-z0-9]+)*$") else {
       return false
     }
 

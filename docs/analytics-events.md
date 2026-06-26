@@ -109,10 +109,10 @@ Owned by #99.
 
 | Event | Notes |
 | --- | --- |
-| `onboarding_step_viewed` | Fires when the onboarding coordinator transitions to a step that is actually shown. Include only `step_id`. Allowed `step_id` values: `emotional_hook`, `app_explanation`, `identity_commitment`, `tiny_habit_selection`, `first_dot`, `pre_review_gate`, `review_request`, `notification_permission`, `ready_widgets`, `paywall`. |
-| `onboarding_action_performed` | Fires for coarse onboarding actions only. Include only `action`. Allowed `action` values: `identity_completed`, `tiny_habit_created`, `first_dot_marked`, `review_requested`, `review_skipped`, `notifications_requested`, `notifications_skipped`, `ready_continued`, `paywall_boundary_reached`, `paywall_closed`. |
+| `onboarding_step_viewed` | Fires when the onboarding coordinator transitions to a step that is actually shown. Include only `step_id`. Allowed `step_id` values: `emotional_hook`, `app_explanation`, `identity_commitment`, `tiny_habit_selection`, `first_dot`, `notification_permission`, `ready_widgets`, `paywall`. |
+| `onboarding_action_performed` | Fires for coarse onboarding actions only. Include only `action`. Allowed `action` values: `identity_completed`, `tiny_habit_created`, `first_dot_marked`, `notifications_requested`, `notifications_skipped`, `ready_continued`, `paywall_boundary_reached`, `paywall_closed`. |
 
-Do not send identity commitment IDs, selected habit strings, calendar IDs, calendar names, habit names, notification text, notes, goal text, or any other user-entered content in these events.
+Do not send identity commitment IDs, tiny habit IDs, selected habit strings, calendar IDs, calendar names, habit names, notification text, notes, goal text, or any other user-entered content in these events.
 
 ## Calendar and activation events
 
@@ -149,6 +149,17 @@ Owned by #91.
 | `recap_milestone_celebrations_enabled_changed` | Include `enabled`. |
 | `recap_view_viewed` | Recap View is actually viewed. |
 | `calendars_overview_viewed` | Calendars overview sheet is opened/viewed. |
+
+## Review events
+
+| Event | Notes |
+| --- | --- |
+| `review_satisfaction_prompt_viewed` | Review satisfaction prompt is shown. Include coarse prompt context only. |
+| `review_satisfaction_prompt_answered` | User answers the review satisfaction prompt. Include coarse answer metadata only. |
+| `review_feedback_started` | User starts the private feedback flow. Do not include feedback text. |
+| `review_feedback_submitted` | Private feedback submission succeeds. Do not include feedback text. |
+| `review_feedback_submit_failed` | Private feedback submission fails. Include coarse failure category only. |
+| `app_store_review_requested` | Native App Store review request is triggered. Include coarse trigger context only. |
 
 ## Paywall and sharing events
 

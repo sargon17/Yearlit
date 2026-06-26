@@ -1,6 +1,14 @@
 import Foundation
 import SharedModels
 import SwiftUI
+import UIKit
+
+struct CalendarGridDay {
+  let date: Date
+  let color: Color
+  let colorSaturation: CGFloat
+  let isDisabled: Bool
+}
 
 struct CalendarRenderSnapshot {
   let activeCalendar: CustomCalendar
@@ -11,8 +19,7 @@ struct CalendarRenderSnapshot {
   let visibleGridDates: [Date]
   let your365HeaderTitle: String?
   let currentPeriodReferenceDate: Date?
-  let mappedGridDays: [(date: Date, color: Color)]
-  let disabledGridDates: Set<Date>
+  let gridDays: [CalendarGridDay]
   let cacheKey: String
 }
 
@@ -25,6 +32,8 @@ enum CalendarRenderSnapshotCache {
   static func snapshot(
     calendar: CustomCalendar,
     selectedYear: Int,
+    dataVersion: Int,
+    isLoading: Bool,
     timelineMode: CalendarTimelineMode,
     today: Date,
     colorScheme: ColorScheme,
@@ -33,6 +42,8 @@ enum CalendarRenderSnapshotCache {
     let cacheKey = makeCacheKey(
       calendar: calendar,
       selectedYear: selectedYear,
+      dataVersion: dataVersion,
+      isLoading: isLoading,
       timelineMode: timelineMode,
       today: today,
       colorScheme: colorScheme,
@@ -118,45 +129,61 @@ enum CalendarRenderSnapshotCache {
       visibleGridDates: visibleGridDates,
       your365HeaderTitle: your365HeaderTitle,
       currentPeriodReferenceDate: currentPeriodReferenceDate,
-      mappedGridDays: makeMappedGridDays(
+      gridDays: makeGridDays(
         calendar: calendar,
         dates: visibleGridDates,
         today: today,
-        your365Snapshot: your365Snapshot
+        your365Snapshot: your365Snapshot,
+        disabledDates: disabledGridDates
       ),
-      disabledGridDates: disabledGridDates,
       cacheKey: cacheKey
     )
   }
 
-  private static func makeMappedGridDays(
+  private static func makeGridDays(
     calendar: CustomCalendar,
     dates: [Date],
     today: Date,
-    your365Snapshot: Your365Snapshot?
-  ) -> [(date: Date, color: Color)] {
+    your365Snapshot: Your365Snapshot?,
+    disabledDates: Set<Date>
+  ) -> [CalendarGridDay] {
     let cellsByDate = Dictionary(uniqueKeysWithValues: your365Snapshot?.cells.map { ($0.date, $0) } ?? [])
     let counts = calendar.entries.values.map { $0.count }
     let scale = precomputeRobustDotScale(for: counts)
 
     return dates.map { date in
+      let color: Color
       if let cell = cellsByDate[date] {
-        return (
-          date: date,
-          color: colorForYour365Day(
-            cell,
-            calendar: calendar,
-            today: today,
-            precomputedScale: scale
-          )
+        color = colorForYour365Day(
+          cell,
+          calendar: calendar,
+          today: today,
+          precomputedScale: scale
         )
+      } else {
+        color = colorForDay(date, calendar: calendar, today: today, precomputedScale: scale)
       }
 
-      return (
+      return CalendarGridDay(
         date: date,
-        color: colorForDay(date, calendar: calendar, today: today, precomputedScale: scale)
+        color: color,
+        colorSaturation: saturation(for: color),
+        isDisabled: disabledDates.contains(date)
       )
     }
+  }
+
+  private static func saturation(for color: Color) -> CGFloat {
+    let uiColor = UIColor(color)
+    var hue: CGFloat = 0
+    var saturation: CGFloat = 0
+    var brightness: CGFloat = 0
+    var alpha: CGFloat = 0
+
+    guard uiColor.getHue(&hue, saturation: &saturation, brightness: &brightness, alpha: &alpha) else {
+      return 0
+    }
+    return saturation
   }
 
   private static func colorForYour365Day(
@@ -183,6 +210,8 @@ enum CalendarRenderSnapshotCache {
   private static func makeCacheKey(
     calendar: CustomCalendar,
     selectedYear: Int,
+    dataVersion: Int,
+    isLoading: Bool,
     timelineMode: CalendarTimelineMode,
     today: Date,
     colorScheme: ColorScheme,
@@ -191,6 +220,8 @@ enum CalendarRenderSnapshotCache {
     [
       "calendar-render-v1",
       "\(selectedYear)",
+      "\(dataVersion)",
+      isLoading ? "loading" : "hydrated",
       timelineMode.rawValue,
       dayKey(for: today),
       colorScheme == .dark ? "dark" : "light",
@@ -213,16 +244,7 @@ enum CalendarRenderSnapshotCache {
       "\(calendar.recurringReminderEnabled)",
       calendar.reminderHour.map(String.init) ?? "",
       calendar.reminderMinute.map(String.init) ?? "",
-      entriesSignature(calendar.entries)
+      "\(calendar.entries.count)"
     ].joined(separator: "~")
-  }
-
-  private static func entriesSignature(_ entries: [String: CalendarEntry]) -> String {
-    entries
-      .sorted { $0.key < $1.key }
-      .map { key, entry in
-        "\(key):\(dayKey(for: entry.date)):\(entry.count):\(entry.completed)"
-      }
-      .joined(separator: ",")
   }
 }

@@ -81,8 +81,7 @@ final class OnboardingCoordinator: ObservableObject {
 
     if calendar.bucketDate(for: date) == calendar.bucketDate(for: Date()) {
       session.didCompleteFirstDot = completed
-      if completed {
-        trackOnboardingAction(.firstDotMarked)
+      if completed, trackOnboardingAction(.firstDotMarked) {
         analytics.markActivationCompleted(source: .onboardingFirstDot)
       }
     }
@@ -208,8 +207,10 @@ final class OnboardingCoordinator: ObservableObject {
     analytics.trackOnboardingStepViewed(stepId: step.rawValue)
   }
 
-  private func trackOnboardingAction(_ action: OnboardingAction) {
-    guard trackedOnboardingActions.insert(action).inserted else { return }
+  @discardableResult
+  private func trackOnboardingAction(_ action: OnboardingAction) -> Bool {
+    guard trackedOnboardingActions.insert(action).inserted else { return false }
     analytics.trackOnboardingAction(action)
+    return true
   }
 }

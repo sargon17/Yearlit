@@ -111,7 +111,7 @@ struct LegacyDataMigrationTests {
         let empty = try #require(calendars.first(where: { $0.id == emptyCalendar.id }))
 
         #expect(tracked.trackingStartedAt == bucketDate)
-        #expect(empty.trackingStartedAt == Date.distantPast)
+        #expect(empty.trackingStartedAt == LocalDayCalendar.startOfDay(for: Date.distantPast))
         #expect(fixture.defaults.bool(forKey: LegacyPersistenceKeys.trackingStartedAtBackfillMigrationFlagKey))
     }
 
@@ -314,7 +314,7 @@ struct LegacyDataMigrationTests {
         refreshedContext.autosaveEnabled = false
         let reloaded = try #require(refreshedContext.fetch(FetchDescriptor<HabitCalendarEntity>()).first)
 
-        #expect(reloaded.trackingStartedAt == oldStart)
+        #expect(reloaded.trackingStartedAt == LocalDayCalendar.startOfDay(for: oldStart))
         #expect(fixture.defaults.bool(forKey: LegacyPersistenceKeys.trackingStartedAtBackfillMigrationFlagKey))
     }
 

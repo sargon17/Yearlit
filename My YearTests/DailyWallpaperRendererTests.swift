@@ -43,12 +43,12 @@ struct DailyWallpaperRendererTests {
     }
   }
 
-	  @Test func templateDispatchProducesDistinctLayouts() throws {
-	    let fingerprints = try DailyWallpaperTemplate.allCases.map { template in
-	      let settings = wallpaperSettings(template: template, theme: .dark)
-	      let image = try render(settings: settings, referenceDate: referenceDate)
-	      return try fingerprint(of: image)
-	    }
+  @Test func templateDispatchProducesDistinctLayouts() throws {
+    let fingerprints = try DailyWallpaperTemplate.allCases.map { template in
+      let settings = wallpaperSettings(template: template, theme: .dark)
+      let image = try render(settings: settings, referenceDate: referenceDate)
+      return try fingerprint(of: image)
+    }
 
     #expect(Set(fingerprints).count == DailyWallpaperTemplate.allCases.count)
   }
@@ -194,11 +194,15 @@ private struct PixelColor {
     color.getRed(&red, green: &green, blue: &blue, alpha: &alpha)
 
     self.init(
-      red: UInt8(red * 255),
-      green: UInt8(green * 255),
-      blue: UInt8(blue * 255),
-      alpha: UInt8(alpha * 255)
+      red: Self.byte(from: red),
+      green: Self.byte(from: green),
+      blue: Self.byte(from: blue),
+      alpha: Self.byte(from: alpha)
     )
+  }
+
+  private static func byte(from component: CGFloat) -> UInt8 {
+    UInt8((min(1, max(0, component)) * 255).rounded())
   }
 
   func isClose(to color: UIColor, maximumDistance: Double = 3) -> Bool {

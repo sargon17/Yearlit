@@ -68,6 +68,8 @@ struct CustomCalendarView: View {
     return CalendarRenderSnapshotCache.snapshot(
       calendar: activeCalendar,
       selectedYear: selectedYear,
+      dataVersion: snapshot.dataVersion,
+      isLoading: snapshot.isLoading,
       timelineMode: timelinePreference.mode,
       today: today,
       colorScheme: colorScheme,
@@ -511,10 +513,7 @@ struct CustomCalendarView: View {
                 {
                   let quickAddDate = renderSnapshot.currentPeriodReferenceDate ?? currentDayDate
                   let isCompletedToday =
-                    store.getEntry(
-                      calendarId: activeCalendar.id,
-                      date: quickAddDate
-                    )?.completed == true
+                    activeCalendar.entry(for: quickAddDate)?.completed == true
                   Button(action: {
                     handleQuickAdd()
                   }) {
@@ -622,8 +621,7 @@ struct CustomCalendarView: View {
 
         GridView(
           handleDayTap: handleDayTap,
-          mappedDays: renderSnapshot.mappedGridDays,
-          disabledDates: renderSnapshot.disabledGridDates,
+          days: renderSnapshot.gridDays,
           rippleOriginDate: checkInRippleOriginDate,
           rippleTrigger: checkInRippleTrigger
         )

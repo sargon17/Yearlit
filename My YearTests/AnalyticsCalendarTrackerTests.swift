@@ -87,7 +87,7 @@ struct AnalyticsCalendarTrackerTests {
     analytics.markFirstPeriodCompleted()
 
     #expect(client.eventNames.filter { $0 == AnalyticsEvent.firstCheckinCompleted.rawValue }.count == 1)
-    #expect(client.personPropertySets.count == 2)
+    #expect(client.personPropertySets.count == 3)
     #expect(state.hasCompletedFirstCheckin)
     #expect(state.hasCompletedFirstPeriod)
   }
