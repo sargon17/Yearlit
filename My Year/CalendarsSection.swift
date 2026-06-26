@@ -22,6 +22,7 @@ struct CalendarsSection: View {
   @State private var pendingCalendarId: String?
   @State private var isTimelinePreferenceSheetPresented = false
   @State private var hasTrackedRecapView = false
+  @State private var lastHapticSlideId: String?
 
   var body: some View {
     let snapshot = store.snapshot
@@ -157,11 +158,13 @@ struct CalendarsSection: View {
         .onAppear {
           let currentId = position.viewID(type: String.self) ?? slideIds.first
           visibleSlideId = currentId
+          lastHapticSlideId = currentId
           trackRecapViewIfNeeded(for: currentId)
         }
         .onChange(of: position.viewID(type: String.self)) { _, newValue in
           if let newValue {
             visibleSlideId = newValue
+            playSlideSettledHapticIfNeeded(for: newValue)
           }
           trackRecapViewIfNeeded(for: newValue)
         }
@@ -313,5 +316,14 @@ struct CalendarsSection: View {
     guard viewID == "recap", !hasTrackedRecapView else { return }
     hasTrackedRecapView = true
     Analytics.shared.track(.recapViewViewed)
+  }
+
+  private func playSlideSettledHapticIfNeeded(for slideId: String) {
+    guard lastHapticSlideId != slideId else { return }
+    lastHapticSlideId = slideId
+
+    Task {
+      await hapticFeedback(.soft)
+    }
   }
 }

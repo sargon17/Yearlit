@@ -59,7 +59,6 @@ struct GridView: View {
       }
     }
     .frame(maxWidth: .infinity, maxHeight: .infinity)
-    .padding(.horizontal)
   }
 
   private func gridCanvas(
@@ -236,7 +235,7 @@ private struct CalendarGridLayout {
   private let origin: CGPoint
 
   init(size: CGSize, dayCount: Int) {
-    let edgeInset: CGFloat = 0
+    let edgeInset: CGFloat = 16
     let availableWidth = max(0, size.width - (edgeInset * 2))
     let availableHeight = max(1, size.height - (edgeInset * 2))
     let aspectRatio = max(0.001, availableWidth / availableHeight)
