@@ -103,7 +103,8 @@ struct CustomCalendarView: View {
   }
 
   private func canPresentEntryEditSheet(for calendar: CustomCalendar) -> Bool {
-    checkInSheetEnabled && !calendar.isAppleHealthConnected
+    guard !calendar.isAppleHealthConnected else { return false }
+    return checkInSheetEnabled || calendar.trackingType != .binary
   }
 
   private func canShowAppleHealthDebugControls(for calendar: CustomCalendar) -> Bool {
@@ -255,24 +256,7 @@ struct CustomCalendarView: View {
       return
     }
 
-    if canPresentEntryEditSheet(for: activeCalendar) {
-      presentEntryEditSheet(calendar: activeCalendar, date: date)
-      return
-    }
-
-    Task { @MainActor in
-      await hapticFeedback()
-      quickEntry(
-        calendar: activeCalendar,
-        date: date,
-        calendarStore: store,
-        source: .calendar
-      )
-
-      triggerCheckInRipple(from: date)
-      checkIfReachedThreeDays(activeCalendar)
-      scheduleMilestoneCheck()
-    }
+    presentEntryEditSheet(calendar: activeCalendar, date: date)
   }
 
   private func presentEntryEditSheet(calendar: CustomCalendar, date: Date) {
