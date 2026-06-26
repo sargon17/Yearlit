@@ -255,8 +255,24 @@ struct CustomCalendarView: View {
       return
     }
 
-    guard canPresentEntryEditSheet(for: activeCalendar) else { return }
-    presentEntryEditSheet(calendar: activeCalendar, date: date)
+    if canPresentEntryEditSheet(for: activeCalendar) {
+      presentEntryEditSheet(calendar: activeCalendar, date: date)
+      return
+    }
+
+    Task { @MainActor in
+      await hapticFeedback()
+      quickEntry(
+        calendar: activeCalendar,
+        date: date,
+        calendarStore: store,
+        source: .calendar
+      )
+
+      triggerCheckInRipple(from: date)
+      checkIfReachedThreeDays(activeCalendar)
+      scheduleMilestoneCheck()
+    }
   }
 
   private func presentEntryEditSheet(calendar: CustomCalendar, date: Date) {
