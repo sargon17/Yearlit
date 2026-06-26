@@ -206,6 +206,9 @@ struct My_YearApp: App {
         )
       }
       .onAppear {
+        #if DEBUG
+          DebugSwipeCalendarSeeder.seedIfRequested(onboarding: onboarding)
+        #endif
         updateTimelinePreferencePresentation()
         trackOnboardingStartedIfNeeded()
       }

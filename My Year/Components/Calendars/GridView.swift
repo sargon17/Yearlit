@@ -121,6 +121,17 @@ struct GridView: View {
     ripple: CalendarGridRipple,
     phase: Double
   ) {
+    guard phase != 0 else {
+      let rect = CGRect(
+        x: center.x - (CalendarGridLayout.dotSize / 2),
+        y: center.y - (CalendarGridLayout.dotSize / 2),
+        width: CalendarGridLayout.dotSize,
+        height: CalendarGridLayout.dotSize
+      )
+      context.fill(Path(roundedRect: rect, cornerRadius: 3), with: .color(baseColor))
+      return
+    }
+
     let isHighlighting = phase > 0
     let isRecoiling = phase < 0
     let highlightForce = phase * ripple.intensity
