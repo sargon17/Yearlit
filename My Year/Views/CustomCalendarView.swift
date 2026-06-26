@@ -286,22 +286,32 @@ struct CustomCalendarView: View {
     }
   }
 
+  private func handleCheckInButtonTap(calendar: CustomCalendar, date: Date) {
+    if canPresentEntryEditSheet(for: calendar) {
+      presentEntryEditSheet(calendar: calendar, date: date)
+    } else {
+      handleQuickAdd(calendar: calendar, date: date)
+    }
+  }
+
   private func handleQuickAdd() {
     let state = renderSnapshot
-    let activeCalendar = state.activeCalendar
-    guard !activeCalendar.isAppleHealthConnected else { return }
-    let entryDate = state.currentPeriodReferenceDate ?? Date()
+    handleQuickAdd(calendar: state.activeCalendar, date: state.currentPeriodReferenceDate ?? Date())
+  }
+
+  private func handleQuickAdd(calendar: CustomCalendar, date: Date) {
+    guard !calendar.isAppleHealthConnected else { return }
 
     Task { @MainActor in
       await hapticFeedback()
       quickEntry(
-        calendar: activeCalendar,
-        date: entryDate,
+        calendar: calendar,
+        date: date,
         calendarStore: store,
         source: .calendar
       )
 
-      checkIfReachedThreeDays(activeCalendar)
+      checkIfReachedThreeDays(calendar)
       scheduleMilestoneCheck()
     }
   }
@@ -680,9 +690,9 @@ struct CustomCalendarView: View {
         }
         let checkInDate = renderSnapshot.currentPeriodReferenceDate ?? Date()
 
-        if canPresentEntryEditSheet(for: activeCalendar) {
+        if !activeCalendar.isAppleHealthConnected {
           Button {
-            presentEntryEditSheet(calendar: activeCalendar, date: checkInDate)
+            handleCheckInButtonTap(calendar: activeCalendar, date: checkInDate)
           } label: {
             Text("check in")
               .frame(maxWidth: .infinity)
