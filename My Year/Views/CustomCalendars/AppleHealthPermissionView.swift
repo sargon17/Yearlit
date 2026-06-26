@@ -30,10 +30,10 @@ struct AppleHealthPermissionView: View {
             "Yearlit only reads \(metric.defaultCalendarName.lowercased()). "
               + "It does not write to Apple Health."
           )
-            .font(.footnote)
-            .foregroundStyle(.textTertiary)
+          .font(.footnote)
+          .foregroundStyle(.textTertiary)
 
-          Text("After connecting, you will choose the Calendar name, color, and daily target.")
+          Text("After connecting, Yearlit previews your imported days before creating the Calendar.")
             .font(.footnote)
             .foregroundStyle(.textTertiary)
         }
@@ -118,10 +118,12 @@ struct AppleHealthPermissionView: View {
 
     do {
       try await healthService.requestAuthorization(for: metric)
+      CalendarAnalyticsTracker.shared.trackAppleHealthPermissionResult(metric, didGrantAccess: true)
       router.showScreen(.push) { _ in
         AppleHealthMetricCalendarConfigView(metric: metric, onCreate: onCreate)
       }
     } catch {
+      CalendarAnalyticsTracker.shared.trackAppleHealthPermissionResult(metric, didGrantAccess: false)
       needsSettings = true
       calendarError = .appleHealthSyncFailed(error)
     }

@@ -7,6 +7,10 @@ enum AnalyticsEvent: String, CaseIterable {
   case activationCompleted = "activation_completed"
 
   case calendarCreated = "calendar_created"
+  case appleHealthMetricSelected = "apple_health_metric_selected"
+  case appleHealthPermissionResult = "apple_health_permission_result"
+  case appleHealthImportPreviewLoaded = "apple_health_import_preview_loaded"
+  case appleHealthCalendarCreated = "apple_health_calendar_created"
   case calendarArchived = "calendar_archived"
   case calendarUnarchived = "calendar_unarchived"
   case checkinCompleted = "checkin_completed"
