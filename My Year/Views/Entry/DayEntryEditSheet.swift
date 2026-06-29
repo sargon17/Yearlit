@@ -13,6 +13,7 @@ struct DayEntryEditSheet: View {
   let onDismiss: (() -> Void)?
 
   @State private var selectedDate: Date
+  @State private var presentedDate: Date
   @State private var entryCount: Int
   @State private var entryCompleted: Bool
 
@@ -28,9 +29,10 @@ struct DayEntryEditSheet: View {
     self.store = store
     self.onSave = onSave
     self.onDismiss = onDismiss
-    // Initialize state based on existing entry or defaults
-    let existingEntry = store.getEntry(calendarId: calendar.id, date: date)
-    _selectedDate = State(initialValue: Self.bucketDate(for: date, cadence: calendar.cadence))
+    let bucketedDate = Self.bucketDate(for: date, cadence: calendar.cadence)
+    let existingEntry = store.getEntry(calendarId: calendar.id, date: bucketedDate)
+    _selectedDate = State(initialValue: bucketedDate)
+    _presentedDate = State(initialValue: bucketedDate)
     _entryCount = State(initialValue: existingEntry?.count ?? 0)
     _entryCompleted = State(initialValue: existingEntry?.completed ?? false)
   }
@@ -128,6 +130,12 @@ struct DayEntryEditSheet: View {
     .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
     .surfaceBackground(Color("surface-muted"), ignoresSafeArea: true)
     .navigationBarTitleDisplayMode(.large)
+    .onAppear {
+      syncPresentedDate(date)
+    }
+    .onChange(of: date) { _, newDate in
+      syncPresentedDate(newDate)
+    }
     .onDisappear {
       onDismiss?()
     }
@@ -139,6 +147,14 @@ struct DayEntryEditSheet: View {
         entryCount = 0
       }
     }
+  }
+
+  private func syncPresentedDate(_ date: Date) {
+    let bucketedDate = Self.bucketDate(for: date, cadence: calendar.cadence)
+    guard bucketedDate != presentedDate else { return }
+    presentedDate = bucketedDate
+    selectedDate = bucketedDate
+    fillExistingProgressIfPresent(for: bucketedDate)
   }
 
   @ViewBuilder
