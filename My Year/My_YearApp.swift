@@ -257,9 +257,11 @@ struct My_YearApp: App {
     AnalyticsState.shared.updateRevenueCatAppUserID(revenueCatAppUserID)
     AnalyticsState.shared.markAppleAdsAdServicesEnabled()
     Purchases.shared.attribution.setAttributes([
+      "$posthogUserId": postHogDistinctID,
       "posthog_distinct_id": postHogDistinctID,
       "revenuecat_app_user_id": revenueCatAppUserID
     ])
+    Purchases.shared.syncAttributesAndOfferingsIfNeeded { _, _ in }
     Purchases.shared.attribution.enableAdServicesAttributionTokenCollection()
     Analytics.shared.updatePersonProperties()
   }
