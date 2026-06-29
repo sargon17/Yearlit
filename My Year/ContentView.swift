@@ -23,12 +23,19 @@ struct ContentView: View {
             .onChange(of: snapshot.dataVersion) { _, newVersion in
                 notificationCoordinator.calendarDataVersionChanged(to: newVersion)
             }
+            .onChange(of: snapshot.isLoading) { _, isLoading in
+                guard !isLoading else { return }
+                Task {
+                    await runHydratedLaunchWork()
+                }
+            }
             .task {
-                await notificationCoordinator.appLaunched(onboardingSeen: onboarding.hasSeenOnboarding)
-                await appleHealthSyncService.syncAllConnectedCalendars()
+                guard !store.snapshot.isLoading else { return }
+                await runHydratedLaunchWork()
             }
             .onChange(of: scenePhase) { _, newPhase in
                 guard newPhase == .active else { return }
+                guard !store.snapshot.isLoading else { return }
                 notificationCoordinator.appBecameActive(onboardingSeen: onboarding.hasSeenOnboarding)
                 Task {
                     await appleHealthSyncService.syncAllConnectedCalendars()
@@ -38,10 +45,17 @@ struct ContentView: View {
                 notificationCoordinator.onboardingSeenChanged(to: hasSeenOnboarding)
             }
             .onReceive(NotificationCenter.default.publisher(for: .notificationAuthorizationChanged)) { _ in
-                notificationCoordinator.notificationAuthorizationChanged(onboardingSeen: onboarding.hasSeenOnboarding)
+                notificationCoordinator.notificationAuthorizationChanged(
+                    onboardingSeen: onboarding.hasSeenOnboarding
+                )
             }
             .toolbarBackground(.hidden, for: .navigationBar)
             .font(AppFont.mono(17))
+    }
+
+    private func runHydratedLaunchWork() async {
+        await notificationCoordinator.appLaunched(onboardingSeen: onboarding.hasSeenOnboarding)
+        await appleHealthSyncService.syncAllConnectedCalendars()
     }
 }
 

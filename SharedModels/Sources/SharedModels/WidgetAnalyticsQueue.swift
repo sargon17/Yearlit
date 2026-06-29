@@ -88,7 +88,11 @@ public struct WidgetAnalyticsEvent: Codable, Equatable {
     public let timestamp: Date
     public let properties: [String: WidgetAnalyticsPropertyValue]
 
-    public init(name: String, timestamp: Date = Date(), properties: [String: WidgetAnalyticsPropertyValue] = [:]) {
+    public init(
+        name: String,
+        timestamp: Date = Date(),
+        properties: [String: WidgetAnalyticsPropertyValue] = [:]
+    ) {
         self.name = name
         self.timestamp = timestamp
         self.properties = properties
@@ -103,6 +107,7 @@ public final class WidgetAnalyticsQueue {
     private let encoder = JSONEncoder()
     private let decoder = JSONDecoder()
     private let retention: TimeInterval = 60 * 60 * 24 * 7
+    private let maxStoredEvents = 500
 
     public init(defaults: UserDefaults? = UserDefaults(suiteName: SharedAppGroup.id)) {
         self.defaults = defaults
@@ -129,7 +134,7 @@ public final class WidgetAnalyticsQueue {
     public func drain() -> [WidgetAnalyticsEvent] {
         guard let defaults else { return [] }
 
-        let events = load().filter { Date().timeIntervalSince($0.timestamp) <= retention }
+        let events = retainedEvents(now: Date())
         defaults.removeObject(forKey: storageKey)
         return events
     }
@@ -137,13 +142,22 @@ public final class WidgetAnalyticsQueue {
     private func enqueue(_ event: WidgetAnalyticsEvent) {
         guard let defaults else { return }
 
-        var events = load().filter { Date().timeIntervalSince($0.timestamp) <= retention }
+        var events = retainedEvents(now: Date())
         if Self.shouldDedupe(event) {
             let dedupeKey = Self.deduplicationKey(for: event)
             events.removeAll { Self.deduplicationKey(for: $0) == dedupeKey }
         }
         events.append(event)
-        defaults.set(encode(events), forKey: storageKey)
+        defaults.set(encode(capped(events)), forKey: storageKey)
+    }
+
+    private func retainedEvents(now: Date) -> [WidgetAnalyticsEvent] {
+        load().filter { now.timeIntervalSince($0.timestamp) <= retention }
+    }
+
+    private func capped(_ events: [WidgetAnalyticsEvent]) -> [WidgetAnalyticsEvent] {
+        guard events.count > maxStoredEvents else { return events }
+        return Array(events.suffix(maxStoredEvents))
     }
 
     private func load() -> [WidgetAnalyticsEvent] {
@@ -165,7 +179,7 @@ public final class WidgetAnalyticsQueue {
     }
 
     private static func deduplicationKey(for event: WidgetAnalyticsEvent) -> String {
-        let day = ISO8601DateFormatter().string(from: Calendar.current.startOfDay(for: event.timestamp))
+        let day = DayKeyFormatter.shared.string(from: LocalDayCalendar.startOfDay(for: event.timestamp))
         let properties = event.properties
             .map { "\($0.key)=\($0.value.hashableDescription)" }
             .sorted()

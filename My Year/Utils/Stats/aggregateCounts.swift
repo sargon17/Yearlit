@@ -7,10 +7,11 @@ func aggregateCounts(
 ) -> (totalCount: Int, perDayTotal: [Date: Int]) {
     var totalCount = 0
     var perDayTotal: [Date: Int] = [:]
-    for calendar in calendars {
-        for entry in calendar.entries.values {
+    let bucketedEntries = buildEntriesByCalendarByBucket(calendars: calendars)
+    for entriesByBucket in bucketedEntries.values {
+        for (bucketDate, entry) in entriesByBucket {
             totalCount += entry.count
-            let day = cal.startOfDay(for: entry.date)
+            let day = cal.startOfDay(for: bucketDate)
             perDayTotal[day, default: 0] += entry.count
         }
     }

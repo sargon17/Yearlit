@@ -35,9 +35,11 @@ struct SettingsView: View {
     .surfaceBackground(Color("surface-muted"), ignoresSafeArea: true)
     .navigationTitle("Settings")
     .onAppear {
-      Purchases.shared.getCustomerInfo { info, _ in
-        customerInfo = info
-        AnalyticsState.shared.updatePremiumStatus(customerInfo: info)
+      if RevenueCatClient.isConfigured {
+        Purchases.shared.getCustomerInfo { info, _ in
+          customerInfo = info
+          AnalyticsState.shared.updatePremiumStatus(customerInfo: info)
+        }
       }
     }
   }

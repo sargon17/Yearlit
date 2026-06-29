@@ -120,24 +120,6 @@ struct ReviewSatisfactionSheet: View {
     }
   }
 
-  private var closeButton: some View {
-    Button {
-      trackAnswer("not_now")
-      close()
-    } label: {
-      Image(systemName: "xmark")
-        .font(.system(size: 15, weight: .semibold))
-        .foregroundStyle(.textSecondary)
-        .frame(width: 44, height: 44)
-        .contentShape(Rectangle())
-    }
-    .buttonStyle(.plain)
-    .background(.surfaceMuted.opacity(0.75), in: Circle())
-    .accessibilityLabel("Not now")
-    .padding(.top, 18)
-    .padding(.trailing, 10)
-  }
-
   private var trimmedFeedback: String {
     feedbackText.trimmingCharacters(in: .whitespacesAndNewlines)
   }

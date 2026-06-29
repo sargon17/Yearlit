@@ -18,38 +18,50 @@ struct CalendarStatsPeriodSeries {
   }
 }
 
-func buildCalendarStatsPeriodSeries(
-  cal: Calendar,
-  calendar: CustomCalendar,
-  entriesByBucket: [Date: CalendarEntry],
-  q75: Double?,
-  startDate: Date,
-  todayLocal: Date
-) -> CalendarStatsPeriodSeries {
-  let component: Calendar.Component = calendar.cadence == .weekly ? .weekOfYear : .day
-  let currentPeriodStart = statsPeriodStart(cal: cal, cadence: calendar.cadence, date: todayLocal)
-  var cursor = statsPeriodStart(cal: cal, cadence: calendar.cadence, date: startDate)
+struct CalendarStatsPeriodSeriesInput {
+  let cal: Calendar
+  let calendar: CustomCalendar
+  let entriesByBucket: [Date: CalendarEntry]
+  let q75: Double?
+  let startDate: Date
+  let todayLocal: Date
+}
+
+struct RollingStats {
+  let completionRateTrailingLongWindow: Double
+  let averageProgressTrailingShortWindow: Double
+  let averageProgressTrailingLongWindow: Double
+}
+
+func buildCalendarStatsPeriodSeries(_ input: CalendarStatsPeriodSeriesInput) -> CalendarStatsPeriodSeries {
+  let component: Calendar.Component = input.calendar.cadence == .weekly ? .weekOfYear : .day
+  let currentPeriodStart = statsPeriodStart(
+    cal: input.cal,
+    cadence: input.calendar.cadence,
+    date: input.todayLocal
+  )
+  var cursor = statsPeriodStart(cal: input.cal, cadence: input.calendar.cadence, date: input.startDate)
   var points: [CalendarStatsPeriodPoint] = []
 
   while cursor <= currentPeriodStart {
-    let entry = entriesByBucket[cursor]
+    let entry = input.entriesByBucket[cursor]
     points.append(
       CalendarStatsPeriodPoint(
         date: cursor,
         entry: entry,
-        isSuccess: isEntrySuccess(entry, calendar: calendar),
-        progress: normalizedProgress(for: calendar, entry: entry, q75: q75),
+        isSuccess: isEntrySuccess(entry, calendar: input.calendar),
+        progress: normalizedProgress(for: input.calendar, entry: entry, q75: input.q75),
         isClosed: cursor < currentPeriodStart
       )
     )
 
-    guard let next = cal.date(byAdding: component, value: 1, to: cursor) else {
+    guard let next = input.cal.date(byAdding: component, value: 1, to: cursor) else {
       break
     }
-    cursor = statsPeriodStart(cal: cal, cadence: calendar.cadence, date: next)
+    cursor = statsPeriodStart(cal: input.cal, cadence: input.calendar.cadence, date: next)
   }
 
-  return CalendarStatsPeriodSeries(cadence: calendar.cadence, points: points)
+  return CalendarStatsPeriodSeries(cadence: input.calendar.cadence, points: points)
 }
 
 func statsPeriodStart(cal: Calendar, cadence: CalendarCadence, date: Date) -> Date {
@@ -61,21 +73,27 @@ func statsPeriodStart(cal: Calendar, cadence: CalendarCadence, date: Date) -> Da
   }
 }
 
-func computeRollingStats(from series: CalendarStatsPeriodSeries) -> (cr30: Double, avg7: Double, avg30: Double) {
+func computeRollingStats(from series: CalendarStatsPeriodSeries) -> RollingStats {
   let longCount = series.cadence == .weekly ? 12 : 30
   let shortCount = series.cadence == .weekly ? 4 : 7
   let points = Array(series.points.suffix(longCount))
-  guard !points.isEmpty else { return (0, 0, 0) }
+  guard !points.isEmpty else {
+    return RollingStats(
+      completionRateTrailingLongWindow: 0,
+      averageProgressTrailingShortWindow: 0,
+      averageProgressTrailingLongWindow: 0
+    )
+  }
 
   let successCount = points.filter(\.isSuccess).count
   let shortPoints = Array(points.suffix(shortCount))
   let longProgressSum = points.reduce(0) { $0 + $1.progress }
   let shortProgressSum = shortPoints.reduce(0) { $0 + $1.progress }
 
-  return (
-    cr30: Double(successCount) / Double(points.count),
-    avg7: shortProgressSum / Double(shortPoints.count),
-    avg30: longProgressSum / Double(points.count)
+  return RollingStats(
+    completionRateTrailingLongWindow: Double(successCount) / Double(points.count),
+    averageProgressTrailingShortWindow: shortProgressSum / Double(shortPoints.count),
+    averageProgressTrailingLongWindow: longProgressSum / Double(points.count)
   )
 }
 
@@ -100,9 +118,9 @@ func computeWeekdayRates(
   var rates: [Int: Double] = [:]
   var best: (day: Int, rate: Double)?
   for (weekday, total) in totals {
-    let rate = total.count > 0 ? total.sum / Double(total.count) : 0
+    let rate = total.count >= 1 ? total.sum / Double(total.count) : 0
     rates[weekday] = rate
-    if best == nil || rate > best!.rate {
+    if best.map({ rate > $0.rate }) ?? true {
       best = (weekday, rate)
     }
   }
@@ -116,34 +134,23 @@ func computeWeekdayRates(
 func computeMonthlyRates(
   cal: Calendar,
   year: Int,
-  todayLocal: Date,
   trackingType: TrackingType,
   series: CalendarStatsPeriodSeries
 ) -> [Int: Double] {
   var monthly: [Int: Double] = [:]
   for month in 1...12 {
-    guard let monthStart = cal.date(from: DateComponents(year: year, month: month, day: 1)),
-      let dayRange = cal.range(of: .day, in: .month, for: monthStart)
-    else {
-      continue
-    }
-
-    let isCurrentMonth =
-      year == cal.component(.year, from: todayLocal) && month == cal.component(.month, from: todayLocal)
-    let lastDay = isCurrentMonth ? cal.component(.day, from: todayLocal) : dayRange.count
-    guard lastDay > 0 else {
-      monthly[month] = 0
-      continue
-    }
-
     let monthPoints = series.points.filter { point in
       cal.component(.year, from: point.date) == year && cal.component(.month, from: point.date) == month
     }
 
     switch series.cadence {
     case .daily:
+      guard !monthPoints.isEmpty else {
+        monthly[month] = 0
+        continue
+      }
       let successes = monthPoints.filter(\.isSuccess).count
-      monthly[month] = Double(successes) / Double(lastDay)
+      monthly[month] = Double(successes) / Double(monthPoints.count)
     case .weekly:
       guard !monthPoints.isEmpty else {
         monthly[month] = 0

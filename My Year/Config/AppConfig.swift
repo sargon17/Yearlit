@@ -19,15 +19,15 @@ enum AppConfig {
     )
   }()
 
-  static let revenueCatAPIKey: String = {
+  static let revenueCatAPIKey: String? = {
     guard
       let key = Bundle.main.object(forInfoDictionaryKey: "REVENUECAT_API_KEY") as? String,
-      !key.isEmpty
+      !key.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
     else {
-      fatalError("Missing REVENUECAT_API_KEY")
+      return nil
     }
 
-    return key
+    return key.trimmingCharacters(in: .whitespacesAndNewlines)
   }()
 
   static let wishConfiguration: WishConfiguration? = {

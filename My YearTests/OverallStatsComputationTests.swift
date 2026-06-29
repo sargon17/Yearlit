@@ -60,6 +60,32 @@ struct OverallStatsComputationTests {
     #expect(derived.zByDay[3] == 0)
   }
 
+  @Test func aggregateCountsDoNotDoubleCountDuplicateDailyRows() {
+    let date = makeDate(year: 2026, month: 1, day: 2)
+    let calendar = CustomCalendar(
+      name: "Counter",
+      color: "qs-emerald",
+      trackingType: .counter,
+      trackingStartedAt: makeDate(year: 2026, month: 1, day: 1),
+      dailyTarget: 1,
+      entries: [
+        "stale-low": CalendarEntry(date: date, count: 2, completed: true),
+        "stale-high": CalendarEntry(date: date, count: 5, completed: true)
+      ]
+    )
+
+    let derived = computeOverviewDerivedSnapshot(
+      calendars: [calendar],
+      year: 2026,
+      dates: [date],
+      todayLocal: date,
+      currentPeriodReferenceDate: date
+    )
+
+    #expect(derived.statsBundle.basic.totalCount == 5)
+    #expect(derived.statsBundle.currentPeriodCount == 5)
+  }
+
   @Test func computeStreaksHandlesSparseSuccessDays() {
     let calendar = Calendar(identifier: .gregorian)
     let today = makeDate(year: 2026, month: 1, day: 5)
@@ -143,6 +169,31 @@ struct OverallStatsComputationTests {
     #expect(bundle.currentPeriodCount == 4)
   }
 
+  @Test func weeklyCounterEntriesOnDifferentDaysStillSumWithinBucket() {
+    let firstDate = makeDate(year: 2026, month: 1, day: 5)
+    let secondDate = makeDate(year: 2026, month: 1, day: 6)
+    let weeklyCalendar = makeCalendar(
+      name: "Weekly Counter",
+      trackingType: .counter,
+      entries: [
+        CalendarEntry(date: firstDate, count: 4, completed: true),
+        CalendarEntry(date: secondDate, count: 3, completed: true)
+      ],
+      cadence: .weekly
+    )
+
+    let bundle = computeOverviewDerivedSnapshot(
+      calendars: [weeklyCalendar],
+      year: 2026,
+      dates: getYearDatesArray(for: 2026),
+      todayLocal: secondDate,
+      currentPeriodReferenceDate: secondDate
+    ).statsBundle
+
+    #expect(bundle.basic.totalCount == 7)
+    #expect(bundle.currentPeriodCount == 7)
+  }
+
   @Test func currentMissedPeriodsSkipsTheOpenCurrentDay() {
     let today = makeDate(year: 2026, month: 1, day: 5)
     let calendar = makeCalendar(
@@ -160,6 +211,28 @@ struct OverallStatsComputationTests {
     )
 
     #expect(bundle.currentMissedPeriods == 2)
+  }
+
+  @Test func monthlyRateUsesTrackedDaysAfterTrackingStart() {
+    let today = makeDate(year: 2026, month: 1, day: 12)
+    let calendar = makeCalendar(
+      name: "Started Later",
+      trackingType: .binary,
+      entries: [
+        makeEntry(year: 2026, month: 1, day: 10, count: 1, completed: true),
+        makeEntry(year: 2026, month: 1, day: 11, count: 1, completed: true)
+      ],
+      trackingStartedAt: makeDate(year: 2026, month: 1, day: 10)
+    )
+
+    let bundle = computeCalendarStatsBundle(
+      calendar: calendar,
+      year: 2026,
+      todayLocal: today,
+      currentPeriodReferenceDate: today
+    )
+
+    #expect(bundle.monthlyRates[1] == 2.0 / 3.0)
   }
 
   @Test func currentMissedPeriodsStopsAtPreviousSuccess() {

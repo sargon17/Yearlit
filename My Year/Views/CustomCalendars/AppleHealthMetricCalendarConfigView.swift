@@ -1,7 +1,6 @@
 import SharedModels
 import SwiftUI
 import SwiftfulRouting
-import UIKit
 
 struct AppleHealthMetricCalendarConfigView: View {
   let metric: AppleHealthMetric
@@ -17,7 +16,6 @@ struct AppleHealthMetricCalendarConfigView: View {
   @State private var needsSettings = false
   @FocusState private var isNameFocused: Bool
   @Environment(\.router) private var router
-  @Environment(\.openURL) private var openURL
 
   private let healthService = AppleHealthMetricService()
 
@@ -49,51 +47,18 @@ struct AppleHealthMetricCalendarConfigView: View {
     importedValues
   }
 
-  private var previewEntries: [String: CalendarEntry] {
-    guard let previewValues else { return [:] }
-    return AppleHealthMetricEntryMapper.entries(from: previewValues, target: dailyTarget)
-  }
-
-  private var importedDayCount: Int {
-    previewValues?.count ?? 0
-  }
-
-  private var completedDayCount: Int {
-    previewEntries.values.filter(\.completed).count
-  }
-
-  private var averageValue: Int? {
-    guard let values = previewValues?.values, !values.isEmpty else { return nil }
-    return Int((Double(values.reduce(0, +)) / Double(values.count)).rounded())
-  }
-
-  private var targetSuggestions: [Int] {
-    var suggestions = [metric.defaultTarget]
-    if let averageValue, averageValue > 0 {
-      suggestions.append(averageValue)
-    }
-    return Array(Set(suggestions))
-      .filter { $0 > 0 }
-      .sorted()
-  }
-
   var body: some View {
     ScrollView {
       VStack(spacing: 32) {
         CustomSeparator()
           .padding(.horizontal, -16)
 
-        CustomSection(label: "Calendar Name") {
-          TextField(
-            "",
-            text: $name,
-            prompt: Text(metric.defaultCalendarName).foregroundColor(.white.opacity(0.2))
-          )
-          .inputStyle(color: Color(selectedColor))
-          .focused($isNameFocused)
-        }
-
-        CalendarColorPickerSection(selectedColor: $selectedColor)
+        CalendarIdentityLCDSection(
+          name: $name,
+          selectedColor: $selectedColor,
+          prompt: metric.defaultCalendarName,
+          isNameFocused: $isNameFocused
+        )
 
         CustomSection(label: "Daily Target") {
           VStack(alignment: .leading, spacing: 8) {
@@ -133,7 +98,19 @@ struct AppleHealthMetricCalendarConfigView: View {
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(.horizontal, 8)
 
-        importPreviewSection
+        AppleHealthImportPreviewSection(
+          metric: metric,
+          selectedColor: Color(selectedColor),
+          dailyTarget: $dailyTarget,
+          previewValues: previewValues,
+          isLoadingPreview: isLoadingPreview,
+          needsSettings: needsSettings,
+          onRetry: {
+            Task {
+              await loadImportPreview()
+            }
+          }
+        )
 
         CustomSeparator()
           .padding(.horizontal, -16)
@@ -253,110 +230,6 @@ struct AppleHealthMetricCalendarConfigView: View {
       needsSettings = true
       calendarError = .appleHealthSyncFailed(error)
     }
-  }
-
-  @ViewBuilder
-  private var importPreviewSection: some View {
-    CustomSection(label: "Import Preview") {
-      VStack(spacing: 2) {
-        if isLoadingPreview {
-          HStack(spacing: 8) {
-            ProgressView()
-              .tint(.textPrimary)
-            Text("Reading Apple Health")
-              .labelStyle(type: .secondary)
-            Spacer()
-          }
-          .padding()
-          .sameLevelBorder(isFlat: true)
-        } else if let previewValues {
-          if previewValues.isEmpty {
-            VStack(alignment: .leading, spacing: 8) {
-              Text("No current-year data found.")
-                .labelStyle(type: .secondary)
-              Text("Yearlit needs at least one Apple Health value to create this Calendar.")
-                .font(.footnote)
-                .foregroundStyle(.textTertiary)
-            }
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .padding()
-            .sameLevelBorder(isFlat: true)
-          } else {
-            previewRow(title: "Imported days", value: importedDayCount.formatted(.number))
-            previewRow(title: "Completed at target", value: completedDayCount.formatted(.number))
-            if let averageValue {
-              previewRow(title: "Average imported day", value: averageValue.formatted(.number))
-            }
-
-            if targetSuggestions.count > 1 {
-              VStack(alignment: .leading, spacing: 8) {
-                Text("Target suggestions")
-                  .labelStyle(type: .secondary)
-
-                HStack(spacing: 8) {
-                  ForEach(targetSuggestions, id: \.self) { target in
-                    Button {
-                      dailyTarget = target
-                    } label: {
-                      Text(target.formatted(.number))
-                        .font(.footnote.weight(.bold))
-                        .padding(.horizontal, 10)
-                        .padding(.vertical, 8)
-                        .frame(minWidth: 64)
-                    }
-                    .sameLevelBorder(isFlat: true)
-                    .foregroundStyle(target == dailyTarget ? Color(selectedColor) : .textSecondary)
-                  }
-                }
-              }
-              .frame(maxWidth: .infinity, alignment: .leading)
-              .padding()
-              .sameLevelBorder(isFlat: true)
-            }
-          }
-        } else {
-          VStack(spacing: 10) {
-            Button("Retry Apple Health Import") {
-              Task {
-                await loadImportPreview()
-              }
-            }
-            .frame(maxWidth: .infinity, alignment: .center)
-            .fontWeight(.bold)
-            .padding()
-            .sameLevelBorder()
-
-            if needsSettings {
-              Button("Open Settings") {
-                if let settingsURL = URL(string: UIApplication.openSettingsURLString) {
-                  openURL(settingsURL)
-                }
-              }
-              .frame(maxWidth: .infinity, alignment: .center)
-              .fontWeight(.bold)
-              .padding()
-              .sameLevelBorder()
-            }
-          }
-          .foregroundStyle(.textSecondary)
-        }
-      }
-      .padding(.all, 2)
-      .sameLevelGroupBackground()
-    }
-  }
-
-  private func previewRow(title: LocalizedStringKey, value: String) -> some View {
-    HStack {
-      Text(title)
-        .labelStyle(type: .secondary)
-      Spacer()
-      Text(value)
-        .fontWeight(.bold)
-        .foregroundStyle(.textPrimary)
-    }
-    .padding()
-    .sameLevelBorder(isFlat: true)
   }
 
   private static func currentYearStartDate() -> Date {

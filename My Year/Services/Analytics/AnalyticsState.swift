@@ -93,7 +93,7 @@ final class AnalyticsState {
     let snapshot = CustomCalendarStore.shared.snapshot
     let activeCalendars = snapshot.activeCalendars
 
-    var properties: [String: AnalyticsPropertyValue] = [
+    let properties: [String: AnalyticsPropertyValue] = [
       "days_since_install": .int(daysSinceInstall),
       "app_version": .string(
         Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "unknown"),

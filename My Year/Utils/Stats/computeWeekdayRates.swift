@@ -12,11 +12,11 @@ func computeWeekdayRates(
     }
 
     var weekdayRates: [Int: Double] = [:]
-    var best: (day: Int, rate: Double)? = nil
+    var best: (day: Int, rate: Double)?
     for (wd, pair) in wdTotals {
         let r = pair.denomDays > 0 ? pair.sumZ / Double(pair.denomDays) : 0
         weekdayRates[wd] = r
-        if best == nil || r > best!.rate { best = (wd, r) }
+        if best.map({ r > $0.rate }) ?? true { best = (wd, r) }
     }
     return (weekdayRates, best)
 }

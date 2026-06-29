@@ -9,14 +9,7 @@ struct TinyHabitSelectionView: View {
 
   var body: some View {
     OnboardingStepContainer {
-      GeometryReader { proxy in
-        let size = CGFloat(1000)
-        let color = GarnishColor.blend(.textPrimary, with: .surfaceMuted, ratio: 0.9)
-
-        // here should be probably some content
-
-      }
-
+      Color.clear
     } content: {
       VStack(alignment: .leading, spacing: 12) {
         OnboardingView.Title("Make it tiny.")

@@ -23,9 +23,9 @@ final class CalendarAnalyticsTracker {
   private let analytics: Analytics
   private let state: AnalyticsState
 
-  init(analytics: Analytics = .shared, state: AnalyticsState = .shared) {
-    self.analytics = analytics
-    self.state = state
+  init(analytics: Analytics? = nil, state: AnalyticsState? = nil) {
+    self.analytics = analytics ?? .shared
+    self.state = state ?? .shared
   }
 
   func trackCalendarCreated(calendar: CustomCalendar, isFirstCalendar: Bool) {
@@ -125,7 +125,11 @@ final class CalendarAnalyticsTracker {
     newEntry: CalendarEntry?,
     source: CalendarAnalyticsSource
   ) {
-    let transition = entryTransition(for: calendar, oldEntry: oldEntry, newEntry: newEntry)
+    let transition = CalendarEntryAnalyticsTransition(
+      calendar: calendar,
+      oldEntry: oldEntry,
+      newEntry: newEntry
+    )
 
     if transition.checkinCompleted {
       analytics.track(
@@ -214,55 +218,4 @@ final class CalendarAnalyticsTracker {
     ]) { _, new in new }
   }
 
-  private func entryTransition(
-    for calendar: CustomCalendar,
-    oldEntry: CalendarEntry?,
-    newEntry: CalendarEntry?
-  ) -> EntryTransition {
-    let hadProgress = hasProgress(for: calendar, entry: oldEntry)
-    let hasProgress = hasProgress(for: calendar, entry: newEntry)
-    let wasComplete = isComplete(for: calendar, entry: oldEntry)
-    let isComplete = isComplete(for: calendar, entry: newEntry)
-    let period = calendar.cadence == .daily ? "day" : "week"
-
-    return EntryTransition(
-      checkinCompleted: !hadProgress && hasProgress,
-      checkinRemoved: hadProgress && !hasProgress,
-      periodCompleted: supportsPeriodCompletion(calendar: calendar) && !wasComplete && isComplete,
-      periodUncompleted: supportsPeriodCompletion(calendar: calendar) && wasComplete && !isComplete,
-      period: period
-    )
-  }
-
-  private func supportsPeriodCompletion(calendar: CustomCalendar) -> Bool {
-    calendar.trackingType != .counter
-  }
-
-  private func hasProgress(for calendar: CustomCalendar, entry: CalendarEntry?) -> Bool {
-    guard let entry else { return false }
-    switch calendar.trackingType {
-    case .binary:
-      return entry.completed
-    case .counter, .multipleDaily:
-      return entry.count >= 1
-    }
-  }
-
-  private func isComplete(for calendar: CustomCalendar, entry: CalendarEntry?) -> Bool {
-    guard let entry else { return false }
-    switch calendar.trackingType {
-    case .binary, .multipleDaily:
-      return entry.completed
-    case .counter:
-      return false
-    }
-  }
-
-  private struct EntryTransition {
-    let checkinCompleted: Bool
-    let checkinRemoved: Bool
-    let periodCompleted: Bool
-    let periodUncompleted: Bool
-    let period: String
-  }
 }

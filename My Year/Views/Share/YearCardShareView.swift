@@ -29,42 +29,26 @@ struct YearCardShareView: View {
     }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            header
+        ShareCardContainer {
+            VStack(alignment: .leading, spacing: 8) {
+                ShareCardHeader(
+                    title: calendar.name.capitalized,
+                    titleLineLimit: 2,
+                    titleMinimumScaleFactor: 0.6
+                )
 
-            CustomSeparator()
-                .padding(.horizontal, -28)
+                CustomSeparator()
+                    .padding(.horizontal, -28)
 
-            ShareCalendarGridView(calendar: calendar, dates: dates)
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                ShareCalendarGridView(calendar: calendar, dates: dates)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
 
-            statsSection
+                statsSection
 
-            CustomSeparator()
-                .padding(.horizontal, -28)
-            footer
-        }
-        .padding()
-        .background(
-            RoundedRectangle(cornerRadius: 12, style: .continuous)
-                .fill(Color("surface-muted"))
-                .overlay(NoiseLayer(opacity: 1, blendMode: nil))
-        )
-        .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
-        .overlay(
-            RoundedRectangle(cornerRadius: 12, style: .continuous)
-                .stroke(Color("devider-top"), lineWidth: 1)
-        )
-    }
-
-    private var header: some View {
-        VStack(alignment: .leading, spacing: 6) {
-            Text(calendar.name.capitalized)
-                .font(AppFont.mono(18))
-                .foregroundColor(Color("text-primary"))
-                .fontWeight(.black)
-                .lineLimit(2)
-                .minimumScaleFactor(0.6)
+                CustomSeparator()
+                    .padding(.horizontal, -28)
+                ShareCardFooter()
+            }
         }
     }
 
@@ -118,7 +102,4 @@ struct YearCardShareView: View {
         }
     }
 
-    private var footer: some View {
-        ShareCardFooter()
-    }
 }

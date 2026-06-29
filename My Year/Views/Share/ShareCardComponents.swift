@@ -39,6 +39,31 @@ struct ShareCardFooter: View {
     }
 }
 
+struct ShareCardHeader: View {
+    let title: String
+    var subtitle: String?
+    var titleSize: CGFloat = 18
+    var titleLineLimit = 1
+    var titleMinimumScaleFactor: CGFloat = 0.7
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 4) {
+            Text(title)
+                .font(AppFont.mono(titleSize))
+                .foregroundColor(Color("text-primary"))
+                .fontWeight(.black)
+                .lineLimit(titleLineLimit)
+                .minimumScaleFactor(titleMinimumScaleFactor)
+
+            if let subtitle {
+                Text(subtitle)
+                    .font(AppFont.mono(12))
+                    .foregroundColor(Color("text-tertiary"))
+            }
+        }
+    }
+}
+
 struct ShareCompactStatTile: View {
     let title: LocalizedStringKey
     let value: String

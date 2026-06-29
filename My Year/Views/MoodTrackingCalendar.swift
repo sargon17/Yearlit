@@ -26,10 +26,14 @@ struct MoodTrackingCalendar: View {
   @State private var showRemainingDays: Bool = true
   @State private var isLabelVisible: Bool = true
 
-  private func colorForDay(_ day: Int) -> Color {
-    let dayDate = store.dateForDay(day)
+  private var currentDayIndex: Int {
+    max(0, store.currentDayNumber - 1)
+  }
 
-    if day > store.currentDayNumber {
+  private func colorForDay(_ day: Int) -> Color {
+    let dayDate = dateForDay(day, in: store.selectedYear)
+
+    if day > currentDayIndex {
       return futureDayColor()
     }
 
@@ -37,13 +41,13 @@ struct MoodTrackingCalendar: View {
       return Color(valuation.mood.color)
     }
 
-    return day == store.currentDayNumber ? activeDayColor() : missedDayColor()
+    return day == currentDayIndex ? activeDayColor() : missedDayColor()
   }
 
   private func handleDayTap(_ day: Int) {
     guard isMoodTrackingEnabled else { return }
-    let date = store.dateForDay(day)
-    if day < store.currentDayNumber {
+    let date = dateForDay(day, in: store.selectedYear)
+    if day <= currentDayIndex {
       valuationPopupDate = date
     }
   }
@@ -58,22 +62,6 @@ struct MoodTrackingCalendar: View {
     if store.getValuation(for: today) == nil {
       lastMoodPromptDayKey = todayKey
       valuationPopupDate = today
-    }
-  }
-
-  private func fillRandomValuations() {
-    let calendar = Calendar.current
-    let today = Date()
-    let startOfYear = calendar.date(
-      from: DateComponents(year: store.selectedYear, month: 1, day: 1)
-    )!
-
-    for day in 0..<store.currentDayNumber {
-      let date = calendar.date(byAdding: .day, value: day, to: startOfYear)!
-      if date <= today, store.getValuation(for: date) == nil {
-        let randomMood = [DayMood.terrible, .bad, .neutral, .good, .excellent].randomElement()!
-        store.setValuation(randomMood, for: date)
-      }
     }
   }
 

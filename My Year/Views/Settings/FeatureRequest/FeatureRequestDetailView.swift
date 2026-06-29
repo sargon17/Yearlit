@@ -156,18 +156,7 @@ extension FeatureRequestDetailView {
 
   func updateLocalUpvote(isUpvoted: Bool) {
     let delta = isUpvoted ? 1 : -1
-    let updatedCount = max((request.upvoteCount ?? 0) + delta, 0)
-    request = Request(
-      _id: request._id,
-      _creationTime: request._creationTime,
-      text: request.text,
-      description: request.description,
-      clientId: request.clientId,
-      upvoteCount: updatedCount,
-      status: request.status,
-      project: request.project,
-      computedStatus: request.computedStatus
-    )
+    request = request.withUpvoteCount((request.upvoteCount ?? 0) + delta)
   }
 
   func commentRow(comment: FeatureRequestComment) -> some View {

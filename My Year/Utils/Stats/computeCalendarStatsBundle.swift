@@ -13,78 +13,80 @@ func computeCalendarStatsBundle(
   let q75 = counterPercentile75ByCalendar(calendars: [calendar])[calendar.id]
   let basic = computeBasicCalendarStats(for: calendar, today: todayLocal, bucketedEntries: bucketedEntries)
   let series = buildCalendarStatsPeriodSeries(
-    cal: cal,
-    calendar: calendar,
-    entriesByBucket: bucketedEntries,
-    q75: q75,
-    startDate: calendar.trackingStartedAt,
-    todayLocal: todayLocal
+    CalendarStatsPeriodSeriesInput(
+      cal: cal,
+      calendar: calendar,
+      entriesByBucket: bucketedEntries,
+      q75: q75,
+      startDate: calendar.trackingStartedAt,
+      todayLocal: todayLocal
+    )
   )
 
   func entryOn(_ date: Date) -> CalendarEntry? {
     entry(for: calendar, date: date, entriesByCalendarByBucket: entriesByBucket)
   }
 
-  let rollingStats: (cr30: Double, avg7: Double, avg30: Double)
-  let monthly: [Int: Double]
-  let bestWeekday: Int?
-  let weekdayRates: [Int: Double]
-  let volatility: Double
-  let currentMissedPeriods: Int
-  let averageRecoveryPeriods: Double?
-
-  switch calendar.cadence {
-  case .daily:
-    rollingStats = computeRollingStats(from: series)
-    let weekday = computeWeekdayRates(
-      cal: cal,
-      year: year,
-      todayLocal: todayLocal,
-      series: series,
-      normalizeToMax: true
-    )
-    bestWeekday = weekday.best?.day
-    weekdayRates = weekday.weekdayRates
-    monthly = computeMonthlyRates(
-      cal: cal,
-      year: year,
-      todayLocal: todayLocal,
-      trackingType: calendar.trackingType,
-      series: series
-    )
-    volatility = computeVolatility(cal: cal, todayLocal: todayLocal, series: series)
-    currentMissedPeriods = computeCurrentMissedPeriods(from: series)
-    averageRecoveryPeriods = computeAverageRecoveryPeriods(from: series)
-  case .weekly:
-    rollingStats = computeRollingStats(from: series)
-    bestWeekday = nil
-    weekdayRates = [:]
-    monthly = computeMonthlyRates(
-      cal: cal,
-      year: year,
-      todayLocal: todayLocal,
-      trackingType: calendar.trackingType,
-      series: series
-    )
-    volatility = computeVolatility(cal: cal, todayLocal: todayLocal, series: series)
-    currentMissedPeriods = computeCurrentMissedPeriods(from: series)
-    averageRecoveryPeriods = computeAverageRecoveryPeriods(from: series)
-  }
+  let trendStats = computeCalendarTrendStats(
+    cal: cal,
+    calendar: calendar,
+    year: year,
+    todayLocal: todayLocal,
+    series: series
+  )
 
   let currentPeriodCount = currentPeriodReferenceDate.map { entryOn($0)?.count ?? 0 }
 
   return StatsBundle(
     basic: basic,
-    completionRateTrailingLongWindow: rollingStats.cr30,
-    bestWeekday: bestWeekday,
-    weekdayRates: weekdayRates,
-    monthlyRates: monthly,
-    averageProgressTrailingShortWindow: rollingStats.avg7,
-    averageProgressTrailingLongWindow: rollingStats.avg30,
-    volatilityStd: volatility,
-    currentMissedPeriods: currentMissedPeriods,
-    averageRecoveryPeriods: averageRecoveryPeriods,
+    completionRateTrailingLongWindow: trendStats.rolling.completionRateTrailingLongWindow,
+    bestWeekday: trendStats.bestWeekday,
+    weekdayRates: trendStats.weekdayRates,
+    monthlyRates: trendStats.monthlyRates,
+    averageProgressTrailingShortWindow: trendStats.rolling.averageProgressTrailingShortWindow,
+    averageProgressTrailingLongWindow: trendStats.rolling.averageProgressTrailingLongWindow,
+    volatilityStd: trendStats.volatility,
+    currentMissedPeriods: trendStats.currentMissedPeriods,
+    averageRecoveryPeriods: trendStats.averageRecoveryPeriods,
     currentPeriodCount: currentPeriodCount
+  )
+}
+
+private struct CalendarTrendStats {
+  let rolling: RollingStats
+  let bestWeekday: Int?
+  let weekdayRates: [Int: Double]
+  let monthlyRates: [Int: Double]
+  let volatility: Double
+  let currentMissedPeriods: Int
+  let averageRecoveryPeriods: Double?
+}
+
+private func computeCalendarTrendStats(
+  cal: Calendar,
+  calendar: CustomCalendar,
+  year: Int,
+  todayLocal: Date,
+  series: CalendarStatsPeriodSeries
+) -> CalendarTrendStats {
+  let weekday =
+    calendar.cadence == .daily
+    ? computeWeekdayRates(cal: cal, year: year, todayLocal: todayLocal, series: series, normalizeToMax: true)
+    : (weekdayRates: [:], best: nil)
+
+  return CalendarTrendStats(
+    rolling: computeRollingStats(from: series),
+    bestWeekday: weekday.best?.day,
+    weekdayRates: weekday.weekdayRates,
+    monthlyRates: computeMonthlyRates(
+      cal: cal,
+      year: year,
+      trackingType: calendar.trackingType,
+      series: series
+    ),
+    volatility: computeVolatility(cal: cal, todayLocal: todayLocal, series: series),
+    currentMissedPeriods: computeCurrentMissedPeriods(from: series),
+    averageRecoveryPeriods: computeAverageRecoveryPeriods(from: series)
   )
 }
 
@@ -98,7 +100,7 @@ private func computeBasicCalendarStats(
     case .binary:
       return entry.completed
     case .counter, .multipleDaily:
-      return entry.count > 0
+      return entry.hasLoggedCount
     }
   }.count
 

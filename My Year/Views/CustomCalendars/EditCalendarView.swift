@@ -4,58 +4,51 @@ import SwiftUI
 import SwiftfulRouting
 
 struct EditCalendarView: View {
-  @Environment(\.dismiss) private var dismiss: DismissAction
+  @Environment(\.dismiss) var dismiss: DismissAction
   let calendar: CustomCalendar
   let onSave: (CustomCalendar) -> Void
   let onDelete: (CustomCalendar) -> Void
 
-  @State private var customerInfo: CustomerInfo?
-  @State private var name: String
-  @State private var selectedColor: String
-  @State private var cadence: CalendarCadence
-  @State private var trackingType: TrackingType
-  @State private var dailyTarget: Int
-  @State private var recurringReminderEnabled: Bool
-  @State private var reminderTime: Date
-  @State private var reminderWeekday: Int
-  @State private var selectedUnit: UnitOfMeasure?
-  @State private var defaultRecordValue: Int
-  @State private var isArchived: Bool
-  @State private var calendarError: CalendarError?
-  @State private var showingDeleteConfirmation = false
-  @State private var currencySymbol: String
-  @State private var entries: [String: CalendarEntry]
-  @State private var trackingStartedAt: Date
-  @State private var historyMessage: String?
-  @State private var notificationPrivacyMode: NotificationPrivacyMode
-  @State private var suppressWhenCompleted: Bool
-  @State private var additionalReminderTimes: [ReminderTime]
-  @State private var streakProtectionEnabled: Bool
-  @State private var streakProtectionThreshold: Int
-  @State private var showingNotificationSettings: Bool = false
+  @State var customerInfo: CustomerInfo?
+  @State var name: String
+  @State var selectedColor: String
+  @State var cadence: CalendarCadence
+  @State var trackingType: TrackingType
+  @State var dailyTarget: Int
+  @State var selectedUnit: UnitOfMeasure?
+  @State var defaultRecordValue: Int
+  @State var isArchived: Bool
+  @State var calendarError: CalendarError?
+  @State var showingDeleteConfirmation = false
+  @State var currencySymbol: String
+  @State var entries: [String: CalendarEntry]
+  @State var trackingStartedAt: Date
+  @State var historyMessage: String?
+  @State var notificationSettings: NotificationSettingsDraft
+  @State var showingNotificationSettings: Bool = false
 
-  @FocusState private var isNameFocused: Bool
-  @Environment(\.router) private var router
+  @FocusState var isNameFocused: Bool
+  @Environment(\.router) var router
 
-  private var isAppleHealthCalendar: Bool {
+  var isAppleHealthCalendar: Bool {
     calendar.isAppleHealthConnected
   }
 
-  private var appleHealthMetric: AppleHealthMetric? {
+  var appleHealthMetric: AppleHealthMetric? {
     calendar.appleHealthMetric
   }
 
-  private var usesManualValueSettings: Bool {
+  var usesManualValueSettings: Bool {
     !isAppleHealthCalendar && (trackingType == .counter || trackingType == .multipleDaily)
   }
 
-  private var settingsSectionLabel: LocalizedStringKey {
+  var settingsSectionLabel: LocalizedStringKey {
     isAppleHealthCalendar
       ? "Settings for Apple Health"
-      : LocalizedStringKey("Settings for \(trackingTypeLabel)")
+      : LocalizedStringKey("Settings for \(trackingType.displayName)")
   }
 
-  private var targetFieldLabel: String {
+  var targetFieldLabel: String {
     if let metric = appleHealthMetric {
       return metric.targetLabel
     }
@@ -74,9 +67,6 @@ struct EditCalendarView: View {
     _cadence = State(initialValue: calendar.cadence)
     _trackingType = State(initialValue: calendar.trackingType)
     _dailyTarget = State(initialValue: calendar.dailyTarget)
-    _recurringReminderEnabled = State(initialValue: calendar.recurringReminderEnabled)
-    _reminderWeekday = State(
-      initialValue: calendar.reminderWeekday ?? Calendar.current.component(.weekday, from: Date()))
     _selectedUnit = State(initialValue: calendar.unit)
     _defaultRecordValue = State(initialValue: calendar.defaultRecordValue ?? 1)
     _currencySymbol = State(initialValue: calendar.currencySymbol ?? "$")
@@ -84,374 +74,60 @@ struct EditCalendarView: View {
     _entries = State(initialValue: calendar.entries)
     _trackingStartedAt = State(initialValue: calendar.trackingStartedAt)
     _historyMessage = State(initialValue: nil)
-    _notificationPrivacyMode = State(initialValue: calendar.notificationPrivacyMode)
-    _suppressWhenCompleted = State(initialValue: calendar.suppressWhenCompleted)
-    _additionalReminderTimes = State(initialValue: calendar.additionalReminderTimes)
-    _streakProtectionEnabled = State(initialValue: calendar.streakProtectionEnabled)
-    _streakProtectionThreshold = State(initialValue: calendar.streakProtectionThreshold)
 
     // Default reminder time set to 9:00 AM as it's a common time for daily reminders
     let defaultTime =
       Calendar.current.date(bySettingHour: 9, minute: 0, second: 0, of: Date()) ?? Date()
-    if calendar.recurringReminderEnabled, let hour = calendar.reminderHour,
-      let minute = calendar.reminderMinute
-    {
-      _reminderTime = State(
-        initialValue: Calendar.current.date(
-          bySettingHour: hour, minute: minute, second: 0, of: Date()
-        ) ?? defaultTime
+    let fallbackWeekday = Calendar.current.component(.weekday, from: Date())
+    _notificationSettings = State(
+      initialValue: NotificationSettingsDraft(
+        calendar: calendar,
+        fallbackReminderTime: defaultTime,
+        fallbackReminderWeekday: fallbackWeekday
       )
-    } else {
-      _reminderTime = State(initialValue: defaultTime)
-    }
-  }
-
-  private var trackingTypeLabel: String {
-    switch trackingType {
-    case .binary:
-      return String(localized: "Binary")
-    case .counter:
-      return String(localized: "Counter")
-    case .multipleDaily:
-      return String(localized: "Target")
-    }
-  }
-
-  private var trackingTypeDescription: LocalizedStringKey {
-    switch trackingType {
-    case .binary:
-      return cadence == .daily
-        ? "Track a simple yes/no each day. Great for habits you either complete or skip."
-        : "Track a simple yes/no each week. Great for goals you either hit or miss across the week."
-    case .counter:
-      return cadence == .daily
-        ? "Log a numeric value per day, like pages read or minutes practiced."
-        : "Log a numeric value per week, like workouts done or kilometers covered."
-    case .multipleDaily:
-      return cadence == .daily
-        ? "Check in multiple times per day toward a daily target."
-        : "Check in multiple times across the week toward a weekly target."
-    }
+    )
   }
 
   var body: some View {
     ScrollView {
-      VStack(spacing: 32) {
-        CustomSeparator()
-          .padding(.horizontal, -16)
-        CustomSection(label: "Calendar Name") {
-          TextField(
-            "",
-            text: $name,
-            prompt: Text("Daily Training").foregroundColor(.white.opacity(0.2))
-          )
-          .inputStyle(color: Color(selectedColor))
-          .focused($isNameFocused)
-        }
-
-        CalendarColorPickerSection(selectedColor: $selectedColor)
-
-        CalendarCadencePicker(cadence: cadence, color: Color(selectedColor), isEditable: false) { _ in }
-
-        Text("Cadence can't be changed after creation.")
-          .font(.footnote)
-          .foregroundStyle(.textTertiary)
-          .frame(maxWidth: .infinity, alignment: .leading)
-          .padding(.horizontal, 8)
-
-        if isAppleHealthCalendar {
-          lockedAppleHealthMetricSection
-        } else {
-          TrackingPicker(trackingType: $trackingType, color: Color(selectedColor))
-        }
-
-        ZStack(alignment: .leading) {
-          Text(trackingTypeDescription)
-            .font(.footnote)
-            .foregroundStyle(.textTertiary)
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .padding(.horizontal, 8)
-            .padding(.bottom, 12)
-            .id(trackingType)
-            .transition(.blurReplace)
-        }
-        .animation(.snappy, value: trackingType)
-
-        if isAppleHealthCalendar || trackingType == .multipleDaily || trackingType == .counter {
-          CustomSection(label: settingsSectionLabel) {
-            VStack(spacing: 2) {
-              if isAppleHealthCalendar || trackingType == .multipleDaily {
-                HStack {
-                  Text(targetFieldLabel)
-                    .labelStyle(type: .secondary)
-
-                  Spacer()
-                  TextField("Target", value: $dailyTarget, formatter: NumberFormatter())
-                    .keyboardType(.numberPad)
-                    .multilineTextAlignment(.trailing)
-                    .frame(maxWidth: 100)
-                    .inputStyle(size: .large, radius: 4, color: Color(selectedColor))
-                }
-                .padding(.leading)
-                .padding(.all, 2)
-                .sameLevelBorder(isFlat: true)
-              }
-
-              if usesManualValueSettings {
-                HStack {
-                  Text("Unit of Measure")
-                    .labelStyle(type: .secondary)
-                  Spacer()
-                  if selectedUnit == nil {
-                    Text("None")
-                  }
-                  UnitOfMeasurePicker(selection: $selectedUnit)
-                }
-                .padding(.leading)
-                .padding(.vertical, 8)
-                .sameLevelBorder(isFlat: true)
-
-                if selectedUnit == .currency {
-                  HStack {
-                    Text("Currency Symbol")
-                      .labelStyle(type: .secondary)
-                    Spacer()
-                    TextField("Symbol", text: $currencySymbol)
-                      .multilineTextAlignment(.trailing)
-                      .frame(maxWidth: 100)
-                      .inputStyle(size: .large, radius: 4, color: Color(selectedColor))
-                  }
-                  .padding(.leading)
-                  .padding(.all, 2)
-                  .sameLevelBorder(isFlat: true)
-                }
-              }
-
-              if usesManualValueSettings {
-                HStack {
-                  Text("Default Quick Add Value")
-                    .labelStyle(type: .secondary)
-                  Spacer()
-                  TextField("Value", value: $defaultRecordValue, formatter: NumberFormatter())
-                    .keyboardType(.numberPad)
-                    .multilineTextAlignment(.trailing)
-                    .frame(maxWidth: 100)
-                    .inputStyle(size: .large, radius: 4, color: Color(selectedColor))
-                }
-                .padding(.leading)
-                .padding(.all, 2)
-                .sameLevelBorder(isFlat: true)
-              }
-            }
-            .padding(.all, 2)
-            .sameLevelGroupBackground()
-          }
-        }
-
-        if !isAppleHealthCalendar {
-          CustomSection(label: "Notifications") {
-            VStack(spacing: 2) {
-              Button(action: { showingNotificationSettings = true }) {
-                HStack {
-                  VStack(alignment: .leading, spacing: 4) {
-                    Text("Notification settings")
-                      .labelStyle(type: .secondary)
-                    Text(
-                      NotificationSettingsHelpers.reminderSummary(
-                        isEnabled: recurringReminderEnabled,
-                        cadence: cadence,
-                        reminderTime: reminderTime,
-                        reminderWeekday: reminderWeekday
-                      )
-                    )
-                    .font(.caption)
-                    .foregroundStyle(.textTertiary)
-                  }
-                  Spacer()
-                  Image(systemName: "chevron.right")
-                    .font(AppFont.mono(12))
-                    .foregroundStyle(.textTertiary)
-                }
-                .padding(.horizontal)
-                .padding(.vertical, 10)
-              }
-              .buttonStyle(.plain)
-              .sameLevelBorder(isFlat: true)
-            }
-            .padding(.all, 2)
-          }
-        }
-
-        if !isAppleHealthCalendar {
-          HabitHistorySection(
-            cadence: cadence,
-            trackingStartedAt: $trackingStartedAt,
-            earliestEntryDate: earliestExistingEntryDate,
-            autoAdjustedMessage: historyMessage,
-            onTrackingStartedAtChanged: { historyMessage = nil }
-          ) {
-            router.showScreen(.sheet) { _ in
-              ExistingStreakSheet(
-                cadence: cadence,
-                trackingType: trackingType,
-                dailyTarget: dailyTarget,
-                defaultDailyValue: defaultRecordValue,
-                existingEntries: entries,
-                accentColor: Color(selectedColor)
-              ) { newEntries in
-                applyExistingStreakEntries(newEntries)
-              }
-            }
-          }
-        }
-
-        CustomSeparator()
-          .padding(.horizontal, -16)
-          .padding(.vertical, 16)
-
-        CustomSection(label: "Danger Zone") {
-          VStack(spacing: 2) {
-            Button(action: {
-              isArchived.toggle()
-              let updatedCalendar = makeUpdatedCalendar(isArchived: isArchived)
-              if !isAppleHealthCalendar {
-                scheduleNotifications(for: updatedCalendar, store: CustomCalendarStore.shared)
-              }
-              onSave(updatedCalendar)
-              CalendarAnalyticsTracker.shared.trackArchiveStateChange(
-                calendar: updatedCalendar,
-                source: .editCalendar,
-                isArchived: updatedCalendar.isArchived
-              )
-              dismiss()
-            }) {
-              Text(String(localized: isArchived ? "Unarchive Calendar" : "Archive Calendar"))
-                .frame(maxWidth: .infinity, alignment: .center)
-                .fontWeight(.bold)
-                .padding()
-            }
-            .sameLevelBorder()
-            .foregroundStyle(.textSecondary)
-          }
-          .padding(.all, 2)
-
-          Text(
-            isArchived
-              ? "Unarchiving restores this calendar to your boards and tracking lists."
-              : "Archiving hides this calendar from your boards without deleting past data."
-          )
-          .font(.footnote)
-          .foregroundStyle(.textTertiary)
-          .frame(maxWidth: .infinity, alignment: .leading)
-          .padding(.horizontal, 8)
-          .padding(.bottom, 12)
-
-          VStack(spacing: 2) {
-            Button(action: {
-              showingDeleteConfirmation = true
-            }) {
-              Text("Delete Calendar")
-                .frame(maxWidth: .infinity, alignment: .center)
-                .fontWeight(.bold)
-                .padding()
-            }
-            .sameLevelBorder(color: .moodTerrible)
-            .foregroundStyle(.surfaceMuted)
-          }
-          .padding(.all, 2)
-        }
-        .alert("Delete Calendar", isPresented: $showingDeleteConfirmation) {
-          Button("Cancel", role: .cancel) {}
-          Button("Delete", role: .destructive) {
-            onDelete(calendar)
-            cancelNotifications(for: calendar)
-            dismiss()
-          }
-        } message: {
-          Text("Are you sure you want to delete this calendar? This action cannot be undone.")
-        }
-        CustomSeparator()
-          .padding(.horizontal, -16)
-      }
-      .padding()
-      .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
-      .surfaceBackground(Color("surface-muted"), ignoresSafeArea: true)
+      editFormContent
+        .padding()
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+        .surfaceBackground(Color("surface-muted"), ignoresSafeArea: true)
     }
     .accentColor(Color(selectedColor))
     .scrollClipDisabled(true)
     .scrollContentBackground(.hidden)
     .scrollIndicators(.hidden)
     .surfaceBackground(Color("surface-muted"), ignoresSafeArea: true)
-    .onAppear {
-      Purchases.shared.getCustomerInfo { info, _ in
-        customerInfo = info
-      }
-    }
+    .onAppear(perform: loadCustomerInfo)
     .navigationTitle("Edit Calendar")
     .navigationBarTitleDisplayMode(.large)
-    .toolbar {
-      ToolbarItem(placement: .cancellationAction) {
-        Button("Cancel") {
-          dismiss()
-        }
-      }
-      ToolbarItem(placement: .confirmationAction) {
-        Button("Save") {
-          let trimmedName = name.trimmingCharacters(in: .whitespacesAndNewlines)
-          guard !trimmedName.isEmpty && trimmedName.count <= 50 else {
-            calendarError = .invalidName
-            return
-          }
-          let updatedCalendar = makeUpdatedCalendar()
-          if !isAppleHealthCalendar {
-            scheduleNotifications(for: updatedCalendar, store: CustomCalendarStore.shared)
-          }
-          onSave(updatedCalendar)
-          if calendar.isArchived != updatedCalendar.isArchived {
-            CalendarAnalyticsTracker.shared.trackArchiveStateChange(
-              calendar: updatedCalendar,
-              source: .editCalendar,
-              isArchived: updatedCalendar.isArchived
-            )
-          }
-          dismiss()
-        }
-        .disabled(name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
-      }
+    .toolbar { editToolbar }
+    .alert(item: $calendarError) { error in
+      Alert(title: Text(error.title), message: Text(error.message), dismissButton: .default(Text("OK")))
     }
-    .sheet(isPresented: $showingNotificationSettings) {
-      NotificationSettingsDraftSheet(
-        calendarName: name,
-        cadence: cadence,
-        trackingType: trackingType,
-        accentColor: Color(selectedColor),
-        customerInfo: customerInfo,
-        recurringReminderEnabled: $recurringReminderEnabled,
-        reminderTime: $reminderTime,
-        notificationPrivacyMode: $notificationPrivacyMode,
-        suppressWhenCompleted: $suppressWhenCompleted,
-        additionalReminderTimes: $additionalReminderTimes,
-        streakProtectionEnabled: $streakProtectionEnabled,
-        streakProtectionThreshold: $streakProtectionThreshold,
-        reminderWeekday: $reminderWeekday
-      )
-    }
+    .sheet(isPresented: $showingNotificationSettings) { notificationSettingsSheet }
     .onChange(of: trackingType) { _, newValue in
       if newValue != .multipleDaily {
-        additionalReminderTimes = []
+        notificationSettings.additionalReminderTimes = []
       }
     }
   }
 
-  private var earliestExistingEntryDate: Date? {
+  var earliestExistingEntryDate: Date? {
     HabitHistoryDateResolver.earliestEntryDate(from: entries, cadence: cadence)
   }
 
-  private var normalizedTrackingStartedAt: Date {
+  var normalizedTrackingStartedAt: Date {
     HabitHistoryDateResolver.normalized(trackingStartedAt, cadence: cadence)
   }
 
-  private func resolvedTrackingStartedAt() -> Date {
+  var normalizedDailyTarget: Int {
+    max(1, dailyTarget)
+  }
+
+  func resolvedTrackingStartedAt() -> Date {
     HabitHistoryDateResolver.resolvedStartDate(
       selectedDate: trackingStartedAt,
       earliestEntryDate: earliestExistingEntryDate,
@@ -459,7 +135,7 @@ struct EditCalendarView: View {
     )
   }
 
-  private func applyExistingStreakEntries(_ newEntries: [String: CalendarEntry]) {
+  func applyExistingStreakEntries(_ newEntries: [String: CalendarEntry]) {
     for (key, entry) in newEntries {
       entries[key] = entry
     }
@@ -471,8 +147,12 @@ struct EditCalendarView: View {
     historyMessage = HabitHistoryDateResolver.startMovedMessage(for: earliestDate)
   }
 
-  private func makeUpdatedCalendar(isArchived overrideArchived: Bool? = nil) -> CustomCalendar {
+  func makeUpdatedCalendar(isArchived overrideArchived: Bool? = nil) -> CustomCalendar {
     let trimmedName = name.trimmingCharacters(in: .whitespacesAndNewlines)
+    let schedulesWeeklyReminder =
+      !isAppleHealthCalendar
+      && notificationSettings.recurringReminderEnabled
+      && cadence == .weekly
     let updatedCalendar = CustomCalendar(
       id: calendar.id,
       name: trimmedName,
@@ -480,31 +160,31 @@ struct EditCalendarView: View {
       cadence: isAppleHealthCalendar ? .daily : cadence,
       trackingType: isAppleHealthCalendar ? .binary : trackingType,
       trackingStartedAt: isAppleHealthCalendar ? calendar.trackingStartedAt : resolvedTrackingStartedAt(),
-      dailyTarget: dailyTarget,
+      dailyTarget: normalizedDailyTarget,
       entries: entries,
       isArchived: overrideArchived ?? isArchived,
-      recurringReminderEnabled: isAppleHealthCalendar ? false : recurringReminderEnabled,
-      reminderTime: !isAppleHealthCalendar && recurringReminderEnabled ? reminderTime : nil,
+      recurringReminderEnabled: isAppleHealthCalendar ? false : notificationSettings.recurringReminderEnabled,
+      reminderTime: !isAppleHealthCalendar && notificationSettings.recurringReminderEnabled
+        ? notificationSettings.reminderTime : nil,
       order: calendar.order,
-      reminderWeekday: !isAppleHealthCalendar && recurringReminderEnabled && cadence == .weekly
-        ? reminderWeekday : nil,
+      reminderWeekday: schedulesWeeklyReminder ? notificationSettings.reminderWeekday : nil,
       unit: isAppleHealthCalendar ? appleHealthMetric?.unit : usesManualValueSettings ? selectedUnit : nil,
       defaultRecordValue: usesManualValueSettings ? defaultRecordValue : nil,
       currencySymbol: usesManualValueSettings && selectedUnit == .currency ? currencySymbol : nil,
       reminderTimeZone: calendar.reminderTimeZone,
-      notificationPrivacyMode: notificationPrivacyMode,
-      suppressWhenCompleted: isAppleHealthCalendar ? false : suppressWhenCompleted,
-      additionalReminderTimes: isAppleHealthCalendar ? [] : additionalReminderTimes,
-      streakProtectionEnabled: isAppleHealthCalendar ? false : streakProtectionEnabled,
-      streakProtectionThreshold: streakProtectionThreshold,
+      notificationPrivacyMode: notificationSettings.notificationPrivacyMode,
+      suppressWhenCompleted: isAppleHealthCalendar ? false : notificationSettings.suppressWhenCompleted,
+      additionalReminderTimes: isAppleHealthCalendar ? [] : notificationSettings.additionalReminderTimes,
+      streakProtectionEnabled: isAppleHealthCalendar ? false : notificationSettings.streakProtectionEnabled,
+      streakProtectionThreshold: notificationSettings.streakProtectionThreshold,
       source: calendar.source
     )
     return isAppleHealthCalendar
-      ? updatedCalendar.recomputingCompletionForTarget(dailyTarget)
+      ? updatedCalendar.recomputingCompletionForTarget(normalizedDailyTarget)
       : updatedCalendar
   }
 
-  private var lockedAppleHealthMetricSection: some View {
+  var lockedAppleHealthMetricSection: some View {
     CustomSection(label: "Tracking Type") {
       PickerOptionTile(isSelected: true, isEnabled: false) {
         PickerOptionContent(

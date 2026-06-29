@@ -168,13 +168,13 @@ extension CalendarsOverviewsItem {
             case .binary:
                 return entry.completed ? Color(calendar.color) : emptyColor
             case .counter:
-                if entry.count > 0 {
+                if entry.hasLoggedCount {
                     let ratio = counterDotFillRatio(count: entry.count, counts: counts)
                     return GarnishColor.blend(.surfaceMuted, with: Color(calendar.color), ratio: ratio)
                 }
                 return emptyColor
             case .multipleDaily:
-                if entry.count > 0 {
+                if entry.hasLoggedCount {
                     let opacity = multipleDailyDotFillRatio(count: entry.count, dailyTarget: calendar.dailyTarget)
                     return Color(calendar.color).opacity(opacity)
                 }

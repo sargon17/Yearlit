@@ -10,6 +10,13 @@ import SwiftUI
 #endif
 
 public enum WidgetStyle {
+    private struct RGBA {
+        let red: CGFloat
+        let green: CGFloat
+        let blue: CGFloat
+        let alpha: CGFloat
+    }
+
     public enum RenderingMode {
         case fullColor
         case reduced
@@ -68,10 +75,14 @@ public enum WidgetStyle {
         let aspectRatio = max(0.001, safeWidth / safeHeight)
         let columns = adjustedColumns(for: count, aspectRatio: aspectRatio)
         let rows = max(1, Int(ceil(Double(count) / Double(columns))))
-        let horizontalSpacing =
+        let horizontalSpacing = max(
+            0,
             (safeWidth - (dotSize * CGFloat(columns))) / CGFloat(max(2, columns - 1))
-        let verticalSpacing =
+        )
+        let verticalSpacing = max(
+            0,
             (safeHeight - (dotSize * CGFloat(rows))) / CGFloat(max(2, rows - 1))
+        )
 
         return GridLayout(
             columns: columns,
@@ -201,7 +212,7 @@ public enum WidgetStyle {
         }
     }
 
-    private static func rgba(from color: Color) -> (red: CGFloat, green: CGFloat, blue: CGFloat, alpha: CGFloat)? {
+    private static func rgba(from color: Color) -> RGBA? {
         #if canImport(UIKit)
             let uiColor = UIColor(color)
             var red: CGFloat = 0
@@ -209,7 +220,7 @@ public enum WidgetStyle {
             var blue: CGFloat = 0
             var alpha: CGFloat = 0
             guard uiColor.getRed(&red, green: &green, blue: &blue, alpha: &alpha) else { return nil }
-            return (red, green, blue, alpha)
+            return RGBA(red: red, green: green, blue: blue, alpha: alpha)
         #elseif canImport(AppKit)
             let nsColor = NSColor(color)
             guard let sRGB = nsColor.usingColorSpace(.sRGB) else { return nil }
@@ -218,50 +229,9 @@ public enum WidgetStyle {
             var blue: CGFloat = 0
             var alpha: CGFloat = 0
             sRGB.getRed(&red, green: &green, blue: &blue, alpha: &alpha)
-            return (red, green, blue, alpha)
+            return RGBA(red: red, green: green, blue: blue, alpha: alpha)
         #else
             return nil
         #endif
-    }
-}
-
-public struct WidgetGridDot: View {
-    public let color: Color
-    public let dotSize: CGFloat
-    public let accentable: Bool
-
-    public init(color: Color, dotSize: CGFloat, accentable: Bool = false) {
-        self.color = color
-        self.dotSize = dotSize
-        self.accentable = accentable
-    }
-
-    public var body: some View {
-        RoundedRectangle(cornerRadius: 3)
-            .fill(color)
-            .frame(width: dotSize, height: dotSize)
-            .widgetAccentable(accentable)
-    }
-}
-
-public struct WidgetSeparator: View {
-    public let renderingMode: WidgetStyle.RenderingMode
-
-    public init(renderingMode: WidgetStyle.RenderingMode = .fullColor) {
-        self.renderingMode = renderingMode
-    }
-
-    public var body: some View {
-        VStack(spacing: 0) {
-            Rectangle()
-                .fill(WidgetStyle.separatorTopColor(renderingMode: renderingMode))
-                .frame(height: 1)
-                .frame(maxWidth: .infinity)
-            Rectangle()
-                .fill(WidgetStyle.separatorBottomColor(renderingMode: renderingMode))
-                .frame(height: 1)
-                .frame(maxWidth: .infinity)
-        }
-        .widgetAccentable(false)
     }
 }

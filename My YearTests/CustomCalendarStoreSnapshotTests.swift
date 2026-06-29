@@ -19,8 +19,11 @@ struct CustomCalendarStoreSnapshotTests {
         let entry = CalendarEntry(date: date, count: 1, completed: true)
         let key = DayKeyFormatter.shared.string(from: date)
         let shell = makeCalendar(id: fixedID(1), name: "Run")
-        var hydrated = shell
-        hydrated.entries = [key: entry]
+        let hydrated = {
+            var calendar = shell
+            calendar.entries = [key: entry]
+            return calendar
+        }()
 
         let store = makeStore(
             fetchCalendarsLoader: { _ in [hydrated] },
@@ -36,6 +39,66 @@ struct CustomCalendarStoreSnapshotTests {
 
         #expect(!store.snapshot.isLoading)
         #expect(store.snapshot.calendars.first?.entry(for: date)?.completed == true)
+    }
+
+    @Test func initialSnapshotIncludesCalendarsCreatedByMigration() {
+        let migratedCalendar = makeCalendar(id: fixedID(7), name: "Migrated")
+        let store = makeStore(runMigration: { container in
+            let context = ModelContext(container)
+            context.insert(
+                HabitCalendarEntity(
+                    id: migratedCalendar.id,
+                    name: migratedCalendar.name,
+                    color: migratedCalendar.color,
+                    trackingTypeRawValue: migratedCalendar.trackingType.rawValue,
+                    dailyTarget: migratedCalendar.dailyTarget,
+                    trackingStartedAt: migratedCalendar.trackingStartedAt
+                )
+            )
+            try? context.save()
+        })
+
+        #expect(store.snapshot.isLoading)
+        #expect(store.snapshot.calendars.map { $0.id }.contains(migratedCalendar.id))
+    }
+
+    @Test func initialSnapshotFallsBackToFullFetchWhenShellFetchFails() {
+        let calendar = makeCalendar(id: fixedID(8), name: "Fallback")
+        let store = makeStore(
+            fetchCalendarsLoader: { _ in [calendar] },
+            fetchCalendarShellsLoader: { _ in throw TestFetchError.failed }
+        )
+
+        #expect(store.snapshot.isLoading)
+        #expect(store.snapshot.calendars.map(\.id) == [calendar.id])
+    }
+
+    @Test func emptyInitialHydrationDoesNotClearShellSnapshot() async throws {
+        let calendar = makeCalendar(id: fixedID(9), name: "Shell")
+        let store = makeStore(
+            fetchCalendarsLoader: { _ in [] },
+            fetchCalendarShellsLoader: { _ in [calendar] }
+        )
+
+        try await waitUntilLoaded(store)
+
+        #expect(store.snapshot.calendars.map(\.id) == [calendar.id])
+    }
+
+    @Test func emptyNonMutatingReloadDoesNotClearCurrentSnapshot() async throws {
+        let calendar = makeCalendar(id: fixedID(10), name: "Existing")
+        let plannedSnapshots = PlannedSnapshots([[calendar], []], delays: [0, 100_000_000])
+        let store = makeStore(
+            fetchCalendarsLoader: plannedSnapshots.loader,
+            fetchCalendarShellsLoader: { _ in [calendar] }
+        )
+        try await waitUntilLoaded(store)
+
+        store.loadCalendars(showLoadingIndicator: true)
+        try await waitUntilLoading(store)
+        try await waitUntilLoaded(store)
+
+        #expect(store.snapshot.calendars.map(\.id) == [calendar.id])
     }
 
     @Test func addEntryPublishesFreshCalendarsWithFreshVersion() async throws {
@@ -62,12 +125,20 @@ struct CustomCalendarStoreSnapshotTests {
 
         #expect(
             !snapshots.contains { snapshot in
-                snapshot.dataVersion >= startingVersion + 1
-                    && snapshot.calendars.first(where: { $0.id == calendar.id })?.entry(for: entry.date)?.count != 1
+                let entryCount = snapshot.calendars
+                    .first(where: { $0.id == calendar.id })?
+                    .entry(for: entry.date)?
+                    .count
+                return snapshot.dataVersion >= startingVersion + 1
+                    && entryCount != 1
             }
         )
         #expect(store.snapshot.dataVersion == startingVersion + 1)
-        #expect(store.snapshot.calendars.first(where: { $0.id == calendar.id })?.entry(for: entry.date)?.count == 1)
+        let publishedEntryCount = store.snapshot.calendars
+            .first(where: { $0.id == calendar.id })?
+            .entry(for: entry.date)?
+            .count
+        #expect(publishedEntryCount == 1)
     }
 
     @Test func staleReloadCannotOverwriteNewerMutation() async throws {
@@ -75,7 +146,7 @@ struct CustomCalendarStoreSnapshotTests {
             [],
             [],
             [makeCalendar(id: fixedID(1), name: "A")],
-            [makeCalendar(id: fixedID(1), name: "A"), makeCalendar(id: fixedID(2), name: "B")],
+            [makeCalendar(id: fixedID(1), name: "A"), makeCalendar(id: fixedID(2), name: "B")]
         ], delays: [0, 0, 300_000_000, 20_000_000])
 
         let store = makeStore(fetchCalendarsLoader: plannedSnapshots.loader)
@@ -94,7 +165,8 @@ struct CustomCalendarStoreSnapshotTests {
 
         #expect(
             !snapshots.contains { snapshot in
-                snapshot.dataVersion >= startingVersion + 2 && snapshot.calendars.map(\.name).sorted() != ["A", "B"]
+                snapshot.dataVersion >= startingVersion + 2
+                    && snapshot.calendars.map(\.name).sorted() != ["A", "B"]
             }
         )
         #expect(store.snapshot.dataVersion == startingVersion + 2)
@@ -116,23 +188,29 @@ struct CustomCalendarStoreSnapshotTests {
         fetchCalendarsLoader: @escaping @Sendable (ModelContainer) throws -> [CustomCalendar] = { container in
             CustomCalendarStore.fetchCalendarsSnapshot(container: container)
         },
+        runMigration: @escaping @Sendable (ModelContainer) -> Void = { _ in },
         fetchCalendarShellsLoader: (@Sendable (ModelContainer) throws -> [CustomCalendar])? = nil
     ) -> CustomCalendarStore {
         let configuration = ModelConfiguration(isStoredInMemoryOnly: true)
-        let container = try! ModelContainer(
-            for: HabitCalendarEntity.self,
-            CalendarEntryEntity.self,
-            DayValuationEntity.self,
-            HabitStackEntity.self,
-            HabitStackStepEntity.self,
-            configurations: configuration
-        )
+        let container: ModelContainer
+        do {
+            container = try ModelContainer(
+                for: HabitCalendarEntity.self,
+                CalendarEntryEntity.self,
+                DayValuationEntity.self,
+                HabitStackEntity.self,
+                HabitStackStepEntity.self,
+                configurations: configuration
+            )
+        } catch {
+            fatalError("Failed to create in-memory ModelContainer: \(error)")
+        }
 
         return CustomCalendarStore(
             container: container,
             dependencies: CustomCalendarStoreDependencies(
                 fetchCalendars: fetchCalendarsLoader,
-                runMigration: { _ in },
+                runMigration: runMigration,
                 fetchCalendarShells: fetchCalendarShellsLoader
             )
         )
@@ -153,6 +231,19 @@ struct CustomCalendarStoreSnapshotTests {
         }
 
         Issue.record("Store did not finish loading before timeout")
+        throw CancellationError()
+    }
+
+    private func waitUntilLoading(_ store: CustomCalendarStore) async throws {
+        let deadline = Date().addingTimeInterval(3)
+        while Date() < deadline {
+            if store.snapshot.isLoading {
+                return
+            }
+            try await Task.sleep(nanoseconds: 20_000_000)
+        }
+
+        Issue.record("Store did not enter loading state before timeout")
         throw CancellationError()
     }
 
@@ -231,4 +322,8 @@ private final class PlannedSnapshots: @unchecked Sendable {
         let delay = delays.isEmpty ? 0 : delays.removeFirst()
         return (snapshot, delay)
     }
+}
+
+private enum TestFetchError: Error {
+    case failed
 }

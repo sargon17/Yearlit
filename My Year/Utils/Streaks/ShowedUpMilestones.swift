@@ -101,7 +101,7 @@ enum ShowedUpMilestones {
         case .binary:
             return entry.completed
         case .counter, .multipleDaily:
-            return entry.count > 0
+            return entry.hasLoggedCount
         }
     }
 

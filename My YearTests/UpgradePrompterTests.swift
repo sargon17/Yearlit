@@ -137,7 +137,6 @@ struct UpgradePrompterTests {
   }
 }
 
-@MainActor
 private final class RecordingAnalyticsClient: AnalyticsClient {
   private(set) var trackedEvents: [(event: AnalyticsEvent, properties: [String: AnalyticsPropertyValue])] = []
 

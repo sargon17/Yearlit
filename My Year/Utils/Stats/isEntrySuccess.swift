@@ -7,7 +7,7 @@ func isEntrySuccess(_ entry: CalendarEntry?, calendar: CustomCalendar) -> Bool {
     case .binary:
         return entry.completed
     case .counter:
-        return entry.count > 0
+        return entry.hasLoggedCount
     case .multipleDaily:
         return entry.count >= calendar.dailyTarget
     }

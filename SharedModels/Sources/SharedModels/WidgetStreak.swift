@@ -6,7 +6,11 @@ public enum WidgetStreak {
         calendarSystem: Calendar = WidgetStreak.makeLocalCalendar()
     ) -> Int {
         let successByDay = successByBucket(calendar: calendar, calendarSystem: calendarSystem)
-        return longestStreak(successByDay: successByDay, calendarSystem: calendarSystem, cadence: calendar.cadence)
+        return longestStreak(
+            successByDay: successByDay,
+            calendarSystem: calendarSystem,
+            cadence: calendar.cadence
+        )
     }
 
     public static func currentStreak(
@@ -35,10 +39,16 @@ public enum WidgetStreak {
     ) -> (streak: Int, isAtRisk: Bool) {
         guard !successByDay.isEmpty else { return (0, false) }
 
-        let normalizedToday = normalizedBucketDate(for: today, cadence: cadence, calendarSystem: calendarSystem)
+        let component = dateComponent(for: cadence)
+        let normalizedToday = normalizedBucketDate(
+            for: today,
+            cadence: cadence,
+            calendarSystem: calendarSystem
+        )
         var normalized: [Date: Bool] = [:]
         for (date, success) in successByDay {
-            normalized[normalizedBucketDate(for: date, cadence: cadence, calendarSystem: calendarSystem)] = success
+            let key = normalizedBucketDate(for: date, cadence: cadence, calendarSystem: calendarSystem)
+            normalized[key] = normalized[key, default: false] || success
         }
 
         let todaySuccess = normalized[normalizedToday]
@@ -49,7 +59,6 @@ public enum WidgetStreak {
         var isAtRisk = false
 
         if shouldSkipToday {
-            let component: Calendar.Component = cadence == .weekly ? .weekOfYear : .day
             guard let previous = calendarSystem.date(byAdding: component, value: -1, to: normalizedToday) else {
                 return (0, false)
             }
@@ -59,7 +68,6 @@ public enum WidgetStreak {
 
         while normalized[cursor] == true {
             streak += 1
-            let component: Calendar.Component = cadence == .weekly ? .weekOfYear : .day
             guard let previous = calendarSystem.date(byAdding: component, value: -1, to: cursor) else {
                 break
             }
@@ -78,7 +86,7 @@ public enum WidgetStreak {
         case .binary:
             return entry.completed
         case .counter:
-            return entry.count > 0
+            return entry.hasLoggedCount
         case .multipleDaily:
             return entry.count >= calendar.dailyTarget
         }
@@ -100,8 +108,13 @@ public enum WidgetStreak {
         case .daily:
             return calendarSystem.startOfDay(for: date)
         case .weekly:
-            return calendarSystem.dateInterval(of: .weekOfYear, for: date)?.start ?? calendarSystem.startOfDay(for: date)
+            return calendarSystem.dateInterval(of: .weekOfYear, for: date)?.start
+                ?? calendarSystem.startOfDay(for: date)
         }
+    }
+
+    private static func dateComponent(for cadence: CalendarCadence) -> Calendar.Component {
+        cadence == .weekly ? .weekOfYear : .day
     }
 
     private static func successByBucket(
@@ -110,7 +123,11 @@ public enum WidgetStreak {
     ) -> [Date: Bool] {
         var successByDay: [Date: Bool] = [:]
         for entry in calendar.entries.values {
-            let day = normalizedBucketDate(for: entry.date, cadence: calendar.cadence, calendarSystem: calendarSystem)
+            let day = normalizedBucketDate(
+                for: entry.date,
+                cadence: calendar.cadence,
+                calendarSystem: calendarSystem
+            )
             if isEntrySuccess(entry, calendar: calendar) {
                 successByDay[day] = true
             }
@@ -126,7 +143,7 @@ public enum WidgetStreak {
         let sortedDays = successByDay.keys.sorted()
         guard !sortedDays.isEmpty else { return 0 }
 
-        let component: Calendar.Component = cadence == .weekly ? .weekOfYear : .day
+        let component = dateComponent(for: cadence)
         var longest = 0
         var current = 0
         var previous: Date?

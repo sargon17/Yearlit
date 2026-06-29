@@ -97,7 +97,10 @@ extension FeatureRequestsList {
             let upvotes = await featureRequestManager.getViewerUpvotes()
             let wasUpvoted = upvotes.contains(request.id)
             updateLocalUpvote(requestId: request.id, isUpvoted: !wasUpvoted)
-            let success = await featureRequestManager.toggleUpvote(requestId: request.id, wasUpvoted: wasUpvoted)
+            let success = await featureRequestManager.toggleUpvote(
+                requestId: request.id,
+                wasUpvoted: wasUpvoted
+            )
             if !success {
                 updateLocalUpvote(requestId: request.id, isUpvoted: wasUpvoted)
             }
@@ -110,19 +113,7 @@ extension FeatureRequestsList {
         guard let index = list.requests.firstIndex(where: { $0.id == requestId }) else { return }
         let current = list.requests[index]
         let delta = isUpvoted ? 1 : -1
-        let updatedCount = max((current.upvoteCount ?? 0) + delta, 0)
-        let updatedRequest = Request(
-            _id: current._id,
-            _creationTime: current._creationTime,
-            text: current.text,
-            description: current.description,
-            clientId: current.clientId,
-            upvoteCount: updatedCount,
-            status: current.status,
-            project: current.project,
-            computedStatus: current.computedStatus
-        )
-        list.requests[index] = updatedRequest
+        list.requests[index] = current.withUpvoteCount((current.upvoteCount ?? 0) + delta)
         requestsList = list
     }
 

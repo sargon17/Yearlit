@@ -7,81 +7,10 @@
 
 import RevenueCat
 import SharedModels
-import SwiftDate
 import SwiftUI
 import SwiftfulRouting
-import UserNotifications
-
-// MARK: - App Delegate for Notification Handling
-
-class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCenterDelegate {
-  func application(
-    _: UIApplication,
-    didFinishLaunchingWithOptions _: [UIApplication.LaunchOptionsKey: Any]? = nil
-  ) -> Bool {
-    // Set notification delegate
-    UNUserNotificationCenter.current().delegate = self
-
-    // Setup notification categories
-    setupNotificationCategories()
-
-    return true
-  }
-
-  /// Handle notification actions (Log Now, Snooze, and default tap)
-  func userNotificationCenter(
-    _: UNUserNotificationCenter,
-    didReceive response: UNNotificationResponse,
-    withCompletionHandler completionHandler: @escaping () -> Void
-  ) {
-    // Handle default tap action (user tapped notification) - open calendar
-    if response.actionIdentifier == UNNotificationDefaultActionIdentifier {
-      let userInfo = response.notification.request.content.userInfo
-      if let calendarIdString = userInfo["calendarId"] as? String,
-        let calendarId = UUID(uuidString: calendarIdString)
-      {
-        // Open deep link to calendar
-        let deepLinkURL = URL(string: "my-year://calendar/\(calendarId.uuidString)")!
-        UIApplication.shared.open(deepLinkURL)
-        print("📱 Opening calendar from notification: \(calendarIdString)")
-      }
-    } else {
-      // Handle action buttons (Log Now, Snooze)
-      Task { @MainActor in
-        handleNotificationAction(response, store: CustomCalendarStore.shared)
-      }
-    }
-
-    completionHandler()
-  }
-
-  /// Handle notification when app is in foreground
-  func userNotificationCenter(
-    _: UNUserNotificationCenter,
-    willPresent notification: UNNotification,
-    withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void
-  ) {
-    Task { @MainActor in
-      let userInfo = notification.request.content.userInfo
-      let snapshot = CustomCalendarStore.shared.snapshot
-      if let calendarIdString = userInfo["calendarId"] as? String,
-        let calendarId = UUID(uuidString: calendarIdString),
-        let calendar = snapshot.calendar(id: calendarId),
-        calendar.suppressWhenCompleted,
-        shouldSuppressNotification(for: calendar, store: CustomCalendarStore.shared)
-      {
-        print("🔕 Suppressed notification for \(calendar.name) - already completed today")
-        completionHandler([])
-        return
-      }
-
-      completionHandler([.banner, .sound, .badge])
-    }
-  }
-}
 
 @main
-// swiftlint:disable:next type_name
 struct My_YearApp: App {
   @UIApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
 
@@ -104,19 +33,23 @@ struct My_YearApp: App {
 
   init() {
     AppFont.registerFonts()
-    Purchases.configure(withAPIKey: AppConfig.revenueCatAPIKey)
+    if let revenueCatAPIKey = AppConfig.revenueCatAPIKey {
+      RevenueCatClient.configure(apiKey: revenueCatAPIKey)
+    } else {
+      NSLog("RevenueCat is disabled because REVENUECAT_API_KEY is missing.")
+    }
     AppStorageMigration.run()
     Analytics.shared.configure()
     configureAcquisitionAttribution()
     Analytics.shared.flushQueuedWidgetEvents()
-    Purchases.shared.getCustomerInfo { info, _ in
-      Task { @MainActor in
-        AnalyticsState.shared.updatePremiumStatus(customerInfo: info)
+    if RevenueCatClient.isConfigured {
+      Purchases.shared.getCustomerInfo { info, _ in
+        Task { @MainActor in
+          AnalyticsState.shared.updatePremiumStatus(customerInfo: info)
+        }
       }
     }
 
-    // * Reviews Promt Manager
-    print("start review prompter")
     ReviewPrompter.shared.rules = .init(
       minEvents: 3,
       cooldownDays: 30,
@@ -132,13 +65,11 @@ struct My_YearApp: App {
     let appearance = UINavigationBarAppearance()
     appearance.configureWithTransparentBackground()
 
-    // Large title → Geist Pixel Circle
     appearance.largeTitleTextAttributes = [
       .font: AppFont.uiFont(.pixelCircle, size: 56),
       .foregroundColor: UIColor.label
     ]
 
-    // Inline title → Geist Pixel Circle
     appearance.titleTextAttributes = [
       .font: AppFont.uiFont(.mono, size: 18),
       .foregroundColor: UIColor.label
@@ -162,16 +93,12 @@ struct My_YearApp: App {
         guard url.scheme == "my-year" else { return }
 
         switch url.host {
-        case "clear":
-          let store = ValuationStore.shared
-          store.clearAllValuations()
         case "calendar":
           handleWidgetOpenURL(url)
         case "quick-add":
           handleWidgetQuickAddURL(url)
         default:
           handleWidgetOpenURL(url)
-          break
         }
       }
       .environmentObject(onboarding)
@@ -182,12 +109,13 @@ struct My_YearApp: App {
         isPresented: onboardingPresentation,
         onDismiss: {
           updateTimelinePreferencePresentation()
+        },
+        content: {
+          OnboardingView {
+            completeOnboarding()
+          }
         }
-      ) {
-        OnboardingView {
-          completeOnboarding()
-        }
-      }
+      )
       .fullScreenCover(isPresented: $isTimelinePreferenceSheetPresented) {
         TimelinePreferenceChoiceSheet { mode in
           TimelinePreferenceManager.shared.setMode(mode)
@@ -251,6 +179,8 @@ struct My_YearApp: App {
   }
 
   private func configureAcquisitionAttribution() {
+    guard RevenueCatClient.isConfigured else { return }
+
     let revenueCatAppUserID = Purchases.shared.appUserID
     let postHogDistinctID = AnalyticsState.shared.distinctID
 
@@ -265,76 +195,13 @@ struct My_YearApp: App {
   }
 
   private func updateTimelinePreferencePresentation() {
-    isTimelinePreferenceSheetPresented = onboarding.hasSeenOnboarding && !TimelinePreferenceStore.hasStoredMode()
+    isTimelinePreferenceSheetPresented =
+      onboarding.hasSeenOnboarding && !TimelinePreferenceStore.hasStoredMode()
   }
 
   private func trackOnboardingStartedIfNeeded() {
     guard !onboarding.hasSeenOnboarding, !hasTrackedOnboardingStarted else { return }
     hasTrackedOnboardingStarted = true
     Analytics.shared.track(.onboardingStarted)
-  }
-}
-
-@MainActor
-private func handleWidgetOpenURL(_ url: URL) {
-  guard let widgetContext = WidgetDeepLinkAnalytics.context(from: url) else { return }
-
-  Analytics.shared.track(
-    .widgetOpenedApp,
-    properties: [
-      "widget_kind": .string(widgetContext.widgetKind),
-      "widget_action": .string(widgetContext.widgetAction),
-      "destination": .string(widgetContext.destination)
-    ]
-  )
-  Analytics.shared.flushQueuedWidgetEvents()
-}
-
-@MainActor
-func handleWidgetQuickAddURL(_ url: URL) {
-  let widgetContext = WidgetDeepLinkAnalytics.context(from: url)
-  if let widgetContext {
-    Analytics.shared.track(
-      .widgetQuickAddOpened,
-      properties: [
-        "widget_kind": .string(widgetContext.widgetKind),
-        "widget_action": .string(widgetContext.widgetAction),
-        "destination": .string(widgetContext.destination)
-      ]
-    )
-    Analytics.shared.track(
-      .widgetOpenedApp,
-      properties: [
-        "widget_kind": .string(widgetContext.widgetKind),
-        "widget_action": .string(widgetContext.widgetAction),
-        "destination": .string(widgetContext.destination)
-      ]
-    )
-    Analytics.shared.flushQueuedWidgetEvents()
-  }
-
-  let idString = url.pathComponents.dropFirst().first
-  guard let idString, let calendarId = UUID(uuidString: idString) else { return }
-
-  let store = CustomCalendarStore.shared
-  let calendars = CustomCalendarStore.fetchCalendarsSnapshot()
-  guard let calendar = calendars.first(where: { $0.id == calendarId }) else { return }
-
-  quickEntry(
-    calendar: calendar,
-    date: Date(),
-    calendarStore: store,
-    source: .quickAddDeeplink
-  )
-}
-
-struct DatesKey: EnvironmentKey {
-  static let defaultValue: [Date] = []
-}
-
-extension EnvironmentValues {
-  var dates: [Date] {
-    get { self[DatesKey.self] }
-    set { self[DatesKey.self] = newValue }
   }
 }

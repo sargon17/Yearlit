@@ -192,6 +192,99 @@ struct AppleHealthCalendarModelTests {
     #expect(updatedEntry.completed == false)
   }
 
+  @MainActor
+  @Test func updateCalendarCanonicalizesManualEntryKeysFromEntryDates() throws {
+    let container = try makeContainer()
+    let store = CustomCalendarStore(
+      container: container,
+      dependencies: CustomCalendarStoreDependencies(
+        fetchCalendars: { _ in [] },
+        runMigration: { _ in }
+      )
+    )
+    let id = UUID()
+    let date = makeDate(year: 2026, month: 1, day: 3)
+    let dayStart = LocalDayCalendar.startOfDay(for: date)
+    let calendar = CustomCalendar(
+      id: id,
+      name: "Manual",
+      color: "qs-emerald",
+      cadence: .daily,
+      trackingType: .binary,
+      trackingStartedAt: makeDate(year: 2026, month: 1, day: 1),
+      dailyTarget: 1
+    )
+
+    store.addCalendar(calendar)
+    var updated = calendar
+    updated.entries = [
+      "stale-key": CalendarEntry(date: date, count: 1, completed: true)
+    ]
+
+    store.updateCalendar(updated)
+
+    let context = ModelContext(container)
+    let entries = try context.fetch(FetchDescriptor<CalendarEntryEntity>())
+    let persisted = try #require(entries.first)
+
+    #expect(entries.count == 1)
+    #expect(persisted.dayKey == "2026-01-03")
+    #expect(
+      persisted.compositeKey == CalendarEntryEntity.makeCompositeKey(
+        calendarId: id,
+        dayKey: "2026-01-03"
+      )
+    )
+    #expect(persisted.date == dayStart)
+  }
+
+  @MainActor
+  @Test func updateCalendarCanonicalizesWeeklyManualEntryDates() throws {
+    let container = try makeContainer()
+    let store = CustomCalendarStore(
+      container: container,
+      dependencies: CustomCalendarStoreDependencies(
+        fetchCalendars: { _ in [] },
+        runMigration: { _ in }
+      )
+    )
+    let id = UUID()
+    let rawEntryDate = makeDate(year: 2026, month: 1, day: 7)
+    let weekStart = LocalDayCalendar.startOfWeek(for: rawEntryDate)
+    let weekKey = DayKeyFormatter.shared.string(from: weekStart)
+    let calendar = CustomCalendar(
+      id: id,
+      name: "Weekly",
+      color: "qs-emerald",
+      cadence: .weekly,
+      trackingType: .binary,
+      trackingStartedAt: makeDate(year: 2026, month: 1, day: 1),
+      dailyTarget: 1
+    )
+
+    store.addCalendar(calendar)
+    var updated = calendar
+    updated.entries = [
+      "stale-key": CalendarEntry(date: rawEntryDate, count: 1, completed: true)
+    ]
+
+    store.updateCalendar(updated)
+
+    let context = ModelContext(container)
+    let entries = try context.fetch(FetchDescriptor<CalendarEntryEntity>())
+    let persisted = try #require(entries.first)
+
+    #expect(entries.count == 1)
+    #expect(persisted.dayKey == weekKey)
+    #expect(
+      persisted.compositeKey == CalendarEntryEntity.makeCompositeKey(
+        calendarId: id,
+        dayKey: weekKey
+      )
+    )
+    #expect(persisted.date == weekStart)
+  }
+
   private func makeDate(year: Int, month: Int, day: Int) -> Date {
     var calendar = Calendar(identifier: .gregorian)
     calendar.locale = Locale(identifier: "en_US_POSIX")

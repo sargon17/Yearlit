@@ -21,7 +21,6 @@ struct OnboardingManagerTests {
   }
 }
 
-@MainActor
 private final class LocalSpyAnalyticsClient: AnalyticsClient {
   private(set) var trackedEvents: [(event: AnalyticsEvent, properties: [String: AnalyticsPropertyValue])] = []
 

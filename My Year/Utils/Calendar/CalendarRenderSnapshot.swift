@@ -16,28 +16,23 @@ struct CalendarRenderSnapshot {
   let cacheKey: String
 }
 
+struct CalendarRenderSnapshotInput {
+  let calendar: CustomCalendar
+  let selectedYear: Int
+  let timelineMode: CalendarTimelineMode
+  let today: Date
+  let colorScheme: ColorScheme
+  let optimisticOverridesSignature: String
+}
+
 enum CalendarRenderSnapshotCache {
   private static let lock = NSLock()
   private static var values: [String: CalendarRenderSnapshot] = [:]
   private static var keys: [String] = []
   private static let limit = 120
 
-  static func snapshot(
-    calendar: CustomCalendar,
-    selectedYear: Int,
-    timelineMode: CalendarTimelineMode,
-    today: Date,
-    colorScheme: ColorScheme,
-    optimisticOverridesSignature: String
-  ) -> CalendarRenderSnapshot {
-    let cacheKey = makeCacheKey(
-      calendar: calendar,
-      selectedYear: selectedYear,
-      timelineMode: timelineMode,
-      today: today,
-      colorScheme: colorScheme,
-      optimisticOverridesSignature: optimisticOverridesSignature
-    )
+  static func snapshot(_ input: CalendarRenderSnapshotInput) -> CalendarRenderSnapshot {
+    let cacheKey = makeCacheKey(input)
 
     lock.lock()
     if let cachedSnapshot = values[cacheKey] {
@@ -47,10 +42,10 @@ enum CalendarRenderSnapshotCache {
     lock.unlock()
 
     let newSnapshot = makeSnapshot(
-      calendar: calendar,
-      selectedYear: selectedYear,
-      timelineMode: timelineMode,
-      today: today,
+      calendar: input.calendar,
+      selectedYear: input.selectedYear,
+      timelineMode: input.timelineMode,
+      today: input.today,
       cacheKey: cacheKey
     )
 
@@ -180,22 +175,15 @@ enum CalendarRenderSnapshotCache {
     }
   }
 
-  private static func makeCacheKey(
-    calendar: CustomCalendar,
-    selectedYear: Int,
-    timelineMode: CalendarTimelineMode,
-    today: Date,
-    colorScheme: ColorScheme,
-    optimisticOverridesSignature: String
-  ) -> String {
+  private static func makeCacheKey(_ input: CalendarRenderSnapshotInput) -> String {
     [
       "calendar-render-v1",
-      "\(selectedYear)",
-      timelineMode.rawValue,
-      dayKey(for: today),
-      colorScheme == .dark ? "dark" : "light",
-      calendarSignature(calendar),
-      optimisticOverridesSignature
+      "\(input.selectedYear)",
+      input.timelineMode.rawValue,
+      dayKey(for: input.today),
+      input.colorScheme == .dark ? "dark" : "light",
+      calendarSignature(input.calendar),
+      input.optimisticOverridesSignature
     ].joined(separator: "|")
   }
 

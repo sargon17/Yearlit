@@ -76,6 +76,7 @@ Forbidden sensitive content categories:
 
 - calendar names
 - habit names
+- tiny habit IDs
 - goal text
 - journal notes
 - mood note text
@@ -121,6 +122,10 @@ Owned by #90.
 | Event | Notes |
 | --- | --- |
 | `calendar_created` | Include `cadence`, `tracking_type`, `has_reminder_enabled`, `has_backfilled_history`, `is_first_calendar`. |
+| `apple_health_metric_selected` | User selects an Apple Health metric while configuring a connected calendar. Include only the coarse metric identifier and availability state. |
+| `apple_health_permission_result` | HealthKit permission flow completes. Include only granted/denied status and metric category, never health sample values. |
+| `apple_health_import_preview_loaded` | Apple Health import preview finishes loading. Include coarse counts and status only. |
+| `apple_health_calendar_created` | Connected Apple Health calendar is created. Include metric category and coarse configuration only. |
 | `calendar_archived` | Include `source`, `cadence`, `tracking_type`. Allowed sources: `drag_action`, `edit_calendar`, `unknown`. |
 | `calendar_unarchived` | Include `source`, `cadence`, `tracking_type`. Allowed sources: `drag_action`, `edit_calendar`, `unknown`. |
 | `activation_completed` | First meaningful activation once per install/user identity. Include `activation_source`. Allowed sources: `onboarding_first_dot`, `calendar_checkin`. |
@@ -180,6 +185,17 @@ Allowed `package_type` values: `annual`, `monthly`, `weekly`, `unknown`.
 Allowed paywall `error_category` values: `network`, `purchase_failed`, `restore_failed`, `unknown`.
 
 Allowed `share_type` values: `calendar`, `recap`, `unknown`.
+
+## Review events
+
+| Event | Notes |
+| --- | --- |
+| `review_satisfaction_prompt_viewed` | In-app satisfaction prompt is shown. Include coarse trigger/context only. |
+| `review_satisfaction_prompt_answered` | User answers the satisfaction prompt. Include coarse sentiment/result only. |
+| `review_feedback_started` | User starts private feedback after a negative satisfaction response. |
+| `review_feedback_submitted` | Private feedback submission succeeds. Never include raw feedback text. |
+| `review_feedback_submit_failed` | Private feedback submission fails. Include coarse error category only. |
+| `app_store_review_requested` | Native App Store review prompt is requested. |
 
 ## Widget analytics
 

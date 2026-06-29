@@ -5,24 +5,24 @@ import SwiftUI
 
 struct CalendarsSection: View {
   @State private var customerInfo: CustomerInfo?
-  @ObservedObject private var store = CustomCalendarStore.shared
+  @ObservedObject var store = CustomCalendarStore.shared
   @EnvironmentObject var onboarding: OnboardingManager
-  @ObservedObject private var valuationStore = ValuationStore.shared
+  @ObservedObject var valuationStore = ValuationStore.shared
 
   @State private var selectedIndex: Int = 0
   @AppStorage(AppStorageKeys.isMoodTrackingEnabled) var isMoodTrackingEnabled: Bool = false
   @AppStorage(AppStorageKeys.isRecapViewEnabled) var isRecapViewEnabled: Bool = false
-  @AppStorage(AppStorageKeys.cleanScreenshotsEnabled) private var cleanScreenshotsEnabled: Bool = false
-  @ObservedObject private var timelinePreference = TimelinePreferenceManager.shared
+  @AppStorage(AppStorageKeys.cleanScreenshotsEnabled) var cleanScreenshotsEnabled: Bool = false
+  @ObservedObject var timelinePreference = TimelinePreferenceManager.shared
 
-  @Environment(\.router) private var router
+  @Environment(\.router) var router
 
-  @State private var position = ScrollPosition(idType: String.self)
-  @State private var visibleSlideId: String?
-  @State private var pendingCalendarId: String?
-  @State private var isTimelinePreferenceSheetPresented = false
-  @State private var hasTrackedRecapView = false
-  @State private var lastHapticSlideId: String?
+  @State var position = ScrollPosition(idType: String.self)
+  @State var visibleSlideId: String?
+  @State var pendingCalendarId: String?
+  @State var isTimelinePreferenceSheetPresented = false
+  @State var hasTrackedRecapView = false
+  @State var lastHapticSlideId: String?
 
   var body: some View {
     let snapshot = store.snapshot
@@ -183,8 +183,10 @@ struct CalendarsSection: View {
       }
 
       .onAppear {
-        Purchases.shared.getCustomerInfo { info, _ in
-          customerInfo = info
+        if RevenueCatClient.isConfigured {
+          Purchases.shared.getCustomerInfo { info, _ in
+            customerInfo = info
+          }
         }
       }
     }
@@ -218,7 +220,7 @@ struct CalendarsSection: View {
     return abs(index - visibleIndex) <= 1
   }
 
-  private func slideIds(for snapshot: CustomCalendarStoreSnapshot) -> [String] {
+  func slideIds(for snapshot: CustomCalendarStoreSnapshot) -> [String] {
     var ids: [String] = []
     if isMoodTrackingEnabled {
       ids.append("mood")
@@ -229,101 +231,5 @@ struct CalendarsSection: View {
     ids.append(contentsOf: snapshot.activeCalendars.map { $0.id.uuidString })
     ids.append(snapshot.isLoading && snapshot.activeCalendars.isEmpty ? "calendar_loading" : "add_calendar")
     return ids
-  }
-
-  var toolbar: some View {
-    HStack(spacing: 12) {
-      #if DEBUG
-        if !cleanScreenshotsEnabled {
-          Button(action: {
-            onboarding.reset()
-          }) {
-            Image(systemName: "point.bottomleft.forward.to.point.topright.filled.scurvepath")
-              // .foregroundColor(Color("text-tertiary"))
-              .font(.system(size: 16))
-          }
-
-          Button(action: {
-            isTimelinePreferenceSheetPresented = true
-          }) {
-            Image(systemName: "calendar.badge.clock")
-              .font(.system(size: 16))
-          }
-          .accessibilityLabel("Show Timeline Choice Sheet")
-
-          Button(action: {
-            router.showScreen(.sheet) { _ in
-              OnboardingPaywall(isPresentedAsSheet: true) {
-                router.dismissScreen()
-              }
-            }
-          }) {
-            Image(systemName: "dollarsign.circle")
-              .font(.system(size: 16))
-          }
-          .accessibilityLabel("Show Paywall")
-        }
-      #endif
-
-      Button(action: {
-        router.showScreen(.sheet) { _ in
-          SettingsView()
-        }
-      }) {
-        Image(systemName: "gearshape")
-          // .foregroundColor(Color("text-tertiary"))
-          .font(.system(size: 16))
-      }
-      Button(action: {
-        Analytics.shared.track(.calendarsOverviewViewed)
-        router.showScreen(.sheet) { _ in
-          CalendarsOverview(store: store, valuationStore: valuationStore, scrollPosition: $position)
-        }
-      }) {
-        Image(systemName: "rectangle.split.1x2")
-          .font(.system(size: 16))
-        // .foregroundColor(Color("text-tertiary"))
-      }
-    }
-  }
-
-  private func handleCalendarDeepLink(_ url: URL) {
-    guard url.scheme == "my-year", url.host == "calendar" else { return }
-    let idString = url.pathComponents.dropFirst().first
-    guard let idString else { return }
-
-    pendingCalendarId = idString
-    store.loadCalendars(showLoadingIndicator: false)
-    scrollToCalendarIfAvailable(idString)
-  }
-
-  private func scrollToPendingCalendarIfAvailable() {
-    guard let pendingCalendarId else { return }
-    scrollToCalendarIfAvailable(pendingCalendarId)
-  }
-
-  private func scrollToCalendarIfAvailable(_ id: String) {
-    guard store.snapshot.activeCalendars.contains(where: { $0.id.uuidString == id }) else { return }
-    pendingCalendarId = nil
-
-    Task { @MainActor in
-      await Task.yield()
-      position.scrollTo(id: id)
-    }
-  }
-
-  private func trackRecapViewIfNeeded(for viewID: String?) {
-    guard viewID == "recap", !hasTrackedRecapView else { return }
-    hasTrackedRecapView = true
-    Analytics.shared.track(.recapViewViewed)
-  }
-
-  private func playSlideSettledHapticIfNeeded(for slideId: String) {
-    guard lastHapticSlideId != slideId else { return }
-    lastHapticSlideId = slideId
-
-    Task {
-      await hapticFeedback(.rigid)
-    }
   }
 }

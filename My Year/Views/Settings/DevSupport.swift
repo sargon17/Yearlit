@@ -18,7 +18,9 @@ struct ProSection: View {
 
   private let lifetimeThresholdYear = 2099
   private let lifetimeProductIdentifier = "Lp4wMNtHVWHCf7L3KqaH"
-  private let appUserId = Purchases.shared.appUserID
+  private var appUserId: String? {
+    RevenueCatClient.isConfigured ? Purchases.shared.appUserID : nil
+  }
 
   var body: some View {
     Section(header: Text("Yearlit PRO")) {
@@ -54,6 +56,7 @@ struct ProSection: View {
         } label: {
           Label("Copy App User ID", systemImage: "doc.on.doc")
         }
+        .disabled(appUserId == nil)
       } else {
         VStack(alignment: .leading, spacing: 6) {
           Text("Unlock deeper stats, widgets, and more room to track your year.")

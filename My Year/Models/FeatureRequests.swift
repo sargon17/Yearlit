@@ -28,7 +28,7 @@ struct CreateRequest: Codable {
     let text: String
     let description: String?
     let clientId: String
-    let project: String // riferimento a un id di projects
+    let project: String
     let kind: FeatureRequestKind?
 }
 
@@ -44,8 +44,8 @@ struct Request: Codable, Identifiable {
     let description: String?
     let clientId: String
     let upvoteCount: Int?
-    let status: String // riferimento a un id di requestStatuses
-    let project: String // riferimento a un id di projects
+    let status: String
+    let project: String
     let computedStatus: RequestStatus
 
     init(
@@ -92,6 +92,20 @@ struct Request: Codable, Identifiable {
     var resolvedUpvoteCount: Int {
         max(upvoteCount ?? 0, 0)
     }
+
+    func withUpvoteCount(_ count: Int) -> Request {
+        Request(
+            _id: _id,
+            _creationTime: _creationTime,
+            text: text,
+            description: description,
+            clientId: clientId,
+            upvoteCount: max(count, 0),
+            status: status,
+            project: project,
+            computedStatus: computedStatus
+        )
+    }
 }
 
 struct FeatureRequestComment: Decodable, Identifiable, Equatable {
@@ -136,8 +150,7 @@ struct FeatureRequestCommentsResponse: Decodable {
 
     init(from decoder: Decoder) throws {
         if let container = try? decoder.container(keyedBy: CodingKeys.self),
-           let comments = try? container.decode([FeatureRequestComment].self, forKey: .comments)
-        {
+           let comments = try? container.decode([FeatureRequestComment].self, forKey: .comments) {
             self.comments = comments
             return
         }
@@ -157,8 +170,7 @@ struct FeatureRequestViewerUpvotesResponse: Decodable {
     init(from decoder: Decoder) throws {
         if let container = try? decoder.container(keyedBy: CodingKeys.self),
            let upvotes = (try? container.decode([String].self, forKey: .upvotes))
-           ?? (try? container.decode([String].self, forKey: .requestIds))
-        {
+           ?? (try? container.decode([String].self, forKey: .requestIds)) {
             self.upvotes = upvotes
             return
         }

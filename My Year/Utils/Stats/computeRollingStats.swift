@@ -6,7 +6,7 @@ func computeRollingStats(
     todayLocal: Date,
     anySuccessByDay: [Date: Bool],
     dayMeanZ: [Date: Double]
-) -> (cr30: Double, avg7: Double, avg30: Double) {
+) -> RollingStats {
     let d30 = lastNDates(cal: cal, todayLocal: todayLocal, n: 30)
     var succ30 = 0
     var zSum7 = 0.0
@@ -23,5 +23,9 @@ func computeRollingStats(
     let cr30 = d30.isEmpty ? 0 : Double(succ30) / Double(d30.count)
     let avg7 = d30.isEmpty ? 0 : zSum7 / Double(min(7, d30.count))
     let avg30 = d30.isEmpty ? 0 : zSum30 / Double(d30.count)
-    return (cr30, avg7, avg30)
+    return RollingStats(
+        completionRateTrailingLongWindow: cr30,
+        averageProgressTrailingShortWindow: avg7,
+        averageProgressTrailingLongWindow: avg30
+    )
 }

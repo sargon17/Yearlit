@@ -69,6 +69,23 @@ struct WidgetAnalyticsQueueTests {
         #expect(queue.drain().isEmpty)
     }
 
+    @Test func capsStoredUsageEventsToNewestEvents() {
+        let defaults = makeDefaults()
+        let queue = WidgetAnalyticsQueue(defaults: defaults)
+
+        for index in 0..<510 {
+            queue.enqueueOpenedApp(properties: [
+                "index": .int(index)
+            ])
+        }
+
+        let events = queue.drain()
+
+        #expect(events.count == 500)
+        #expect(events.first?.properties["index"] == .int(10))
+        #expect(events.last?.properties["index"] == .int(509))
+    }
+
     private func makeDefaults() -> UserDefaults {
         let suiteName = "WidgetAnalyticsQueueTests.\(UUID().uuidString)"
         let defaults = UserDefaults(suiteName: suiteName)!

@@ -7,7 +7,7 @@ struct MinimalGridShareView: View {
     var body: some View {
         ShareCardContainer {
             VStack(alignment: .leading, spacing: 8) {
-                header
+                ShareCardHeader(title: data.calendar.name.capitalized)
 
                 CustomSeparator()
                     .padding(.horizontal, -28)
@@ -21,17 +21,6 @@ struct MinimalGridShareView: View {
             }
         }
     }
-
-    private var header: some View {
-        VStack(alignment: .leading, spacing: 4) {
-            Text(data.calendar.name.capitalized)
-                .font(AppFont.mono(18))
-                .foregroundColor(Color("text-primary"))
-                .fontWeight(.black)
-                .lineLimit(1)
-                .minimumScaleFactor(0.7)
-        }
-    }
 }
 
 struct StreakFocusShareView: View {
@@ -40,7 +29,13 @@ struct StreakFocusShareView: View {
     var body: some View {
         ShareCardContainer {
             VStack(alignment: .leading, spacing: 10) {
-                header
+                ShareCardHeader(
+                    title: data.calendar.name.capitalized,
+                    subtitle: String(
+                        localized: data.calendar.cadence == .weekly ? "Weekly Streak Focus" : "Streak Focus"
+                    ),
+                    titleSize: 16
+                )
 
                 CustomSeparator()
                     .padding(.horizontal, -28)
@@ -54,20 +49,6 @@ struct StreakFocusShareView: View {
                     .padding(.horizontal, -28)
                 ShareCardFooter()
             }
-        }
-    }
-
-    private var header: some View {
-        VStack(alignment: .leading, spacing: 4) {
-            Text(data.calendar.name.capitalized)
-                .font(AppFont.mono(16))
-                .foregroundColor(Color("text-primary"))
-                .fontWeight(.black)
-                .lineLimit(1)
-                .minimumScaleFactor(0.7)
-            Text(String(localized: data.calendar.cadence == .weekly ? "Weekly Streak Focus" : "Streak Focus"))
-                .font(AppFont.mono(12))
-                .foregroundColor(Color("text-tertiary"))
         }
     }
 
@@ -98,7 +79,11 @@ struct PerformanceShareView: View {
     var body: some View {
         ShareCardContainer {
             VStack(alignment: .leading, spacing: 10) {
-                header
+                ShareCardHeader(
+                    title: data.calendar.name.capitalized,
+                    subtitle: String(localized: "Performance"),
+                    titleSize: 16
+                )
 
                 CustomSeparator()
                     .padding(.horizontal, -28)
@@ -141,20 +126,6 @@ struct PerformanceShareView: View {
                     .padding(.horizontal, -28)
                 ShareCardFooter()
             }
-        }
-    }
-
-    private var header: some View {
-        VStack(alignment: .leading, spacing: 4) {
-            Text(data.calendar.name.capitalized)
-                .font(AppFont.mono(16))
-                .foregroundColor(Color("text-primary"))
-                .fontWeight(.black)
-                .lineLimit(1)
-                .minimumScaleFactor(0.7)
-            Text("Performance")
-                .font(AppFont.mono(12))
-                .foregroundColor(Color("text-tertiary"))
         }
     }
 }

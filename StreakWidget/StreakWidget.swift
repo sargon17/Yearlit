@@ -38,7 +38,10 @@ struct Provider: AppIntentTimelineProvider {
         )
     }
 
-    func timeline(for configuration: ConfigurationAppIntent, in context: Context) async -> Timeline<SimpleEntry> {
+    func timeline(
+        for configuration: ConfigurationAppIntent,
+        in context: Context
+    ) async -> Timeline<SimpleEntry> {
         let currentDate = Date()
         let calendar = resolvedCalendar(for: configuration)
         let streakData = calendar.map { WidgetStreak.currentStreak(calendar: $0) }
@@ -93,14 +96,26 @@ struct StreakWidgetEntryView: View {
 
     var body: some View {
         let renderingMode = WidgetStyle.RenderingMode(widgetRenderingMode)
-        let backgroundColor = WidgetStyle.widgetBackgroundColor(for: colorScheme, renderingMode: renderingMode)
-        let primaryTextColor = WidgetStyle.primaryTextColor(for: colorScheme, renderingMode: renderingMode)
-        let secondaryTextColor = WidgetStyle.secondaryTextColor(for: colorScheme, renderingMode: renderingMode)
-        let accentColor = renderingMode.isMonochrome ? WidgetStyle.monochromeAccentColor() : Color(entry.calendar?.color ?? "qs-orange")
+        let backgroundColor = WidgetStyle.widgetBackgroundColor(
+            for: colorScheme,
+            renderingMode: renderingMode
+        )
+        let primaryTextColor = WidgetStyle.primaryTextColor(
+            for: colorScheme,
+            renderingMode: renderingMode
+        )
+        let secondaryTextColor = WidgetStyle.secondaryTextColor(
+            for: colorScheme,
+            renderingMode: renderingMode
+        )
+        let accentColor =
+            renderingMode.isMonochrome
+            ? WidgetStyle.monochromeAccentColor()
+            : Color(entry.calendar?.color ?? "qs-orange")
         let calendarName = entry.calendar?.name ?? String(localized: "Habit")
         let streakValue = entry.streak
         let isAtRisk = entry.isAtRisk
-        let destinationURL = entry.calendar.map { calendar in
+        let destinationURL = entry.calendar.flatMap { calendar in
             widgetDeepLink(
                 host: "calendar",
                 calendarId: calendar.id.uuidString,
@@ -166,7 +181,11 @@ struct StreakWidget: Widget {
     let kind: String = WidgetKinds.streak
 
     var body: some WidgetConfiguration {
-        AppIntentConfiguration(kind: kind, intent: ConfigurationAppIntent.self, provider: Provider()) { entry in
+        AppIntentConfiguration(
+            kind: kind,
+            intent: ConfigurationAppIntent.self,
+            provider: Provider()
+        ) { entry in
             StreakWidgetEntryView(entry: entry)
         }
         .configurationDisplayName("Streak")
@@ -202,7 +221,7 @@ private func widgetDeepLink(
     calendarId: String?,
     widgetKind: String,
     widgetAction: String
-) -> URL {
+) -> URL? {
     var components = URLComponents()
     components.scheme = "my-year"
     components.host = host
@@ -216,5 +235,5 @@ private func widgetDeepLink(
         components.path = "/\(calendarId)"
     }
 
-    return components.url ?? URL(string: "my-year://")!
+    return components.url
 }

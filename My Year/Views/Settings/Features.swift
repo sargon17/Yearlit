@@ -14,7 +14,9 @@ struct YearExperienceSection: View {
   }
 
   private var timelineHelperCopy: String {
-    String(localized: "Your 365 starts each daily habit from the day you began. Calendar Year shows January to December progress.")
+    String(
+      localized: "Your 365 starts daily habits from the day you began. Calendar Year shows Jan-Dec progress."
+    )
   }
 
   private var moodTrackingBinding: Binding<Bool> {
@@ -70,7 +72,8 @@ struct DeveloperSettingsSection: View {
 
   private var shouldShowWandSettings: Bool {
     !cleanScreenshotsEnabled
-      && ((My_YearApp.isDebugMode && runtimeDebugEnabled) || isDeveloperModeEnabled)
+      && My_YearApp.isDebugMode
+      && runtimeDebugEnabled
   }
 
   var body: some View {

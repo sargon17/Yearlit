@@ -4,6 +4,7 @@ import Testing
 
 @testable import My_Year
 
+@Suite(.serialized)
 @MainActor
 struct OnboardingSessionTests {
   @Test func togglingIdentityCommitmentsPreservesOrder() {
@@ -234,54 +235,11 @@ struct OnboardingSessionTests {
     #expect(analytics.events.first?.event == .onboardingStepViewed)
     #expect(analytics.events.first?.properties["step_id"] == .string(OnboardingStep.emotionalHook.rawValue))
 
-    coordinator.continueTapped()
-    coordinator.continueTapped()
-    coordinator.identityCommitmentChanged(.reader)
-    coordinator.continueTapped()
-    coordinator.habitSelectionChanged("Read 2 pages")
-    coordinator.tinyHabitContinueTapped()
-    coordinator.firstDotMarkDayOneTapped()
-    coordinator.firstDotMarkDayOneTapped()
-    coordinator.firstDotContinueTapped()
-    coordinator.notificationPermissionSkipped()
-    coordinator.notificationPermissionSkipped()
-    coordinator.readyWidgetsCompleted()
-    coordinator.readyWidgetsCompleted()
-    coordinator.paywallClosed()
-    coordinator.paywallClosed()
+    completeOnboardingLifecycle(coordinator)
 
     #expect(didFinish)
-    #expect(
-      analytics.events.map(\.event) == [
-        .onboardingStepViewed,
-        .onboardingStepViewed,
-        .onboardingStepViewed,
-        .onboardingActionPerformed,
-        .activationCompleted,
-        .activationCompleted,
-        .onboardingStepViewed,
-        .onboardingActionPerformed,
-        .onboardingStepViewed,
-        .onboardingActionPerformed,
-        .onboardingStepViewed,
-        .onboardingActionPerformed,
-        .onboardingStepViewed,
-        .onboardingActionPerformed,
-        .onboardingStepViewed,
-        .onboardingActionPerformed,
-        .onboardingStepViewed,
-        .onboardingActionPerformed
-      ])
-    #expect(
-      analytics.actions == [
-        .identityCompleted,
-        .tinyHabitCreated,
-        .firstDotMarked,
-        .notificationsSkipped,
-        .readyContinued,
-        .paywallBoundaryReached,
-        .paywallClosed
-      ])
+    #expect(analytics.events.map(\.event) == Self.expectedLifecycleEvents)
+    #expect(analytics.actions == Self.expectedLifecycleActions)
   }
 
   @Test func onboardingAnalyticsDocsCoverAllowedValuesAndPrivacyBoundaries() throws {
@@ -334,6 +292,53 @@ struct OnboardingSessionTests {
     return repoRoot.appendingPathComponent("docs/analytics-events.md").path
   }()
 
+  private static let expectedLifecycleEvents: [AnalyticsEvent] = [
+    .onboardingStepViewed,
+    .onboardingStepViewed,
+    .onboardingStepViewed,
+    .onboardingActionPerformed,
+    .onboardingStepViewed,
+    .onboardingActionPerformed,
+    .onboardingStepViewed,
+    .onboardingActionPerformed,
+    .activationCompleted,
+    .onboardingStepViewed,
+    .onboardingActionPerformed,
+    .onboardingStepViewed,
+    .onboardingActionPerformed,
+    .onboardingActionPerformed,
+    .onboardingStepViewed,
+    .onboardingActionPerformed
+  ]
+
+  private static let expectedLifecycleActions: [OnboardingAction] = [
+    .identityCompleted,
+    .tinyHabitCreated,
+    .firstDotMarked,
+    .notificationsSkipped,
+    .readyContinued,
+    .paywallBoundaryReached,
+    .paywallClosed
+  ]
+
+  private func completeOnboardingLifecycle(_ coordinator: OnboardingCoordinator) {
+    coordinator.continueTapped()
+    coordinator.continueTapped()
+    coordinator.identityCommitmentChanged(.reader)
+    coordinator.continueTapped()
+    coordinator.habitSelectionChanged("Read 2 pages")
+    coordinator.tinyHabitContinueTapped()
+    coordinator.firstDotMarkDayOneTapped()
+    coordinator.firstDotMarkDayOneTapped()
+    coordinator.firstDotContinueTapped()
+    coordinator.notificationPermissionSkipped()
+    coordinator.notificationPermissionSkipped()
+    coordinator.readyWidgetsCompleted()
+    coordinator.readyWidgetsCompleted()
+    coordinator.paywallClosed()
+    coordinator.paywallClosed()
+  }
+
   private func makeCalendar(
     name: String,
     isArchived: Bool = false,
@@ -362,45 +367,50 @@ struct OnboardingSessionTests {
       streakProtectionThreshold: 5
     )
   }
+}
 
-  private final class SpyAnalytics: OnboardingAnalyticsTracking {
-    private(set) var events: [(event: AnalyticsEvent, properties: [String: AnalyticsPropertyValue])] = []
+@MainActor
+private final class SpyAnalytics: OnboardingAnalyticsTracking {
+  private(set) var events: [(event: AnalyticsEvent, properties: [String: AnalyticsPropertyValue])] = []
 
-    func trackOnboardingStepViewed(stepId: String) {
-      events.append((event: .onboardingStepViewed, properties: ["step_id": .string(stepId)]))
-    }
-
-    func trackOnboardingAction(_ action: OnboardingAction) {
-      events.append((event: .onboardingActionPerformed, properties: ["action": .string(action.rawValue)]))
-    }
-
-    func markActivationCompleted(source: ActivationSource) {
-      events.append((event: .activationCompleted, properties: ["activation_source": .string(source.rawValue)]))
-    }
-
-    var actions: [OnboardingAction] {
-      events.compactMap { event, properties in
-        guard event == .onboardingActionPerformed,
-          case .string(let action) = properties["action"]
-        else {
-          return nil
-        }
-        return OnboardingAction(rawValue: action)
-      }
-    }
+  func trackOnboardingStepViewed(stepId: String) {
+    events.append((event: .onboardingStepViewed, properties: ["step_id": .string(stepId)]))
   }
 
-  private final class NotificationRequesterStub {
-    private(set) var requestCount = 0
-    private var completion: ((Result<Bool, Error>) -> Void)?
+  func trackOnboardingAction(_ action: OnboardingAction) {
+    events.append((event: .onboardingActionPerformed, properties: ["action": .string(action.rawValue)]))
+  }
 
-    func request(_ completion: @escaping (Result<Bool, Error>) -> Void) {
-      requestCount += 1
-      self.completion = completion
-    }
+  func markActivationCompleted(source: ActivationSource) {
+    events.append((
+      event: .activationCompleted,
+      properties: ["activation_source": .string(source.rawValue)]
+    ))
+  }
 
-    func complete(_ result: Result<Bool, Error>) {
-      completion?(result)
+  var actions: [OnboardingAction] {
+    events.compactMap { event, properties in
+      guard event == .onboardingActionPerformed,
+        case .string(let action) = properties["action"]
+      else {
+        return nil
+      }
+      return OnboardingAction(rawValue: action)
     }
+  }
+}
+
+@MainActor
+private final class NotificationRequesterStub {
+  private(set) var requestCount = 0
+  private var completion: ((Result<Bool, Error>) -> Void)?
+
+  func request(_ completion: @escaping (Result<Bool, Error>) -> Void) {
+    requestCount += 1
+    self.completion = completion
+  }
+
+  func complete(_ result: Result<Bool, Error>) {
+    completion?(result)
   }
 }

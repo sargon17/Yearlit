@@ -13,7 +13,7 @@ struct AllCalendarsRecapView: View {
 
   @State private var customerInfo: CustomerInfo?
   @State private var isPaywallPresented: Bool = false
-  @State private var statsBundle: StatsBundle? = nil
+  @State private var statsBundle: StatsBundle?
   @State private var showingYearPicker: Bool = false
   @State private var tempSelectedYear: Int = Calendar.current.component(.year, from: Date())
   @State private var statsRefreshToken = UUID()
@@ -55,11 +55,14 @@ struct AllCalendarsRecapView: View {
                 Spacer()
               }
               HStack(spacing: 4) {
-                Button(action: { showingYearPicker = true }) {
+                Button(
+                  action: { showingYearPicker = true },
+                  label: {
                   Text("\(valuationStore.year.description)")
                     .font(AppFont.mono(12))
                     .foregroundColor(Color("text-tertiary"))
-                }
+                  }
+                )
               }
             }
           }
@@ -140,8 +143,10 @@ struct AllCalendarsRecapView: View {
       .presentationDetents([.height(280)])
     }
     .onAppear {
-      Purchases.shared.getCustomerInfo { info, _ in
-        self.customerInfo = info
+      if RevenueCatClient.isConfigured {
+        Purchases.shared.getCustomerInfo { info, _ in
+          self.customerInfo = info
+        }
       }
       if lastObservedDataVersion != snapshot.dataVersion {
         lastObservedDataVersion = snapshot.dataVersion

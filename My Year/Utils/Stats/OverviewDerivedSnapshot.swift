@@ -87,7 +87,7 @@ func computeOverviewDerivedSnapshot(
     calendars: calendars
   )
   let activeDays = allTimeSuccessDays.count
-  let (longestStreak, currentStreak) = computeStreaks(cal: cal, successDays: allTimeSuccessDays, today: todayLocal)
+  let streaks = computeStreaks(cal: cal, successDays: allTimeSuccessDays, today: todayLocal)
 
   let currentPeriodCount = currentPeriodReferenceDate.map { referenceDate in
     calendars.reduce(0) { partial, calendar in
@@ -96,7 +96,7 @@ func computeOverviewDerivedSnapshot(
     }
   }
 
-  let (cr30, avg7, avg30) = computeRollingStats(
+  let rollingStats = computeRollingStats(
     cal: cal,
     todayLocal: todayLocal,
     anySuccessByDay: anySuccessByDay,
@@ -122,15 +122,15 @@ func computeOverviewDerivedSnapshot(
       activeDays: activeDays,
       totalCount: totalCount,
       maxCount: maxCount,
-      longestStreak: longestStreak,
-      currentStreak: currentStreak
+      longestStreak: streaks.longest,
+      currentStreak: streaks.current
     ),
-    completionRateTrailingLongWindow: cr30,
+    completionRateTrailingLongWindow: rollingStats.completionRateTrailingLongWindow,
     bestWeekday: bestWD?.day,
     weekdayRates: weekdayRates,
     monthlyRates: monthlyRates,
-    averageProgressTrailingShortWindow: avg7,
-    averageProgressTrailingLongWindow: avg30,
+    averageProgressTrailingShortWindow: rollingStats.averageProgressTrailingShortWindow,
+    averageProgressTrailingLongWindow: rollingStats.averageProgressTrailingLongWindow,
     volatilityStd: volatility,
     currentMissedPeriods: currentMissedPeriods,
     averageRecoveryPeriods: averageRecoveryPeriods,

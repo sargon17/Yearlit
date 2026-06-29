@@ -49,15 +49,15 @@ struct QuickAddCalendarIntent: AppIntent {
   @MainActor
   func perform() async throws -> some IntentResult & ProvidesDialog {
     let selectedCalendar = try CalendarShortcutService.calendar(for: calendar)
-
-    quickEntry(
+    let dialogPrefix = try CalendarShortcutService.checkIn(
       calendar: selectedCalendar,
       date: Date(),
-      calendarStore: .shared,
+      value: nil,
+      store: .shared,
       source: .shortcut
     )
 
-    return .result(dialog: "Checked in \(selectedCalendar.name).")
+    return .result(dialog: "\(dialogPrefix) \(selectedCalendar.name).")
   }
 }
 
@@ -147,54 +147,40 @@ enum CalendarShortcutService {
 
     switch calendar.trackingType {
     case .binary:
-      completeBinaryCalendar(calendar: calendar, date: date, store: store, source: source)
+      saveCheckInEntry(calendar: calendar, date: date, value: nil, store: store, source: source)
       return "Checked in"
     case .counter:
       let addValue = try resolvedAddValue(value, calendar: calendar)
-      updateCounterEntry(
-        calendarId: calendar.id,
-        date: date,
-        calendarStore: store,
-        addValue: addValue,
-        source: source
-      )
+      saveCheckInEntry(calendar: calendar, date: date, value: addValue, store: store, source: source)
       return "Added \(addValue) to"
     case .multipleDaily:
       let addValue = try resolvedAddValue(value, calendar: calendar)
-      updateMultipleDailyEntry(
-        calendar: calendar,
-        date: date,
-        calendarStore: store,
-        addValue: addValue,
-        source: source
-      )
+      saveCheckInEntry(calendar: calendar, date: date, value: addValue, store: store, source: source)
       return "Added \(addValue) to"
     }
   }
 
   private static func resolvedAddValue(_ value: Int?, calendar: CustomCalendar) throws -> Int {
-    let addValue = value ?? max(1, calendar.defaultRecordValue ?? 1)
-    guard addValue > 0 else {
+    guard let addValue = calendar.resolvedCheckInValue(value) else {
       throw CalendarShortcutIntentError.invalidValue
     }
     return addValue
   }
 
   @MainActor
-  private static func completeBinaryCalendar(
+  private static func saveCheckInEntry(
     calendar: CustomCalendar,
     date: Date,
+    value: Int?,
     store: CustomCalendarStore,
     source: CalendarAnalyticsSource
   ) {
     let oldEntry = store.getEntry(calendarId: calendar.id, date: date)
-    guard oldEntry?.completed != true else { return }
-
-    let newEntry = CalendarEntry(
+    guard let newEntry = calendar.checkInEntry(
       date: date,
-      count: max(1, oldEntry?.count ?? 1),
-      completed: true
-    )
+      existingEntry: oldEntry,
+      value: value
+    ) else { return }
     store.addEntry(calendarId: calendar.id, entry: newEntry)
     CalendarAnalyticsTracker.shared.trackEntryMutationDeferred(
       calendar: calendar,

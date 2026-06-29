@@ -15,11 +15,12 @@ final class OnboardingCoordinator: ObservableObject {
 
   init(
     onFinish: @escaping () -> Void,
-    analytics: OnboardingAnalyticsTracking = Analytics.shared,
-    notificationRequester: @escaping (@escaping (Result<Bool, Error>) -> Void) -> Void = requestNotificationPermissions
+    analytics: OnboardingAnalyticsTracking? = nil,
+    notificationRequester: @escaping (@escaping (Result<Bool, Error>) -> Void) -> Void =
+      requestNotificationPermissions
   ) {
     self.onFinish = onFinish
-    self.analytics = analytics
+    self.analytics = analytics ?? Analytics.shared
     self.notificationRequester = notificationRequester
     currentStep = .emotionalHook
     session = OnboardingSession()
@@ -82,8 +83,9 @@ final class OnboardingCoordinator: ObservableObject {
     if calendar.bucketDate(for: date) == calendar.bucketDate(for: Date()) {
       session.didCompleteFirstDot = completed
       if completed {
-        trackOnboardingAction(.firstDotMarked)
-        analytics.markActivationCompleted(source: .onboardingFirstDot)
+        if trackOnboardingAction(.firstDotMarked) {
+          analytics.markActivationCompleted(source: .onboardingFirstDot)
+        }
       }
     }
 
@@ -143,16 +145,14 @@ final class OnboardingCoordinator: ObservableObject {
   private func resolvedFirstCalendar(in snapshot: CustomCalendarStoreSnapshot) -> CustomCalendar? {
     if let cachedCalendar = firstDotCalendar,
       let calendarId = session.tinyHabitCalendarId,
-      cachedCalendar.id == calendarId
-    {
+      cachedCalendar.id == calendarId {
       return cachedCalendar
     }
 
     let activeCalendars = snapshot.activeCalendars
 
     if let calendarId = session.tinyHabitCalendarId,
-      let calendar = activeCalendars.first(where: { $0.id == calendarId })
-    {
+      let calendar = activeCalendars.first(where: { $0.id == calendarId }) {
       firstDotCalendar = calendar
       return calendar
     }
@@ -208,8 +208,10 @@ final class OnboardingCoordinator: ObservableObject {
     analytics.trackOnboardingStepViewed(stepId: step.rawValue)
   }
 
-  private func trackOnboardingAction(_ action: OnboardingAction) {
-    guard trackedOnboardingActions.insert(action).inserted else { return }
+  @discardableResult
+  private func trackOnboardingAction(_ action: OnboardingAction) -> Bool {
+    guard trackedOnboardingActions.insert(action).inserted else { return false }
     analytics.trackOnboardingAction(action)
+    return true
   }
 }

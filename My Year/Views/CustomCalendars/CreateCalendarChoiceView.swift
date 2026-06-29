@@ -109,10 +109,12 @@ struct CreateCalendarChoiceView: View {
 
   @MainActor
   private func observeCustomerInfo() async {
+    guard RevenueCatClient.isConfigured else { return }
+
     do {
       customerInfo = try await Purchases.shared.customerInfo()
     } catch {
-      print("Error fetching customer info: \(error.localizedDescription)")
+      NSLog("Failed to fetch customer info: \(error.localizedDescription)")
     }
 
     for await info in Purchases.shared.customerInfoStream {

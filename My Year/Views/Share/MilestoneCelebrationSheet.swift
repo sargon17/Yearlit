@@ -1,5 +1,3 @@
-import CoreMotion
-import Photos
 import SharedModels
 import SwiftUI
 import UIKit
@@ -13,21 +11,21 @@ struct MilestoneCelebrationSheet: View {
     let allowsStopShowing: Bool
     let showedUpPeriodKey: String?
 
-    @Environment(\.colorScheme) private var colorScheme
-    @Environment(\.dismiss) private var dismiss
-    @State private var shareImage: UIImage?
-    @State private var isSharing: Bool = false
-    @State private var showingSaveAlert: Bool = false
-    @State private var saveAlertMessage: String = ""
-    @State private var isCardVisible: Bool = false
-    @State private var didTrackShareSheetViewed: Bool = false
-    @StateObject private var motion = MotionTiltManager()
+    @Environment(\.colorScheme) var colorScheme
+    @Environment(\.dismiss) var dismiss
+    @State var shareImage: UIImage?
+    @State var isSharing: Bool = false
+    @State var showingSaveAlert: Bool = false
+    @State var saveAlertMessage: String = ""
+    @State var isCardVisible: Bool = false
+    @State var didTrackShareSheetViewed: Bool = false
+    @StateObject var motion = MotionTiltManager()
 
-    private let stopAction = MilestoneCelebrationStopAction()
-    private let sharePointSize = CGSize(width: 360, height: 450)
-    private let shareScale: CGFloat = 3
-    private let previewHorizontalPadding: CGFloat = 32
-    private let previewVerticalPadding: CGFloat = 16
+    let stopAction = MilestoneCelebrationStopAction()
+    let sharePointSize = CGSize(width: 360, height: 450)
+    let shareScale: CGFloat = 3
+    let previewHorizontalPadding: CGFloat = 32
+    let previewVerticalPadding: CGFloat = 16
 
     init(
         calendar: CustomCalendar,
@@ -105,7 +103,7 @@ struct MilestoneCelebrationSheet: View {
         }
     }
 
-    private var cardView: some View {
+    var cardView: some View {
         GeometryReader { proxy in
             let cardSize = previewCardSize(for: proxy.size)
 
@@ -135,7 +133,7 @@ struct MilestoneCelebrationSheet: View {
         .padding(.vertical, previewVerticalPadding)
     }
 
-    private func previewCardSize(for availableSize: CGSize) -> CGSize {
+    func previewCardSize(for availableSize: CGSize) -> CGSize {
         let availableWidth = max(0, availableSize.width)
         let cardWidth = min(sharePointSize.width, availableWidth)
         return CGSize(
@@ -145,39 +143,12 @@ struct MilestoneCelebrationSheet: View {
     }
 
     @ViewBuilder
-    private var actionButtons: some View {
+    var actionButtons: some View {
         VStack(spacing: 12) {
-            HStack {
-                HStack(spacing: 2) {
-                    Button(action: shareMilestone) {
-                        HStack(spacing: 8) {
-                            Image(systemName: "square.and.arrow.up")
-                            Text("Share")
-                        }
-                        .font(AppFont.mono(14))
-                        .foregroundColor(.textPrimary)
-                        .padding(.vertical, 10)
-                        .frame(maxWidth: .infinity)
-                    }
-                    .sameLevelBorder()
-                    .foregroundStyle(.textSecondary)
-
-                    Button(action: saveToPhotos) {
-                        HStack(spacing: 8) {
-                            Image(systemName: "square.and.arrow.down")
-                            Text("Save to Photos")
-                        }
-                        .font(AppFont.mono(14))
-                        .foregroundColor(.textPrimary)
-                        .padding(.vertical, 10)
-                        .frame(maxWidth: .infinity)
-                    }
-                    .sameLevelBorder()
-                    .foregroundStyle(.textSecondary)
-                }
-                .padding(2)
-                .sameLevelGroupBackground()
-            }
+            ShareActionButtonGroup(
+                onShare: shareMilestone,
+                onSave: saveToPhotos
+            )
             .padding(.horizontal)
 
             if allowsStopShowing {
@@ -192,132 +163,4 @@ struct MilestoneCelebrationSheet: View {
         }
     }
 
-    private var shareMessage: String {
-        let calendarName = calendar.name.capitalized
-        let unit = calendar.cadence == .weekly ? String(localized: "weeks") : String(localized: "days")
-        let signature = "\n\ntracked using yearlit by @tymofyeyev "
-        switch kind {
-        case .streak:
-            return String(localized: "I just hit \(milestone) \(unit) in a row on \(calendarName)!") + signature
-        case .showedUp:
-            return String(localized: "I just showed up \(milestone) \(unit) on \(calendarName)!") + signature
-        case .showedUpMonth:
-            return String(localized: "I showed up \(milestone) \(unit) this month on \(calendarName)!") + signature
-        case .showedUpYear:
-            return String(localized: "I showed up \(milestone) \(unit) this year on \(calendarName)!") + signature
-        }
-    }
-
-    private func shareMilestone() {
-        Task { @MainActor in
-            guard let image = renderImage() else { return }
-            shareImage = image
-            isSharing = true
-        }
-    }
-
-    private func saveToPhotos() {
-        Task { @MainActor in
-            guard let image = renderImage() else {
-                saveAlertMessage = String(localized: "Could not render the image.")
-                showingSaveAlert = true
-                return
-            }
-            guard let imageURL = ShareImageRenderer.writeTemporaryJPEG(from: image) else {
-                saveAlertMessage = String(localized: "Save failed.")
-                showingSaveAlert = true
-                return
-            }
-            let status = await PHPhotoLibrary.requestAuthorization(for: .addOnly)
-            guard status == .authorized || status == .limited else {
-                saveAlertMessage = String(localized: "Photo access denied. Enable Photos permissions in Settings.")
-                showingSaveAlert = true
-                return
-            }
-            PHPhotoLibrary.shared().performChanges({
-                PHAssetChangeRequest.creationRequestForAssetFromImage(atFileURL: imageURL)
-            }) { success, error in
-                try? FileManager.default.removeItem(at: imageURL)
-                DispatchQueue.main.async {
-                    if success {
-                        saveAlertMessage = String(localized: "Saved to Photos.")
-                    } else {
-                        saveAlertMessage = error?.localizedDescription ?? String(localized: "Save failed.")
-                    }
-                    showingSaveAlert = true
-                }
-            }
-        }
-    }
-
-    private func stopShowingThisKind() {
-        dismiss()
-        stopAction.stopShowing(
-            kind: kind,
-            calendarId: calendar.id,
-            milestone: milestone,
-            showedUpPeriodKey: showedUpPeriodKey
-        )
-    }
-
-    @MainActor
-    private func renderImage() -> UIImage? {
-        let view = StreakMilestoneCardView(
-            calendar: calendar,
-            milestone: milestone,
-            currentStreak: currentStreak,
-            dates: dates,
-            kind: kind
-        )
-        .aspectRatio(4 / 5, contentMode: .fill)
-        .clipped()
-        return ShareImageRenderer.render(
-            view: view,
-            size: sharePointSize,
-            colorScheme: colorScheme,
-            scale: shareScale
-        )
-    }
-}
-
-private final class MotionTiltManager: ObservableObject {
-    @Published var pitch: Double = 0
-    @Published var roll: Double = 0
-
-    private let manager = CMMotionManager()
-    private let maxAngle: Double = 6
-    private let smoothing: Double = 0.12
-    private var referenceGravity: CMAcceleration?
-
-    func start() {
-        guard manager.isDeviceMotionAvailable else { return }
-        manager.deviceMotionUpdateInterval = 1 / 60
-        manager.startDeviceMotionUpdates(to: .main) { [weak self] motion, _ in
-            guard let self, let motion else { return }
-            let gravity = motion.gravity
-            if referenceGravity == nil {
-                referenceGravity = gravity
-            }
-            let ref = referenceGravity ?? gravity
-            let dx = gravity.x - ref.x
-            let dy = gravity.y - ref.y
-            let targetRoll = clamp(dx * maxAngle * 1.4, maxAngle: maxAngle)
-            let targetPitch = clamp(-dy * maxAngle * 1.4, maxAngle: maxAngle)
-            pitch = lerp(from: pitch, to: targetPitch, t: smoothing)
-            roll = lerp(from: roll, to: targetRoll, t: smoothing)
-        }
-    }
-
-    func stop() {
-        manager.stopDeviceMotionUpdates()
-        referenceGravity = nil
-    }
-
-    private func clamp(_ value: Double, maxAngle: Double) -> Double {
-        min(maxAngle, max(-maxAngle, value))
-    }
-
-    private func lerp(from: Double, to: Double, t: Double) -> Double {
-        from + (to - from) * t
-    }
 }

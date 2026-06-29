@@ -1,731 +1,144 @@
 import RevenueCat
-import RevenueCatUI
 import SharedModels
 import SwiftUI
 import SwiftfulRouting
-import UserNotifications
-import WidgetKit
-
-enum SelectedDate: Equatable, Identifiable {
-  case none
-  case selected(Date)
-
-  var id: Date? {
-    switch self {
-    case .none:
-      return nil
-    case .selected(let date):
-      return date
-    }
-  }
-
-  var date: Date? {
-    switch self {
-    case .none:
-      return nil
-    case .selected(let date):
-      return date
-    }
-  }
-
-  var isPresented: Bool {
-    if case .selected = self {
-      return true
-    }
-    return false
-  }
-}
 
 struct CustomCalendarView: View {
   @Environment(\.colorScheme) var colorScheme
   let calendar: CustomCalendar
-  @StateObject private var store: CustomCalendarStore = .shared
-  @ObservedObject private var timelinePreference = TimelinePreferenceManager.shared
-  @ObservedObject private var valuationStore: ValuationStore = .shared
+  @StateObject var store: CustomCalendarStore = .shared
+  @ObservedObject var timelinePreference = TimelinePreferenceManager.shared
+  @ObservedObject var valuationStore: ValuationStore = .shared
 
-  @AppStorage(AppStorageKeys.runtimeDebugEnabled) private var runtimeDebugEnabled: Bool = false
-  @AppStorage(AppStorageKeys.cleanScreenshotsEnabled) private var cleanScreenshotsEnabled: Bool = false
-  @AppStorage(AppStorageKeys.wandFillForce) private var wandFillForce: Double = 0.5
-  @AppStorage(AppStorageKeys.isDeveloperModeEnabled) private var isDeveloperModeEnabled: Bool = false
-  @State private var today: Date = Calendar.current.startOfDay(for: Date())
+  @AppStorage(AppStorageKeys.runtimeDebugEnabled) var runtimeDebugEnabled: Bool = false
+  @AppStorage(AppStorageKeys.cleanScreenshotsEnabled) var cleanScreenshotsEnabled: Bool = false
+  @AppStorage(AppStorageKeys.wandFillForce) var wandFillForce: Double = 0.5
+  @State var today: Date = Calendar.current.startOfDay(for: Date())
   @Environment(\.scenePhase) private var scenePhase
 
-  private struct OptimisticEntryOverride {
-    let calendarId: UUID
-    let dayKey: String
-    let entry: CalendarEntry?
-  }
-
-  private var renderSnapshot: CalendarRenderSnapshot {
+  var renderSnapshot: CalendarRenderSnapshot {
     makeRenderSnapshot(snapshot: store.snapshot, selectedYear: valuationStore.selectedYear)
   }
 
-  private func makeRenderSnapshot(
+  func makeRenderSnapshot(
     snapshot: CustomCalendarStoreSnapshot,
     selectedYear: Int
   ) -> CalendarRenderSnapshot {
-    let activeCalendar = applyingOptimisticEntryOverrides(to: snapshot.calendar(id: calendar.id) ?? calendar)
-    return CalendarRenderSnapshotCache.snapshot(
+    let activeCalendar = CustomCalendarOptimisticEntries.applying(
+      optimisticEntryOverrides,
+      to: snapshot.calendar(id: calendar.id) ?? calendar
+    )
+    return CalendarRenderSnapshotCache.snapshot(CalendarRenderSnapshotInput(
       calendar: activeCalendar,
       selectedYear: selectedYear,
       timelineMode: timelinePreference.mode,
       today: today,
       colorScheme: colorScheme,
       optimisticOverridesSignature: optimisticOverridesSignature
-    )
+    ))
   }
 
-  @State private var showingEditSheet: Bool = false
-  @State private var showingYearPicker: Bool = false
-  @State private var tempSelectedYear: Int = Calendar.current.component(.year, from: Date())
-  @State private var calendarError: CalendarError?
-  @State private var customerInfo: CustomerInfo?
-  @State private var isPaywallPresented: Bool = false
-  @State private var statsBundle: StatsBundle?
-  @State private var pendingMilestoneCheck: Bool = false
-  @State private var isEntryEditSheetPresented: Bool = false
-  @State private var optimisticEntryOverrides: [String: OptimisticEntryOverride] = [:]
-  @State private var isSyncingAppleHealth: Bool = false
-  @State private var checkInRippleTrigger: Int = 0
-  @State private var checkInRippleOriginDate: Date?
+  @State var showingYearPicker: Bool = false
+  @State var tempSelectedYear: Int = Calendar.current.component(.year, from: Date())
+  @State var calendarError: CalendarError?
+  @State var customerInfo: CustomerInfo?
+  @State var isPaywallPresented: Bool = false
+  @State var statsBundle: StatsBundle?
+  @State var pendingMilestoneCheck: Bool = false
+  @State var isEntryEditSheetPresented: Bool = false
+  @State var optimisticEntryOverrides: [String: CustomCalendarOptimisticEntryOverride] = [:]
+  @State var isSyncingAppleHealth: Bool = false
+  @State var checkInRippleTrigger: Int = 0
+  @State var checkInRippleOriginDate: Date?
 
-  private let milestoneCelebrationPolicy = MilestoneCelebrationPolicy.shared
-  private let appleHealthSyncService = AppleHealthCalendarSyncService()
+  let milestoneCelebrationPolicy = MilestoneCelebrationPolicy.shared
+  let appleHealthSyncService = AppleHealthCalendarSyncService()
 
-  private var shouldShowDeveloperControls: Bool {
+  var shouldShowDeveloperControls: Bool {
     !cleanScreenshotsEnabled
-      && ((My_YearApp.isDebugMode && runtimeDebugEnabled) || isDeveloperModeEnabled)
+      && My_YearApp.isDebugMode
+      && runtimeDebugEnabled
   }
 
-  private func canShowAppleHealthDebugControls(for calendar: CustomCalendar) -> Bool {
+  func canShowAppleHealthDebugControls(for calendar: CustomCalendar) -> Bool {
     calendar.isAppleHealthConnected && shouldShowDeveloperControls
   }
 
-  @Environment(\.router) private var router
+  @Environment(\.router) var router
 
-  private let availableYears: [Int] = {
+  let availableYears: [Int] = {
     let currentYear: Int = Calendar.current.component(.year, from: Date())
     return Array((currentYear - 10)...currentYear).reversed()
   }()
+}
 
-  private func fillRandomEntries() {
-    let state = renderSnapshot
-    let activeCalendar = state.activeCalendar
-    guard !activeCalendar.isAppleHealthConnected else { return }
-
-    // TODO: Implement clearEntries(calendarId:) in CustomCalendarStore to enable clearing before filling.
-    store.clearEntries(calendarId: activeCalendar.id)
-
-    let sourceDates =
-      state.isShowingYour365
-      ? state.your365Snapshot?.cells.map(\.date) ?? []
-      : state.calendarYearGridDates
-
-    for date in sourceDates {
-      if date <= today, Double.random(in: 0.0...1.0) < wandFillForce {
-        switch activeCalendar.trackingType {
-        case .binary:
-          let entry = CalendarEntry(date: date, count: 1, completed: true)
-          store.addEntry(calendarId: activeCalendar.id, entry: entry)
-        case .counter:
-          let count = Int.random(in: 1...5)
-          let entry = CalendarEntry(date: date, count: count, completed: count > 0)
-          store.addEntry(calendarId: activeCalendar.id, entry: entry)
-        case .multipleDaily:
-          let count = Int.random(in: 1...activeCalendar.dailyTarget)
-          let entry = CalendarEntry(
-            date: date, count: count, completed: count >= activeCalendar.dailyTarget
-          )
-          store.addEntry(calendarId: activeCalendar.id, entry: entry)
-        }
-      }
-    }
-  }
-
-  private func applyingOptimisticEntryOverrides(to calendar: CustomCalendar) -> CustomCalendar {
-    var calendar = calendar
-    for override in optimisticEntryOverrides.values where override.calendarId == calendar.id {
-      if let entry = override.entry {
-        calendar.entries[override.dayKey] = entry
-      } else {
-        calendar.entries.removeValue(forKey: override.dayKey)
-      }
-    }
-    return calendar
-  }
-
-  private func setOptimisticEntryOverride(calendar: CustomCalendar, date: Date, entry: CalendarEntry?) {
-    let dayKey = calendar.entryKey(for: date)
-    optimisticEntryOverrides["\(calendar.id.uuidString)|\(dayKey)"] = OptimisticEntryOverride(
-      calendarId: calendar.id,
-      dayKey: dayKey,
-      entry: entry
-    )
-  }
-
-  private func isPositiveEntry(_ entry: CalendarEntry?) -> Bool {
-    guard let entry else { return false }
-    return entry.count > 0 || entry.completed
-  }
-
-  private func triggerCheckInRipple(from date: Date) {
-    checkInRippleOriginDate = date
-    checkInRippleTrigger += 1
-    Task { @MainActor in
-      await checkInRippleHapticFeedback()
-    }
-  }
-
-  private func handleDayTap(_ date: Date) {
-    guard !date.isInFuture else { return }
-
-    let activeCalendar = renderSnapshot.activeCalendar
-    guard !activeCalendar.isAppleHealthConnected else { return }
-
-    if activeCalendar.trackingType == .binary {
-      let isCheckingIn = activeCalendar.entry(for: date) == nil
-      let newEntry =
-        isCheckingIn
-        ? defaultEntry(date: date, trackingType: .binary)
-        : nil
-      setOptimisticEntryOverride(calendar: activeCalendar, date: date, entry: newEntry)
-
-      Task { @MainActor in
-        await hapticFeedback()
-        _ = toggleBinaryEntry(
-          calendarId: activeCalendar.id,
-          date: date,
-          calendarStore: store,
-          source: .calendar
-        )
-        if isCheckingIn {
-          triggerCheckInRipple(from: date)
-        }
-        scheduleMilestoneCheck()
-        checkIfReachedThreeDays(activeCalendar)
-      }
-      return
-    }
-
-    presentEntryEditSheet(calendar: activeCalendar, date: date)
-  }
-
-  private func presentEntryEditSheet(calendar: CustomCalendar, date: Date) {
-    guard !calendar.isAppleHealthConnected else { return }
-    Task {
-      await hapticFeedback()
-    }
-    isEntryEditSheetPresented = true
-    router.showScreen(
-      .sheetConfig(config: entryEditSheetConfig)
-    ) { _ in
-      DayEntryEditSheet(
-        calendar: calendar,
-        date: date,
-        store: store,
-        onSave: { entry in
-          if isPositiveEntry(entry) {
-            triggerCheckInRipple(from: entry.date)
-          }
-          scheduleMilestoneCheck()
-        },
-        onDismiss: {
-          isEntryEditSheetPresented = false
-          evaluateMilestonesIfNeeded(calendarId: calendar.id)
-        }
-      )
-    }
-  }
-
-  private func handleQuickAdd() {
-    let state = renderSnapshot
-    handleQuickAdd(calendar: state.activeCalendar, date: state.currentPeriodReferenceDate ?? Date())
-  }
-
-  private func handleQuickAdd(calendar: CustomCalendar, date: Date) {
-    guard !calendar.isAppleHealthConnected else { return }
-
-    Task { @MainActor in
-      await hapticFeedback()
-      quickEntry(
-        calendar: calendar,
-        date: date,
-        calendarStore: store,
-        source: .calendar
-      )
-      if isPositiveEntry(store.getEntry(calendarId: calendar.id, date: date)) {
-        triggerCheckInRipple(from: date)
-      }
-
-      checkIfReachedThreeDays(calendar)
-      scheduleMilestoneCheck()
-    }
-  }
-
-  private func scheduleMilestoneCheck() {
-    pendingMilestoneCheck = true
-  }
-
-  private func evaluateMilestonesIfNeeded(calendarId: UUID) {
-    guard pendingMilestoneCheck else { return }
-    pendingMilestoneCheck = false
-    let referenceDate = Date()
-    guard let updatedCalendar = store.snapshot.calendar(id: calendarId) else { return }
-    let currentStreak = currentStreak(for: updatedCalendar)
-
-    if celebrateStreakMilestoneIfNeeded(
-      calendar: updatedCalendar,
-      calendarId: calendarId,
-      currentStreak: currentStreak
-    ) {
-      return
-    }
-
-    if updatedCalendar.cadence == .daily {
-      for kind in [ShowedUpMilestoneKind.currentMonth, .currentYear] {
-        if celebrateShowedUpMilestoneIfNeeded(
-          calendar: updatedCalendar,
-          calendarId: calendarId,
-          currentStreak: currentStreak,
-          kind: kind,
-          referenceDate: referenceDate
-        ) {
-          return
-        }
-      }
-    }
-
-    _ = celebrateShowedUpMilestoneIfNeeded(
-      calendar: updatedCalendar,
-      calendarId: calendarId,
-      currentStreak: currentStreak,
-      kind: .allTime,
-      referenceDate: referenceDate
-    )
-  }
-
-  @MainActor
-  private func syncAppleHealth(calendar: CustomCalendar, showsErrors: Bool = false) async {
-    guard calendar.isAppleHealthConnected else { return }
-    guard !isSyncingAppleHealth else { return }
-    isSyncingAppleHealth = true
-    defer { isSyncingAppleHealth = false }
-
-    do {
-      if let result = try await appleHealthSyncService.sync(calendar: calendar) {
-        rememberMilestonesSilently(
-          for: result.calendar,
-          replacingEntries: result.entries,
-          from: result.start,
-          through: result.end
-        )
-      }
-    } catch {
-      if showsErrors {
-        calendarError = .appleHealthSyncFailed(error)
-      }
-    }
-  }
-
-  private func rememberMilestonesSilently(
-    for calendar: CustomCalendar,
-    replacingEntries entries: [String: CalendarEntry],
-    from start: Date,
-    through end: Date
-  ) {
-    var syncedCalendar = calendar
-    syncedCalendar.entries = calendar.entries.filter { _, entry in
-      entry.date < start || entry.date > end
-    }
-    syncedCalendar.entries.merge(entries) { _, new in new }
-    let currentStreak = currentStreak(for: syncedCalendar)
-    _ = milestoneCelebrationPolicy.decisionForStreakMilestone(
-      calendarId: calendar.id,
-      streak: currentStreak
-    )
-
-    let referenceDate = Date()
-    if syncedCalendar.cadence == .daily {
-      for kind in [ShowedUpMilestoneKind.currentMonth, .currentYear, .allTime] {
-        _ = milestoneCelebrationPolicy.decisionForShowedUpMilestone(
-          calendarId: calendar.id,
-          showedUpCount: ShowedUpMilestones.showedUpCount(for: syncedCalendar, kind: kind, today: referenceDate),
-          kind: kind,
-          periodKey: ShowedUpMilestones.periodKey(for: kind, today: referenceDate)
-        )
-      }
-    }
-  }
-
-  @discardableResult
-  private func celebrateStreakMilestoneIfNeeded(
-    calendar: CustomCalendar,
-    calendarId: UUID,
-    currentStreak: Int
-  ) -> Bool {
-    guard
-      let decision = milestoneCelebrationPolicy.decisionForStreakMilestone(
-        calendarId: calendarId,
-        streak: currentStreak
-      )
-    else { return false }
-
-    guard decision.shouldPresent else { return false }
-
-    router.showScreen(.sheet) { _ in
-      MilestoneCelebrationSheet(
-        calendar: calendar,
-        milestone: decision.milestone,
-        currentStreak: currentStreak,
-        kind: .streak,
-        dates: renderSnapshot.visibleGridDates,
-        allowsStopShowing: true,
-        showedUpPeriodKey: nil
-      )
-    }
-    return true
-  }
-
-  @discardableResult
-  private func celebrateShowedUpMilestoneIfNeeded(
-    calendar: CustomCalendar,
-    calendarId: UUID,
-    currentStreak: Int,
-    kind: ShowedUpMilestoneKind,
-    referenceDate: Date
-  ) -> Bool {
-    let periodKey = ShowedUpMilestones.periodKey(for: kind, today: referenceDate)
-    let showedUpCount = ShowedUpMilestones.showedUpCount(for: calendar, kind: kind, today: referenceDate)
-
-    guard
-      let decision = milestoneCelebrationPolicy.decisionForShowedUpMilestone(
-        calendarId: calendarId,
-        showedUpCount: showedUpCount,
-        kind: kind,
-        periodKey: periodKey
-      )
-    else { return false }
-
-    guard decision.shouldPresent else { return false }
-
-    router.showScreen(.sheet) { _ in
-      MilestoneCelebrationSheet(
-        calendar: calendar,
-        milestone: decision.milestone,
-        currentStreak: currentStreak,
-        kind: milestoneKind(for: kind),
-        dates: milestoneDates(for: kind, referenceDate: referenceDate),
-        allowsStopShowing: true,
-        showedUpPeriodKey: periodKey
-      )
-    }
-    return true
-  }
-
-  private func milestoneKind(for kind: ShowedUpMilestoneKind) -> MilestoneKind {
-    switch kind {
-    case .allTime:
-      .showedUp
-    case .currentMonth:
-      .showedUpMonth
-    case .currentYear:
-      .showedUpYear
-    }
-  }
-
-  private func milestoneDates(for kind: ShowedUpMilestoneKind, referenceDate: Date) -> [Date] {
-    switch kind {
-    case .allTime:
-      return renderSnapshot.calendarYearGridDates
-    case .currentMonth:
-      let referenceYear = LocalDayCalendar.calendar.component(.year, from: referenceDate)
-      return getYearDatesArray(for: referenceYear).filter {
-        LocalDayCalendar.calendar.isDate($0, equalTo: referenceDate, toGranularity: .month)
-      }
-    case .currentYear:
-      let referenceYear = LocalDayCalendar.calendar.component(.year, from: referenceDate)
-      return getYearDatesArray(for: referenceYear)
-    }
-  }
-
-  private func currentStreak(for calendar: CustomCalendar) -> Int {
-    WidgetStreak.currentStreak(calendar: calendar).streak
-  }
-
-  private func showedUpCount(for calendar: CustomCalendar) -> Int {
-    ShowedUpMilestones.showedUpCount(for: calendar, kind: .allTime)
-  }
-
+extension CustomCalendarView {
+  @ViewBuilder
   var body: some View {
     let snapshot = store.snapshot
     let selectedYear = valuationStore.selectedYear
     let renderSnapshot = makeRenderSnapshot(snapshot: snapshot, selectedYear: selectedYear)
     let activeCalendar = renderSnapshot.activeCalendar
     let isStoreLoading = snapshot.isLoading
+    let quickAddDate = renderSnapshot.currentPeriodReferenceDate
+    let isCurrentPeriodCompleted =
+      quickAddDate.flatMap {
+        store.getEntry(
+          calendarId: activeCalendar.id,
+          date: $0
+        )
+      }?.completed == true
+    let currentPeriodLogCount: Int? = renderSnapshot.currentPeriodReferenceDate.map {
+      entry(for: activeCalendar, date: $0)?.count ?? 0
+    }
     let statsTaskId = [
       renderSnapshot.cacheKey,
       isStoreLoading ? "loading" : "hydrated"
     ].joined(separator: "|")
     ScrollView {
-      VStack(spacing: 10) {
-        // Stats header
-        VStack(spacing: 10) {
-          HStack(alignment: .center, spacing: 6) {
-            VStack(alignment: .leading, spacing: 0) {
-              HStack(alignment: .firstTextBaseline, spacing: 8) {
-                Text(activeCalendar.name.capitalized)
-                  .font(AppFont.sans(36))
-                  .fontWeight(.black)
-                  .lineLimit(2)
-                  .minimumScaleFactor(0.5)
-                  .foregroundColor(Color("text-primary"))
-                  .onTapGesture {
-                    router.showScreen(.sheet) { _ in
-                      EditCalendarView(
-                        calendar: activeCalendar,
-                        onSave: { updatedCalendar in
-                          store.updateCalendar(updatedCalendar)
-                        },
-                        onDelete: { _ in
-                          store.deleteCalendar(id: activeCalendar.id)
-                        }
-                      )
-                    }
-                  }
-                  .padding(.top)
-                Spacer()
-
-                let currentDayDate = valuationStore.dateForDay(valuationStore.currentDayNumber - 1)
-
-                if shouldShowDeveloperControls {
-                  Button(action: fillRandomEntries) {
-                    Image(systemName: "wand.and.stars")
-                      .foregroundColor(Color(activeCalendar.color))
-                  }
-                  .padding(.horizontal, 4)
-                }
-
-                let currentYear = Calendar.current.component(.year, from: Date())
-                if (renderSnapshot.isShowingYour365 || valuationStore.selectedYear == currentYear)
-                  && !activeCalendar.isAppleHealthConnected
-                {
-                  let quickAddDate = renderSnapshot.currentPeriodReferenceDate ?? currentDayDate
-                  let isCompletedToday =
-                    store.getEntry(
-                      calendarId: activeCalendar.id,
-                      date: quickAddDate
-                    )?.completed == true
-                  Button(action: {
-                    handleQuickAdd()
-                  }) {
-                    ZStack {
-                      RoundedRectangle(cornerRadius: 3)
-                        .fill(Color(activeCalendar.color).opacity(0.1))
-                        .frame(width: 20, height: 20)
-
-                      Image(
-                        systemName: activeCalendar.trackingType == .binary
-                          && isCompletedToday
-                          ? "minus" : "plus"
-                      )
-                      .font(.system(size: 16))
-                      .foregroundColor(Color(activeCalendar.color))
-                    }
-                  }.frame(width: 24, height: 24)
-                }
-              }
-
-              HStack(spacing: 10) {
-                if renderSnapshot.isShowingYour365 {
-                  VStack(alignment: .leading, spacing: 2) {
-                    if let title = renderSnapshot.your365HeaderTitle {
-                      Text(title)
-                        .font(AppFont.mono(12))
-                        .foregroundColor(Color("text-tertiary"))
-                    }
-                  }
-                } else {
-                  Button(action: { showingYearPicker = true }) {
-                    Text("\(valuationStore.year.description)")
-                      .font(AppFont.mono(12))
-                      .foregroundColor(Color("text-tertiary"))
-                  }
-
-                  Text("•")
-                    .font(AppFont.mono(4, weight: .black))
-                    .foregroundColor(Color("text-tertiary"))
-                    .padding(.horizontal, 2)
-                }
-
-                if !activeCalendar.isAppleHealthConnected {
-                  HStack(alignment: .center, spacing: 4) {
-                    if activeCalendar.recurringReminderEnabled,
-                      let hour = activeCalendar.reminderHour,
-                      let minute = activeCalendar.reminderMinute
-                    {
-                      let reminderTime = String(format: "%02d:%02d", hour, minute)
-                      Image(systemName: "bell")
-                        .font(AppFont.mono(12))
-                        .foregroundColor(Color("text-tertiary"))
-                      Text(reminderTime)
-                        .font(AppFont.mono(12))
-                        .foregroundColor(Color("text-tertiary"))
-                    } else {
-                      Image(systemName: "bell.slash")
-                        .font(AppFont.mono(12))
-                        .foregroundColor(Color("text-tertiary"))
-                      Text("Off")
-                        .font(AppFont.mono(12))
-                        .foregroundColor(Color("text-tertiary"))
-                    }
-                  }
-                  .onTapGesture {
-                    router.showScreen(.sheet) { _ in
-                      NotificationSettingsSheet(
-                        calendar: activeCalendar,
-                        customerInfo: customerInfo,
-                        onSave: { updatedCalendar in
-                          store.updateCalendar(updatedCalendar)
-                        }
-                      )
-                    }
-                  }
-                }
-                if canShowAppleHealthDebugControls(for: activeCalendar) {
-                  Text("•")
-                    .font(AppFont.mono(4, weight: .black))
-                    .foregroundColor(Color("text-tertiary"))
-                    .padding(.horizontal, 2)
-
-                  Button {
-                    Task {
-                      await syncAppleHealth(calendar: activeCalendar, showsErrors: true)
-                    }
-                  } label: {
-                    HStack(spacing: 4) {
-                      Image(systemName: isSyncingAppleHealth ? "arrow.triangle.2.circlepath" : "heart.text.square")
-                      Text(isSyncingAppleHealth ? "Syncing" : "Debug sync")
-                    }
-                    .font(AppFont.mono(12))
-                    .foregroundColor(Color("text-tertiary"))
-                  }
-                  .buttonStyle(.plain)
-                  .disabled(isSyncingAppleHealth)
-                }
-              }
-            }
+      CustomCalendarContentView(
+        activeCalendar: activeCalendar,
+        renderSnapshot: renderSnapshot,
+        yearText: valuationStore.year.description,
+        selectedYear: selectedYear,
+        isCurrentPeriodCompleted: isCurrentPeriodCompleted,
+        quickAddDate: quickAddDate,
+        showsDeveloperControls: shouldShowDeveloperControls,
+        showsAppleHealthDebugControls: canShowAppleHealthDebugControls(for: activeCalendar),
+        isSyncingAppleHealth: isSyncingAppleHealth,
+        checkInRippleOriginDate: checkInRippleOriginDate,
+        checkInRippleTrigger: checkInRippleTrigger,
+        statsBundle: statsBundle,
+        currentPeriodLogCount: currentPeriodLogCount,
+        customerInfo: customerInfo,
+        colorScheme: colorScheme,
+        onEdit: { presentEditCalendar(activeCalendar) },
+        onFillRandomEntries: fillRandomEntries,
+        onQuickAdd: handleQuickAdd,
+        onShowYearPicker: { showingYearPicker = true },
+        onNotificationSettings: { presentNotificationSettings(for: activeCalendar) },
+        onAppleHealthDebugSync: {
+          Task {
+            await syncAppleHealth(calendar: activeCalendar, showsErrors: true)
           }
-          .padding(.horizontal)
-          .padding(.top, 10)
-          CustomSeparator()
-        }
-
-        GridView(
-          handleDayTap: handleDayTap,
-          mappedDays: renderSnapshot.mappedGridDays,
-          disabledDates: renderSnapshot.disabledGridDates,
-          rippleOriginDate: checkInRippleOriginDate,
-          rippleTrigger: checkInRippleTrigger
-        )
-        .id(renderSnapshot.timelineMode.rawValue)
-        .frame(height: UIScreen.main.bounds.height * 0.62)
-
-        let currentPeriodLogCount: Int? = renderSnapshot.currentPeriodReferenceDate.map {
-          entry(for: activeCalendar, date: $0)?.count ?? 0
-        }
-        let checkInDate = renderSnapshot.currentPeriodReferenceDate ?? Date()
-
-        if !activeCalendar.isAppleHealthConnected {
-          Button {
-            presentEntryEditSheet(calendar: activeCalendar, date: checkInDate)
-          } label: {
-            Text("check in")
-              .frame(maxWidth: .infinity)
-              .fontWeight(.medium)
-              .padding(.vertical, 12)
-              .padding(.horizontal)
-          }
-          .sameLevelBorder(radius: 4, isFlat: true)
-          .padding(.horizontal)
-          .padding(.top, 4)
-        }
-
-        if let bundle = statsBundle {
-          CalendarStatisticsView(
-            stats: bundle.basic,
-            accentColor: Color(activeCalendar.color),
-            currentPeriodCount: currentPeriodLogCount,
-            unit: activeCalendar.unit,
-            currencySymbol: activeCalendar.currencySymbol,
-            completionRateTrailingLongWindow: bundle.completionRateTrailingLongWindow,
-            bestWeekday: bundle.bestWeekday,
-            weekdayRates: bundle.weekdayRates,
-            monthlyRates: bundle.monthlyRates,
-            averageProgressTrailingShortWindow: bundle.averageProgressTrailingShortWindow,
-            averageProgressTrailingLongWindow: bundle.averageProgressTrailingLongWindow,
-            volatilityStdDev: bundle.volatilityStd,
-            currentMissedPeriods: bundle.currentMissedPeriods,
-            averageRecoveryPeriods: bundle.averageRecoveryPeriods,
-            isPremium: isPremium(customerInfo: customerInfo),
-            onUpgrade: { isPaywallPresented = true },
-            cadence: activeCalendar.cadence,
-            trackingType: activeCalendar.trackingType,
-            onTapShare: {
-              router.showScreen(.sheet) { _ in
-                CalendarShareSheet(
-                  calendar: activeCalendar,
-                  year: valuationStore.selectedYear,
-                  dates: renderSnapshot.calendarYearGridDates,
-                  statsBundle: statsBundle,
-                  isPremium: isPremium(customerInfo: customerInfo)
-                )
-              }
-            }
-          )
-          .id(colorScheme)
-          .padding(.top, 20)
-        }
-      }
-      .frame(maxWidth: .infinity, alignment: .top)
-      .surfaceBackground(Color("surface-muted"), ignoresSafeArea: true)
+        },
+        onDayTap: handleDayTap,
+        onCheckIn: { date in presentEntryEditSheet(calendar: activeCalendar, date: date) },
+        onUpgrade: { isPaywallPresented = true },
+        onShare: { presentCalendarShareSheet(calendar: activeCalendar, renderSnapshot: renderSnapshot) }
+      )
     }
     .scrollIndicators(.hidden)
     .refreshable {
       store.loadCalendars()
     }
     .sheet(isPresented: $showingYearPicker) {
-      NavigationStack {
-        VStack {
-          Picker("Select Year", selection: $tempSelectedYear) {
-            ForEach(availableYears, id: \.self) { year in
-              Text(year.description)
-                .foregroundColor(Color("text-primary"))
-                .tag(year)
-            }
-          }
-          .pickerStyle(.wheel)
-        }
-        .navigationTitle("Select Year")
-        .navigationBarTitleDisplayMode(.large)
-        .toolbar {
-          ToolbarItem(placement: .cancellationAction) {
-            Button("Cancel") {
-              tempSelectedYear = valuationStore.selectedYear
-              showingYearPicker = false
-            }
-          }
-          ToolbarItem(placement: .confirmationAction) {
-            Button("Done") {
-              valuationStore.selectedYear = tempSelectedYear
-              showingYearPicker = false
-            }
-          }
-        }
-        .onAppear {
-          tempSelectedYear = valuationStore.selectedYear
-        }
-      }
-      .presentationDetents([.height(280)])
+      CustomCalendarYearPickerSheet(
+        isPresented: $showingYearPicker,
+        selectedYear: $valuationStore.selectedYear,
+        tempSelectedYear: $tempSelectedYear,
+        availableYears: availableYears
+      )
     }
     .sheet(isPresented: $isPaywallPresented) {
       PremiumPaywallSheet(trigger: .statsGate)
@@ -737,23 +150,10 @@ struct CustomCalendarView: View {
       )
     }
     .onAppear {
-      Purchases.shared.getCustomerInfo { info, _ in
-        self.customerInfo = info
-      }
-      today = Calendar.current.startOfDay(for: Date())
-      Task {
-        await syncAppleHealth(calendar: renderSnapshot.activeCalendar)
-      }
+      handleAppear(activeCalendar: renderSnapshot.activeCalendar)
     }
     .onChange(of: scenePhase) { _, newPhase in
-      guard newPhase == .active else { return }
-      let newToday = Calendar.current.startOfDay(for: Date())
-      if newToday != today {
-        today = newToday
-      }
-      Task {
-        await syncAppleHealth(calendar: renderSnapshot.activeCalendar)
-      }
+      handleScenePhaseChange(newPhase, activeCalendar: renderSnapshot.activeCalendar)
     }
     .onChange(of: store.snapshot.dataVersion) { _, _ in
       optimisticEntryOverrides.removeAll()
@@ -764,35 +164,17 @@ struct CustomCalendarView: View {
       }
     }
     .task(id: statsTaskId) {
-      guard !isStoreLoading else { return }
-      let token = renderSnapshot.cacheKey
-      let statsToday = today
-      let statsCurrentPeriodReferenceDate = renderSnapshot.currentPeriodReferenceDate
-      let bundle = await Task.detached(priority: .userInitiated) {
-        computeCalendarStatsBundle(
-          calendar: activeCalendar,
-          year: selectedYear,
-          todayLocal: statsToday,
-          currentPeriodReferenceDate: statsCurrentPeriodReferenceDate
-        )
-      }.value
-      if token == self.renderSnapshot.cacheKey, !store.snapshot.isLoading {
-        statsBundle = bundle
-      }
+      await reloadStatsIfNeeded(
+        isStoreLoading: isStoreLoading,
+        activeCalendar: activeCalendar,
+        selectedYear: selectedYear,
+        renderSnapshot: renderSnapshot
+      )
     }
   }
 
   private var optimisticOverridesSignature: String {
-    optimisticEntryOverrides
-      .sorted { $0.key < $1.key }
-      .map { key, override in
-        let entrySignature =
-          override.entry.map {
-            "\(dayKey(for: $0.date)):\($0.count):\($0.completed)"
-          } ?? "nil"
-        return "\(key):\(entrySignature)"
-      }
-      .joined(separator: ",")
+    CustomCalendarOptimisticEntries.signature(optimisticEntryOverrides)
   }
 
 }

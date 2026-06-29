@@ -2,400 +2,322 @@ import Foundation
 import SwiftData
 
 public enum SharedAppGroup {
-    public static let id = "group.sargon17.My-Year"
+  public static let id = "group.sargon17.My-Year"
 }
 
 enum LegacyPersistenceKeys {
-    static let appGroupId = SharedAppGroup.id
-    static let calendarsKey = "customCalendars"
-    static let valuationsKey = "dayValuations"
-    static let migrationFlagKey = "swiftDataMigrationComplete"
-    static let dayKeyMigrationFlagKey = "swiftDataDayKeyMigrationComplete"
-    static let trackingStartedAtBackfillMigrationFlagKey = "swiftDataTrackingStartedAtBackfillMigrationComplete"
-    static let trackingStartedAtRepairMigrationFlagKey = "swiftDataTrackingStartedAtRepairV2Complete"
-    static let trackingStartedAtBackupKey = "swiftDataTrackingStartedAtBackupV1"
+  static let appGroupId = SharedAppGroup.id
+  static let calendarsKey = "customCalendars"
+  static let valuationsKey = "dayValuations"
+  static let migrationFlagKey = "swiftDataMigrationComplete"
+  static let dayKeyMigrationFlagKey = "swiftDataDayKeyMigrationComplete"
+  static let trackingStartedAtBackfillMigrationFlagKey = "swiftDataTrackingStartedAtBackfillMigrationComplete"
+  static let trackingStartedAtRepairMigrationFlagKey = "swiftDataTrackingStartedAtRepairV2Complete"
+  static let trackingStartedAtBackupKey = "swiftDataTrackingStartedAtBackupV1"
 }
 
 @available(iOS 17.0, macOS 14.0, *)
 enum LegacyDataMigrator {
-    private struct TrackingStartedAtBackup: Codable {
-        let createdAt: Date
-        let valuesByCalendarId: [String: Date]
+  private struct DayKeyMigrationRecord<Entity: AnyObject> {
+    let entity: Entity
+    let originalDate: Date
+    let newKey: String
+    let newDate: Date
+  }
+
+  private struct LegacyEntryPersistenceItem {
+    let entry: CalendarEntry
+    let target: LegacyEntryPersistenceTarget
+  }
+
+  private struct LegacyEntryPersistenceTarget {
+    let date: Date
+    let dayKey: String
+    let compositeKey: String
+  }
+
+  static func migrateIfNeeded(container: ModelContainer = SwiftDataManager.container) {
+    guard let defaults = UserDefaults(suiteName: LegacyPersistenceKeys.appGroupId) else {
+      return
     }
 
-    static func migrateIfNeeded(container: ModelContainer = SwiftDataManager.container) {
-        guard let defaults = UserDefaults(suiteName: LegacyPersistenceKeys.appGroupId) else {
-            return
-        }
+    migrateIfNeeded(container: container, defaults: defaults)
+  }
 
-        migrateIfNeeded(container: container, defaults: defaults)
+  static func migrateIfNeeded(container: ModelContainer, defaults: UserDefaults) {
+    // Only migrate legacy data once.
+    let alreadyMigrated = defaults.bool(forKey: LegacyPersistenceKeys.migrationFlagKey)
+    var legacyMigrationSucceeded = alreadyMigrated
+
+    if !alreadyMigrated {
+      legacyMigrationSucceeded = migrateLegacyData(defaults: defaults, container: container)
     }
 
-    static func migrateIfNeeded(container: ModelContainer, defaults: UserDefaults) {
-        // Only migrate legacy data once.
-        let alreadyMigrated = defaults.bool(forKey: LegacyPersistenceKeys.migrationFlagKey)
-        var legacyMigrationSucceeded = alreadyMigrated
+    let dayKeyMigrationSucceeded = migrateDayKeysIfNeeded(defaults: defaults, container: container)
 
-        if !alreadyMigrated {
-            legacyMigrationSucceeded = migrateLegacyData(defaults: defaults, container: container)
-        }
+    if legacyMigrationSucceeded && dayKeyMigrationSucceeded {
+      migrateTrackingStartedAtIfNeeded(defaults: defaults, container: container)
+      repairTrackingStartedAtIfNeeded(defaults: defaults, container: container)
+    }
+  }
 
-        let dayKeyMigrationSucceeded = migrateDayKeysIfNeeded(defaults: defaults, container: container)
+  private static func migrateLegacyData(defaults: UserDefaults, container: ModelContainer) -> Bool {
+    let context = ModelContext(container)
+    context.autosaveEnabled = false
 
-        if legacyMigrationSucceeded && dayKeyMigrationSucceeded {
-            migrateTrackingStartedAtIfNeeded(defaults: defaults, container: container)
-            repairTrackingStartedAtIfNeeded(defaults: defaults, container: container)
-        }
+    let calendarsToPersist = decodeLegacyCalendars(defaults: defaults)
+    let valuationsToPersist = decodeLegacyValuations(defaults: defaults)
+
+    guard !calendarsToPersist.isEmpty || !valuationsToPersist.isEmpty else {
+      defaults.set(true, forKey: LegacyPersistenceKeys.migrationFlagKey)
+      return true
     }
 
-    private static func migrateLegacyData(defaults: UserDefaults, container: ModelContainer) -> Bool {
-        let context = ModelContext(container)
-        context.autosaveEnabled = false
+    insertLegacyCalendars(calendarsToPersist, into: context)
+    insertLegacyValuations(valuationsToPersist, into: context)
 
-        let decoder = JSONDecoder()
-        var calendarsToPersist: [CustomCalendar] = []
+    do {
+      if context.hasChanges {
+        try context.save()
+      }
+      defaults.set(true, forKey: LegacyPersistenceKeys.migrationFlagKey)
+      return true
+    } catch {
+      // If the migration fails we keep the legacy data and try again next launch.
+      NSLog("SwiftData migration failed: \(error)")
+      return false
+    }
+  }
 
-        if let data = defaults.data(forKey: LegacyPersistenceKeys.calendarsKey) {
-            if let decoded = try? decoder.decode([CustomCalendar].self, from: data) {
-                calendarsToPersist = decoded
-            } else if let migrated = decodeOldCalendars(from: data) {
-                calendarsToPersist = migrated
-            }
-        }
+  private static func decodeLegacyCalendars(defaults: UserDefaults) -> [CustomCalendar] {
+    guard let data = defaults.data(forKey: LegacyPersistenceKeys.calendarsKey) else { return [] }
 
-        var valuationsToPersist: [String: DayValuation] = [:]
-        if let valuationData = defaults.data(forKey: LegacyPersistenceKeys.valuationsKey),
-           let decoded = try? decoder.decode([String: DayValuation].self, from: valuationData)
-        {
-            valuationsToPersist = decoded
-        }
+    if let decoded = try? JSONDecoder().decode([CustomCalendar].self, from: data) {
+      return decoded
+    }
+    return decodeOldCalendars(from: data) ?? []
+  }
 
-        guard !calendarsToPersist.isEmpty || !valuationsToPersist.isEmpty else {
-            defaults.set(true, forKey: LegacyPersistenceKeys.migrationFlagKey)
-            return true
-        }
+  private static func decodeLegacyValuations(defaults: UserDefaults) -> [String: DayValuation] {
+    guard let data = defaults.data(forKey: LegacyPersistenceKeys.valuationsKey) else { return [:] }
+    return (try? JSONDecoder().decode([String: DayValuation].self, from: data)) ?? [:]
+  }
 
-        for calendar in calendarsToPersist {
-            let entity = HabitCalendarEntity.make(from: calendar)
-            context.insert(entity)
+  private static func insertLegacyCalendars(_ calendars: [CustomCalendar], into context: ModelContext) {
+    for calendar in calendars {
+      let entity = HabitCalendarEntity.make(from: calendar)
+      context.insert(entity)
 
-            for (dayKey, entry) in calendar.entries {
-                let entryEntity = CalendarEntryEntity(
-                    compositeKey: CalendarEntryEntity.makeCompositeKey(calendarId: entity.id, dayKey: dayKey),
-                    calendarId: entity.id,
-                    dayKey: dayKey,
-                    date: entry.date,
-                    count: entry.count,
-                    completed: entry.completed
-                )
-                context.insert(entryEntity)
-            }
-        }
+      for item in legacyEntriesForPersistence(calendar) {
+        context.insert(
+          CalendarEntryEntity(
+            compositeKey: item.target.compositeKey,
+            calendarId: entity.id,
+            dayKey: item.target.dayKey,
+            date: item.target.date,
+            count: item.entry.count,
+            completed: item.entry.completed
+          )
+        )
+      }
+    }
+  }
 
-        for (key, valuation) in valuationsToPersist {
-            let valuationEntity = DayValuationEntity(
-                dayKey: key,
-                timestamp: valuation.timestamp,
-                moodRawValue: valuation.mood.rawValue
-            )
-            context.insert(valuationEntity)
-        }
+  private static func legacyEntriesForPersistence(
+    _ calendar: CustomCalendar
+  ) -> [LegacyEntryPersistenceItem] {
+    var entryByCompositeKey: [String: LegacyEntryPersistenceItem] = [:]
 
-        do {
-            if context.hasChanges {
-                try context.save()
-            }
-            defaults.set(true, forKey: LegacyPersistenceKeys.migrationFlagKey)
-            return true
-        } catch {
-            // If the migration fails we keep the legacy data and try again next launch.
-            NSLog("SwiftData migration failed: \(error)")
-            return false
-        }
+    for (legacyDayKey, entry) in calendar.entries {
+      let target = legacyEntryPersistenceTarget(for: entry, legacyDayKey: legacyDayKey, calendar: calendar)
+      if let existing = entryByCompositeKey[target.compositeKey], existing.entry.date >= entry.date {
+        continue
+      }
+      entryByCompositeKey[target.compositeKey] = LegacyEntryPersistenceItem(entry: entry, target: target)
     }
 
-    private static func migrateDayKeysIfNeeded(defaults: UserDefaults, container: ModelContainer) -> Bool {
-        guard !defaults.bool(forKey: LegacyPersistenceKeys.dayKeyMigrationFlagKey) else { return true }
+    return Array(entryByCompositeKey.values)
+  }
 
-        let context = ModelContext(container)
-        context.autosaveEnabled = false
-        let calendar = LocalDayCalendar.calendar
+  private static func legacyEntryPersistenceTarget(
+    for entry: CalendarEntry,
+    legacyDayKey: String,
+    calendar: CustomCalendar
+  ) -> LegacyEntryPersistenceTarget {
+    let date = legacyDate(from: legacyDayKey, cadence: calendar.cadence)
+      ?? calendar.bucketDate(for: entry.date)
+    let dayKey = DayKeyFormatter.shared.string(from: date)
+    return LegacyEntryPersistenceTarget(
+      date: date,
+      dayKey: dayKey,
+      compositeKey: CalendarEntryEntity.makeCompositeKey(calendarId: calendar.id, dayKey: dayKey)
+    )
+  }
 
-        do {
-            let entryEntities = try context.fetch(FetchDescriptor<CalendarEntryEntity>())
-            let valuationEntities = try context.fetch(FetchDescriptor<DayValuationEntity>())
-
-            var entryRecords: [(entity: CalendarEntryEntity, originalDate: Date, newKey: String, newDate: Date)] = []
-            entryRecords.reserveCapacity(entryEntities.count)
-            for entry in entryEntities {
-                let newDate = calendar.startOfDay(for: entry.date)
-                let newKey = DayKeyFormatter.shared.string(from: newDate)
-                entryRecords.append((entry, entry.date, newKey, newDate))
-            }
-
-            let entryRecordById = Dictionary(
-                uniqueKeysWithValues: entryRecords.map { (ObjectIdentifier($0.entity), $0) }
-            )
-
-            var chosenEntryByKey: [String: CalendarEntryEntity] = [:]
-            for record in entryRecords {
-                let compositeKey = CalendarEntryEntity.makeCompositeKey(
-                    calendarId: record.entity.calendarId,
-                    dayKey: record.newKey
-                )
-                if let existing = chosenEntryByKey[compositeKey] {
-                    let existingRecord = entryRecordById[ObjectIdentifier(existing)]
-                    let existingDate = existingRecord?.originalDate ?? existing.date
-                    if record.originalDate > existingDate {
-                        chosenEntryByKey[compositeKey] = record.entity
-                    }
-                } else {
-                    chosenEntryByKey[compositeKey] = record.entity
-                }
-            }
-
-            var didChange = false
-            for record in entryRecords {
-                let compositeKey = CalendarEntryEntity.makeCompositeKey(
-                    calendarId: record.entity.calendarId,
-                    dayKey: record.newKey
-                )
-                if chosenEntryByKey[compositeKey] !== record.entity {
-                    context.delete(record.entity)
-                    didChange = true
-                    continue
-                }
-
-                if record.entity.dayKey != record.newKey
-                    || record.entity.compositeKey != compositeKey
-                    || record.entity.date != record.newDate
-                {
-                    record.entity.dayKey = record.newKey
-                    record.entity.compositeKey = compositeKey
-                    record.entity.date = record.newDate
-                    didChange = true
-                }
-            }
-
-            var valuationRecords: [(entity: DayValuationEntity, originalDate: Date, newKey: String, newDate: Date)] = []
-            valuationRecords.reserveCapacity(valuationEntities.count)
-            for valuation in valuationEntities {
-                let newDate = calendar.startOfDay(for: valuation.timestamp)
-                let newKey = DayKeyFormatter.shared.string(from: newDate)
-                valuationRecords.append((valuation, valuation.timestamp, newKey, newDate))
-            }
-
-            let valuationRecordById = Dictionary(
-                uniqueKeysWithValues: valuationRecords.map { (ObjectIdentifier($0.entity), $0) }
-            )
-
-            var chosenValuationByKey: [String: DayValuationEntity] = [:]
-            for record in valuationRecords {
-                if let existing = chosenValuationByKey[record.newKey] {
-                    let existingRecord = valuationRecordById[ObjectIdentifier(existing)]
-                    let existingDate = existingRecord?.originalDate ?? existing.timestamp
-                    if record.originalDate > existingDate {
-                        chosenValuationByKey[record.newKey] = record.entity
-                    }
-                } else {
-                    chosenValuationByKey[record.newKey] = record.entity
-                }
-            }
-
-            for record in valuationRecords {
-                if chosenValuationByKey[record.newKey] !== record.entity {
-                    context.delete(record.entity)
-                    didChange = true
-                    continue
-                }
-
-                if record.entity.dayKey != record.newKey || record.entity.timestamp != record.newDate {
-                    record.entity.dayKey = record.newKey
-                    record.entity.timestamp = record.newDate
-                    didChange = true
-                }
-            }
-
-            if didChange, context.hasChanges {
-                try context.save()
-            }
-
-            defaults.set(true, forKey: LegacyPersistenceKeys.dayKeyMigrationFlagKey)
-            return true
-        } catch {
-            NSLog("Day key migration failed: \(error)")
-            return false
-        }
+  private static func legacyDate(from dayKey: String, cadence: CalendarCadence) -> Date? {
+    guard let date = DayKeyFormatter.shared.date(from: dayKey) else { return nil }
+    switch cadence {
+    case .daily:
+      return LocalDayCalendar.startOfDay(for: date)
+    case .weekly:
+      return LocalDayCalendar.startOfWeek(for: date)
     }
+  }
 
-    private static func migrateTrackingStartedAtIfNeeded(defaults: UserDefaults, container: ModelContainer) {
-        guard !defaults.bool(forKey: LegacyPersistenceKeys.trackingStartedAtBackfillMigrationFlagKey) else { return }
-
-        let context = ModelContext(container)
-        context.autosaveEnabled = false
-
-        do {
-            let calendars = try context.fetch(FetchDescriptor<HabitCalendarEntity>())
-            let entries = try context.fetch(FetchDescriptor<CalendarEntryEntity>())
-            let entriesByCalendarId = Dictionary(grouping: entries, by: { $0.calendarId })
-            preserveTrackingStartedAtBackupIfNeeded(defaults: defaults, calendars: calendars)
-
-            for calendar in calendars {
-                guard let resolvedStart = earliestEntryBucketDate(
-                    for: calendar,
-                    entries: entriesByCalendarId[calendar.id, default: []]
-                ) else { continue }
-
-                if calendar.trackingStartedAt != resolvedStart {
-                    calendar.trackingStartedAt = resolvedStart
-                }
-            }
-
-            if context.hasChanges {
-                try context.save()
-            }
-            defaults.set(true, forKey: LegacyPersistenceKeys.trackingStartedAtBackfillMigrationFlagKey)
-        } catch {
-            NSLog("Tracking started at backfill failed: \(error)")
-        }
+  private static func insertLegacyValuations(
+    _ valuations: [String: DayValuation],
+    into context: ModelContext
+  ) {
+    for (key, valuation) in valuations {
+      context.insert(
+        DayValuationEntity(
+          dayKey: key,
+          timestamp: valuation.timestamp,
+          moodRawValue: valuation.mood.rawValue
+        )
+      )
     }
+  }
 
-    private static func repairTrackingStartedAtIfNeeded(defaults: UserDefaults, container: ModelContainer) {
-        guard !defaults.bool(forKey: LegacyPersistenceKeys.trackingStartedAtRepairMigrationFlagKey) else { return }
+  private static func migrateDayKeysIfNeeded(defaults: UserDefaults, container: ModelContainer) -> Bool {
+    guard !defaults.bool(forKey: LegacyPersistenceKeys.dayKeyMigrationFlagKey) else { return true }
 
-        let context = ModelContext(container)
-        context.autosaveEnabled = false
+    let context = ModelContext(container)
+    context.autosaveEnabled = false
+    let calendar = LocalDayCalendar.calendar
 
-        do {
-            let calendars = try context.fetch(FetchDescriptor<HabitCalendarEntity>())
-            let entries = try context.fetch(FetchDescriptor<CalendarEntryEntity>())
-            let entriesByCalendarId = Dictionary(grouping: entries, by: { $0.calendarId })
-            preserveTrackingStartedAtBackupIfNeeded(defaults: defaults, calendars: calendars)
+    do {
+      let entryEntities = try context.fetch(FetchDescriptor<CalendarEntryEntity>())
+      let valuationEntities = try context.fetch(FetchDescriptor<DayValuationEntity>())
+      let didChangeEntries = migrateEntryDayKeys(entryEntities, calendar: calendar, context: context)
+      let didChangeValuations = migrateValuationDayKeys(
+        valuationEntities,
+        calendar: calendar,
+        context: context
+      )
+      let didChange = didChangeEntries || didChangeValuations
 
-            for calendar in calendars {
-                guard let earliestEntryDate = earliestEntryBucketDate(
-                    for: calendar,
-                    entries: entriesByCalendarId[calendar.id, default: []]
-                ) else { continue }
+      if didChange, context.hasChanges {
+        try context.save()
+      }
 
-                let currentStart = LocalDayCalendar.startOfDay(for: calendar.trackingStartedAt)
-                if earliestEntryDate < currentStart {
-                    calendar.trackingStartedAt = earliestEntryDate
-                }
-            }
-
-            if context.hasChanges {
-                try context.save()
-            }
-            defaults.set(true, forKey: LegacyPersistenceKeys.trackingStartedAtRepairMigrationFlagKey)
-        } catch {
-            NSLog("Tracking started at repair failed: \(error)")
-        }
+      defaults.set(true, forKey: LegacyPersistenceKeys.dayKeyMigrationFlagKey)
+      return true
+    } catch {
+      NSLog("Day key migration failed: \(error)")
+      return false
     }
+  }
 
-    static func trackingStartedAtBackup(defaults: UserDefaults) -> [UUID: Date] {
-        guard let data = defaults.data(forKey: LegacyPersistenceKeys.trackingStartedAtBackupKey),
-              let backup = try? JSONDecoder().decode(TrackingStartedAtBackup.self, from: data)
-        else {
-            return [:]
-        }
+  private static func migrateEntryDayKeys(
+    _ entries: [CalendarEntryEntity],
+    calendar: Calendar,
+    context: ModelContext
+  ) -> Bool {
+    let records = entryDayKeyRecords(from: entries, calendar: calendar)
+    let chosenEntryByKey = chosenEntitiesByKey(records: records, key: compositeKey)
 
-        return backup.valuesByCalendarId.reduce(into: [UUID: Date]()) { partialResult, item in
-            guard let calendarId = UUID(uuidString: item.key) else { return }
-            partialResult[calendarId] = item.value
-        }
+    var didChange = false
+    for record in records {
+      let compositeKey = compositeKey(for: record)
+      if chosenEntryByKey[compositeKey] !== record.entity {
+        context.delete(record.entity)
+        didChange = true
+        continue
+      }
+
+      let needsUpdate =
+        record.entity.dayKey != record.newKey
+        || record.entity.compositeKey != compositeKey
+        || record.entity.date != record.newDate
+      if needsUpdate {
+        record.entity.dayKey = record.newKey
+        record.entity.compositeKey = compositeKey
+        record.entity.date = record.newDate
+        didChange = true
+      }
     }
+    return didChange
+  }
 
-    static func restoreTrackingStartedAtFromBackup(container: ModelContainer, defaults: UserDefaults) -> Bool {
-        let backup = trackingStartedAtBackup(defaults: defaults)
-        guard !backup.isEmpty else { return false }
-
-        let context = ModelContext(container)
-        context.autosaveEnabled = false
-
-        do {
-            let calendars = try context.fetch(FetchDescriptor<HabitCalendarEntity>())
-            var didChange = false
-
-            for calendar in calendars {
-                guard let backedUpStart = backup[calendar.id] else { continue }
-                let normalizedStart = LocalDayCalendar.startOfDay(for: backedUpStart)
-                if calendar.trackingStartedAt != normalizedStart {
-                    calendar.trackingStartedAt = normalizedStart
-                    didChange = true
-                }
-            }
-
-            guard didChange else { return false }
-            try context.save()
-            return true
-        } catch {
-            NSLog("Failed to restore trackingStartedAt migration backup: \(error)")
-            return false
-        }
+  private static func entryDayKeyRecords(
+    from entries: [CalendarEntryEntity],
+    calendar: Calendar
+  ) -> [DayKeyMigrationRecord<CalendarEntryEntity>] {
+    entries.map { entry in
+      let newDate = calendar.startOfDay(for: entry.date)
+      return DayKeyMigrationRecord(
+        entity: entry,
+        originalDate: entry.date,
+        newKey: DayKeyFormatter.shared.string(from: newDate),
+        newDate: newDate
+      )
     }
+  }
 
-    private static func preserveTrackingStartedAtBackupIfNeeded(
-        defaults: UserDefaults,
-        calendars: [HabitCalendarEntity]
-    ) {
-        guard defaults.data(forKey: LegacyPersistenceKeys.trackingStartedAtBackupKey) == nil else { return }
-        guard !calendars.isEmpty else { return }
+  private static func compositeKey(for record: DayKeyMigrationRecord<CalendarEntryEntity>) -> String {
+    CalendarEntryEntity.makeCompositeKey(
+      calendarId: record.entity.calendarId,
+      dayKey: record.newKey
+    )
+  }
 
-        let valuesByCalendarId = calendars.reduce(into: [String: Date]()) { partialResult, calendar in
-            partialResult[calendar.id.uuidString] = LocalDayCalendar.startOfDay(for: calendar.trackingStartedAt)
-        }
-        let backup = TrackingStartedAtBackup(createdAt: Date(), valuesByCalendarId: valuesByCalendarId)
+  private static func migrateValuationDayKeys(
+    _ valuations: [DayValuationEntity],
+    calendar: Calendar,
+    context: ModelContext
+  ) -> Bool {
+    let records = valuationDayKeyRecords(from: valuations, calendar: calendar)
+    let chosenValuationByKey = chosenEntitiesByKey(records: records, key: \.newKey)
 
-        guard let data = try? JSONEncoder().encode(backup) else {
-            NSLog("Failed to encode trackingStartedAt migration backup")
-            return
-        }
+    var didChange = false
+    for record in records {
+      if chosenValuationByKey[record.newKey] !== record.entity {
+        context.delete(record.entity)
+        didChange = true
+        continue
+      }
 
-        defaults.set(data, forKey: LegacyPersistenceKeys.trackingStartedAtBackupKey)
+      if record.entity.dayKey != record.newKey || record.entity.timestamp != record.newDate {
+        record.entity.dayKey = record.newKey
+        record.entity.timestamp = record.newDate
+        didChange = true
+      }
     }
+    return didChange
+  }
 
-    private static func earliestEntryBucketDate(
-        for calendar: HabitCalendarEntity,
-        entries: [CalendarEntryEntity]
-    ) -> Date? {
-        entries.map {
-            calendar.cadenceRawValue == CalendarCadence.weekly.rawValue
-                ? LocalDayCalendar.startOfWeek(for: $0.date)
-                : LocalDayCalendar.startOfDay(for: $0.date)
-        }.min()
+  private static func valuationDayKeyRecords(
+    from valuations: [DayValuationEntity],
+    calendar: Calendar
+  ) -> [DayKeyMigrationRecord<DayValuationEntity>] {
+    valuations.map { valuation in
+      let newDate = calendar.startOfDay(for: valuation.timestamp)
+      return DayKeyMigrationRecord(
+        entity: valuation,
+        originalDate: valuation.timestamp,
+        newKey: DayKeyFormatter.shared.string(from: newDate),
+        newDate: newDate
+      )
     }
+  }
 
-    private static func decodeOldCalendars(from data: Data) -> [CustomCalendar]? {
-        struct OldCalendar: Codable {
-            let id: UUID
-            var name: String
-            var color: String
-            var trackingType: TrackingType
-            var entries: [String: CalendarEntry]
+  private static func chosenEntitiesByKey<Entity: AnyObject>(
+    records: [DayKeyMigrationRecord<Entity>],
+    key: (DayKeyMigrationRecord<Entity>) -> String
+  ) -> [String: Entity] {
+    var chosenRecordByKey: [String: DayKeyMigrationRecord<Entity>] = [:]
+    for record in records {
+      let recordKey = key(record)
+      if let existing = chosenRecordByKey[recordKey] {
+        if record.originalDate > existing.originalDate {
+          chosenRecordByKey[recordKey] = record
         }
-
-        guard let oldCalendars = try? JSONDecoder().decode([OldCalendar].self, from: data) else {
-            return nil
-        }
-
-        return oldCalendars.enumerated().map { index, old in
-            CustomCalendar(
-                id: old.id,
-                name: old.name,
-                color: old.color,
-                trackingType: old.trackingType,
-                trackingStartedAt: Date(),
-                dailyTarget: old.trackingType == .multipleDaily ? 2 : 1,
-                entries: old.entries,
-                isArchived: false,
-                recurringReminderEnabled: false,
-                reminderTime: nil,
-                order: index,
-                unit: nil,
-                defaultRecordValue: nil,
-                currencySymbol: nil
-            )
-        }
+      } else {
+        chosenRecordByKey[recordKey] = record
+      }
     }
+    return chosenRecordByKey.mapValues(\.entity)
+  }
+
 }

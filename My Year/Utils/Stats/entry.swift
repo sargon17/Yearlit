@@ -56,7 +56,11 @@ func buildEntriesByCalendarByBucket(calendars: [CustomCalendar]) -> [UUID: [Date
     })
 }
 
-private func mergeEntries(_ lhs: CalendarEntry, _ rhs: CalendarEntry, for calendar: CustomCalendar) -> CalendarEntry {
+private func mergeEntries(
+    _ lhs: CalendarEntry,
+    _ rhs: CalendarEntry,
+    for calendar: CustomCalendar
+) -> CalendarEntry {
     let mergedDate = max(lhs.date, rhs.date)
 
     switch calendar.trackingType {
@@ -67,10 +71,24 @@ private func mergeEntries(_ lhs: CalendarEntry, _ rhs: CalendarEntry, for calend
             completed: lhs.completed || rhs.completed
         )
     case .counter, .multipleDaily:
+        if LocalDayCalendar.startOfDay(for: lhs.date) == LocalDayCalendar.startOfDay(for: rhs.date) {
+            return shouldPrefer(rhs, over: lhs) ? rhs : lhs
+        }
+
         return CalendarEntry(
             date: mergedDate,
             count: lhs.count + rhs.count,
             completed: lhs.completed || rhs.completed
         )
     }
+}
+
+private func shouldPrefer(_ candidate: CalendarEntry, over existing: CalendarEntry) -> Bool {
+    if candidate.count != existing.count {
+        return candidate.count > existing.count
+    }
+    if candidate.completed != existing.completed {
+        return candidate.completed
+    }
+    return candidate.date > existing.date
 }
