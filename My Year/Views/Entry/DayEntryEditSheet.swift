@@ -43,9 +43,9 @@ struct DayEntryEditSheet: View {
       return
     }
     let originalDate = Self.bucketDate(for: date, cadence: calendar.cadence)
-    let targetDate = Self.bucketDate(for: selectedDate, cadence: calendar.cadence)
+    let targetDate = presentedDate
     let existingEntry = store.getEntry(calendarId: calendar.id, date: targetDate)
-    let newEntry = normalizedEntry()
+    let newEntry = normalizedEntry(date: targetDate)
 
     let originalEntry = store.getEntry(calendarId: calendar.id, date: originalDate)
     if originalDate != targetDate, let originalEntry {
@@ -68,8 +68,7 @@ struct DayEntryEditSheet: View {
     dismiss()
   }
 
-  private func normalizedEntry() -> CalendarEntry {
-    let entryDate = Self.bucketDate(for: selectedDate, cadence: calendar.cadence)
+  private func normalizedEntry(date entryDate: Date) -> CalendarEntry {
     let normalizedCount = max(0, entryCount)
     switch calendar.trackingType {
     case .binary:
@@ -138,9 +137,6 @@ struct DayEntryEditSheet: View {
     }
     .onDisappear {
       onDismiss?()
-    }
-    .onChange(of: selectedDate) { _, newDate in
-      fillExistingProgressIfPresent(for: newDate)
     }
     .onChange(of: entryCount) { _, newValue in
       if newValue < 0 {

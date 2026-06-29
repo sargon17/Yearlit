@@ -101,8 +101,6 @@ struct VerticalDateWheelModule: View {
   @Binding var selectedDate: Date
   let accentColor: Color
 
-  @State private var selectedOffset: Int?
-
   private var dateWheelValues: [DateWheelValue] {
     let calendarSystem = LocalDayCalendar.calendar
     let trackingStart = bucketDate(for: calendar.trackingStartedAt)
@@ -130,7 +128,7 @@ struct VerticalDateWheelModule: View {
       CenterTrackedDateWheel(
         offsets: values.map(\.offset),
         selectedOffset: Binding(
-          get: { selectedOffset ?? offset(for: selectedDate, in: values) },
+          get: { offset(for: selectedDate, in: values) },
           set: { updateSelection(to: $0, in: values) }
         ),
         accentColor: accentColor,
@@ -144,15 +142,6 @@ struct VerticalDateWheelModule: View {
     }
     .padding(12)
     .frame(maxWidth: .infinity)
-    .onAppear {
-      selectedOffset = offset(for: selectedDate, in: dateWheelValues)
-    }
-    .onChange(of: selectedDate) { _, newValue in
-      let newOffset = offset(for: newValue, in: dateWheelValues)
-      if selectedOffset != newOffset {
-        selectedOffset = newOffset
-      }
-    }
   }
 
   private func offset(for date: Date, in values: [DateWheelValue]) -> Int {
@@ -160,10 +149,9 @@ struct VerticalDateWheelModule: View {
     return values.first(where: { $0.date == selectedBucket })?.offset ?? 0
   }
 
-  private func updateSelection(to offset: Int, in values: [DateWheelValue]) {
-    guard selectedOffset != offset else { return }
-    selectedOffset = offset
-    guard let value = values.first(where: { $0.offset == offset }) else {
+  private func updateSelection(to selectedOffset: Int, in values: [DateWheelValue]) {
+    guard offset(for: selectedDate, in: values) != selectedOffset else { return }
+    guard let value = values.first(where: { $0.offset == selectedOffset }) else {
       return
     }
     selectedDate = value.date
