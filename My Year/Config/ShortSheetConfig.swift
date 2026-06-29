@@ -6,6 +6,6 @@ public let shortSheetConfig = ResizableSheetConfig(
 )
 
 public let entryEditSheetConfig = ResizableSheetConfig(
-    detents: [.fraction(0.68)],
+    detents: [.fraction(0.6)],
     dragIndicator: .visible
 )
