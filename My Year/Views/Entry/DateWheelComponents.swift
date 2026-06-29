@@ -7,47 +7,47 @@ struct CenterTrackedDateWheel: View {
   let label: (Int) -> String
 
   @State private var lastHapticOffset: Int?
-  @State private var isReadyForGeometrySelection = false
+  @State private var selection: Int?
 
   private let rowHeight: CGFloat = 44
-  private let coordinateSpaceName = "date-wheel-scroll"
 
   var body: some View {
     GeometryReader { geometry in
       let verticalPadding = max(0, (geometry.size.height - rowHeight) / 2)
-      let centerY = geometry.size.height / 2
 
-      ScrollViewReader { proxy in
-        ScrollView(.vertical) {
-          LazyVStack(spacing: 0) {
-            ForEach(offsets, id: \.self) { offset in
-              row(for: offset)
-            }
-          }
-          .padding(.vertical, verticalPadding)
-        }
-        .coordinateSpace(name: coordinateSpaceName)
-        .scrollIndicators(.hidden)
-        .mask { WheelFadeMask() }
-        .onPreferenceChange(DateWheelRowCentersPreferenceKey.self) { centers in
-          guard isReadyForGeometrySelection else { return }
-          updateSelection(from: centers, centerY: centerY)
-        }
-        .onAppear {
-          isReadyForGeometrySelection = false
-          proxy.scrollTo(selectedOffset, anchor: .center)
-          lastHapticOffset = selectedOffset
-          Task { @MainActor in
-            isReadyForGeometrySelection = true
+      ScrollView(.vertical) {
+        LazyVStack(spacing: 0) {
+          ForEach(offsets, id: \.self) { offset in
+            row(for: offset)
           }
         }
-        .onChange(of: selectedOffset) { _, newValue in
-          isReadyForGeometrySelection = false
-          proxy.scrollTo(newValue, anchor: .center)
-          Task { @MainActor in
-            isReadyForGeometrySelection = true
+        .scrollTargetLayout()
+        .padding(.vertical, verticalPadding)
+      }
+      .scrollIndicators(.hidden)
+      .scrollPosition(id: $selection, anchor: .center)
+      .scrollTargetBehavior(.viewAligned)
+      .mask { WheelFadeMask() }
+      .onChange(of: selection) { _, newValue in
+        guard let newValue else { return }
+        if selectedOffset != newValue {
+          selectedOffset = newValue
+        }
+        if newValue != lastHapticOffset {
+          lastHapticOffset = newValue
+          Task {
+            await hapticFeedback(.light)
           }
         }
+      }
+      .onChange(of: selectedOffset) { _, newValue in
+        if selection != newValue {
+          selection = newValue
+        }
+      }
+      .onAppear {
+        selection = selectedOffset
+        lastHapticOffset = selectedOffset
       }
     }
   }
@@ -61,14 +61,6 @@ struct CenterTrackedDateWheel: View {
       .frame(maxWidth: .infinity)
       .frame(height: rowHeight)
       .id(offset)
-      .background {
-        GeometryReader { rowGeometry in
-          Color.clear.preference(
-            key: DateWheelRowCentersPreferenceKey.self,
-            value: [offset: rowGeometry.frame(in: .named(coordinateSpaceName)).midY]
-          )
-        }
-      }
       .scrollTransition(.interactive, axis: .vertical) { content, phase in
         content
           .opacity(phase.isIdentity ? 1 : 0.48)
@@ -78,32 +70,6 @@ struct CenterTrackedDateWheel: View {
             perspective: 0.55
           )
       }
-  }
-
-  private func updateSelection(from centers: [Int: CGFloat], centerY: CGFloat) {
-    guard
-      let closest = centers.min(by: { lhs, rhs in
-        abs(lhs.value - centerY) < abs(rhs.value - centerY)
-      })?.key
-    else {
-      return
-    }
-    guard closest != selectedOffset else { return }
-    selectedOffset = closest
-    if closest != lastHapticOffset {
-      lastHapticOffset = closest
-      Task {
-        await hapticFeedback(.light)
-      }
-    }
-  }
-}
-
-private struct DateWheelRowCentersPreferenceKey: PreferenceKey {
-  static var defaultValue: [Int: CGFloat] = [:]
-
-  static func reduce(value: inout [Int: CGFloat], nextValue: () -> [Int: CGFloat]) {
-    value.merge(nextValue(), uniquingKeysWith: { _, new in new })
   }
 }
 
