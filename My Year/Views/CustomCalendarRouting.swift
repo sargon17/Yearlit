@@ -6,6 +6,7 @@ import SwiftfulRouting
 extension CustomCalendarView {
   func presentEntryEditSheet(calendar: CustomCalendar, date: Date) {
     guard !calendar.isAppleHealthConnected else { return }
+    let sheetDate = entrySheetDate(for: date, cadence: calendar.cadence)
     Task {
       await hapticFeedback()
     }
@@ -15,7 +16,7 @@ extension CustomCalendarView {
     ) { _ in
       DayEntryEditSheet(
         calendar: calendar,
-        date: date,
+        date: sheetDate,
         store: store,
         onSave: { entry in
           if isPositiveEntry(entry) {
@@ -28,6 +29,24 @@ extension CustomCalendarView {
           evaluateMilestonesIfNeeded(calendarId: calendar.id)
         }
       )
+      .id(entrySheetIdentity(calendar: calendar, date: sheetDate))
+    }
+  }
+
+  private func entrySheetIdentity(calendar: CustomCalendar, date: Date) -> String {
+    [
+      calendar.id.uuidString,
+      calendar.cadence.rawValue,
+      String(date.timeIntervalSinceReferenceDate)
+    ].joined(separator: "-")
+  }
+
+  private func entrySheetDate(for date: Date, cadence: CalendarCadence) -> Date {
+    switch cadence {
+    case .daily:
+      return LocalDayCalendar.startOfDay(for: date)
+    case .weekly:
+      return LocalDayCalendar.startOfWeek(for: date)
     }
   }
 

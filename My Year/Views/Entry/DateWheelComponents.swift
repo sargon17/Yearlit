@@ -7,6 +7,7 @@ struct CenterTrackedDateWheel: View {
   let label: (Int) -> String
 
   @State private var lastHapticOffset: Int?
+  @State private var isReadyForGeometrySelection = false
 
   private let rowHeight: CGFloat = 44
   private let coordinateSpaceName = "date-wheel-scroll"
@@ -29,14 +30,23 @@ struct CenterTrackedDateWheel: View {
         .scrollIndicators(.hidden)
         .mask { WheelFadeMask() }
         .onPreferenceChange(DateWheelRowCentersPreferenceKey.self) { centers in
+          guard isReadyForGeometrySelection else { return }
           updateSelection(from: centers, centerY: centerY)
         }
         .onAppear {
+          isReadyForGeometrySelection = false
           proxy.scrollTo(selectedOffset, anchor: .center)
           lastHapticOffset = selectedOffset
+          Task { @MainActor in
+            isReadyForGeometrySelection = true
+          }
         }
         .onChange(of: selectedOffset) { _, newValue in
+          isReadyForGeometrySelection = false
           proxy.scrollTo(newValue, anchor: .center)
+          Task { @MainActor in
+            isReadyForGeometrySelection = true
+          }
         }
       }
     }
