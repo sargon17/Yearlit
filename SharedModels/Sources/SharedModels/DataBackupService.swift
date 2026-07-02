@@ -103,7 +103,10 @@ public final class DataBackupService {
         let content = try currentContent()
         let fingerprint = try makeFingerprint(for: content)
         let hasAutomaticBackup = try hasValidAutomaticBackup()
-        guard !hasAutomaticBackup || fingerprint != defaults.string(forKey: Self.automaticBackupFingerprintKey) else { return nil }
+        let dataChanged = fingerprint != defaults.string(forKey: Self.automaticBackupFingerprintKey)
+        guard !hasAutomaticBackup || dataChanged else {
+            return nil
+        }
 
         let today = DayKeyFormatter.shared.string(from: LocalDayCalendar.startOfDay(for: now()))
         if hasAutomaticBackup, let lastDate = defaults.object(forKey: Self.automaticBackupDateKey) as? Date {
@@ -140,7 +143,9 @@ public final class DataBackupService {
         guard let metadata = availableBackups().first(where: { $0.id == id }) else {
             throw DataBackupError.backupNotFound
         }
-        let backup = try readValidatedBackup(at: backupDirectoryURL().appendingPathComponent(metadata.fileName))
+        let backup = try readValidatedBackup(
+            at: backupDirectoryURL().appendingPathComponent(metadata.fileName)
+        )
 
         try createProtectiveBackup(reason: .beforeRestore)
         try replaceCurrentData(with: backup.content)
@@ -196,7 +201,10 @@ public final class DataBackupService {
             for (dayKey, entry) in calendar.entries {
                 context.insert(
                     CalendarEntryEntity(
-                        compositeKey: CalendarEntryEntity.makeCompositeKey(calendarId: calendar.id, dayKey: dayKey),
+                        compositeKey: CalendarEntryEntity.makeCompositeKey(
+                            calendarId: calendar.id,
+                            dayKey: dayKey
+                        ),
                         calendarId: calendar.id,
                         dayKey: dayKey,
                         date: entry.date,
@@ -238,8 +246,9 @@ public final class DataBackupService {
         let entriesByCalendar = Dictionary(grouping: entries, by: { $0.calendarId })
         return CustomCalendarStore.normalizedCalendarOrder(
             calendars.map { entity in
-                let entryModels = entriesByCalendar[entity.id, default: []].reduce(into: [String: CalendarEntry]()) {
-                    result, entry in
+                let entryModels = entriesByCalendar[entity.id, default: []].reduce(
+                    into: [String: CalendarEntry]()
+                ) { result, entry in
                     result[entry.dayKey] = entry.toCalendarEntry()
                 }
                 return entity.toCustomCalendar(entries: entryModels)
@@ -248,7 +257,9 @@ public final class DataBackupService {
     }
 
     private func fetchValuations(in context: ModelContext) throws -> [DayValuation] {
-        try context.fetch(FetchDescriptor<DayValuationEntity>(sortBy: [SortDescriptor(\DayValuationEntity.dayKey)]))
+        try context.fetch(
+            FetchDescriptor<DayValuationEntity>(sortBy: [SortDescriptor(\DayValuationEntity.dayKey)])
+        )
             .map { $0.toDayValuation() }
     }
 
@@ -260,12 +271,17 @@ public final class DataBackupService {
         )
         let steps = try context.fetch(
             FetchDescriptor<HabitStackStepEntity>(
-                sortBy: [SortDescriptor(\HabitStackStepEntity.stackId), SortDescriptor(\HabitStackStepEntity.order)]
+                sortBy: [
+                    SortDescriptor(\HabitStackStepEntity.stackId),
+                    SortDescriptor(\HabitStackStepEntity.order)
+                ]
             )
         )
         let stepsByStack = Dictionary(grouping: steps, by: { $0.stackId })
         return stacks.map { stack in
-            stack.toHabitStack(steps: stepsByStack[stack.id, default: []].map { $0.toHabitStackStep() })
+            stack.toHabitStack(
+                steps: stepsByStack[stack.id, default: []].map { $0.toHabitStackStep() }
+            )
         }
     }
 
@@ -299,7 +315,9 @@ public final class DataBackupService {
     }
 
     private func pruneBackups() throws {
-        let automaticCutoff = now().addingTimeInterval(-TimeInterval(Self.automaticRetentionDays * 24 * 60 * 60))
+        let automaticCutoff = now().addingTimeInterval(
+            -TimeInterval(Self.automaticRetentionDays * 24 * 60 * 60)
+        )
         let fileURLs = try backupFileURLs()
         let backups = fileURLs
             .compactMap { url -> (url: URL, metadata: DataBackupMetadata)? in
@@ -389,7 +407,9 @@ private struct DataBackupContent: Codable {
             calendars: calendars.count,
             checkIns: calendars.reduce(0) { $0 + $1.entries.count },
             moodEntries: valuations.count,
-            journalNotes: valuations.filter { $0.note?.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty == false }.count,
+            journalNotes: valuations
+                .filter { $0.note?.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty == false }
+                .count,
             habitStacks: habitStacks.count
         )
     }

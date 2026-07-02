@@ -28,7 +28,9 @@ struct DataRecoveryView: View {
       } header: {
         Text("Backups")
       } footer: {
-        Text("Restoring replaces current Calendars, Check-ins, Mood Tracking, journal notes, and Habit Stacks.")
+        Text(
+          "Restoring replaces current Calendars, Check-ins, Mood Tracking, journal notes, and Habit Stacks."
+        )
       }
     }
     .navigationTitle("Data & Recovery")
@@ -53,9 +55,17 @@ struct DataRecoveryView: View {
         pendingRestore = nil
       }
     } message: {
-      Text("Yearlit creates a backup of current data first, then replaces current data with the selected backup.")
+      Text(
+        "Yearlit creates a backup of current data first, then replaces current data with the selected backup."
+      )
     }
-    .alert("Restore failed", isPresented: Binding(get: { errorMessage != nil }, set: { if !$0 { errorMessage = nil } })) {
+    .alert(
+      "Restore failed",
+      isPresented: Binding(
+        get: { errorMessage != nil },
+        set: { if !$0 { errorMessage = nil } }
+      )
+    ) {
       Button("OK", role: .cancel) {}
     } message: {
       Text(errorMessage ?? "")
@@ -97,7 +107,13 @@ private struct BackupRow: View {
   }
 
   private var counts: String {
-    "\(backup.counts.calendars) calendars, \(backup.counts.checkIns) check-ins, \(backup.counts.moodEntries) moods, \(backup.counts.journalNotes) notes, \(backup.counts.habitStacks) stacks"
+    [
+      "\(backup.counts.calendars) calendars",
+      "\(backup.counts.checkIns) check-ins",
+      "\(backup.counts.moodEntries) moods",
+      "\(backup.counts.journalNotes) notes",
+      "\(backup.counts.habitStacks) stacks"
+    ].joined(separator: ", ")
   }
 
   var body: some View {
