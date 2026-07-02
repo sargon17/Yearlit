@@ -1,5 +1,4 @@
 import RevenueCat
-import RevenueCatUI
 import SharedModels
 import SwiftUI
 import SwiftfulRouting
@@ -80,7 +79,6 @@ struct CustomCalendarView: View {
   @State private var tempSelectedYear: Int = Calendar.current.component(.year, from: Date())
   @State private var calendarError: CalendarError?
   @State private var customerInfo: CustomerInfo?
-  @State private var isPaywallPresented: Bool = false
   @State private var statsBundle: StatsBundle?
   @State private var pendingMilestoneCheck: Bool = false
   @State private var isEntryEditSheetPresented: Bool = false
@@ -686,7 +684,6 @@ struct CustomCalendarView: View {
             currentMissedPeriods: bundle.currentMissedPeriods,
             averageRecoveryPeriods: bundle.averageRecoveryPeriods,
             isPremium: isPremium(customerInfo: customerInfo),
-            onUpgrade: { isPaywallPresented = true },
             cadence: activeCalendar.cadence,
             trackingType: activeCalendar.trackingType,
             onTapShare: {
@@ -745,9 +742,6 @@ struct CustomCalendarView: View {
         }
       }
       .presentationDetents([.height(280)])
-    }
-    .sheet(isPresented: $isPaywallPresented) {
-      PremiumPaywallSheet(trigger: .statsGate)
     }
     .alert(item: $calendarError) { error in
       Alert(

@@ -273,7 +273,12 @@ struct My_YearApp: App {
   private func trackOnboardingStartedIfNeeded() {
     guard !onboarding.hasSeenOnboarding, !hasTrackedOnboardingStarted else { return }
     hasTrackedOnboardingStarted = true
-    Analytics.shared.track(.onboardingStarted)
+    Analytics.shared.track(
+      .onboardingStarted,
+      properties: [
+        "onboarding_flow": .string(OnboardingCopy.flowID)
+      ]
+    )
   }
 }
 

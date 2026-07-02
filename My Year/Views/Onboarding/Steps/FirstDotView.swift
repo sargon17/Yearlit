@@ -6,6 +6,8 @@ struct FirstDotView: View {
   let calendar: CustomCalendar?
   let isCompletedToday: Bool
   let canMarkDayOne: Bool
+  let motivation: OnboardingMotivation?
+  let displayName: String?
   let onMarkDayOne: () -> Void
   let onDayTapped: (Date) -> Void
   let onContinue: () -> Void
@@ -40,9 +42,19 @@ struct FirstDotView: View {
     } content: {
       VStack(alignment: .leading, spacing: 8) {
         OnboardingView.Title(showingProofState ? "Proof added." : "Your first dot is waiting.")
-        OnboardingView.Caption(showingProofState ? "One day down." : "You chose who you’re becoming.")
+        if showingProofState {
+          OnboardingView.Caption("One day down.")
+        } else {
+          Text(preProofLine)
+            .font(AppFont.sans(16))
+            .minimumScaleFactor(0.5)
+            .foregroundStyle(.textSecondary)
+        }
         OnboardingView.Caption(
-          showingProofState ? "Keep the promise tomorrow." : "Mark today as the first proof.")
+          showingProofState
+            ? OnboardingCopy.firstDotProofLine(for: motivation)
+            : "Mark today as the first proof."
+        )
       }
     } actions: {
       if showingProofState {
@@ -109,5 +121,13 @@ struct FirstDotView: View {
     if isCompletedToday, let todayBucket {
       completedDates.insert(todayBucket)
     }
+  }
+
+  private var preProofLine: String {
+    guard let displayName, !displayName.isEmpty else {
+      return String(localized: "You chose who you’re becoming.")
+    }
+
+    return "\(displayName), you chose who you’re becoming."
   }
 }

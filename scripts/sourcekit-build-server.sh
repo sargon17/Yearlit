@@ -4,8 +4,9 @@ set -euo pipefail
 PROJECT="${PROJECT:-My Year.xcodeproj}"
 SCHEME="${SCHEME:-My Year}"
 PROJECT_ROOT="$(pwd -P)"
-DERIVED_DATA_PATH="${DERIVED_DATA_PATH:-${PROJECT_ROOT}/DerivedData}"
+DERIVED_DATA_PATH="${DERIVED_DATA_PATH:-}"
 DESTINATION="${DESTINATION:-generic/platform=iOS Simulator}"
+APP_MODULE_NAME="${APP_MODULE_NAME:-My_Year}"
 
 xcode_build_server_path="$(command -v xcode-build-server || true)"
 
@@ -18,34 +19,43 @@ build_log="$(mktemp -t my-year-sourcekit-build.XXXXXX.log)"
 trap 'rm -f "${build_log}"' EXIT
 
 echo "Building ${SCHEME} for ${DESTINATION}..."
-if xcodebuild build \
-  -project "${PROJECT}" \
-  -scheme "${SCHEME}" \
-  -destination "${DESTINATION}" \
-  -derivedDataPath "${DERIVED_DATA_PATH}" \
-  >"${build_log}" 2>&1; then
+build_args=(
+  clean
+  build
+  -project "${PROJECT}"
+  -scheme "${SCHEME}"
+  -destination "${DESTINATION}"
+)
+
+if [[ -n "${DERIVED_DATA_PATH}" ]]; then
+  build_args+=(-derivedDataPath "${DERIVED_DATA_PATH}")
+fi
+
+if xcodebuild "${build_args[@]}" >"${build_log}" 2>&1; then
   echo "Build succeeded."
 else
   cat "${build_log}" >&2
   exit 1
 fi
 
-echo "Parsing compiler arguments for SourceKit..."
-activity_log="$(
-  find "${DERIVED_DATA_PATH}/Logs/Build" -name "*.xcactivitylog" -size +0 -print0 2>/dev/null \
-    | xargs -0 ls -t 2>/dev/null \
-    | head -n 1
-)"
-
-if [[ -z "${activity_log}" ]]; then
-  echo "No Xcode activity log found under ${DERIVED_DATA_PATH}/Logs/Build." >&2
-  exit 1
+if [[ -z "${DERIVED_DATA_PATH}" ]]; then
+  build_root="$(
+    xcodebuild -project "${PROJECT}" -scheme "${SCHEME}" -showBuildSettings 2>/dev/null \
+      | awk -F' = ' '/^[[:space:]]*BUILD_ROOT = / { print $2; exit }'
+  )"
+  DERIVED_DATA_PATH="${build_root%/Build/Products}"
 fi
 
-xcode-build-server parse -l "${activity_log}" --skip-validate-bin >/dev/null 2>&1
+echo "Parsing compiler arguments for SourceKit..."
+xcode-build-server parse "${build_log}" --skip-validate-bin >/dev/null 2>&1
 
 if [[ ! -s .compile ]] || [[ "$(tr -d '[:space:]' <.compile)" == "[]" ]]; then
   echo "xcode-build-server produced an empty .compile file." >&2
+  exit 1
+fi
+
+if ! grep -q "\"module_name\"[[:space:]]*:[[:space:]]*\"${APP_MODULE_NAME}\"" .compile; then
+  echo "xcode-build-server did not include the ${APP_MODULE_NAME} app module in .compile." >&2
   exit 1
 fi
 

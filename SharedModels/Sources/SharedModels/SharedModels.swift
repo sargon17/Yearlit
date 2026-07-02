@@ -1237,10 +1237,6 @@ public final class CustomCalendarStore: ObservableObject {
                 }
             }
 
-            for redundant in existingByKey.values {
-                context.delete(redundant)
-            }
-
             try persistNormalizedCalendarOrder(in: context)
             try finishHabitMutationReloadingCalendars(in: context)
         } catch {
@@ -1735,7 +1731,7 @@ public final class CustomCalendarStore: ObservableObject {
         let deduplicatedCalendars = calendarEntities.reduce(into: [UUID: CustomCalendar]()) { result, entity in
             let calendar = entity.toCustomCalendar(entries: [:])
             if let existing = result[calendar.id] {
-                if calendar.order < existing.order {
+                if shouldUseCalendar(calendar, over: existing) {
                     result[calendar.id] = calendar
                 }
             } else {
@@ -1771,7 +1767,7 @@ public final class CustomCalendarStore: ObservableObject {
 
             let calendar = entity.toCustomCalendar(entries: entries)
             if let existing = partialResult[calendar.id] {
-                if calendar.order < existing.order {
+                if shouldUseCalendar(calendar, over: existing) {
                     partialResult[calendar.id] = calendar
                 }
             } else {
@@ -1792,6 +1788,14 @@ public final class CustomCalendarStore: ObservableObject {
         }
 
         return normalizedCalendars
+    }
+
+    private nonisolated static func shouldUseCalendar(_ candidate: CustomCalendar, over existing: CustomCalendar) -> Bool {
+        if candidate.isArchived != existing.isArchived {
+            return !candidate.isArchived
+        }
+
+        return calendarOrderSort(candidate, existing)
     }
 }
 

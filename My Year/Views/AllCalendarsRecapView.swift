@@ -1,5 +1,4 @@
 import RevenueCat
-import RevenueCatUI
 import SharedModels
 import SwiftUI
 import SwiftfulRouting
@@ -12,7 +11,6 @@ struct AllCalendarsRecapView: View {
   @Environment(\.colorScheme) private var colorScheme
 
   @State private var customerInfo: CustomerInfo?
-  @State private var isPaywallPresented: Bool = false
   @State private var statsBundle: StatsBundle? = nil
   @State private var showingYearPicker: Bool = false
   @State private var tempSelectedYear: Int = Calendar.current.component(.year, from: Date())
@@ -91,8 +89,7 @@ struct AllCalendarsRecapView: View {
             volatilityStdDev: bundle.volatilityStd,
             currentMissedPeriods: bundle.currentMissedPeriods,
             averageRecoveryPeriods: bundle.averageRecoveryPeriods,
-            isPremium: isPremium(customerInfo: customerInfo),
-            onUpgrade: { isPaywallPresented = true }
+            isPremium: isPremium(customerInfo: customerInfo)
           )
           .id(colorScheme)
           .padding(.top, 20)
@@ -102,9 +99,6 @@ struct AllCalendarsRecapView: View {
       .surfaceBackground(Color("surface-muted"), ignoresSafeArea: true)
     }
     .scrollIndicators(.hidden)
-    .sheet(isPresented: $isPaywallPresented) {
-      PremiumPaywallSheet(trigger: .statsGate)
-    }
     .sheet(isPresented: $showingYearPicker) {
       NavigationStack {
         VStack {
