@@ -57,11 +57,14 @@ enum LegacyDataMigrator {
 
     private static func createMigrationBackupIfNeeded(container: ModelContainer, defaults: UserDefaults) -> Bool {
         let backupKey = "DataBackup.beforeMigrationCreated"
-        let hasPendingMigration = !defaults.bool(forKey: LegacyPersistenceKeys.dayKeyMigrationFlagKey)
-            || !defaults.bool(forKey: LegacyPersistenceKeys.trackingStartedAtBackfillMigrationFlagKey)
-            || !defaults.bool(forKey: LegacyPersistenceKeys.trackingStartedAtRepairMigrationFlagKey)
-            || !defaults.bool(forKey: LegacyPersistenceKeys.legacyCalendarRepairFlagKey)
-            || !defaults.bool(forKey: LegacyPersistenceKeys.legacyCalendarRepairV2FlagKey)
+        let migrationFlags = [
+            LegacyPersistenceKeys.dayKeyMigrationFlagKey,
+            LegacyPersistenceKeys.trackingStartedAtBackfillMigrationFlagKey,
+            LegacyPersistenceKeys.trackingStartedAtRepairMigrationFlagKey,
+            LegacyPersistenceKeys.legacyCalendarRepairFlagKey,
+            LegacyPersistenceKeys.legacyCalendarRepairV2FlagKey
+        ]
+        let hasPendingMigration = migrationFlags.contains { !defaults.bool(forKey: $0) }
         guard hasPendingMigration else { return true }
         guard !defaults.bool(forKey: backupKey) else { return true }
         do {

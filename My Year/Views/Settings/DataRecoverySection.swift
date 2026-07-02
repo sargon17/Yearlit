@@ -69,7 +69,7 @@ struct DataRecoveryView: View {
   private func restore(_ backup: DataBackupMetadata) {
     isRestoring = true
     pendingRestore = nil
-    Task {
+    Task.detached(priority: .userInitiated) {
       do {
         try service.restoreBackup(id: backup.id)
         await MainActor.run {
