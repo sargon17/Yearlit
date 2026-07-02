@@ -98,6 +98,54 @@ struct AppleHealthCalendarModelTests {
   }
 
   @MainActor
+  @Test func updateCalendarPreservesExistingManualEntriesWhenPayloadOmitsEntries() throws {
+    let container = try makeContainer()
+    let store = CustomCalendarStore(
+      container: container,
+      dependencies: CustomCalendarStoreDependencies(
+        fetchCalendars: { _ in [] },
+        runMigration: { _ in }
+      )
+    )
+    let calendar = CustomCalendar(
+      name: "No energy drinks",
+      color: "qs-orange",
+      cadence: .daily,
+      trackingType: .binary,
+      trackingStartedAt: makeDate(year: 2026, month: 1, day: 1),
+      dailyTarget: 1,
+      entries: [
+        "2026-01-02": CalendarEntry(
+          date: makeDate(year: 2026, month: 1, day: 2),
+          count: 1,
+          completed: true
+        ),
+        "2026-01-03": CalendarEntry(
+          date: makeDate(year: 2026, month: 1, day: 3),
+          count: 1,
+          completed: true
+        )
+      ]
+    )
+
+    store.addCalendar(calendar)
+    var metadataOnlyUpdate = calendar
+    metadataOnlyUpdate.name = "No energy drinks edited"
+    metadataOnlyUpdate.entries = [:]
+
+    store.updateCalendar(metadataOnlyUpdate)
+
+    let context = ModelContext(container)
+    let calendars = try context.fetch(FetchDescriptor<HabitCalendarEntity>())
+    let entries = try context.fetch(FetchDescriptor<CalendarEntryEntity>())
+    let updatedCalendar = try #require(calendars.first)
+
+    #expect(updatedCalendar.name == "No energy drinks edited")
+    #expect(entries.count == 2)
+    #expect(Set(entries.map(\.dayKey)) == ["2026-01-02", "2026-01-03"])
+  }
+
+  @MainActor
   @Test func updateCalendarPreservesAppleHealthMetricUnit() throws {
     let container = try makeContainer()
     let store = CustomCalendarStore(

@@ -11,6 +11,9 @@ import SharedModels
     ]
 
     static func seedIfRequested(onboarding: OnboardingManager) {
+      #if !targetEnvironment(simulator)
+        return
+      #else
       let arguments = ProcessInfo.processInfo.arguments
       guard let argumentIndex = arguments.firstIndex(of: argumentName) else { return }
 
@@ -19,6 +22,7 @@ import SharedModels
       Task { @MainActor in
         await seed(calendarCount: calendarCount, onboarding: onboarding)
       }
+      #endif
     }
 
     private static func seed(calendarCount: Int, onboarding: OnboardingManager) async {

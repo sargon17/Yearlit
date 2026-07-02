@@ -1237,10 +1237,6 @@ public final class CustomCalendarStore: ObservableObject {
                 }
             }
 
-            for redundant in existingByKey.values {
-                context.delete(redundant)
-            }
-
             try persistNormalizedCalendarOrder(in: context)
             try finishHabitMutationReloadingCalendars(in: context)
         } catch {
