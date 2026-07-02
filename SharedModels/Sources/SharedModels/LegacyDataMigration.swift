@@ -14,6 +14,7 @@ enum LegacyPersistenceKeys {
     static let trackingStartedAtBackfillMigrationFlagKey = "swiftDataTrackingStartedAtBackfillMigrationComplete"
     static let trackingStartedAtRepairMigrationFlagKey = "swiftDataTrackingStartedAtRepairV2Complete"
     static let trackingStartedAtBackupKey = "swiftDataTrackingStartedAtBackupV1"
+    static let legacyCalendarRepairFlagKey = "swiftDataLegacyCalendarRepairV1Complete"
 }
 
 @available(iOS 17.0, macOS 14.0, *)
@@ -43,6 +44,7 @@ enum LegacyDataMigrator {
         let dayKeyMigrationSucceeded = migrateDayKeysIfNeeded(defaults: defaults, container: container)
 
         if legacyMigrationSucceeded && dayKeyMigrationSucceeded {
+            repairCalendarsFromLegacyIfNeeded(defaults: defaults, container: container)
             migrateTrackingStartedAtIfNeeded(defaults: defaults, container: container)
             repairTrackingStartedAtIfNeeded(defaults: defaults, container: container)
         }
@@ -291,6 +293,72 @@ enum LegacyDataMigrator {
         } catch {
             NSLog("Tracking started at repair failed: \(error)")
         }
+    }
+
+    private static func repairCalendarsFromLegacyIfNeeded(defaults: UserDefaults, container: ModelContainer) {
+        guard !defaults.bool(forKey: LegacyPersistenceKeys.legacyCalendarRepairFlagKey) else { return }
+        guard let legacyCalendars = decodeLegacyCalendars(defaults: defaults), !legacyCalendars.isEmpty else {
+            defaults.set(true, forKey: LegacyPersistenceKeys.legacyCalendarRepairFlagKey)
+            return
+        }
+
+        let context = ModelContext(container)
+        context.autosaveEnabled = false
+
+        do {
+            let calendarEntities = try context.fetch(FetchDescriptor<HabitCalendarEntity>())
+            let entries = try context.fetch(FetchDescriptor<CalendarEntryEntity>())
+            let calendarEntityById = Dictionary(grouping: calendarEntities, by: \.id).compactMapValues(\.first)
+            var entryKeysByCalendarId = Dictionary(grouping: entries, by: \.calendarId).mapValues {
+                Set($0.map(\.dayKey))
+            }
+
+            for legacyCalendar in legacyCalendars {
+                if calendarEntityById[legacyCalendar.id] == nil {
+                    context.insert(HabitCalendarEntity.make(from: legacyCalendar))
+                    entryKeysByCalendarId[legacyCalendar.id] = []
+                }
+
+                for (dayKey, entry) in legacyCalendar.entries {
+                    guard entryKeysByCalendarId[legacyCalendar.id, default: []].contains(dayKey) == false else {
+                        continue
+                    }
+
+                    context.insert(
+                        CalendarEntryEntity(
+                            compositeKey: CalendarEntryEntity.makeCompositeKey(
+                                calendarId: legacyCalendar.id,
+                                dayKey: dayKey
+                            ),
+                            calendarId: legacyCalendar.id,
+                            dayKey: dayKey,
+                            date: entry.date,
+                            count: entry.count,
+                            completed: entry.completed
+                        )
+                    )
+                    entryKeysByCalendarId[legacyCalendar.id, default: []].insert(dayKey)
+                }
+            }
+
+            if context.hasChanges {
+                try context.save()
+            }
+            defaults.set(true, forKey: LegacyPersistenceKeys.legacyCalendarRepairFlagKey)
+        } catch {
+            NSLog("Legacy calendar repair failed: \(error)")
+        }
+    }
+
+    private static func decodeLegacyCalendars(defaults: UserDefaults) -> [CustomCalendar]? {
+        guard let data = defaults.data(forKey: LegacyPersistenceKeys.calendarsKey) else { return nil }
+
+        let decoder = JSONDecoder()
+        if let decoded = try? decoder.decode([CustomCalendar].self, from: data) {
+            return decoded
+        }
+
+        return decodeOldCalendars(from: data)
     }
 
     static func trackingStartedAtBackup(defaults: UserDefaults) -> [UUID: Date] {

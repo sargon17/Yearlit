@@ -98,6 +98,82 @@ struct AppleHealthCalendarModelTests {
   }
 
   @MainActor
+  @Test func migrationRepairsMissingSwiftDataEntriesFromLegacyPayload() throws {
+    let container = try makeContainer()
+    let (defaultsSuiteName, defaults) = makeDefaults()
+    defer { defaults.removePersistentDomain(forName: defaultsSuiteName) }
+
+    let calendar = CustomCalendar(
+      name: "No energy drinks",
+      color: "qs-orange",
+      cadence: .daily,
+      trackingType: .binary,
+      trackingStartedAt: makeDate(year: 2026, month: 1, day: 1),
+      dailyTarget: 1,
+      entries: [
+        "2026-01-02": CalendarEntry(
+          date: makeDate(year: 2026, month: 1, day: 2),
+          count: 1,
+          completed: true
+        )
+      ]
+    )
+    defaults.set(try JSONEncoder().encode([calendar]), forKey: LegacyPersistenceKeys.calendarsKey)
+    defaults.set(true, forKey: LegacyPersistenceKeys.migrationFlagKey)
+    defaults.set(true, forKey: LegacyPersistenceKeys.dayKeyMigrationFlagKey)
+
+    let context = ModelContext(container)
+    context.insert(HabitCalendarEntity.make(from: calendar))
+    try context.save()
+
+    LegacyDataMigrator.migrateIfNeeded(container: container, defaults: defaults)
+
+    let entries = try context.fetch(FetchDescriptor<CalendarEntryEntity>())
+
+    #expect(defaults.bool(forKey: LegacyPersistenceKeys.legacyCalendarRepairFlagKey))
+    #expect(entries.count == 1)
+    #expect(entries.first?.dayKey == "2026-01-02")
+  }
+
+  @MainActor
+  @Test func migrationRepairsMissingSwiftDataCalendarsFromLegacyPayload() throws {
+    let container = try makeContainer()
+    let (defaultsSuiteName, defaults) = makeDefaults()
+    defer { defaults.removePersistentDomain(forName: defaultsSuiteName) }
+
+    let calendar = CustomCalendar(
+      name: "Reading",
+      color: "qs-blue",
+      cadence: .daily,
+      trackingType: .binary,
+      trackingStartedAt: makeDate(year: 2026, month: 1, day: 1),
+      dailyTarget: 1,
+      entries: [
+        "2026-01-03": CalendarEntry(
+          date: makeDate(year: 2026, month: 1, day: 3),
+          count: 1,
+          completed: true
+        )
+      ]
+    )
+    defaults.set(try JSONEncoder().encode([calendar]), forKey: LegacyPersistenceKeys.calendarsKey)
+    defaults.set(true, forKey: LegacyPersistenceKeys.migrationFlagKey)
+    defaults.set(true, forKey: LegacyPersistenceKeys.dayKeyMigrationFlagKey)
+
+    LegacyDataMigrator.migrateIfNeeded(container: container, defaults: defaults)
+
+    let context = ModelContext(container)
+    let calendars = try context.fetch(FetchDescriptor<HabitCalendarEntity>())
+    let entries = try context.fetch(FetchDescriptor<CalendarEntryEntity>())
+
+    #expect(defaults.bool(forKey: LegacyPersistenceKeys.legacyCalendarRepairFlagKey))
+    #expect(calendars.count == 1)
+    #expect(calendars.first?.name == "Reading")
+    #expect(entries.count == 1)
+    #expect(entries.first?.dayKey == "2026-01-03")
+  }
+
+  @MainActor
   @Test func updateCalendarPreservesExistingManualEntriesWhenPayloadOmitsEntries() throws {
     let container = try makeContainer()
     let store = CustomCalendarStore(
@@ -245,6 +321,13 @@ struct AppleHealthCalendarModelTests {
     calendar.locale = Locale(identifier: "en_US_POSIX")
     calendar.timeZone = .gmt
     return calendar.date(from: DateComponents(year: year, month: month, day: day))!
+  }
+
+  private func makeDefaults() -> (suiteName: String, defaults: UserDefaults) {
+    let suiteName = "SharedModelsTests.\(UUID().uuidString)"
+    let defaults = UserDefaults(suiteName: suiteName)!
+    defaults.removePersistentDomain(forName: suiteName)
+    return (suiteName, defaults)
   }
 
   @MainActor
