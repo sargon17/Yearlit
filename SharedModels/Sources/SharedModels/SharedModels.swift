@@ -1249,6 +1249,7 @@ public final class CustomCalendarStore: ObservableObject {
             let context = makeContext()
             let entities = fetchCalendarEntities(id: id, in: context)
             guard !entities.isEmpty else { return }
+            try DataBackupService(container: container).createProtectiveBackup(reason: .beforeBulkChange)
             let entries = try fetchEntries(for: id, in: context)
             for entry in entries {
                 context.delete(entry)
@@ -1414,6 +1415,8 @@ public final class CustomCalendarStore: ObservableObject {
             guard let calendarEntity = fetchCalendarEntity(id: calendarId, in: context) else { return }
             guard !calendarEntity.isAppleHealthSource else { return }
             let entries = try fetchEntries(for: calendarId, in: context)
+            guard !entries.isEmpty else { return }
+            try DataBackupService(container: container).createProtectiveBackup(reason: .beforeBulkChange)
             for entry in entries {
                 context.delete(entry)
             }
@@ -1944,6 +1947,8 @@ public final class ValuationStore: ObservableObject {
             let context = makeContext()
             let descriptor = FetchDescriptor<DayValuationEntity>()
             let entities = try context.fetch(descriptor)
+            guard !entities.isEmpty else { return }
+            try DataBackupService(container: container).createProtectiveBackup(reason: .beforeBulkChange)
             for entity in entities {
                 context.delete(entity)
             }
