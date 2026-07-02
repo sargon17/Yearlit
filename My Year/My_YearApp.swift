@@ -208,16 +208,15 @@ struct My_YearApp: App {
           .environmentObject(featureRequest)
       }
       .sheet(item: $upgradePrompter.activePrompt) { context in
-        PremiumPaywallSheet(
-          displayCloseButton: true,
+        OnboardingPaywall(
+          showsCloseButton: true,
+          isPresentedAsSheet: true,
           trigger: context.trigger,
-          analyticsProperties: context.analyticsProperties
+          analyticsProperties: context.analyticsProperties,
+          onNext: {}
         )
       }
       .onAppear {
-        #if DEBUG
-          DebugSwipeCalendarSeeder.seedIfRequested(onboarding: onboarding)
-        #endif
         updateTimelinePreferencePresentation()
         trackOnboardingStartedIfNeeded()
         openDataRecoveryIfRequested()

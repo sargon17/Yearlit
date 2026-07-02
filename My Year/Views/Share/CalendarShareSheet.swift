@@ -131,7 +131,12 @@ struct CalendarShareSheet: View {
             Text(saveAlertMessage)
         }
         .sheet(isPresented: $isPaywallPresented) {
-            PremiumPaywallSheet(trigger: .shareGate)
+            OnboardingPaywall(
+                showsCloseButton: false,
+                isPresentedAsSheet: true,
+                trigger: .shareGate,
+                onNext: {}
+            )
         }
     }
 

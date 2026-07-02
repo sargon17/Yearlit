@@ -99,7 +99,12 @@ struct NotificationSettingsDraftSheet: View {
 extension NotificationSettingsDraftSheet {
     private func showPremiumPaywall() {
         router.showScreen(.sheet) { _ in
-            PremiumPaywallSheet(displayCloseButton: true, trigger: .notificationGate)
+            OnboardingPaywall(
+                showsCloseButton: true,
+                isPresentedAsSheet: true,
+                trigger: .notificationGate,
+                onNext: {}
+            )
         }
     }
 }

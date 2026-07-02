@@ -194,7 +194,12 @@ struct CalendarStatisticsView: View {
   private func handleMetricTap(_ metric: StatisticMetric) {
     if metric.isPremium && !isPremium {
       router.showScreen(.sheet) { _ in
-        PremiumPaywallSheet(trigger: .statsGate)
+        OnboardingPaywall(
+          showsCloseButton: false,
+          isPresentedAsSheet: true,
+          trigger: .statsGate,
+          onNext: {}
+        )
       }
 
       Task {

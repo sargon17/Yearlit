@@ -136,7 +136,12 @@ struct CreateManualCalendarView: View {
   func handleCreateCalendar() async -> Bool {
     if !userCanCreateCalendar() {
       router.showScreen(.sheet) { _ in
-        PremiumPaywallSheet(displayCloseButton: true, trigger: .calendarLimit)
+        OnboardingPaywall(
+          showsCloseButton: true,
+          isPresentedAsSheet: true,
+          trigger: .calendarLimit,
+          onNext: {}
+        )
       }
       return false
     }

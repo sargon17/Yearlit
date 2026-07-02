@@ -46,9 +46,13 @@ struct DayEntryEditSheet: View {
     let targetDate = Self.bucketDate(for: selectedDate, cadence: calendar.cadence)
     let existingEntry = store.getEntry(calendarId: calendar.id, date: targetDate)
     let newEntry = normalizedEntry(date: targetDate)
+    let originalEntry = store.getEntry(calendarId: calendar.id, date: originalDate)
 
-    if originalDate != targetDate, let originalEntry = store.getEntry(calendarId: calendar.id, date: originalDate) {
-      store.deleteEntry(calendarId: calendar.id, date: originalDate)
+    guard store.saveEntry(calendarId: calendar.id, entry: newEntry, replacingDate: originalDate) else {
+      return
+    }
+
+    if originalDate != targetDate, let originalEntry {
       CalendarAnalyticsTracker.shared.trackEntryMutation(
         calendar: calendar,
         oldEntry: originalEntry,
@@ -57,7 +61,6 @@ struct DayEntryEditSheet: View {
       )
     }
 
-    store.addEntry(calendarId: calendar.id, entry: newEntry)
     CalendarAnalyticsTracker.shared.trackEntryMutation(
       calendar: calendar,
       oldEntry: existingEntry,

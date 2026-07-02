@@ -1331,6 +1331,55 @@ public final class CustomCalendarStore: ObservableObject {
     }
 
     @discardableResult
+    public func saveEntry(calendarId: UUID, entry: CalendarEntry, replacingDate originalDate: Date? = nil) -> Bool {
+        do {
+            let context = makeContext()
+            guard let calendarEntity = fetchCalendarEntity(id: calendarId, in: context) else { return false }
+            guard !calendarEntity.isAppleHealthSource else { return false }
+
+            let cadence = CalendarCadence(rawValue: calendarEntity.cadenceRawValue) ?? .daily
+            let targetDate = canonicalEntryDate(for: entry.date, cadence: cadence)
+            let targetDayKey = formatDate(date: targetDate, cadence: cadence)
+            let targetCompositeKey = CalendarEntryEntity.makeCompositeKey(calendarId: calendarId, dayKey: targetDayKey)
+            let existingTarget = fetchEntry(compositeKey: targetCompositeKey, in: context)
+
+            if let originalDate {
+                let originalDate = canonicalEntryDate(for: originalDate, cadence: cadence)
+                let originalDayKey = formatDate(date: originalDate, cadence: cadence)
+                let originalCompositeKey = CalendarEntryEntity.makeCompositeKey(
+                    calendarId: calendarId,
+                    dayKey: originalDayKey
+                )
+                if originalCompositeKey != targetCompositeKey,
+                   let originalEntry = fetchEntry(compositeKey: originalCompositeKey, in: context)
+                {
+                    context.delete(originalEntry)
+                }
+            }
+
+            let normalizedEntry = CalendarEntry(
+                date: targetDate,
+                count: entry.count,
+                completed: entry.completed
+            )
+            upsertEntry(
+                normalizedEntry,
+                calendarId: calendarId,
+                dayKey: targetDayKey,
+                compositeKey: targetCompositeKey,
+                existingEntry: existingTarget,
+                context: context
+            )
+
+            try finishHabitMutationReloadingCalendars(in: context)
+            return true
+        } catch {
+            NSLog("Failed to save entry: \(error)")
+            return false
+        }
+    }
+
+    @discardableResult
     public func quickLogEntry(calendarId: UUID, date: Date = Date()) -> Bool {
         do {
             let context = makeContext()

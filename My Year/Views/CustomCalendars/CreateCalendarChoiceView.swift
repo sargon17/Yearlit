@@ -48,7 +48,12 @@ struct CreateCalendarChoiceView: View {
         ) {
           guard userCanCreateCalendar() else {
             router.showScreen(.sheet) { _ in
-              PremiumPaywallSheet(displayCloseButton: true, trigger: .calendarLimit)
+              OnboardingPaywall(
+                showsCloseButton: true,
+                isPresentedAsSheet: true,
+                trigger: .calendarLimit,
+                onNext: {}
+              )
             }
             return
           }

@@ -363,6 +363,57 @@ struct AppleHealthCalendarModelTests {
   }
 
   @MainActor
+  @Test func saveEntryMovesManualEntryInSingleStoreMutation() throws {
+    let container = try makeContainer()
+    let store = CustomCalendarStore(
+      container: container,
+      dependencies: CustomCalendarStoreDependencies(
+        fetchCalendars: { _ in [] },
+        runMigration: { _ in }
+      )
+    )
+    let calendar = CustomCalendar(
+      name: "Reading",
+      color: "qs-blue",
+      cadence: .daily,
+      trackingType: .counter,
+      trackingStartedAt: makeDate(year: 2026, month: 1, day: 1),
+      dailyTarget: 1,
+      entries: [
+        "2026-01-02": CalendarEntry(
+          date: makeDate(year: 2026, month: 1, day: 2),
+          count: 3,
+          completed: true
+        ),
+        "2026-01-03": CalendarEntry(
+          date: makeDate(year: 2026, month: 1, day: 3),
+          count: 2,
+          completed: true
+        )
+      ]
+    )
+
+    store.addCalendar(calendar)
+    let moved = CalendarEntry(
+      date: makeDate(year: 2026, month: 1, day: 4),
+      count: 3,
+      completed: true
+    )
+    let didSave = store.saveEntry(
+      calendarId: calendar.id,
+      entry: moved,
+      replacingDate: makeDate(year: 2026, month: 1, day: 2)
+    )
+
+    let context = ModelContext(container)
+    let entries = try context.fetch(FetchDescriptor<CalendarEntryEntity>())
+
+    #expect(didSave)
+    #expect(Set(entries.map(\.dayKey)) == ["2026-01-03", "2026-01-04"])
+    #expect(entries.first { $0.dayKey == "2026-01-04" }?.count == 3)
+  }
+
+  @MainActor
   @Test func updateCalendarPreservesAppleHealthSourceAndEntries() throws {
     let container = try makeContainer()
     let store = CustomCalendarStore(
