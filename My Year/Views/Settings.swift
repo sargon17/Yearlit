@@ -17,8 +17,6 @@ struct SettingsView: View {
 
         DailyWallpaperSettingsSection(customerInfo: customerInfo)
 
-        DataRecoverySection()
-
         HelpFeedbackSection()
 
         SupportYearlitSection()

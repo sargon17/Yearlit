@@ -94,6 +94,7 @@ struct My_YearApp: App {
   @StateObject private var upgradePrompter = UpgradePrompter.shared
   @Environment(\.scenePhase) private var scenePhase
   @State private var isTimelinePreferenceSheetPresented = false
+  @State private var isDataRecoveryPresented = false
   @State private var hasTrackedOnboardingStarted = false
 
   #if DEBUG
@@ -169,6 +170,8 @@ struct My_YearApp: App {
           handleWidgetOpenURL(url)
         case "quick-add":
           handleWidgetQuickAddURL(url)
+        case "data-recovery":
+          isDataRecoveryPresented = true
         default:
           handleWidgetOpenURL(url)
           break
@@ -192,6 +195,11 @@ struct My_YearApp: App {
         TimelinePreferenceChoiceSheet { mode in
           TimelinePreferenceManager.shared.setMode(mode)
           isTimelinePreferenceSheetPresented = false
+        }
+      }
+      .sheet(isPresented: $isDataRecoveryPresented) {
+        NavigationStack {
+          DataRecoveryView()
         }
       }
       .sheet(item: $reviewPrompter.activePrompt) { context in

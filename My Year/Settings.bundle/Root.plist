@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>PreferenceSpecifiers</key>
+	<array>
+		<dict>
+			<key>Type</key>
+			<string>PSGroupSpecifier</string>
+			<key>Title</key>
+			<string>Data Recovery</string>
+			<key>FooterText</key>
+			<string>Backups are managed by Yearlit. Open the recovery page from a support link when you need to restore data.</string>
+		</dict>
+		<dict>
+			<key>Type</key>
+			<string>PSTitleValueSpecifier</string>
+			<key>Title</key>
+			<string>Recovery Link</string>
+			<key>DefaultValue</key>
+			<string>my-year://data-recovery</string>
+		</dict>
+	</array>
+</dict>
+</plist>

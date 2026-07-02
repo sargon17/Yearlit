@@ -1,19 +1,7 @@
 import SharedModels
 import SwiftUI
 
-struct DataRecoverySection: View {
-  var body: some View {
-    Section(header: Text("Data")) {
-      NavigationLink {
-        DataRecoveryView()
-      } label: {
-        Label("Data & Recovery", systemImage: "clock.arrow.circlepath")
-      }
-    }
-  }
-}
-
-private struct DataRecoveryView: View {
+struct DataRecoveryView: View {
   @State private var backups: [DataBackupMetadata] = []
   @State private var pendingRestore: DataBackupMetadata?
   @State private var errorMessage: String?
