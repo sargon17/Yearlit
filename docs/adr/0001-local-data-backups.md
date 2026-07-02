@@ -1,6 +1,6 @@
 # Local Data Backups
 
-Yearlit will protect durable user-created data with automatic local **Data backups** stored as versioned JSON domain data in the app group, capped by a rolling retention window. Restoring a backup fully replaces current durable user-created data instead of merging records, because recovery must be predictable and merging Calendars, Check-ins, Mood Tracking entries, journal notes, and Habit Stacks would create unclear conflict rules and broken links.
+Yearlit will protect durable user-created data with automatic local **Data backups** stored as versioned JSON domain data in the app group. Changed automatic backups are retained for ninety days, while noisy protective backups are capped separately so risky-operation snapshots cannot evict older automatic history. Restoring a backup fully replaces current durable user-created data instead of merging records, because recovery must be predictable and merging Calendars, Check-ins, Mood Tracking entries, journal notes, and Habit Stacks would create unclear conflict rules and broken links.
 
 ## Considered Options
 

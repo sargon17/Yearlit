@@ -68,19 +68,24 @@ struct DataBackupServiceTests {
   }
 
   @MainActor
-  @Test func retentionKeepsLatestTenBackups() throws {
+  @Test func retentionCapsProtectiveBackupsWithoutDeletingAutomaticHistory() throws {
     let harness = try Harness()
     try harness.seedSampleData()
 
-    for day in 1 ... 12 {
+    for day in 1 ... 3 {
       harness.now = Self.makeDate(year: 2026, month: 1, day: day)
+      try harness.insertCalendar(name: "Automatic \(day)")
+      _ = try harness.service.createAutomaticBackupIfNeeded()
+    }
+
+    for index in 0 ..< 25 {
+      harness.now = Self.makeDate(year: 2026, month: 1, day: 4).addingTimeInterval(TimeInterval(index))
       _ = try harness.service.createProtectiveBackup(reason: .beforeBulkChange)
     }
 
     let backups = harness.service.availableBackups()
-    #expect(backups.count == 10)
-    #expect(backups.first?.createdAt == Self.makeDate(year: 2026, month: 1, day: 12))
-    #expect(backups.last?.createdAt == Self.makeDate(year: 2026, month: 1, day: 3))
+    #expect(backups.filter { $0.reason == .automatic }.count == 3)
+    #expect(backups.filter { $0.reason == .beforeBulkChange }.count == 20)
   }
 
   @MainActor

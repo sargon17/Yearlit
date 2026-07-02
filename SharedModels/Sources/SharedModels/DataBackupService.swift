@@ -72,6 +72,8 @@ public final class DataBackupService {
     private static let schemaVersion = 1
     private static let automaticBackupDateKey = "DataBackup.lastAutomaticBackupDate"
     private static let automaticBackupFingerprintKey = "DataBackup.lastAutomaticBackupFingerprint"
+    private static let automaticRetentionDays = 90
+    private static let protectiveRetentionCount = 20
 
     private let container: ModelContainer
     private let defaults: UserDefaults
@@ -302,7 +304,7 @@ public final class DataBackupService {
     }
 
     private func pruneBackups() throws {
-        let cutoff = now().addingTimeInterval(-30 * 24 * 60 * 60)
+        let automaticCutoff = now().addingTimeInterval(-TimeInterval(Self.automaticRetentionDays * 24 * 60 * 60))
         let backups = try backupFileURLs()
             .compactMap { url -> (url: URL, metadata: DataBackupMetadata)? in
                 guard let metadata = try? readBackup(at: url).metadata else { return nil }
@@ -310,8 +312,18 @@ public final class DataBackupService {
             }
             .sorted { $0.metadata.createdAt > $1.metadata.createdAt }
 
-        let keep = Set(backups.prefix(10).map(\.metadata.id))
-        for backup in backups where backup.metadata.createdAt < cutoff || !keep.contains(backup.metadata.id) {
+        let automaticBackups = backups.filter { $0.metadata.reason == .automatic }
+        let protectiveBackups = backups.filter { $0.metadata.reason != .automatic }
+        let keep = Set(
+            automaticBackups
+                .filter { $0.metadata.createdAt >= automaticCutoff }
+                .map(\.metadata.id)
+                + protectiveBackups
+                .prefix(Self.protectiveRetentionCount)
+                .map(\.metadata.id)
+        )
+
+        for backup in backups where !keep.contains(backup.metadata.id) {
             try? FileManager.default.removeItem(at: backup.url)
         }
     }

@@ -267,7 +267,7 @@ _Avoid_: Debug backup, snapshot, versioning
 - A **Data backup** includes **Check-ins** imported for **Apple Health connected Calendars**.
 - Apple Health sync may replace restored **Check-ins** for **Apple Health connected Calendars** after restore.
 - Yearlit creates **Data backups** automatically without user action.
-- Yearlit keeps a rolling **Data backup** history capped at ten backups or thirty days.
+- Yearlit keeps changed automatic **Data backups** for ninety days and keeps only the newest twenty protective **Data backups**.
 - Yearlit creates a **Data backup** before migrations or bulk destructive operations.
 - Yearlit stores **Data backups** locally in the app group as app-managed files.
 - Yearlit stores **Data backups** as versioned JSON domain data rather than raw SwiftData entity dumps.
