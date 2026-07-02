@@ -80,18 +80,6 @@ public final class DataBackupService {
     private let directoryURL: URL?
     private let now: () -> Date
 
-    public convenience init() {
-        self.init(directoryURL: Self.defaultDirectoryURL())
-    }
-
-    public convenience init(container: ModelContainer) {
-        self.init(container: container, directoryURL: Self.defaultDirectoryURL())
-    }
-
-    public convenience init(container: ModelContainer, defaults: UserDefaults) {
-        self.init(container: container, directoryURL: Self.defaultDirectoryURL(), defaults: defaults)
-    }
-
     public static func defaultDirectoryURL() -> URL? {
         FileManager.default
             .containerURL(forSecurityApplicationGroupIdentifier: SharedAppGroup.id)?
@@ -100,7 +88,7 @@ public final class DataBackupService {
 
     public init(
         container: ModelContainer = SwiftDataManager.container,
-        directoryURL: URL?,
+        directoryURL: URL? = DataBackupService.defaultDirectoryURL(),
         defaults: UserDefaults = UserDefaults(suiteName: SharedAppGroup.id) ?? .standard,
         now: @escaping () -> Date = Date.init
     ) {
@@ -312,9 +300,10 @@ public final class DataBackupService {
 
     private func pruneBackups() throws {
         let automaticCutoff = now().addingTimeInterval(-TimeInterval(Self.automaticRetentionDays * 24 * 60 * 60))
-        let backups = try backupFileURLs()
+        let fileURLs = try backupFileURLs()
+        let backups = fileURLs
             .compactMap { url -> (url: URL, metadata: DataBackupMetadata)? in
-                guard let metadata = try? readBackup(at: url).metadata else { return nil }
+                guard let metadata = try? readValidatedBackup(at: url).metadata else { return nil }
                 return (url, metadata)
             }
             .sorted { $0.metadata.createdAt > $1.metadata.createdAt }
@@ -329,9 +318,10 @@ public final class DataBackupService {
                 .prefix(Self.protectiveRetentionCount)
                 .map(\.metadata.id)
         )
+        let keptURLs = Set(backups.filter { keep.contains($0.metadata.id) }.map(\.url))
 
-        for backup in backups where !keep.contains(backup.metadata.id) {
-            try? FileManager.default.removeItem(at: backup.url)
+        for url in fileURLs where !keptURLs.contains(url) {
+            try? FileManager.default.removeItem(at: url)
         }
     }
 

@@ -109,10 +109,34 @@ struct DataBackupServiceTests {
     let backup = try harness.service.createProtectiveBackup(reason: .automatic)
     let url = harness.directoryURL.appendingPathComponent(backup.fileName)
     var json = try String(contentsOf: url, encoding: .utf8)
-    json = json.replacingOccurrences(of: "\"fingerprint\" : \"\(backup.fingerprint)\"", with: "\"fingerprint\" : \"bad\"")
+    json = json.replacingOccurrences(
+      of: "\"fingerprint\" : \"\(backup.fingerprint)\"",
+      with: "\"fingerprint\" : \"bad\""
+    )
     try json.write(to: url, atomically: true, encoding: .utf8)
 
     #expect(harness.service.availableBackups().isEmpty)
+  }
+
+  @MainActor
+  @Test func invalidBackupFilesArePrunedWhenWritingNewBackup() throws {
+    let harness = try Harness()
+    try harness.seedSampleData()
+    let backup = try harness.service.createProtectiveBackup(reason: .beforeBulkChange)
+    let url = harness.directoryURL.appendingPathComponent(backup.fileName)
+    var json = try String(contentsOf: url, encoding: .utf8)
+    json = json.replacingOccurrences(
+      of: "\"fingerprint\" : \"\(backup.fingerprint)\"",
+      with: "\"fingerprint\" : \"bad\""
+    )
+    try json.write(to: url, atomically: true, encoding: .utf8)
+
+    try harness.insertCalendar(name: "Second")
+    _ = try harness.service.createAutomaticBackupIfNeeded()
+
+    let backupFileNames = try harness.backupFileNames()
+    #expect(backupFileNames.count == 1)
+    #expect(harness.service.availableBackups().map(\.reason) == [.automatic])
   }
 
   @MainActor
@@ -153,7 +177,11 @@ struct DataBackupServiceTests {
       try insertCalendar(name: "Original")
       let context = ModelContext(container)
       context.autosaveEnabled = false
-      let valuation = DayValuation(date: Self.makeDate(year: 2026, month: 1, day: 1), mood: .good, note: "Good day")
+      let valuation = DayValuation(
+        date: Self.makeDate(year: 2026, month: 1, day: 1),
+        mood: .good,
+        note: "Good day"
+      )
       context.insert(
         DayValuationEntity(
           dayKey: valuation.id,
@@ -182,7 +210,11 @@ struct DataBackupServiceTests {
         trackingType: .binary,
         trackingStartedAt: Self.makeDate(year: 2026, month: 1, day: 1),
         entries: [
-          "2026-01-01": CalendarEntry(date: Self.makeDate(year: 2026, month: 1, day: 1), count: 1, completed: true)
+          "2026-01-01": CalendarEntry(
+            date: Self.makeDate(year: 2026, month: 1, day: 1),
+            count: 1,
+            completed: true
+          )
         ]
       )
       let context = ModelContext(container)
@@ -191,7 +223,10 @@ struct DataBackupServiceTests {
       for (dayKey, entry) in calendar.entries {
         context.insert(
           CalendarEntryEntity(
-            compositeKey: CalendarEntryEntity.makeCompositeKey(calendarId: calendar.id, dayKey: dayKey),
+            compositeKey: CalendarEntryEntity.makeCompositeKey(
+              calendarId: calendar.id,
+              dayKey: dayKey
+            ),
             calendarId: calendar.id,
             dayKey: dayKey,
             date: entry.date,
@@ -212,6 +247,13 @@ struct DataBackupServiceTests {
       for entity in try context.fetch(FetchDescriptor<HabitStackEntity>()) { context.delete(entity) }
       for entity in try context.fetch(FetchDescriptor<HabitStackStepEntity>()) { context.delete(entity) }
       try context.save()
+    }
+
+    func backupFileNames() throws -> [String] {
+      guard FileManager.default.fileExists(atPath: directoryURL.path) else { return [] }
+      return try FileManager.default.contentsOfDirectory(atPath: directoryURL.path)
+        .filter { $0.hasSuffix(".json") }
+        .sorted()
     }
 
     private static func makeDate(year: Int, month: Int, day: Int) -> Date {
