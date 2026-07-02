@@ -186,7 +186,9 @@ struct DayEntryEditSheet: View {
   }
 
   private func fillExistingProgressIfPresent(for date: Date) {
-    guard let existingEntry = store.getEntry(calendarId: calendar.id, date: Self.bucketDate(for: date, cadence: calendar.cadence))
+    guard
+      let existingEntry = store.getEntry(
+        calendarId: calendar.id, date: Self.bucketDate(for: date, cadence: calendar.cadence))
     else { return }
 
     switch calendar.trackingType {
@@ -579,81 +581,6 @@ private struct VerticalAmountTickWheel: View {
         Task { @MainActor in
           selection = value
         }
-      }
-    }
-  }
-}
-
-private struct VerticalTickWheel<Value: Hashable, Label: View>: View {
-  let values: [Value]
-  @Binding var selectedID: Value
-  let accentColor: Color
-  var showsSelectionIndicator: Bool = true
-  var onSelected: (Value) -> Void = { _ in }
-  @ViewBuilder let label: (Value, Bool) -> Label
-
-  @State private var lastHapticValue: Value?
-  @State private var selection: Value?
-
-  private let rowHeight: CGFloat = 44
-
-  var body: some View {
-    GeometryReader { geometry in
-      let verticalPadding = max(0, (geometry.size.height - rowHeight) / 2)
-
-      ScrollView(.vertical) {
-        LazyVStack(spacing: 0) {
-          ForEach(values, id: \.self) { value in
-            label(value, value == selectedID)
-              .frame(height: rowHeight)
-              .id(value)
-              .scrollTransition(.interactive, axis: .vertical) { content, phase in
-                content
-                  .opacity(phase.isIdentity ? 1 : 0.48)
-                  .rotation3DEffect(
-                    .degrees(Double(phase.value) * -28),
-                    axis: (x: 1, y: 0, z: 0),
-                    perspective: 0.55
-                  )
-              }
-          }
-        }
-        .scrollTargetLayout()
-        .padding(.vertical, verticalPadding)
-      }
-      .scrollIndicators(.hidden)
-      .scrollPosition(id: $selection, anchor: .center)
-      .scrollTargetBehavior(.viewAligned)
-      .mask { WheelFadeMask() }
-      .overlay(alignment: .center) {
-        if showsSelectionIndicator {
-          RoundedRectangle(cornerRadius: 1)
-            .fill(accentColor)
-            .frame(height: 2)
-            .padding(.horizontal, 14)
-        }
-      }
-      .onChange(of: selection) { _, newValue in
-        guard let newValue else { return }
-        if selectedID != newValue {
-          selectedID = newValue
-        }
-        onSelected(newValue)
-        if newValue != lastHapticValue {
-          lastHapticValue = newValue
-          Task {
-            await hapticFeedback(.light)
-          }
-        }
-      }
-      .onChange(of: selectedID) { _, newValue in
-        if selection != newValue {
-          selection = newValue
-        }
-      }
-      .onAppear {
-        selection = selectedID
-        lastHapticValue = selectedID
       }
     }
   }
