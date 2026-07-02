@@ -6,6 +6,7 @@ SCHEME="${SCHEME:-My Year}"
 PROJECT_ROOT="$(pwd -P)"
 DERIVED_DATA_PATH="${DERIVED_DATA_PATH:-}"
 DESTINATION="${DESTINATION:-generic/platform=iOS Simulator}"
+APP_MODULE_NAME="${APP_MODULE_NAME:-My_Year}"
 
 xcode_build_server_path="$(command -v xcode-build-server || true)"
 
@@ -19,6 +20,7 @@ trap 'rm -f "${build_log}"' EXIT
 
 echo "Building ${SCHEME} for ${DESTINATION}..."
 build_args=(
+  clean
   build
   -project "${PROJECT}"
   -scheme "${SCHEME}"
@@ -45,21 +47,15 @@ if [[ -z "${DERIVED_DATA_PATH}" ]]; then
 fi
 
 echo "Parsing compiler arguments for SourceKit..."
-activity_log="$(
-  find "${DERIVED_DATA_PATH}/Logs/Build" -name "*.xcactivitylog" -size +0 -print0 2>/dev/null \
-    | xargs -0 ls -t 2>/dev/null \
-    | head -n 1
-)"
-
-if [[ -n "${activity_log}" ]]; then
-  xcode-build-server parse -l "${activity_log}" --skip-validate-bin >/dev/null 2>&1
-else
-  echo "No Xcode activity log found under ${DERIVED_DATA_PATH}/Logs/Build; parsing xcodebuild output instead."
-  xcode-build-server parse "${build_log}" --skip-validate-bin >/dev/null 2>&1
-fi
+xcode-build-server parse "${build_log}" --skip-validate-bin >/dev/null 2>&1
 
 if [[ ! -s .compile ]] || [[ "$(tr -d '[:space:]' <.compile)" == "[]" ]]; then
   echo "xcode-build-server produced an empty .compile file." >&2
+  exit 1
+fi
+
+if ! grep -q "\"module_name\"[[:space:]]*:[[:space:]]*\"${APP_MODULE_NAME}\"" .compile; then
+  echo "xcode-build-server did not include the ${APP_MODULE_NAME} app module in .compile." >&2
   exit 1
 fi
 
