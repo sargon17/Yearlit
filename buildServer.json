@@ -12,9 +12,9 @@
   "argv": [
     "/opt/homebrew/bin/xcode-build-server"
   ],
-  "workspace": "/Users/g.cattorini/code/My Year/My Year.xcodeproj/project.xcworkspace",
-  "build_root": "/Users/g.cattorini/code/My Year/DerivedData",
+  "workspace": "/Users/g.cattorini/code/My-Year-onboarding-personalization/My Year.xcodeproj/project.xcworkspace",
+  "build_root": "/Users/g.cattorini/Library/Developer/Xcode/DerivedData/My_Year-famgzgfxfckfbbdaewacbutpcucl",
   "kind": "manual",
   "scheme": "My Year",
-  "indexStorePath": "/Users/g.cattorini/code/My Year/DerivedData/Index.noindex/DataStore"
+  "indexStorePath": "/Users/g.cattorini/Library/Developer/Xcode/DerivedData/My_Year-famgzgfxfckfbbdaewacbutpcucl/Index.noindex/DataStore"
 }
