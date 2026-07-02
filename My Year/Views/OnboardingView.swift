@@ -27,6 +27,12 @@ struct OnboardingView: View {
       )
     case .appExplanation:
       AppPreview(onNext: coordinator.continueTapped)
+    case .motivation:
+      MotivationView(
+        selectedMotivation: coordinator.session.selectedMotivation,
+        onMotivationSelected: coordinator.motivationChanged,
+        onNext: coordinator.motivationContinueTapped
+      )
     case .identityCommitment:
       IdentityFirst(
         selectedCommitments: coordinator.session.selectedIdentityCommitments,
@@ -34,15 +40,24 @@ struct OnboardingView: View {
         canContinue: !coordinator.session.selectedIdentityCommitments.isEmpty,
         onNext: coordinator.continueTapped
       )
+    case .name:
+      NameStepView(
+        name: $coordinator.session.displayName,
+        onContinue: coordinator.nameContinueTapped,
+        onSkip: coordinator.nameSkipped
+      )
     case .tinyHabitSelection:
       TinyHabitSelectionView(
         habits: tinyHabitOptions,
         selectedHabit: coordinator.session.selectedTinyHabitName,
+        selectedColor: selectedHabitColorBinding,
         onHabitSelected: coordinator.habitSelectionChanged,
         onContinue: coordinator.tinyHabitContinueTapped
       )
     case .firstDot:
       firstDotView
+    case .whyThisWorks:
+      WhyThisWorksView(onContinue: coordinator.whyThisWorksCompleted)
     case .notificationPermission:
       NotificationPermissionView(
         isRequestingNotifications: coordinator.isRequestingNotifications,
@@ -51,8 +66,22 @@ struct OnboardingView: View {
       )
     case .readyWidgets:
       ReadyWidgetsView(onContinue: coordinator.readyWidgetsCompleted)
+    case .founderNote:
+      FounderNoteView(
+        motivation: coordinator.session.selectedMotivation,
+        onContinue: coordinator.founderNoteCompleted
+      )
+    case .socialProof:
+      SocialProofView(
+        motivation: coordinator.session.selectedMotivation,
+        onContinue: coordinator.socialProofCompleted
+      )
     case .paywall:
-      OnboardingPaywall(onNext: coordinator.paywallClosed)
+      OnboardingPaywall(
+        motivation: coordinator.session.selectedMotivation,
+        analyticsProperties: coordinator.paywallAnalyticsProperties,
+        onNext: coordinator.paywallClosed
+      )
     }
   }
 
@@ -70,6 +99,8 @@ struct OnboardingView: View {
       calendar: firstDotCalendar,
       isCompletedToday: isCompletedToday || coordinator.session.didCompleteFirstDot,
       canMarkDayOne: firstDotCalendar != nil && !coordinator.session.didCompleteFirstDot,
+      motivation: coordinator.session.selectedMotivation,
+      displayName: firstDotDisplayName,
       onMarkDayOne: coordinator.firstDotMarkDayOneTapped,
       onDayTapped: coordinator.firstDotDayTapped,
       onContinue: coordinator.firstDotContinueTapped
@@ -78,6 +109,18 @@ struct OnboardingView: View {
 
   private var resolvedFirstDotCalendar: CustomCalendar? {
     coordinator.resolvedFirstCalendarForView(in: CustomCalendarStore.shared.snapshot)
+  }
+
+  private var selectedHabitColorBinding: Binding<String> {
+    Binding(
+      get: { coordinator.session.selectedHabitColor },
+      set: { coordinator.habitColorChanged($0) }
+    )
+  }
+
+  private var firstDotDisplayName: String? {
+    let name = coordinator.session.trimmedDisplayName
+    return name.isEmpty ? nil : name
   }
 
   private func completedDates(in calendar: CustomCalendar?) -> Set<Date> {

@@ -4,18 +4,13 @@ import SwiftUI
 struct TinyHabitSelectionView: View {
   let habits: [String]
   let selectedHabit: String?
+  @Binding var selectedColor: String
   let onHabitSelected: (String) -> Void
   let onContinue: () -> Void
 
   var body: some View {
     OnboardingStepContainer {
-      GeometryReader { proxy in
-        let size = CGFloat(1000)
-        let color = GarnishColor.blend(.textPrimary, with: .surfaceMuted, ratio: 0.9)
-
-        // here should be probably some content
-
-      }
+      Color.clear
 
     } content: {
       VStack(alignment: .leading, spacing: 12) {
@@ -32,7 +27,11 @@ struct TinyHabitSelectionView: View {
               }
               .padding()
               .foregroundStyle(.textPrimary)
-              .sameLevelBorder(radius: 4, color: habit == selectedHabit ? .brand : .surfaceMuted, isFlat: true)
+              .sameLevelBorder(
+                radius: 4,
+                color: habit == selectedHabit ? .brand : .surfaceMuted,
+                isFlat: true
+              )
 
             }
             .buttonStyle(.plain)
@@ -41,6 +40,16 @@ struct TinyHabitSelectionView: View {
           .sameLevelGroupBackground()
 
         OnboardingView.Caption("Start with something small enough to do even on a hard day.")
+
+        VStack(alignment: .leading, spacing: 6) {
+          OnboardingView.Caption("Pick its color.")
+          ColorSwatchPicker(
+            selectedColor: $selectedColor,
+            accessibilityHint: "Select onboarding habit color",
+            isScreenStyled: false
+          )
+          .sameLevelBorder(radius: 4, color: .surfaceMuted, isFlat: true)
+        }
       }
     } actions: {
       OnboardingView.ForwardButton(

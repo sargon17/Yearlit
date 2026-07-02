@@ -1,7 +1,8 @@
-@testable import My_Year
 import Foundation
 import SharedModels
 import Testing
+
+@testable import My_Year
 
 @MainActor
 struct AnalyticsCalendarTrackerTests {
@@ -87,7 +88,7 @@ struct AnalyticsCalendarTrackerTests {
     analytics.markFirstPeriodCompleted()
 
     #expect(client.eventNames.filter { $0 == AnalyticsEvent.firstCheckinCompleted.rawValue }.count == 1)
-    #expect(client.personPropertySets.count == 2)
+    #expect(client.personPropertySets.count == 3)
     #expect(state.hasCompletedFirstCheckin)
     #expect(state.hasCompletedFirstPeriod)
   }
@@ -119,12 +120,12 @@ private final class FakeAnalyticsClient: AnalyticsClient {
     let properties: [String: AnalyticsPropertyValue]
 
     func bool(_ key: String) -> Bool? {
-      guard case let .bool(value)? = properties[key] else { return nil }
+      guard case .bool(let value)? = properties[key] else { return nil }
       return value
     }
 
     func string(_ key: String) -> String? {
-      guard case let .string(value)? = properties[key] else { return nil }
+      guard case .string(let value)? = properties[key] else { return nil }
       return value
     }
   }

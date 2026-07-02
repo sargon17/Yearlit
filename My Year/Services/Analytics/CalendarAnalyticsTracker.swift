@@ -23,19 +23,25 @@ final class CalendarAnalyticsTracker {
   private let analytics: Analytics
   private let state: AnalyticsState
 
-  init(analytics: Analytics = .shared, state: AnalyticsState = .shared) {
-    self.analytics = analytics
-    self.state = state
+  init(analytics: Analytics? = nil, state: AnalyticsState? = nil) {
+    self.analytics = analytics ?? Analytics.shared
+    self.state = state ?? AnalyticsState.shared
   }
 
-  func trackCalendarCreated(calendar: CustomCalendar, isFirstCalendar: Bool) {
+  func trackCalendarCreated(
+    calendar: CustomCalendar,
+    isFirstCalendar: Bool,
+    properties: [String: AnalyticsPropertyValue] = [:]
+  ) {
     analytics.track(
       .calendarCreated,
-      properties: calendarProperties(calendar).merging([
-        "has_reminder_enabled": .bool(calendar.recurringReminderEnabled),
-        "has_backfilled_history": .bool(!calendar.entries.isEmpty),
-        "is_first_calendar": .bool(isFirstCalendar)
-      ]) { _, new in new }
+      properties: calendarProperties(calendar)
+        .merging([
+          "has_reminder_enabled": .bool(calendar.recurringReminderEnabled),
+          "has_backfilled_history": .bool(!calendar.entries.isEmpty),
+          "is_first_calendar": .bool(isFirstCalendar)
+        ]) { _, new in new }
+        .merging(properties) { _, new in new }
     )
   }
 

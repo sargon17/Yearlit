@@ -6,6 +6,7 @@ struct OnboardingPaywall: View {
   let isPresentedAsSheet: Bool
   let trigger: PaywallTrigger
   let variant: PaywallVariant
+  let motivation: OnboardingMotivation?
   let analyticsProperties: [String: AnalyticsPropertyValue]
   let onNext: () -> Void
   @StateObject private var purchaseModel: PaywallPurchaseModel
@@ -18,6 +19,7 @@ struct OnboardingPaywall: View {
     isPresentedAsSheet: Bool = false,
     trigger: PaywallTrigger = .onboarding,
     variant: PaywallVariant? = nil,
+    motivation: OnboardingMotivation? = nil,
     analyticsProperties: [String: AnalyticsPropertyValue] = [:],
     onNext: @escaping () -> Void
   ) {
@@ -27,6 +29,7 @@ struct OnboardingPaywall: View {
     self.isPresentedAsSheet = isPresentedAsSheet
     self.trigger = trigger
     self.variant = resolvedVariant
+    self.motivation = motivation
     self.analyticsProperties = analyticsProperties
     self.onNext = onNext
     _purchaseModel = StateObject(
@@ -41,7 +44,7 @@ struct OnboardingPaywall: View {
     OnboardingStepContainer(overlayHeight: 0.9, actionsBottomPadding: isPresentedAsSheet ? 4 : 16) {
       GeometryReader { proxy in
         ScrollView {
-          PaywallHeroContent()
+          PaywallHeroContent(motivation: motivation)
             .padding(.top, proxy.safeAreaInsets.top + heroTopSpacing)
             .padding(.horizontal)
             .padding(.bottom, 40)
@@ -175,338 +178,5 @@ struct OnboardingPaywall: View {
 
     return purchaseModel.packages.first { $0.packageType == .weekly }
       ?? purchaseModel.packages.first { $0.packageType == .monthly }
-  }
-}
-
-private struct PaywallHeroContent: View {
-  var body: some View {
-    VStack(alignment: .leading) {
-      OnboardingView.Title("Protect the year you just started.", lineLimit: 3)
-        .frame(maxWidth: .infinity, alignment: .leading)
-
-      VStack(alignment: .leading, spacing: 4) {
-        OnboardingView.Caption("Your first habit is ready.")
-        OnboardingView.Caption("Pro helps you keep it visible, track the pattern, and come back tomorrow.")
-      }
-      .frame(maxWidth: .infinity, alignment: .leading)
-
-      VStack(alignment: .leading, spacing: 22) {
-        PaywallFeatureRow(
-          title: "Keep your first habit visible", subtitle: "widgets put your promise where you will see it")
-        PaywallFeatureRow(
-          title: "See the pattern behind your streak",
-          subtitle: "stats show what is working before motivation fades"
-        )
-        PaywallFeatureRow(
-          title: "Track every promise",
-          subtitle: "unlimited calendars for every habit that matters"
-        )
-        PaywallFeatureRow(
-          title: "Start free, stay in control",
-          subtitle: "try Pro and cancel anytime from your App Store subscription settings"
-        )
-      }
-      .padding(.top, 34)
-    }
-    .frame(maxWidth: .infinity, alignment: .leading)
-  }
-}
-
-private struct PaywallFeatureRow: View {
-  let title: LocalizedStringKey
-  let subtitle: LocalizedStringKey
-
-  var body: some View {
-    VStack(alignment: .leading, spacing: 4) {
-      Text(title)
-        .font(AppFont.pixelCircle(24))
-        .foregroundStyle(Color.brand)
-        .lineLimit(2)
-        .minimumScaleFactor(0.75)
-        .multilineTextAlignment(.leading)
-        .frame(maxWidth: .infinity, alignment: .leading)
-
-      Text(subtitle)
-        .font(AppFont.sans(18))
-        .foregroundStyle(.textSecondary.opacity(0.5))
-        .lineLimit(3)
-        .minimumScaleFactor(0.85)
-        .multilineTextAlignment(.leading)
-        .frame(maxWidth: .infinity, alignment: .leading)
-    }
-    .frame(maxWidth: .infinity, alignment: .leading)
-  }
-}
-
-struct PaywallPlanCard: View {
-  let package: Package
-  let comparisonPackage: Package?
-  let isSelected: Bool
-  let onTap: () -> Void
-
-  var body: some View {
-    Button {
-      onTap()
-    } label: {
-      VStack(alignment: .leading, spacing: 0) {
-        HStack(alignment: .top) {
-          VStack(alignment: .leading, spacing: 8) {
-            Text(title)
-              .font(AppFont.sans(18, weight: .bold))
-              .foregroundStyle(isSelected ? Color.brand : Color.textPrimary)
-
-            HStack(spacing: 10) {
-              if let comparisonPriceLine {
-                Text(comparisonPriceLine)
-                  .font(AppFont.sans(15, weight: .semibold))
-                  .foregroundStyle(.textSecondary.opacity(0.55))
-                  .strikethrough(true, color: .textSecondary.opacity(0.55))
-
-                Text(currentPriceLine)
-                  .font(AppFont.sans(16, weight: .bold))
-                  .foregroundStyle(.textPrimary)
-              } else {
-                Text(priceLine)
-                  .font(AppFont.sans(16, weight: .semibold))
-                  .foregroundStyle(.textPrimary)
-              }
-
-              if let badge {
-                Text(badge)
-                  .font(AppFont.sans(14, weight: .bold))
-                  .padding(.horizontal, 4)
-                  .padding(.vertical, 2)
-                  .foregroundStyle(Color.surfaceMuted)
-                  .background(Color.brand)
-              }
-            }
-
-            if let trialLine {
-              Text(trialLine)
-                .font(AppFont.sans(13, weight: .semibold))
-                .foregroundStyle(.textSecondary.opacity(0.8))
-                .lineLimit(1)
-                .minimumScaleFactor(0.85)
-            }
-          }
-
-          Spacer()
-        }
-
-        if isFeatured {
-          Spacer()
-        }
-
-        Text(footer)
-          .font(AppFont.sans(12))
-          .foregroundStyle(.textSecondary.opacity(0.8))
-      }
-      .frame(maxWidth: .infinity, maxHeight: isFeatured ? 156 : nil, alignment: .leading)
-      .padding(12)
-      .background(.surfaceMuted)
-      .clipShape(RoundedRectangle(cornerRadius: 4))
-    }
-    .buttonStyle(.plain)
-    .sameLevelBorder(radius: 4, isFlat: isSelected)
-  }
-
-  private var isFeatured: Bool {
-    package.packageType == .annual
-  }
-
-  private var title: String {
-    switch package.packageType {
-    case .annual: return String(localized: "Yearly")
-    case .weekly: return String(localized: "Weekly")
-    case .monthly: return String(localized: "Monthly")
-    default: return package.storeProduct.localizedTitle.nilIfEmpty ?? String(localized: "Pro")
-    }
-  }
-
-  private var priceLine: String {
-    if let trialText {
-      return String(localized: "\(trialText), then \(package.localizedPriceString)\(periodSuffix)")
-    }
-
-    return "\(package.localizedPriceString)\(periodSuffix)"
-  }
-
-  private var currentPriceLine: String {
-    "\(package.localizedPriceString)\(periodSuffix)"
-  }
-
-  private var periodSuffix: String {
-    switch package.packageType {
-    case .annual: return String(localized: "/year")
-    case .weekly: return String(localized: "/week")
-    case .monthly: return String(localized: "/month")
-    default: return ""
-    }
-  }
-
-  private var trialText: String? {
-    guard
-      let intro = package.storeProduct.introductoryDiscount,
-      intro.paymentMode == .freeTrial
-    else { return nil }
-
-    let value = intro.subscriptionPeriod.value * intro.numberOfPeriods
-    let unit = intro.subscriptionPeriod.unit.paywallUnitName(for: value)
-    return String(localized: "\(value) \(unit) free")
-  }
-
-  private var badge: String? {
-    guard let discountPercentage else { return nil }
-    return "-\(discountPercentage)%"
-  }
-
-  private var comparisonPriceLine: String? {
-    guard let comparisonPackage else { return nil }
-    return annualizedPriceString(for: comparisonPackage).map { "\($0)\(periodSuffix)" }
-  }
-
-  private var trialLine: String? {
-    guard package.packageType == .annual, let trialText else { return nil }
-    return String(localized: "First \(trialText)")
-  }
-
-  private var footer: String {
-    switch package.packageType {
-    case .annual: return String(localized: "Best for building consistency")
-    case .weekly: return String(localized: "Flexible access")
-    case .monthly: return String(localized: "Simple monthly plan")
-    default: return String(localized: "Unlock every Pro tool")
-    }
-  }
-
-  private var discountPercentage: Int? {
-    guard
-      let comparisonPackage,
-      let annualizedComparisonPrice = annualizedPrice(for: comparisonPackage)
-    else { return nil }
-
-    let annualPrice = NSDecimalNumber(decimal: package.storeProduct.price)
-    guard annualizedComparisonPrice.compare(annualPrice) == .orderedDescending else { return nil }
-
-    let savings = annualizedComparisonPrice.subtracting(annualPrice)
-    let discount = savings.dividing(by: annualizedComparisonPrice).multiplying(by: 100)
-    return discount.rounding(accordingToBehavior: PaywallPlanCard.discountRoundingBehavior).intValue
-  }
-
-  private func annualizedPrice(for package: Package) -> NSDecimalNumber? {
-    let price = NSDecimalNumber(decimal: package.storeProduct.price)
-
-    switch package.packageType {
-    case .annual:
-      return price
-    case .monthly:
-      return price.multiplying(by: 12)
-    case .weekly:
-      return price.multiplying(by: 52)
-    default:
-      return nil
-    }
-  }
-
-  private func annualizedPriceString(for package: Package) -> String? {
-    guard let price = annualizedPrice(for: package) else { return nil }
-    return package.storeProduct.priceFormatter?.string(from: price)
-  }
-
-  private static let discountRoundingBehavior = NSDecimalNumberHandler(
-    roundingMode: .plain,
-    scale: 0,
-    raiseOnExactness: false,
-    raiseOnOverflow: false,
-    raiseOnUnderflow: false,
-    raiseOnDivideByZero: false
-  )
-}
-
-struct PaywallLoadingCard: View {
-  var body: some View {
-    HStack(spacing: 12) {
-      ProgressView()
-        .tint(.brand)
-      Text("Loading plans…")
-        .font(AppFont.sans(16))
-        .foregroundStyle(.textPrimary)
-      Spacer()
-    }
-    .padding(18)
-    .frame(maxWidth: .infinity)
-    .background(.surfaceMuted)
-    .clipShape(RoundedRectangle(cornerRadius: 4))
-    .sameLevelBorder(radius: 4, color: .textSecondary.opacity(0.28))
-  }
-}
-
-struct PaywallEmptyCard: View {
-  let message: String
-
-  var body: some View {
-    VStack(alignment: .leading, spacing: 8) {
-      Text("Plans unavailable")
-        .font(AppFont.sans(18, weight: .bold))
-        .foregroundStyle(.textPrimary)
-      Text(message)
-        .font(AppFont.sans(14))
-        .foregroundStyle(.textSecondary)
-    }
-    .frame(maxWidth: .infinity, alignment: .leading)
-    .padding(18)
-    .background(.surfaceMuted)
-    .clipShape(RoundedRectangle(cornerRadius: 4))
-    .sameLevelBorder(radius: 4, color: .textSecondary.opacity(0.28))
-  }
-}
-
-struct PaywallFooterLinks: View {
-  let onRestore: () -> Void
-
-  var body: some View {
-    HStack(spacing: 14) {
-      Button(action: onRestore) {
-        footerLabel("Restore purchases")
-      }
-
-      Link(destination: URL(string: "https://tymofyeyev.com/yearlit/terms")!) {
-        footerLabel("Terms")
-      }
-
-      Link(destination: URL(string: "https://tymofyeyev.com/yearlit/privacy-policy")!) {
-        footerLabel("Privacy")
-      }
-    }
-    .foregroundStyle(.textSecondary)
-    .frame(maxWidth: .infinity)
-    .padding(.top, 8)
-    .padding(.bottom, -12)
-  }
-
-  private func footerLabel(_ title: LocalizedStringKey) -> some View {
-    Text(title)
-      .font(AppFont.sans(12))
-      .lineLimit(1)
-      .minimumScaleFactor(0.75)
-      .contentShape(Rectangle())
-  }
-}
-
-extension SubscriptionPeriod.Unit {
-  fileprivate func paywallUnitName(for value: Int) -> String {
-    switch self {
-    case .day: return value == 1 ? String(localized: "day") : String(localized: "days")
-    case .week: return value == 1 ? String(localized: "week") : String(localized: "weeks")
-    case .month: return value == 1 ? String(localized: "month") : String(localized: "months")
-    case .year: return value == 1 ? String(localized: "year") : String(localized: "years")
-    @unknown default: return String(localized: "days")
-    }
-  }
-}
-
-extension String {
-  fileprivate var nilIfEmpty: String? {
-    isEmpty ? nil : self
   }
 }
