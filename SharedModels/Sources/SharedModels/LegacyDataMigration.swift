@@ -15,6 +15,7 @@ enum LegacyPersistenceKeys {
     static let trackingStartedAtRepairMigrationFlagKey = "swiftDataTrackingStartedAtRepairV2Complete"
     static let trackingStartedAtBackupKey = "swiftDataTrackingStartedAtBackupV1"
     static let legacyCalendarRepairFlagKey = "swiftDataLegacyCalendarRepairV1Complete"
+    static let legacyCalendarRepairV2FlagKey = "swiftDataLegacyCalendarRepairV2Complete"
 }
 
 @available(iOS 17.0, macOS 14.0, *)
@@ -45,6 +46,7 @@ enum LegacyDataMigrator {
 
         if legacyMigrationSucceeded && dayKeyMigrationSucceeded {
             repairCalendarsFromLegacyIfNeeded(defaults: defaults, container: container)
+            repairCalendarMetadataFromLegacyIfNeeded(defaults: defaults, container: container)
             migrateTrackingStartedAtIfNeeded(defaults: defaults, container: container)
             repairTrackingStartedAtIfNeeded(defaults: defaults, container: container)
         }
@@ -347,6 +349,47 @@ enum LegacyDataMigrator {
             defaults.set(true, forKey: LegacyPersistenceKeys.legacyCalendarRepairFlagKey)
         } catch {
             NSLog("Legacy calendar repair failed: \(error)")
+        }
+    }
+
+    private static func repairCalendarMetadataFromLegacyIfNeeded(defaults: UserDefaults, container: ModelContainer) {
+        guard !defaults.bool(forKey: LegacyPersistenceKeys.legacyCalendarRepairV2FlagKey) else { return }
+        guard let legacyCalendars = decodeLegacyCalendars(defaults: defaults), !legacyCalendars.isEmpty else {
+            defaults.set(true, forKey: LegacyPersistenceKeys.legacyCalendarRepairV2FlagKey)
+            return
+        }
+
+        let context = ModelContext(container)
+        context.autosaveEnabled = false
+
+        do {
+            let calendarEntities = try context.fetch(FetchDescriptor<HabitCalendarEntity>())
+            let entries = try context.fetch(FetchDescriptor<CalendarEntryEntity>())
+            let entitiesById = Dictionary(grouping: calendarEntities, by: \.id)
+            let entryKeysByCalendarId = Dictionary(grouping: entries, by: \.calendarId).mapValues {
+                Set($0.map(\.dayKey))
+            }
+
+            for legacyCalendar in legacyCalendars {
+                let existingEntities = entitiesById[legacyCalendar.id, default: []]
+                guard !existingEntities.isEmpty else { continue }
+
+                let existingEntryCount = entryKeysByCalendarId[legacyCalendar.id, default: []].count
+                let hasOnlyArchivedMetadata = existingEntities.allSatisfy(\.isArchived) && !legacyCalendar.isArchived
+                let legacyHasMoreEntries = legacyCalendar.entries.count > existingEntryCount
+                guard hasOnlyArchivedMetadata || legacyHasMoreEntries else { continue }
+
+                for entity in existingEntities {
+                    entity.apply(from: legacyCalendar)
+                }
+            }
+
+            if context.hasChanges {
+                try context.save()
+            }
+            defaults.set(true, forKey: LegacyPersistenceKeys.legacyCalendarRepairV2FlagKey)
+        } catch {
+            NSLog("Legacy calendar metadata repair failed: \(error)")
         }
     }
 

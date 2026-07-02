@@ -98,6 +98,109 @@ struct AppleHealthCalendarModelTests {
   }
 
   @MainActor
+  @Test func fetchCalendarsPrefersActiveMetadataWhenDuplicateRowsExist() throws {
+    let container = try makeContainer()
+    let id = UUID()
+    let context = ModelContext(container)
+    context.insert(
+      HabitCalendarEntity(
+        id: id,
+        name: "Archived duplicate",
+        color: "qs-orange",
+        trackingTypeRawValue: TrackingType.binary.rawValue,
+        dailyTarget: 1,
+        trackingStartedAt: makeDate(year: 2026, month: 1, day: 1),
+        isArchived: true,
+        order: 0
+      )
+    )
+    context.insert(
+      HabitCalendarEntity(
+        id: id,
+        name: "Active duplicate",
+        color: "qs-orange",
+        trackingTypeRawValue: TrackingType.binary.rawValue,
+        dailyTarget: 1,
+        trackingStartedAt: makeDate(year: 2026, month: 1, day: 1),
+        isArchived: false,
+        order: 10
+      )
+    )
+    context.insert(
+      CalendarEntryEntity(
+        compositeKey: CalendarEntryEntity.makeCompositeKey(calendarId: id, dayKey: "2026-01-02"),
+        calendarId: id,
+        dayKey: "2026-01-02",
+        date: makeDate(year: 2026, month: 1, day: 2),
+        count: 1,
+        completed: true
+      )
+    )
+    try context.save()
+
+    let calendars = CustomCalendarStore.fetchCalendarsSnapshot(container: container)
+    let calendar = try #require(calendars.first)
+
+    #expect(calendars.count == 1)
+    #expect(calendar.name == "Active duplicate")
+    #expect(calendar.isArchived == false)
+    #expect(calendar.entries.count == 1)
+  }
+
+  @MainActor
+  @Test func migrationRepairV2RestoresActiveMetadataFromLegacyPayload() throws {
+    let container = try makeContainer()
+    let (defaultsSuiteName, defaults) = makeDefaults()
+    defer { defaults.removePersistentDomain(forName: defaultsSuiteName) }
+
+    let id = UUID()
+    let legacyCalendar = CustomCalendar(
+      id: id,
+      name: "No energy drinks",
+      color: "qs-orange",
+      cadence: .daily,
+      trackingType: .binary,
+      trackingStartedAt: makeDate(year: 2026, month: 1, day: 1),
+      dailyTarget: 1,
+      entries: [
+        "2026-01-02": CalendarEntry(
+          date: makeDate(year: 2026, month: 1, day: 2),
+          count: 1,
+          completed: true
+        )
+      ],
+      isArchived: false
+    )
+    defaults.set(try JSONEncoder().encode([legacyCalendar]), forKey: LegacyPersistenceKeys.calendarsKey)
+    defaults.set(true, forKey: LegacyPersistenceKeys.migrationFlagKey)
+    defaults.set(true, forKey: LegacyPersistenceKeys.dayKeyMigrationFlagKey)
+    defaults.set(true, forKey: LegacyPersistenceKeys.legacyCalendarRepairFlagKey)
+
+    let context = ModelContext(container)
+    context.insert(
+      HabitCalendarEntity(
+        id: id,
+        name: "No energy drinks",
+        color: "qs-orange",
+        trackingTypeRawValue: TrackingType.binary.rawValue,
+        dailyTarget: 1,
+        trackingStartedAt: makeDate(year: 2026, month: 1, day: 1),
+        isArchived: true,
+        order: 0
+      )
+    )
+    try context.save()
+
+    LegacyDataMigrator.migrateIfNeeded(container: container, defaults: defaults)
+
+    let calendars = try context.fetch(FetchDescriptor<HabitCalendarEntity>())
+    let repairedCalendar = try #require(calendars.first)
+
+    #expect(defaults.bool(forKey: LegacyPersistenceKeys.legacyCalendarRepairV2FlagKey))
+    #expect(repairedCalendar.isArchived == false)
+  }
+
+  @MainActor
   @Test func migrationRepairsMissingSwiftDataEntriesFromLegacyPayload() throws {
     let container = try makeContainer()
     let (defaultsSuiteName, defaults) = makeDefaults()
