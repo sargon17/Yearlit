@@ -43,6 +43,20 @@ struct DataBackupServiceTests {
   }
 
   @MainActor
+  @Test func automaticBackupIsRecreatedWhenAutomaticHistoryIsMissing() throws {
+    let harness = try Harness()
+    try harness.seedSampleData()
+
+    let first = try #require(try harness.service.createAutomaticBackupIfNeeded())
+    try FileManager.default.removeItem(at: harness.directoryURL.appendingPathComponent(first.fileName))
+
+    let recreated = try harness.service.createAutomaticBackupIfNeeded()
+
+    #expect(recreated?.reason == .automatic)
+    #expect(harness.service.availableBackups().filter { $0.reason == .automatic }.count == 1)
+  }
+
+  @MainActor
   @Test func restoreFullyReplacesDurableData() throws {
     let harness = try Harness()
     try harness.seedSampleData()

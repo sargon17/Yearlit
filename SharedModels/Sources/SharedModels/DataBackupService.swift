@@ -114,10 +114,11 @@ public final class DataBackupService {
     public func createAutomaticBackupIfNeeded() throws -> DataBackupMetadata? {
         let content = try currentContent()
         let fingerprint = try makeFingerprint(for: content)
-        guard fingerprint != defaults.string(forKey: Self.automaticBackupFingerprintKey) else { return nil }
+        let hasAutomaticBackup = try hasValidAutomaticBackup()
+        guard !hasAutomaticBackup || fingerprint != defaults.string(forKey: Self.automaticBackupFingerprintKey) else { return nil }
 
         let today = DayKeyFormatter.shared.string(from: LocalDayCalendar.startOfDay(for: now()))
-        if let lastDate = defaults.object(forKey: Self.automaticBackupDateKey) as? Date {
+        if hasAutomaticBackup, let lastDate = defaults.object(forKey: Self.automaticBackupDateKey) as? Date {
             let lastDay = DayKeyFormatter.shared.string(from: LocalDayCalendar.startOfDay(for: lastDate))
             guard lastDay != today else { return nil }
         }
@@ -133,6 +134,12 @@ public final class DataBackupService {
         let content = try currentContent()
         let fingerprint = try makeFingerprint(for: content)
         return try writeBackup(reason: reason, content: content, fingerprint: fingerprint)
+    }
+
+    private func hasValidAutomaticBackup() throws -> Bool {
+        try backupFileURLs().contains { url in
+            (try? readValidatedBackup(at: url).metadata.reason) == .automatic
+        }
     }
 
     public func availableBackups() -> [DataBackupMetadata] {
