@@ -1,5 +1,11 @@
 before start read `SOUL.md`
 
+## Branching
+
+- Start all work branches from `develop`.
+- Open pull requests against `develop`.
+- Merge completed branches back into `develop`.
+
 ## Project Structure & Module Organization
 
 - Primary SwiftUI app lives in `My Year/`; key folders include `Components/`, `Managers/`, `Services/`, and `Views/` for feature code, plus `Config/` for build-time resources.
