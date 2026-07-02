@@ -1,3 +1,4 @@
+import Garnish
 import RevenueCat
 import SwiftUI
 
@@ -12,6 +13,11 @@ struct OnboardingPaywall: View {
   @StateObject private var purchaseModel: PaywallPurchaseModel
   @State private var didTrackClose = false
   @Environment(\.dismiss) private var dismiss
+  @Environment(\.onboardingAccent) private var accent
+
+  private var accentInverted: Color {
+    (try? Garnish.contrastingShade(of: accent)) ?? .brandInverted
+  }
   private let heroTopSpacing: CGFloat = 86
 
   init(
@@ -87,23 +93,23 @@ struct OnboardingPaywall: View {
           HStack(spacing: 8) {
             if purchaseModel.isPurchasing {
               ProgressView()
-                .tint(.brandInverted)
+                .tint(accentInverted)
             }
 
             Text(primaryButtonTitle)
               .font(AppFont.sans(18, weight: .bold))
           }
-          .foregroundStyle(Color.brandInverted)
+          .foregroundStyle(accentInverted)
           .frame(maxWidth: .infinity)
           .padding()
-          .background(Color.brand)
+          .background(accent)
           .clipShape(RoundedRectangle(cornerRadius: 4))
         }
         .disabled(
           purchaseModel.selectedPackage == nil || purchaseModel.isPurchasing || purchaseModel.isLoading
         )
         .opacity(purchaseModel.selectedPackage == nil || purchaseModel.isLoading ? 0.55 : 1)
-        .sameLevelBorder(radius: 4, color: .brand)
+        .sameLevelBorder(radius: 4, color: accent)
 
         PaywallFooterLinks {
           purchaseModel.restorePurchases(onActiveSubscription: closePaywall)

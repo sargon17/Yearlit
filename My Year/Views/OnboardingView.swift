@@ -1,6 +1,17 @@
 import SharedModels
 import SwiftUI
 
+private struct OnboardingAccentKey: EnvironmentKey {
+  static let defaultValue: Color = .brand
+}
+
+extension EnvironmentValues {
+  var onboardingAccent: Color {
+    get { self[OnboardingAccentKey.self] }
+    set { self[OnboardingAccentKey.self] = newValue }
+  }
+}
+
 struct OnboardingView: View {
   @StateObject private var coordinator: OnboardingCoordinator
 
@@ -15,7 +26,13 @@ struct OnboardingView: View {
 
       stepView(for: coordinator.currentStep)
     }
-    .ignoresSafeArea()
+    .ignoresSafeArea(.container)
+    .environment(\.onboardingAccent, Color(coordinator.session.selectedHabitColor))
+    .onChange(of: coordinator.currentStep) { _, _ in
+      Task {
+        await hapticFeedback(.soft)
+      }
+    }
   }
 
   @ViewBuilder

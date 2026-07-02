@@ -332,7 +332,6 @@ extension OnboardingCoordinator {
 
     if step == .socialProof {
       properties["social_proof_rating_shown"] = .string(OnboardingCopy.appStoreRating)
-      properties["social_proof_count_shown"] = .int(OnboardingCopy.appStoreRatingCount)
     }
 
     analytics.trackOnboardingEvent(.onboardingTrustStepViewed, properties: properties)

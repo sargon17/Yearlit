@@ -36,6 +36,7 @@ struct MotivationView: View {
         .padding(2)
         .sameLevelGroupBackground()
       }
+      .fixedSize(horizontal: false, vertical: true)
     } actions: {
       OnboardingView.ForwardButton(
         title: "Next",

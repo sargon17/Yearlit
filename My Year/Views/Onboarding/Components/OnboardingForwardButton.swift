@@ -13,6 +13,7 @@ extension OnboardingView {
     let onTap: () -> Void
     let style: OnboardingButtonStyle
     @Environment(\.colorScheme) var colorScheme
+    @Environment(\.onboardingAccent) var accent
 
     init(title: LocalizedStringKey, onTap: @escaping () -> Void, style: OnboardingButtonStyle = .primary) {
       self.title = title
@@ -23,7 +24,7 @@ extension OnboardingView {
     var foregroundColor: Color {
       switch style {
       case .primary:
-        return .brandInverted
+        return (try? Garnish.contrastingShade(of: accent)) ?? .brandInverted
       case .secondary:
         return .textPrimary
       case .disabled:
@@ -34,7 +35,7 @@ extension OnboardingView {
     var backgroundColor: Color {
       switch style {
       case .primary:
-        return .brand
+        return accent
       case .secondary:
         return .surfaceMuted
       case .disabled:

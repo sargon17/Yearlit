@@ -29,7 +29,7 @@ struct TinyHabitSelectionView: View {
               .foregroundStyle(.textPrimary)
               .sameLevelBorder(
                 radius: 4,
-                color: habit == selectedHabit ? .brand : .surfaceMuted,
+                color: habit == selectedHabit ? Color(selectedColor) : .surfaceMuted,
                 isFlat: true
               )
 
@@ -41,15 +41,22 @@ struct TinyHabitSelectionView: View {
 
         OnboardingView.Caption("Start with something small enough to do even on a hard day.")
 
-        VStack(alignment: .leading, spacing: 6) {
-          OnboardingView.Caption("Pick its color.")
+        VStack(alignment: .leading, spacing: 2) {
+          Text("Color")
+            .labelStyle(type: .tertiary)
+            .padding(.horizontal, 14)
+            .padding(.top, 12)
+
           ColorSwatchPicker(
             selectedColor: $selectedColor,
             accessibilityHint: "Select onboarding habit color",
             isScreenStyled: false
           )
-          .sameLevelBorder(radius: 4, color: .surfaceMuted, isFlat: true)
         }
+        .padding(.bottom, 2)
+        .lcdScreenEffect(clipShape: RoundedRectangle(cornerRadius: 6), diffusion: 0.12, dotOpacity: 0.42)
+        .sameLevelBorder(radius: 6, color: .black)
+        .outerSameLevelShadow(radius: 6)
       }
     } actions: {
       OnboardingView.ForwardButton(

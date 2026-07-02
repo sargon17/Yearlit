@@ -36,8 +36,9 @@ enum OnboardingTrustStep: String {
 
 enum OnboardingCopy {
   static let flowID = "full_next_release"
-  static let appStoreRating = "4.0"
-  static let appStoreRatingCount = 5
+  static let appStoreRating = "4.7"
+  static let habitsTrackedStat = "4,000+"
+  static let dailyCheckInsStat = "10,000+"
 
   static func firstDotProofLine(for motivation: OnboardingMotivation?) -> LocalizedStringKey {
     switch motivation {

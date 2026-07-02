@@ -1,5 +1,6 @@
 import SharedModels
 import SwiftUI
+import UIKit
 
 struct OnboardingFirstDotCalendarGrid: View {
   let calendar: CustomCalendar
@@ -55,7 +56,7 @@ struct OnboardingFirstDotCalendarGrid: View {
             size: dotSize,
             cornerRadius: dotCornerRadius,
             rippleTrigger: rippleTrigger,
-            rippleDelay: rippleDelay(row: row, column: column, centerRow: centerRow, centerColumn: centerColumn),
+            ripple: CalendarGridRipple(index: index, originIndex: todayIndex, columns: columns),
             isTappable: isTappable
           ) {
             onDayTapped(date)
@@ -96,11 +97,6 @@ struct OnboardingFirstDotCalendarGrid: View {
     Calendar.current.date(byAdding: .day, value: index - todayIndex, to: today) ?? today
   }
 
-  private func rippleDelay(row: Int, column: Int, centerRow: Int, centerColumn: Int) -> Double {
-    let distance = hypot(Double(row - centerRow), Double(column - centerColumn))
-    return distance * 0.085
-  }
-
   private func index(row: Int, column: Int) -> Int {
     (row * columns) + column
   }
@@ -111,11 +107,17 @@ private struct OnboardingRippleGridDot: View {
   let size: CGFloat
   let cornerRadius: CGFloat
   let rippleTrigger: Int
-  let rippleDelay: Double
+  let ripple: CalendarGridRipple
   let isTappable: Bool
   let onTap: () -> Void
 
-  @State private var isRippling = false
+  // 1 = highlight, -1 = recoil, 0 = rest. Mirrors GridView's ripple phase envelope.
+  @State private var phase: Double = 0
+
+  @Environment(\.colorScheme) private var colorScheme
+
+  private var highlightForce: Double { phase > 0 ? phase * ripple.intensity : 0 }
+  private var recoilForce: Double { phase < 0 ? -phase * ripple.intensity : 0 }
 
   var body: some View {
     Button {
@@ -123,14 +125,31 @@ private struct OnboardingRippleGridDot: View {
       onTap()
     } label: {
       RoundedRectangle(cornerRadius: cornerRadius)
-        .fill(color)
-        .frame(width: size, height: size)
-        .scaleEffect(isRippling ? 1.16 : 1)
+        .fill(displayColor)
         .overlay {
           RoundedRectangle(cornerRadius: cornerRadius)
-            .strokeBorder(Color.brand.opacity(isRippling ? 0.55 : 0), lineWidth: 2)
-            .scaleEffect(isRippling ? 1.28 : 1)
+            .fill(
+              LinearGradient(
+                colors: [
+                  Color.white.opacity(colorScheme == .dark ? 0.2 : 0.28),
+                  Color.white.opacity(colorScheme == .dark ? 0.06 : 0.08),
+                  .clear
+                ],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+              )
+            )
+            .opacity(highlightForce)
+
+          RoundedRectangle(cornerRadius: cornerRadius)
+            .strokeBorder(Color.white.opacity(0.18 * highlightForce), lineWidth: 1)
+
+          RoundedRectangle(cornerRadius: cornerRadius)
+            .fill(Color.black.opacity(recoilOverlayOpacity() * recoilForce))
         }
+        .frame(width: size, height: size)
+        .scaleEffect(scale)
+        .rotationEffect(.degrees(rotation))
         .contentShape(Rectangle())
     }
     .buttonStyle(.plain)
@@ -141,17 +160,75 @@ private struct OnboardingRippleGridDot: View {
     }
   }
 
+  private var displayColor: Color {
+    if phase > 0 {
+      return color.mix(with: .white, by: (colorScheme == .dark ? 0.18 : 0.28) * highlightForce)
+    }
+    if phase < 0 {
+      return color.mix(with: .black, by: recoilDarkMix() * recoilForce)
+    }
+    return color
+  }
+
+  private var scale: Double {
+    if phase > 0 { return 1 + (0.24 * highlightForce) }
+    if phase < 0 { return 1 - (0.1 * recoilForce) }
+    return 1
+  }
+
+  private var rotation: Double {
+    if phase > 0 { return ripple.rotation * highlightForce }
+    if phase < 0 { return -ripple.rotation * 0.5 * recoilForce }
+    return 0
+  }
+
+  // Same timings as GridView.ripplePhase: 0.21s highlight, 0.18s recoil, 0.15s settle.
   private func startRipple() {
-    DispatchQueue.main.asyncAfter(deadline: .now() + rippleDelay) {
-      withAnimation(.easeOut(duration: 0.26)) {
-        isRippling = true
+    DispatchQueue.main.asyncAfter(deadline: .now() + ripple.delay) {
+      withAnimation(.easeOut(duration: 0.21)) {
+        phase = 1
       }
 
-      DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-        withAnimation(.easeOut(duration: 0.48)) {
-          isRippling = false
+      DispatchQueue.main.asyncAfter(deadline: .now() + 0.21) {
+        withAnimation(.easeOut(duration: 0.18)) {
+          phase = -1
+        }
+
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.18) {
+          withAnimation(.easeOut(duration: 0.15)) {
+            phase = 0
+          }
         }
       }
     }
+  }
+
+  private func recoilDarkMix() -> Double {
+    let isColoredDot = saturation(of: color) > 0.18
+    if colorScheme == .dark {
+      return isColoredDot ? 0.3 : 0.14
+    }
+    return isColoredDot ? 0.18 : 0.045
+  }
+
+  private func recoilOverlayOpacity() -> Double {
+    let isColoredDot = saturation(of: color) > 0.18
+    if colorScheme == .dark {
+      return isColoredDot ? 0.1 : 0.025
+    }
+    return isColoredDot ? 0.055 : 0.008
+  }
+
+  private func saturation(of color: Color) -> CGFloat {
+    let uiColor = UIColor(color)
+    var hue: CGFloat = 0
+    var saturation: CGFloat = 0
+    var brightness: CGFloat = 0
+    var alpha: CGFloat = 0
+
+    guard uiColor.getHue(&hue, saturation: &saturation, brightness: &brightness, alpha: &alpha) else {
+      return 0
+    }
+    return saturation
   }
 }

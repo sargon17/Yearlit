@@ -45,11 +45,13 @@ private struct PaywallFeatureRow: View {
   let title: LocalizedStringKey
   let subtitle: LocalizedStringKey
 
+  @Environment(\.onboardingAccent) private var accent
+
   var body: some View {
     VStack(alignment: .leading, spacing: 4) {
       Text(title)
         .font(AppFont.pixelCircle(24))
-        .foregroundStyle(Color.brand)
+        .foregroundStyle(accent)
         .lineLimit(2)
         .minimumScaleFactor(0.75)
         .multilineTextAlignment(.leading)
@@ -73,6 +75,8 @@ struct PaywallPlanCard: View {
   let isSelected: Bool
   let onTap: () -> Void
 
+  @Environment(\.onboardingAccent) private var accent
+
   var body: some View {
     Button {
       onTap()
@@ -82,7 +86,7 @@ struct PaywallPlanCard: View {
           VStack(alignment: .leading, spacing: 8) {
             Text(title)
               .font(AppFont.sans(18, weight: .bold))
-              .foregroundStyle(isSelected ? Color.brand : Color.textPrimary)
+              .foregroundStyle(isSelected ? accent : Color.textPrimary)
 
             HStack(spacing: 10) {
               if let comparisonPriceLine {
@@ -106,7 +110,7 @@ struct PaywallPlanCard: View {
                   .padding(.horizontal, 4)
                   .padding(.vertical, 2)
                   .foregroundStyle(Color.surfaceMuted)
-                  .background(Color.brand)
+                  .background(accent)
               }
             }
 
@@ -142,10 +146,12 @@ struct PaywallPlanCard: View {
 }
 
 struct PaywallLoadingCard: View {
+  @Environment(\.onboardingAccent) private var accent
+
   var body: some View {
     HStack(spacing: 12) {
       ProgressView()
-        .tint(.brand)
+        .tint(accent)
       Text("Loading plans…")
         .font(AppFont.sans(16))
         .foregroundStyle(.textPrimary)
