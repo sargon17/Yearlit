@@ -419,6 +419,7 @@ public final class HabitStackStore: ObservableObject {
         do {
             let context = makeContext()
             guard let entity = fetchStackEntity(id: id, in: context) else { return }
+            try DataBackupService(container: container).createProtectiveBackup(reason: .beforeBulkChange)
             let stepEntities = try fetchSteps(for: id, in: context)
             for step in stepEntities {
                 context.delete(step)

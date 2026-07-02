@@ -26,12 +26,14 @@ struct ContentView: View {
             .task {
                 await notificationCoordinator.appLaunched(onboardingSeen: onboarding.hasSeenOnboarding)
                 await appleHealthSyncService.syncAllConnectedCalendars()
+                createAutomaticDataBackupIfNeeded()
             }
             .onChange(of: scenePhase) { _, newPhase in
                 guard newPhase == .active else { return }
                 notificationCoordinator.appBecameActive(onboardingSeen: onboarding.hasSeenOnboarding)
                 Task {
                     await appleHealthSyncService.syncAllConnectedCalendars()
+                    createAutomaticDataBackupIfNeeded()
                 }
             }
             .onChange(of: onboarding.hasSeenOnboarding) { _, hasSeenOnboarding in
@@ -42,6 +44,17 @@ struct ContentView: View {
             }
             .toolbarBackground(.hidden, for: .navigationBar)
             .font(AppFont.mono(17))
+    }
+
+    private func createAutomaticDataBackupIfNeeded() {
+        guard onboarding.hasSeenOnboarding else { return }
+        Task.detached(priority: .utility) {
+            do {
+                _ = try DataBackupService.shared.createAutomaticBackupIfNeeded()
+            } catch {
+                NSLog("Failed to create automatic data backup: \(error)")
+            }
+        }
     }
 }
 

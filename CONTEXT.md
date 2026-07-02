@@ -140,6 +140,10 @@ _Avoid_: active color, brand color, theme color
 A user-written line rendered by premium message-capable **Daily Wallpaper templates**.
 _Avoid_: quote, caption, reminder text
 
+**Data backup**:
+An automatic local recovery point containing all durable user-created Yearlit data.
+_Avoid_: Debug backup, snapshot, versioning
+
 ## Relationships
 
 - A **Calendar** can reach many **Milestones**.
@@ -258,6 +262,31 @@ _Avoid_: quote, caption, reminder text
 - Empty **Daily Wallpaper message** text means no message is rendered.
 - When premium access is inactive or unknown, **Create Daily Wallpaper** renders with free defaults: Classic template, a free light or dark theme, the default Yearlit orange **Daily Wallpaper accent color**, and no **Daily Wallpaper message**.
 - Losing premium access does not delete saved premium **Daily Wallpaper settings**; those choices can apply again if premium access returns.
+- A **Data backup** includes all durable user-created data: **Calendars**, **Check-ins**, **Mood Tracking** valuations and journal notes, and Habit Stacks.
+- A **Data backup** does not include ephemeral app state such as analytics flags, onboarding progress, paywall state, or widget UI state.
+- A **Data backup** includes **Check-ins** imported for **Apple Health connected Calendars**.
+- Apple Health sync may replace restored **Check-ins** for **Apple Health connected Calendars** after restore.
+- Yearlit creates **Data backups** automatically without user action.
+- Yearlit keeps a rolling **Data backup** history capped at ten backups or thirty days.
+- Yearlit creates a **Data backup** before migrations or bulk destructive operations.
+- Yearlit stores **Data backups** locally in the app group as app-managed files.
+- Yearlit stores **Data backups** as versioned JSON domain data rather than raw SwiftData entity dumps.
+- Yearlit does not apply custom encryption to **Data backups** in the first implementation.
+- Yearlit creates at most one normal automatic **Data backup** per day when durable user-created data changed.
+- Yearlit identifies changed durable user-created data with a stable data fingerprint that excludes backup metadata.
+- Protective **Data backups** created before risky operations are not limited by the daily automatic backup cap.
+- Users restore a **Data backup** from iPhone app Settings when they need to recover lost or corrupted data.
+- **Data backup** restore is available from normal Settings instead of being gated by **Developer mode**.
+- Restoring a **Data backup** fully replaces current durable user-created data instead of merging records.
+- Yearlit creates a fresh **Data backup** immediately before restoring another **Data backup**.
+- A **Data backup** shown for restore includes its creation time, reason, app version, and counts for Calendars, Check-ins, Mood Tracking entries, journal notes, and Habit Stacks.
+- Settings only shows validated, restorable **Data backups**.
+- Corrupt **Data backups** and backups from unsupported future schema versions are hidden from the restore list and logged.
+- Users can restore **Data backups** but do not manually delete, export, or import them.
+- Yearlit manages **Data backup** deletion through retention rules.
+- Failed normal automatic **Data backup** creation does not block normal app use.
+- Failed protective **Data backup** creation blocks restore and any controlled risky operation that depends on that backup.
+- After restoring a **Data backup**, Yearlit reloads app state and widgets without requiring an app restart.
 - **Create Daily Wallpaper** reads cached premium status when enforcing premium **Daily Wallpaper settings**.
 - **Create Daily Wallpaper** does not block generation on a live purchase-status network request.
 

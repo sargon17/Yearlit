@@ -40,11 +40,35 @@ enum LegacyDataMigrator {
             legacyMigrationSucceeded = migrateLegacyData(defaults: defaults, container: container)
         }
 
+        guard legacyMigrationSucceeded else { return }
+        guard createMigrationBackupIfNeeded(container: container, defaults: defaults) else { return }
+
         let dayKeyMigrationSucceeded = migrateDayKeysIfNeeded(defaults: defaults, container: container)
 
-        if legacyMigrationSucceeded && dayKeyMigrationSucceeded {
+        if dayKeyMigrationSucceeded {
             migrateTrackingStartedAtIfNeeded(defaults: defaults, container: container)
             repairTrackingStartedAtIfNeeded(defaults: defaults, container: container)
+        }
+    }
+
+    private static func createMigrationBackupIfNeeded(container: ModelContainer, defaults: UserDefaults) -> Bool {
+        let backupKey = "DataBackup.beforeMigrationCreated"
+        let hasPendingMigration = !defaults.bool(forKey: LegacyPersistenceKeys.dayKeyMigrationFlagKey)
+            || !defaults.bool(forKey: LegacyPersistenceKeys.trackingStartedAtBackfillMigrationFlagKey)
+            || !defaults.bool(forKey: LegacyPersistenceKeys.trackingStartedAtRepairMigrationFlagKey)
+        guard hasPendingMigration else { return true }
+        guard !defaults.bool(forKey: backupKey) else { return true }
+        do {
+            try DataBackupService(
+                container: container,
+                defaults: defaults
+            )
+            .createProtectiveBackup(reason: .beforeMigration)
+            defaults.set(true, forKey: backupKey)
+            return true
+        } catch {
+            NSLog("Failed to create pre-migration data backup: \(error)")
+            return false
         }
     }
 
