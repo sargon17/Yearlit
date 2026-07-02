@@ -275,7 +275,7 @@ struct CalendarGridLayout {
   }
 }
 
-private struct CalendarGridRipple {
+struct CalendarGridRipple {
   let delay: Double
   let intensity: Double
   let rotation: Double
