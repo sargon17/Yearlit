@@ -31,10 +31,9 @@ struct CalendarStatisticsView: View {
   let currentMissedPeriods: Int
   let averageRecoveryPeriods: Double?
   let isPremium: Bool
-  let onUpgrade: () -> Void
   var cadence: CalendarCadence = .daily
   var trackingType: TrackingType = .binary
-  var onTapShare: (() -> Void)? = nil
+  var onTapShare: (() -> Void)?
 
   @Environment(\.router) var router
   @State private var selectedExplanation: MetricExplanation?
@@ -96,7 +95,9 @@ struct CalendarStatisticsView: View {
 
   @ViewBuilder
   private func statisticSection(_ section: StatisticSection) -> some View {
-    let tileMetrics = section.metrics.filter { $0.presentation == .largeTile || $0.presentation == .smallTile }
+    let tileMetrics = section.metrics.filter {
+      $0.presentation == .largeTile || $0.presentation == .smallTile
+    }
     let detailMetrics = section.metrics.filter { !tileMetrics.contains($0) }
 
     VStack(spacing: 12) {
@@ -365,42 +366,6 @@ private func monthlyBars(
     }
   }
   .padding(.vertical, 8)
-}
-
-struct PremiumGate<Content: View>: View {
-  let title: LocalizedStringKey
-  let isPremium: Bool
-  let onUpgrade: () -> Void
-  @ViewBuilder let content: () -> Content
-
-  var body: some View {
-    VStack(spacing: 8) {
-      HStack {
-        Text(title)
-          .font(AppFont.mono(12))
-          .foregroundColor(Color.textSecondary)
-        Spacer()
-      }
-      if self.isPremium {
-        content()
-      } else {
-        HStack {
-          Text("Unlock with Premium")
-            .font(AppFont.mono(12))
-            .foregroundColor(Color("text-tertiary"))
-          Spacer()
-          Button(action: self.onUpgrade) {
-            Text("Upgrade")
-              .font(AppFont.mono(12))
-              .padding(.horizontal, 10)
-              .padding(.vertical, 6)
-              .background(Color("surface-secondary").opacity(0.5))
-              .cornerRadius(6)
-          }
-        }
-      }
-    }
-  }
 }
 
 /// Section header helper
