@@ -10,15 +10,17 @@
 			<key>Title</key>
 			<string>Data Recovery</string>
 			<key>FooterText</key>
-			<string>Backups are managed by Yearlit. Open the recovery page from a support link when you need to restore data.</string>
+			<string>Turn this on, then reopen Yearlit to choose a backup to restore. Yearlit turns it off after opening recovery.</string>
 		</dict>
 		<dict>
 			<key>Type</key>
-			<string>PSTitleValueSpecifier</string>
+			<string>PSToggleSwitchSpecifier</string>
 			<key>Title</key>
-			<string>Recovery Link</string>
+			<string>Open Data Recovery</string>
+			<key>Key</key>
+			<string>openDataRecovery</string>
 			<key>DefaultValue</key>
-			<string>my-year://data-recovery</string>
+			<false/>
 		</dict>
 	</array>
 </dict>

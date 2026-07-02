@@ -96,6 +96,7 @@ struct My_YearApp: App {
   @State private var isTimelinePreferenceSheetPresented = false
   @State private var isDataRecoveryPresented = false
   @State private var hasTrackedOnboardingStarted = false
+  private let dataRecoverySettingsKey = "openDataRecovery"
 
   #if DEBUG
     static let isDebugMode = true
@@ -219,6 +220,7 @@ struct My_YearApp: App {
         #endif
         updateTimelinePreferencePresentation()
         trackOnboardingStartedIfNeeded()
+        openDataRecoveryIfRequested()
       }
       .onChange(of: onboarding.hasSeenOnboarding) { _, hasSeenOnboarding in
         if hasSeenOnboarding {
@@ -231,6 +233,7 @@ struct My_YearApp: App {
         guard phase == .active else { return }
         Analytics.shared.flushQueuedWidgetEvents()
         Analytics.shared.track(.appOpened)
+        openDataRecoveryIfRequested()
         if onboarding.hasSeenOnboarding, reviewPrompter.activePrompt == nil {
           upgradePrompter.considerTimedPrompt()
         }
@@ -287,6 +290,12 @@ struct My_YearApp: App {
         "onboarding_flow": .string(OnboardingCopy.flowID)
       ]
     )
+  }
+
+  private func openDataRecoveryIfRequested() {
+    guard UserDefaults.standard.bool(forKey: dataRecoverySettingsKey) else { return }
+    UserDefaults.standard.set(false, forKey: dataRecoverySettingsKey)
+    isDataRecoveryPresented = true
   }
 }
 
