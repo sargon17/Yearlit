@@ -13,6 +13,7 @@ struct DayEntryEditSheet: View {
   let onDismiss: (() -> Void)?
 
   @State private var selectedDate: Date
+  @State private var presentedDate: Date
   @State private var entryCount: Int
   @State private var entryCompleted: Bool
 
@@ -28,9 +29,10 @@ struct DayEntryEditSheet: View {
     self.store = store
     self.onSave = onSave
     self.onDismiss = onDismiss
-    // Initialize state based on existing entry or defaults
-    let existingEntry = store.getEntry(calendarId: calendar.id, date: date)
-    _selectedDate = State(initialValue: Self.bucketDate(for: date, cadence: calendar.cadence))
+    let bucketedDate = Self.bucketDate(for: date, cadence: calendar.cadence)
+    let existingEntry = store.getEntry(calendarId: calendar.id, date: bucketedDate)
+    _selectedDate = State(initialValue: bucketedDate)
+    _presentedDate = State(initialValue: bucketedDate)
     _entryCount = State(initialValue: existingEntry?.count ?? 0)
     _entryCompleted = State(initialValue: existingEntry?.completed ?? false)
   }
@@ -43,7 +45,7 @@ struct DayEntryEditSheet: View {
     let originalDate = Self.bucketDate(for: date, cadence: calendar.cadence)
     let targetDate = Self.bucketDate(for: selectedDate, cadence: calendar.cadence)
     let existingEntry = store.getEntry(calendarId: calendar.id, date: targetDate)
-    let newEntry = normalizedEntry()
+    let newEntry = normalizedEntry(date: targetDate)
 
     if originalDate != targetDate, let originalEntry = store.getEntry(calendarId: calendar.id, date: originalDate) {
       store.deleteEntry(calendarId: calendar.id, date: originalDate)
@@ -66,8 +68,7 @@ struct DayEntryEditSheet: View {
     dismiss()
   }
 
-  private func normalizedEntry() -> CalendarEntry {
-    let entryDate = Self.bucketDate(for: selectedDate, cadence: calendar.cadence)
+  private func normalizedEntry(date entryDate: Date) -> CalendarEntry {
     switch calendar.trackingType {
     case .binary:
       return CalendarEntry(date: entryDate, count: entryCompleted ? 1 : 0, completed: entryCompleted)
@@ -123,12 +124,26 @@ struct DayEntryEditSheet: View {
     .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
     .surfaceBackground(Color("surface-muted"), ignoresSafeArea: true)
     .navigationBarTitleDisplayMode(.large)
+    .onAppear {
+      syncPresentedDate(date)
+    }
+    .onChange(of: date) { _, newDate in
+      syncPresentedDate(newDate)
+    }
     .onDisappear {
       onDismiss?()
     }
     .onChange(of: selectedDate) { _, newDate in
       fillExistingProgressIfPresent(for: newDate)
     }
+  }
+
+  private func syncPresentedDate(_ date: Date) {
+    let bucketedDate = Self.bucketDate(for: date, cadence: calendar.cadence)
+    guard bucketedDate != presentedDate else { return }
+    presentedDate = bucketedDate
+    selectedDate = bucketedDate
+    fillExistingProgressIfPresent(for: bucketedDate)
   }
 
   @ViewBuilder
@@ -317,8 +332,6 @@ private struct VerticalDateWheelModule: View {
   @Binding var selectedDate: Date
   let accentColor: Color
 
-  @State private var selectedOffset: Int?
-
   private var values: [DateWheelValue] {
     let calendarSystem = LocalDayCalendar.calendar
     let start = bucketDate(for: calendar.trackingStartedAt)
@@ -339,7 +352,7 @@ private struct VerticalDateWheelModule: View {
       CenterTrackedDateWheel(
         offsets: values.map(\.offset),
         selectedOffset: Binding(
-          get: { selectedOffset ?? offset(for: selectedDate) },
+          get: { offset(for: selectedDate) },
           set: { updateSelection(to: $0) }
         ),
         accentColor: accentColor,
@@ -353,15 +366,6 @@ private struct VerticalDateWheelModule: View {
     }
     .padding(12)
     .frame(maxWidth: .infinity)
-    .onAppear {
-      selectedOffset = offset(for: selectedDate)
-    }
-    .onChange(of: selectedDate) { _, newValue in
-      let newOffset = offset(for: newValue)
-      if selectedOffset != newOffset {
-        selectedOffset = newOffset
-      }
-    }
   }
 
   private func offset(for date: Date) -> Int {
@@ -370,8 +374,7 @@ private struct VerticalDateWheelModule: View {
   }
 
   private func updateSelection(to offset: Int) {
-    guard selectedOffset != offset else { return }
-    selectedOffset = offset
+    guard self.offset(for: selectedDate) != offset else { return }
     guard let value = values.first(where: { $0.offset == offset }) else {
       return
     }
@@ -412,78 +415,65 @@ private struct CenterTrackedDateWheel: View {
   let label: (Int) -> String
 
   @State private var lastHapticOffset: Int?
+  @State private var selection: Int?
 
   private let rowHeight: CGFloat = 44
-  private let coordinateSpaceName = "date-wheel-scroll"
 
   var body: some View {
     GeometryReader { geometry in
       let verticalPadding = max(0, (geometry.size.height - rowHeight) / 2)
-      let centerY = geometry.size.height / 2
 
-      ScrollViewReader { proxy in
-        ScrollView(.vertical) {
-          LazyVStack(spacing: 0) {
-            ForEach(offsets, id: \.self) { offset in
-              Text(label(offset))
-                .font(AppFont.mono(18, weight: .bold))
-                .foregroundStyle(offset == selectedOffset ? accentColor : .textSecondary)
-                .lineLimit(1)
-                .minimumScaleFactor(0.7)
-                .frame(maxWidth: .infinity)
-                .frame(height: rowHeight)
-                .id(offset)
-                .background {
-                  GeometryReader { rowGeometry in
-                    Color.clear.preference(
-                      key: DateWheelRowCentersPreferenceKey.self,
-                      value: [offset: rowGeometry.frame(in: .named(coordinateSpaceName)).midY]
-                    )
-                  }
-                }
-                .scrollTransition(.interactive, axis: .vertical) { content, phase in
-                  content
-                    .opacity(phase.isIdentity ? 1 : 0.48)
-                    .rotation3DEffect(
-                      .degrees(Double(phase.value) * -28),
-                      axis: (x: 1, y: 0, z: 0),
-                      perspective: 0.55
-                    )
-                }
-            }
-          }
-          .padding(.vertical, verticalPadding)
-        }
-        .coordinateSpace(name: coordinateSpaceName)
-        .scrollIndicators(.hidden)
-        .mask { WheelFadeMask() }
-        .onPreferenceChange(DateWheelRowCentersPreferenceKey.self) { centers in
-          guard let closest = centers.min(by: { abs($0.value - centerY) < abs($1.value - centerY) })?.key else {
-            return
-          }
-          guard closest != selectedOffset else { return }
-          selectedOffset = closest
-          if closest != lastHapticOffset {
-            lastHapticOffset = closest
-            Task {
-              await hapticFeedback(.light)
-            }
+      ScrollView(.vertical) {
+        LazyVStack(spacing: 0) {
+          ForEach(offsets, id: \.self) { offset in
+            Text(label(offset))
+              .font(AppFont.mono(18, weight: .bold))
+              .foregroundStyle(offset == selectedOffset ? accentColor : .textSecondary)
+              .lineLimit(1)
+              .minimumScaleFactor(0.7)
+              .frame(maxWidth: .infinity)
+              .frame(height: rowHeight)
+              .id(offset)
+              .scrollTransition(.interactive, axis: .vertical) { content, phase in
+                content
+                  .opacity(phase.isIdentity ? 1 : 0.48)
+                  .rotation3DEffect(
+                    .degrees(Double(phase.value) * -28),
+                    axis: (x: 1, y: 0, z: 0),
+                    perspective: 0.55
+                  )
+              }
           }
         }
-        .onAppear {
-          proxy.scrollTo(selectedOffset, anchor: .center)
-          lastHapticOffset = selectedOffset
+        .scrollTargetLayout()
+        .padding(.vertical, verticalPadding)
+      }
+      .scrollIndicators(.hidden)
+      .scrollPosition(id: $selection, anchor: .center)
+      .scrollTargetBehavior(.viewAligned)
+      .mask { WheelFadeMask() }
+      .onChange(of: selection) { _, newValue in
+        guard let newValue else { return }
+        if selectedOffset != newValue {
+          selectedOffset = newValue
+        }
+        if newValue != lastHapticOffset {
+          lastHapticOffset = newValue
+          Task {
+            await hapticFeedback(.light)
+          }
         }
       }
+      .onChange(of: selectedOffset) { _, newValue in
+        if selection != newValue {
+          selection = newValue
+        }
+      }
+      .onAppear {
+        selection = selectedOffset
+        lastHapticOffset = selectedOffset
+      }
     }
-  }
-}
-
-private struct DateWheelRowCentersPreferenceKey: PreferenceKey {
-  static var defaultValue: [Int: CGFloat] = [:]
-
-  static func reduce(value: inout [Int: CGFloat], nextValue: () -> [Int: CGFloat]) {
-    value.merge(nextValue(), uniquingKeysWith: { _, new in new })
   }
 }
 
