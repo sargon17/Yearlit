@@ -188,25 +188,18 @@ struct PaywallEmptyCard: View {
 struct PaywallFooterLinks: View {
   let onRestore: () -> Void
 
-  private let termsURL = URL(string: "https://tymofyeyev.com/yearlit/terms")
-  private let privacyURL = URL(string: "https://tymofyeyev.com/yearlit/privacy-policy")
-
   var body: some View {
     HStack(spacing: 14) {
       Button(action: onRestore) {
         footerLabel("Restore purchases")
       }
 
-      if let termsURL {
-        Link(destination: termsURL) {
-          footerLabel("Terms")
-        }
+      Link(destination: AppConfig.termsURL) {
+        footerLabel("Terms")
       }
 
-      if let privacyURL {
-        Link(destination: privacyURL) {
-          footerLabel("Privacy")
-        }
+      Link(destination: AppConfig.privacyPolicyURL) {
+        footerLabel("Privacy")
       }
     }
     .foregroundStyle(.textSecondary)

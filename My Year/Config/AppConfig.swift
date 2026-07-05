@@ -7,6 +7,9 @@ struct WishConfiguration {
 }
 
 enum AppConfig {
+  static let privacyPolicyURL = URL(string: "https://yearlit.com/privacy-policy/")!
+  static let termsURL = URL(string: "https://yearlit.com/terms/")!
+
   static let postHogConfiguration: PostHogConfiguration = {
     let token = Bundle.main.object(forInfoDictionaryKey: "POSTHOG_PROJECT_TOKEN") as? String
     let host = Bundle.main.object(forInfoDictionaryKey: "POSTHOG_HOST") as? String
