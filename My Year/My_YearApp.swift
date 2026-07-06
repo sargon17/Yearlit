@@ -87,9 +87,6 @@ struct My_YearApp: App {
 
   // * Onboarding Manager
   @StateObject private var onboarding = OnboardingManager()
-  @StateObject private var featureRequest = FeatureRequestManager(
-    config: AppConfig.wishConfiguration
-  )
   @StateObject private var reviewPrompter = ReviewPrompter.shared
   @StateObject private var upgradePrompter = UpgradePrompter.shared
   @Environment(\.scenePhase) private var scenePhase
@@ -106,6 +103,15 @@ struct My_YearApp: App {
 
   init() {
     AppFont.registerFonts()
+    // The embed UI loads from WishKit's default hosted origin; wishConfig's
+    // apiBaseURL only feeds programmatic calls (see WishConfiguration).
+    if let wishConfig = AppConfig.wishConfiguration {
+      Wish.configure(
+        appId: wishConfig.projectID,
+        clientKey: wishConfig.apiKey,
+        externalUserId: FeatureRequestManager.stableClientId()
+      )
+    }
     Purchases.configure(withAPIKey: AppConfig.revenueCatAPIKey)
     AppStorageMigration.run()
     Analytics.shared.configure()
@@ -158,6 +164,7 @@ struct My_YearApp: App {
       RouterView(addNavigationStack: false, addModuleSupport: true) { _ in
         ContentView()
           .tint(.textSecondary)
+          .wishWhatsNewSheet()
       }
       .environment(\.dates, Self.cachedDates)
       .onOpenURL { url in
@@ -179,7 +186,6 @@ struct My_YearApp: App {
         }
       }
       .environmentObject(onboarding)
-      .environmentObject(featureRequest)
       .environmentObject(reviewPrompter)
       .environmentObject(upgradePrompter)
       .fullScreenCover(
@@ -205,7 +211,6 @@ struct My_YearApp: App {
       }
       .sheet(item: $reviewPrompter.activePrompt) { context in
         ReviewSatisfactionSheet(prompter: reviewPrompter, context: context)
-          .environmentObject(featureRequest)
       }
       .sheet(item: $upgradePrompter.activePrompt) { context in
         OnboardingPaywall(

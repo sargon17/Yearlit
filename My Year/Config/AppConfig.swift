@@ -1,7 +1,11 @@
 import Foundation
 
+/// Wish is split across two origins: the hosted embed UI (owned by the
+/// vendored WishKit SDK, which defaults to the production Wish web app) and
+/// the Convex HTTP API described here, used only for programmatic calls
+/// such as satisfaction-feedback request creation.
 struct WishConfiguration {
-  let baseURL: String
+  let apiBaseURL: String
   let projectID: String
   let apiKey: String
 }
@@ -35,7 +39,7 @@ enum AppConfig {
 
   static let wishConfiguration: WishConfiguration? = {
     guard
-      let rawBaseURL = Bundle.main.object(forInfoDictionaryKey: "WISH_BASE_URL") as? String,
+      let rawBaseURL = Bundle.main.object(forInfoDictionaryKey: "WISH_API_BASE_URL") as? String,
       let rawProjectID = Bundle.main.object(forInfoDictionaryKey: "WISH_PROJECT_ID") as? String,
       let rawAPIKey = Bundle.main.object(forInfoDictionaryKey: "WISH_API_KEY") as? String
     else {
@@ -54,7 +58,7 @@ enum AppConfig {
     let normalizedProjectID = projectID.replacingOccurrences(of: "projects:", with: "")
 
     return WishConfiguration(
-      baseURL: normalizedBaseURL,
+      apiBaseURL: normalizedBaseURL,
       projectID: normalizedProjectID,
       apiKey: apiKey
     )
