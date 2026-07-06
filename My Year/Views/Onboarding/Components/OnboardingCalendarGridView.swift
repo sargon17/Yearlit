@@ -10,6 +10,7 @@ struct OnboardingCalendarGridView: View {
   private let valueTransitionDuration: Double = 0.55
 
   @Environment(\.accessibilityReduceMotion) private var reduceMotion
+  @Environment(\.onboardingAccent) private var accent
 
   var body: some View {
     GeometryReader { proxy in
@@ -123,7 +124,7 @@ struct OnboardingCalendarGridView: View {
     let nextRatio = simulatedCompletionRatio(for: index, cycle: Int(cycle))
     let animatedRatio = previousRatio + ((nextRatio - previousRatio) * easedProgress)
 
-    return GarnishColor.blend(missedDayColor(), with: .brand, ratio: animatedRatio)
+    return GarnishColor.blend(missedDayColor(), with: accent, ratio: animatedRatio)
   }
 
   private func simulatedCompletionRatio(for index: Int, cycle: Int) -> Double {

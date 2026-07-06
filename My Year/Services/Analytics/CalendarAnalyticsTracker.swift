@@ -23,17 +23,80 @@ final class CalendarAnalyticsTracker {
   private let analytics: Analytics
   private let state: AnalyticsState
 
-  init(analytics: Analytics = .shared, state: AnalyticsState = .shared) {
-    self.analytics = analytics
-    self.state = state
+  init(analytics: Analytics? = nil, state: AnalyticsState? = nil) {
+    self.analytics = analytics ?? Analytics.shared
+    self.state = state ?? AnalyticsState.shared
   }
 
-  func trackCalendarCreated(calendar: CustomCalendar, isFirstCalendar: Bool) {
-    analytics.track(.calendarCreated, properties: calendarProperties(calendar).merging([
-      "has_reminder_enabled": .bool(calendar.recurringReminderEnabled),
-      "has_backfilled_history": .bool(!calendar.entries.isEmpty),
-      "is_first_calendar": .bool(isFirstCalendar)
-    ]) { _, new in new })
+  func trackCalendarCreated(
+    calendar: CustomCalendar,
+    isFirstCalendar: Bool,
+    properties: [String: AnalyticsPropertyValue] = [:]
+  ) {
+    analytics.track(
+      .calendarCreated,
+      properties: calendarProperties(calendar)
+        .merging([
+          "has_reminder_enabled": .bool(calendar.recurringReminderEnabled),
+          "has_backfilled_history": .bool(!calendar.entries.isEmpty),
+          "is_first_calendar": .bool(isFirstCalendar)
+        ]) { _, new in new }
+        .merging(properties) { _, new in new }
+    )
+  }
+
+  func trackAppleHealthMetricSelected(_ metric: AppleHealthMetric, hasExistingCalendar: Bool) {
+    analytics.track(
+      .appleHealthMetricSelected,
+      properties: appleHealthProperties(metric).merging([
+        "has_existing_calendar": .bool(hasExistingCalendar)
+      ]) { _, new in new }
+    )
+  }
+
+  func trackAppleHealthPermissionResult(_ metric: AppleHealthMetric, didGrantAccess: Bool) {
+    analytics.track(
+      .appleHealthPermissionResult,
+      properties: appleHealthProperties(metric).merging([
+        "did_grant_access": .bool(didGrantAccess)
+      ]) { _, new in new }
+    )
+  }
+
+  func trackAppleHealthImportPreviewLoaded(
+    metric: AppleHealthMetric,
+    importedDays: Int,
+    completedDays: Int,
+    target: Int
+  ) {
+    analytics.track(
+      .appleHealthImportPreviewLoaded,
+      properties: appleHealthImportProperties(
+        metric: metric,
+        importedDays: importedDays,
+        completedDays: completedDays,
+        target: target
+      )
+    )
+  }
+
+  func trackAppleHealthCalendarCreated(
+    calendar: CustomCalendar,
+    metric: AppleHealthMetric,
+    importedDays: Int,
+    completedDays: Int
+  ) {
+    analytics.track(
+      .appleHealthCalendarCreated,
+      properties: calendarProperties(calendar).merging(
+        appleHealthImportProperties(
+          metric: metric,
+          importedDays: importedDays,
+          completedDays: completedDays,
+          target: calendar.dailyTarget
+        )
+      ) { _, new in new }
+    )
   }
 
   func trackArchiveStateChange(
@@ -112,8 +175,29 @@ final class CalendarAnalyticsTracker {
   private func calendarProperties(_ calendar: CustomCalendar) -> [String: AnalyticsPropertyValue] {
     [
       "cadence": .string(calendar.cadence.rawValue),
-      "tracking_type": .string(calendar.trackingType.rawValue)
+      "tracking_type": .string(calendar.trackingType.rawValue),
+      "calendar_source": .string(calendar.source.rawValue)
     ]
+  }
+
+  private func appleHealthProperties(_ metric: AppleHealthMetric) -> [String: AnalyticsPropertyValue] {
+    [
+      "calendar_source": .string(metric.source.rawValue),
+      "apple_health_metric": .string(metric.rawValue)
+    ]
+  }
+
+  private func appleHealthImportProperties(
+    metric: AppleHealthMetric,
+    importedDays: Int,
+    completedDays: Int,
+    target: Int
+  ) -> [String: AnalyticsPropertyValue] {
+    appleHealthProperties(metric).merging([
+      "target": .int(target),
+      "imported_days": .int(importedDays),
+      "completed_days": .int(completedDays)
+    ]) { _, new in new }
   }
 
   private func archiveProperties(

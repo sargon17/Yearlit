@@ -1237,10 +1237,6 @@ public final class CustomCalendarStore: ObservableObject {
                 }
             }
 
-            for redundant in existingByKey.values {
-                context.delete(redundant)
-            }
-
             try persistNormalizedCalendarOrder(in: context)
             try finishHabitMutationReloadingCalendars(in: context)
         } catch {
@@ -1253,6 +1249,7 @@ public final class CustomCalendarStore: ObservableObject {
             let context = makeContext()
             let entities = fetchCalendarEntities(id: id, in: context)
             guard !entities.isEmpty else { return }
+            try DataBackupService(container: container).createProtectiveBackup(reason: .beforeBulkChange)
             let entries = try fetchEntries(for: id, in: context)
             for entry in entries {
                 context.delete(entry)
@@ -1330,6 +1327,55 @@ public final class CustomCalendarStore: ObservableObject {
             try finishHabitMutationReloadingCalendars(in: context)
         } catch {
             NSLog("Failed to add entry: \(error)")
+        }
+    }
+
+    @discardableResult
+    public func saveEntry(calendarId: UUID, entry: CalendarEntry, replacingDate originalDate: Date? = nil) -> Bool {
+        do {
+            let context = makeContext()
+            guard let calendarEntity = fetchCalendarEntity(id: calendarId, in: context) else { return false }
+            guard !calendarEntity.isAppleHealthSource else { return false }
+
+            let cadence = CalendarCadence(rawValue: calendarEntity.cadenceRawValue) ?? .daily
+            let targetDate = canonicalEntryDate(for: entry.date, cadence: cadence)
+            let targetDayKey = formatDate(date: targetDate, cadence: cadence)
+            let targetCompositeKey = CalendarEntryEntity.makeCompositeKey(calendarId: calendarId, dayKey: targetDayKey)
+            let existingTarget = fetchEntry(compositeKey: targetCompositeKey, in: context)
+
+            if let originalDate {
+                let originalDate = canonicalEntryDate(for: originalDate, cadence: cadence)
+                let originalDayKey = formatDate(date: originalDate, cadence: cadence)
+                let originalCompositeKey = CalendarEntryEntity.makeCompositeKey(
+                    calendarId: calendarId,
+                    dayKey: originalDayKey
+                )
+                if originalCompositeKey != targetCompositeKey,
+                   let originalEntry = fetchEntry(compositeKey: originalCompositeKey, in: context)
+                {
+                    context.delete(originalEntry)
+                }
+            }
+
+            let normalizedEntry = CalendarEntry(
+                date: targetDate,
+                count: entry.count,
+                completed: entry.completed
+            )
+            upsertEntry(
+                normalizedEntry,
+                calendarId: calendarId,
+                dayKey: targetDayKey,
+                compositeKey: targetCompositeKey,
+                existingEntry: existingTarget,
+                context: context
+            )
+
+            try finishHabitMutationReloadingCalendars(in: context)
+            return true
+        } catch {
+            NSLog("Failed to save entry: \(error)")
+            return false
         }
     }
 
@@ -1418,6 +1464,8 @@ public final class CustomCalendarStore: ObservableObject {
             guard let calendarEntity = fetchCalendarEntity(id: calendarId, in: context) else { return }
             guard !calendarEntity.isAppleHealthSource else { return }
             let entries = try fetchEntries(for: calendarId, in: context)
+            guard !entries.isEmpty else { return }
+            try DataBackupService(container: container).createProtectiveBackup(reason: .beforeBulkChange)
             for entry in entries {
                 context.delete(entry)
             }
@@ -1732,7 +1780,7 @@ public final class CustomCalendarStore: ObservableObject {
         let deduplicatedCalendars = calendarEntities.reduce(into: [UUID: CustomCalendar]()) { result, entity in
             let calendar = entity.toCustomCalendar(entries: [:])
             if let existing = result[calendar.id] {
-                if calendar.order < existing.order {
+                if shouldUseCalendar(calendar, over: existing) {
                     result[calendar.id] = calendar
                 }
             } else {
@@ -1768,7 +1816,7 @@ public final class CustomCalendarStore: ObservableObject {
 
             let calendar = entity.toCustomCalendar(entries: entries)
             if let existing = partialResult[calendar.id] {
-                if calendar.order < existing.order {
+                if shouldUseCalendar(calendar, over: existing) {
                     partialResult[calendar.id] = calendar
                 }
             } else {
@@ -1789,6 +1837,14 @@ public final class CustomCalendarStore: ObservableObject {
         }
 
         return normalizedCalendars
+    }
+
+    private nonisolated static func shouldUseCalendar(_ candidate: CustomCalendar, over existing: CustomCalendar) -> Bool {
+        if candidate.isArchived != existing.isArchived {
+            return !candidate.isArchived
+        }
+
+        return calendarOrderSort(candidate, existing)
     }
 }
 
@@ -1940,6 +1996,8 @@ public final class ValuationStore: ObservableObject {
             let context = makeContext()
             let descriptor = FetchDescriptor<DayValuationEntity>()
             let entities = try context.fetch(descriptor)
+            guard !entities.isEmpty else { return }
+            try DataBackupService(container: container).createProtectiveBackup(reason: .beforeBulkChange)
             for entity in entities {
                 context.delete(entity)
             }

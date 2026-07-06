@@ -87,14 +87,13 @@ struct My_YearApp: App {
 
   // * Onboarding Manager
   @StateObject private var onboarding = OnboardingManager()
-  @StateObject private var featureRequest = FeatureRequestManager(
-    config: AppConfig.wishConfiguration
-  )
   @StateObject private var reviewPrompter = ReviewPrompter.shared
   @StateObject private var upgradePrompter = UpgradePrompter.shared
   @Environment(\.scenePhase) private var scenePhase
   @State private var isTimelinePreferenceSheetPresented = false
+  @State private var isDataRecoveryPresented = false
   @State private var hasTrackedOnboardingStarted = false
+  private let dataRecoverySettingsKey = "openDataRecovery"
 
   #if DEBUG
     static let isDebugMode = true
@@ -104,6 +103,15 @@ struct My_YearApp: App {
 
   init() {
     AppFont.registerFonts()
+    // The embed UI loads from WishKit's default hosted origin; wishConfig's
+    // apiBaseURL only feeds programmatic calls (see WishConfiguration).
+    if let wishConfig = AppConfig.wishConfiguration {
+      Wish.configure(
+        appId: wishConfig.projectID,
+        clientKey: wishConfig.apiKey,
+        externalUserId: FeatureRequestManager.stableClientId()
+      )
+    }
     Purchases.configure(withAPIKey: AppConfig.revenueCatAPIKey)
     AppStorageMigration.run()
     Analytics.shared.configure()
@@ -156,6 +164,7 @@ struct My_YearApp: App {
       RouterView(addNavigationStack: false, addModuleSupport: true) { _ in
         ContentView()
           .tint(.textSecondary)
+          .wishWhatsNewSheet()
       }
       .environment(\.dates, Self.cachedDates)
       .onOpenURL { url in
@@ -169,13 +178,14 @@ struct My_YearApp: App {
           handleWidgetOpenURL(url)
         case "quick-add":
           handleWidgetQuickAddURL(url)
+        case "data-recovery":
+          isDataRecoveryPresented = true
         default:
           handleWidgetOpenURL(url)
           break
         }
       }
       .environmentObject(onboarding)
-      .environmentObject(featureRequest)
       .environmentObject(reviewPrompter)
       .environmentObject(upgradePrompter)
       .fullScreenCover(
@@ -194,20 +204,27 @@ struct My_YearApp: App {
           isTimelinePreferenceSheetPresented = false
         }
       }
+      .sheet(isPresented: $isDataRecoveryPresented) {
+        NavigationStack {
+          DataRecoveryView()
+        }
+      }
       .sheet(item: $reviewPrompter.activePrompt) { context in
         ReviewSatisfactionSheet(prompter: reviewPrompter, context: context)
-          .environmentObject(featureRequest)
       }
       .sheet(item: $upgradePrompter.activePrompt) { context in
-        PremiumPaywallSheet(
-          displayCloseButton: true,
+        OnboardingPaywall(
+          showsCloseButton: true,
+          isPresentedAsSheet: true,
           trigger: context.trigger,
-          analyticsProperties: context.analyticsProperties
+          analyticsProperties: context.analyticsProperties,
+          onNext: {}
         )
       }
       .onAppear {
         updateTimelinePreferencePresentation()
         trackOnboardingStartedIfNeeded()
+        openDataRecoveryIfRequested()
       }
       .onChange(of: onboarding.hasSeenOnboarding) { _, hasSeenOnboarding in
         if hasSeenOnboarding {
@@ -220,6 +237,7 @@ struct My_YearApp: App {
         guard phase == .active else { return }
         Analytics.shared.flushQueuedWidgetEvents()
         Analytics.shared.track(.appOpened)
+        openDataRecoveryIfRequested()
         if onboarding.hasSeenOnboarding, reviewPrompter.activePrompt == nil {
           upgradePrompter.considerTimedPrompt()
         }
@@ -254,9 +272,11 @@ struct My_YearApp: App {
     AnalyticsState.shared.updateRevenueCatAppUserID(revenueCatAppUserID)
     AnalyticsState.shared.markAppleAdsAdServicesEnabled()
     Purchases.shared.attribution.setAttributes([
+      "$posthogUserId": postHogDistinctID,
       "posthog_distinct_id": postHogDistinctID,
       "revenuecat_app_user_id": revenueCatAppUserID
     ])
+    Purchases.shared.syncAttributesAndOfferingsIfNeeded { _, _ in }
     Purchases.shared.attribution.enableAdServicesAttributionTokenCollection()
     Analytics.shared.updatePersonProperties()
   }
@@ -268,7 +288,18 @@ struct My_YearApp: App {
   private func trackOnboardingStartedIfNeeded() {
     guard !onboarding.hasSeenOnboarding, !hasTrackedOnboardingStarted else { return }
     hasTrackedOnboardingStarted = true
-    Analytics.shared.track(.onboardingStarted)
+    Analytics.shared.track(
+      .onboardingStarted,
+      properties: [
+        "onboarding_flow": .string(OnboardingCopy.flowID)
+      ]
+    )
+  }
+
+  private func openDataRecoveryIfRequested() {
+    guard UserDefaults.standard.bool(forKey: dataRecoverySettingsKey) else { return }
+    UserDefaults.standard.set(false, forKey: dataRecoverySettingsKey)
+    isDataRecoveryPresented = true
   }
 }
 

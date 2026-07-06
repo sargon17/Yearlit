@@ -136,7 +136,12 @@ struct CreateManualCalendarView: View {
   func handleCreateCalendar() async -> Bool {
     if !userCanCreateCalendar() {
       router.showScreen(.sheet) { _ in
-        PremiumPaywallSheet(displayCloseButton: true, trigger: .calendarLimit)
+        OnboardingPaywall(
+          showsCloseButton: true,
+          isPresentedAsSheet: true,
+          trigger: .calendarLimit,
+          onNext: {}
+        )
       }
       return false
     }
@@ -150,17 +155,12 @@ struct CreateManualCalendarView: View {
       VStack(spacing: 32) {
         CustomSeparator()
           .padding(.horizontal, -16)
-        CustomSection(label: "Calendar Name") {
-          TextField(
-            "",
-            text: $name,
-            prompt: Text("Daily Training").foregroundColor(.white.opacity(0.2))
-          )
-          .inputStyle(color: Color(selectedColor))
-          .focused($isNameFocused)
-        }
-
-        CalendarColorPickerSection(selectedColor: $selectedColor)
+        CalendarIdentityLCDSection(
+          name: $name,
+          selectedColor: $selectedColor,
+          prompt: "Daily Training",
+          isNameFocused: $isNameFocused
+        )
 
         CalendarCadencePicker(cadence: cadence, color: Color(selectedColor), isEditable: true) {
           selectedCadence in

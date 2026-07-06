@@ -10,6 +10,8 @@ Never send these values to analytics:
 - `calendar_names`
 - `habit_name`
 - `habit_names`
+- `display_name`
+- `user_name`
 - `goal_text`
 - `journal_note`
 - `journal_notes`
@@ -22,6 +24,8 @@ Never send these values to analytics:
 - Journal notes
 - Mood note text
 - Notification text
+- Identity commitment IDs
+- Tiny habit IDs
 - Any other user-entered sensitive content
 
 Prefer booleans, counts, feature state, coarse configuration, and event names.
@@ -80,6 +84,8 @@ Forbidden sensitive content categories:
 - journal notes
 - mood note text
 - notification text
+- identity commitment IDs
+- tiny habit IDs
 - any other user-entered sensitive content
 
 Forbidden property names:
@@ -88,6 +94,8 @@ Forbidden property names:
 - `calendar_names`
 - `habit_name`
 - `habit_names`
+- `display_name`
+- `user_name`
 - `goal_text`
 - `journal_note`
 - `journal_notes`
@@ -100,7 +108,7 @@ Forbidden property names:
 | Event | Fires when | Extra properties |
 | --- | --- | --- |
 | `app_opened` | App enters foreground/active state. | Standard properties only. |
-| `onboarding_started` | Onboarding first appears once per install. | Standard properties only. |
+| `onboarding_started` | Onboarding first appears once per install. | `onboarding_flow`. |
 | `onboarding_completed` | Onboarding is marked as seen. | Standard properties only. |
 
 ## Onboarding funnel events
@@ -109,10 +117,15 @@ Owned by #99.
 
 | Event | Notes |
 | --- | --- |
-| `onboarding_step_viewed` | Fires when the onboarding coordinator transitions to a step that is actually shown. Include only `step_id`. Allowed `step_id` values: `emotional_hook`, `app_explanation`, `identity_commitment`, `tiny_habit_selection`, `first_dot`, `pre_review_gate`, `review_request`, `notification_permission`, `ready_widgets`, `paywall`. |
-| `onboarding_action_performed` | Fires for coarse onboarding actions only. Include only `action`. Allowed `action` values: `identity_completed`, `tiny_habit_created`, `first_dot_marked`, `review_requested`, `review_skipped`, `notifications_requested`, `notifications_skipped`, `ready_continued`, `paywall_boundary_reached`, `paywall_closed`. |
+| `onboarding_step_viewed` | Fires when the onboarding coordinator transitions to a step that is actually shown. Include `step_id`, `step_index`, `total_steps`, `onboarding_flow`, `seconds_since_onboarding_start`, `seconds_on_step`, and `onboarding_motivation` after it is selected. Allowed `step_id` values: `emotional_hook`, `app_explanation`, `motivation`, `identity_commitment`, `name`, `tiny_habit_selection`, `first_dot`, `why_this_works`, `notification_permission`, `ready_widgets`, `founder_note`, `social_proof`, `paywall`. |
+| `onboarding_action_performed` | Fires for coarse onboarding actions only. Include `action` plus the same coarse onboarding context as step views. Allowed `action` values: `motivation_selected`, `identity_completed`, `name_provided`, `name_skipped`, `habit_color_selected`, `tiny_habit_created`, `first_dot_marked`, `why_this_works_continued`, `notifications_requested`, `notifications_skipped`, `ready_continued`, `founder_note_continued`, `social_proof_continued`, `paywall_boundary_reached`, `paywall_closed`. |
+| `onboarding_motivation_selected` | Fires when the user selects a motivation. Include `onboarding_motivation`, `onboarding_flow`, and step/timing context. Allowed `onboarding_motivation` values: `feel_consistent_again`, `stop_starting_over`, `build_discipline`, `protect_my_health`, `make_progress_visible`, `keep_a_promise_to_myself`. |
+| `onboarding_name_step_completed` | Fires when the optional name screen is continued or skipped. Include `name_provided`, `action`, `onboarding_flow`, and step/timing context. Never include the raw name. |
+| `onboarding_habit_color_selected` | Fires when the user changes the onboarding habit color. Include `habit_color_id`, `onboarding_motivation`, `onboarding_flow`, and step/timing context. |
+| `onboarding_trust_step_viewed` | Fires when a trust-building screen is shown. Include `trust_step_type`, `onboarding_motivation`, `onboarding_flow`, and step/timing context. Allowed `trust_step_type` values: `why_this_works`, `founder_note`, `social_proof`. Social proof may include `social_proof_rating_shown` and `social_proof_count_shown`. |
+| `notification_permission_result` | Fires once when the onboarding notification prompt is completed or skipped. Include `permission_result`, `onboarding_motivation`, `onboarding_flow`, and step/timing context. Allowed `permission_result` values: `granted`, `denied`, `error`, `skipped`. |
 
-Do not send identity commitment IDs, selected habit strings, calendar IDs, calendar names, habit names, notification text, notes, goal text, or any other user-entered content in these events.
+Do not send identity commitment IDs, tiny habit IDs, selected habit strings, raw display names, calendar IDs, calendar names, habit names, notification text, notes, goal text, or any other user-entered content in these events.
 
 ## Calendar and activation events
 
@@ -120,10 +133,10 @@ Owned by #90.
 
 | Event | Notes |
 | --- | --- |
-| `calendar_created` | Include `cadence`, `tracking_type`, `has_reminder_enabled`, `has_backfilled_history`, `is_first_calendar`. |
+| `calendar_created` | Include `cadence`, `tracking_type`, `has_reminder_enabled`, `has_backfilled_history`, `is_first_calendar`. Onboarding-created calendars also include `source=onboarding`, `onboarding_flow`, `onboarding_motivation`, and `habit_color_id`. |
 | `calendar_archived` | Include `source`, `cadence`, `tracking_type`. Allowed sources: `drag_action`, `edit_calendar`, `unknown`. |
 | `calendar_unarchived` | Include `source`, `cadence`, `tracking_type`. Allowed sources: `drag_action`, `edit_calendar`, `unknown`. |
-| `activation_completed` | First meaningful activation once per install/user identity. Include `activation_source`. Allowed sources: `onboarding_first_dot`, `calendar_checkin`. |
+| `activation_completed` | First meaningful activation once per install/user identity. Include `activation_source`. Allowed sources: `onboarding_first_dot`, `calendar_checkin`. Onboarding activation also includes `onboarding_flow`, `onboarding_motivation`, `seconds_to_first_dot`, and `steps_to_first_dot`. |
 | `checkin_completed` | First transition from no progress to progress for a period. Include `cadence`, `tracking_type`, `period`, `source`. Allowed sources: `calendar`, `notification`, `quick_add_deeplink`, `edit_sheet`, `unknown`. |
 | `first_checkin_completed` | First check-in once per install/user identity. |
 | `checkin_removed` | Progress removed from a period. Include `cadence`, `tracking_type`, `period`, `source`. |
@@ -157,10 +170,10 @@ Owned by #92.
 | Event | Notes |
 | --- | --- |
 | `paywall_prompt_considered` | Fires when the automatic upgrade prompter presents the paywall or skips a positive-event prompt. Include `paywall_trigger`, `result`, `paywall_prompt_kind`, and `total_positive_event_count`. Positive-event prompts also include `positive_event`. Results include `presented`, `not_enough_positive_events`, `cooldown`, `already_active`, and `not_eligible`. |
-| `paywall_viewed` | Fires only when the paywall UI actually appears. Include `paywall_trigger` and `paywall_variant`. Automatic prompts also include `paywall_prompt_kind`, `prompt_count`, `total_positive_event_count`, and `positive_event` when relevant. |
-| `paywall_package_selected` | Fires when the user changes the selected package. Include `paywall_trigger`, `paywall_variant`, `package_identifier`, `package_type`, `has_free_trial`, and `localized_price` when already available from StoreKit/RevenueCat. Automatic prompts also include prompt context when relevant. |
-| `paywall_purchase_started` | Fires once per purchase attempt before calling RevenueCat. Include the same package properties as `paywall_package_selected`. |
-| `paywall_purchase_succeeded` | Terminal event for a successful purchase attempt. Include the same package properties as `paywall_package_selected`. |
+| `paywall_viewed` | Fires only when the paywall UI actually appears. Include `paywall_trigger` and `paywall_variant`. Onboarding paywall events also include `onboarding_flow`, `onboarding_motivation`, `founder_note_seen`, `social_proof_seen`, `completed_full_pre_paywall_flow`, and `seconds_to_paywall`. Automatic prompts also include `paywall_prompt_kind`, `prompt_count`, `total_positive_event_count`, and `positive_event` when relevant. |
+| `paywall_package_selected` | Fires when the user changes the selected package. Include `paywall_trigger`, `paywall_variant`, `package_identifier`, `package_type`, `has_free_trial`, and `localized_price` when already available from StoreKit/RevenueCat. Onboarding paywall events also include the onboarding context from `paywall_viewed`. Automatic prompts also include prompt context when relevant. |
+| `paywall_purchase_started` | Fires once per purchase attempt before calling RevenueCat. Include the same package properties as `paywall_package_selected`. Onboarding paywall events also include the onboarding context from `paywall_viewed`. |
+| `paywall_purchase_succeeded` | Terminal event for a successful purchase attempt. Include the same package properties as `paywall_package_selected`. Onboarding paywall events also include the onboarding context from `paywall_viewed`. |
 | `paywall_purchase_cancelled` | Terminal event for a user-cancelled purchase attempt. Include the same package properties as `paywall_package_selected` plus `is_user_cancelled`. |
 | `paywall_purchase_failed` | Terminal event for a failed purchase attempt. Include the same package properties as `paywall_package_selected` plus coarse `error_category`. Never include raw error strings. |
 | `paywall_restore_started` | Fires once per restore attempt before calling RevenueCat. Include `paywall_trigger` and `paywall_variant`. |

@@ -64,7 +64,12 @@ struct ProSection: View {
 
         Button {
           router.showScreen(.sheet) { _ in
-            PremiumPaywallSheet(trigger: .settingsSupport)
+            OnboardingPaywall(
+              showsCloseButton: false,
+              isPresentedAsSheet: true,
+              trigger: .settingsSupport,
+              onNext: {}
+            )
           }
         } label: {
           Label("Get PRO", systemImage: "star")

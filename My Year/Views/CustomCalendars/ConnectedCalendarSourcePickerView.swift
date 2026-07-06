@@ -19,11 +19,11 @@ struct ConnectedCalendarSourcePickerView: View {
           .padding(.horizontal, -16)
 
         VStack(alignment: .leading, spacing: 10) {
-          Text("Choose a data source")
+          Text("Choose an Apple Health metric")
             .font(.headline)
             .foregroundStyle(.textPrimary)
 
-          Text("Connected Calendars fill Check-ins from another source.")
+          Text("Yearlit reads these metrics from Apple Health and turns them into Check-ins.")
             .font(.footnote)
             .foregroundStyle(.textTertiary)
         }
@@ -32,7 +32,12 @@ struct ConnectedCalendarSourcePickerView: View {
 
         ForEach(AppleHealthMetric.allCases) { metric in
           Button {
-            if hasConnection(for: metric) {
+            let hasExistingCalendar = hasConnection(for: metric)
+            CalendarAnalyticsTracker.shared.trackAppleHealthMetricSelected(
+              metric,
+              hasExistingCalendar: hasExistingCalendar
+            )
+            if hasExistingCalendar {
               router.showScreen(.push) { _ in
                 AppleHealthMetricCalendarConfigView(metric: metric, onCreate: onCreate)
               }

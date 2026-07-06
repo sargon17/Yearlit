@@ -11,8 +11,8 @@ struct AboutLegalSection: View {
   }
 
   private let policies = [
-    PolicyLink(label: "Privacy Policy", url: URL(string: "https://tymofyeyev.com/yearlit/privacy-policy")!),
-    PolicyLink(label: "Terms of Service", url: URL(string: "https://tymofyeyev.com/yearlit/terms")!),
+    PolicyLink(label: "Privacy Policy", url: AppConfig.privacyPolicyURL),
+    PolicyLink(label: "Terms of Service", url: AppConfig.termsURL),
     PolicyLink(label: "EULA", url: URL(string: "https://www.apple.com/legal/internet-services/itunes/dev/stdeula/")!)
   ]
 

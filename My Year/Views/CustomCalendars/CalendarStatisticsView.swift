@@ -28,49 +28,34 @@ struct CalendarStatisticsView: View {
   let averageProgressTrailingShortWindow: Double
   let averageProgressTrailingLongWindow: Double
   let volatilityStdDev: Double
+  let currentMissedPeriods: Int
+  let averageRecoveryPeriods: Double?
   let isPremium: Bool
-  let onUpgrade: () -> Void
   var cadence: CalendarCadence = .daily
   var trackingType: TrackingType = .binary
-  var onTapCurrentStreak: (() -> Void)? = nil
-  var onTapActiveDays: (() -> Void)? = nil
-  var onTapShare: (() -> Void)? = nil
+  var onTapShare: (() -> Void)?
 
   @Environment(\.router) var router
+  @State private var selectedExplanation: MetricExplanation?
 
-  var entriesLabel: String {
-    if let unit = unit {
-      if unit == .currency {
-        return currencySymbol ?? "€"
-      }
-      return unit.displayName
-    } else {
-      return "Times"
-    }
-  }
-
-  var currentPeriodTitle: LocalizedStringKey {
-    cadence == .weekly ? "This Week" : "Today"
-  }
-
-  var completionRateTitle: LocalizedStringKey {
-    cadence == .weekly ? "Completion Rate (12w)" : "Completion Rate (30d)"
-  }
-
-  var bestPeriodTitle: LocalizedStringKey {
-    cadence == .weekly ? "Best Week" : "Best Day"
-  }
-
-  var activePeriodsTitle: LocalizedStringKey {
-    cadence == .weekly ? "Active Weeks" : "Active Days"
-  }
-
-  var shortTrendTitle: LocalizedStringKey {
-    cadence == .weekly ? "4w" : "7d"
-  }
-
-  var longTrendTitle: LocalizedStringKey {
-    cadence == .weekly ? "12w" : "30d"
+  private var displayModel: CalendarStatisticsDisplayModel {
+    CalendarStatisticsDisplayModel(
+      stats: stats,
+      currentPeriodCount: currentPeriodCount,
+      unit: unit,
+      currencySymbol: currencySymbol,
+      completionRateTrailingLongWindow: completionRateTrailingLongWindow,
+      bestWeekday: bestWeekday,
+      monthlyRates: monthlyRates,
+      averageProgressTrailingShortWindow: averageProgressTrailingShortWindow,
+      averageProgressTrailingLongWindow: averageProgressTrailingLongWindow,
+      volatilityStdDev: volatilityStdDev,
+      currentMissedPeriods: currentMissedPeriods,
+      averageRecoveryPeriods: averageRecoveryPeriods,
+      isPremium: isPremium,
+      cadence: cadence,
+      trackingType: trackingType
+    )
   }
 
   var body: some View {
@@ -97,219 +82,133 @@ struct CalendarStatisticsView: View {
           }
         }
       }
-      // Section: Logging
 
-      VStack(spacing: 12) {
-        sectionHeader(LocalizedStringKey(entriesLabel))
-        HStack {
-          if let currentPeriodCount {
-            CompactStatTile(
-              title: currentPeriodTitle,
-              value: compactStatsNumber(currentPeriodCount),
-              accentColor: accentColor
-            )
-            .layoutPriority(1)
-          }
-          CompactStatTile(
-            title: "Total",
-            value: compactStatsNumber(stats.totalCount),
-            accentColor: accentColor
-          )
-          .layoutPriority(1)
-          if trackingType != .binary {
-            CompactStatTile(
-              title: bestPeriodTitle,
-              value: compactStatsNumber(stats.maxCount),
-              accentColor: accentColor
-            )
-            .layoutPriority(1)
-          }
-        }
-        .frame(maxWidth: .infinity)
+      ForEach(displayModel.sections) { section in
+        statisticSection(section)
       }
-      .frame(maxWidth: .infinity)
-      .padding(.horizontal)
-      .padding(.bottom, -22)
-      .clipped()
-      .overlay(bottomDivider)
-
-      // Section: Streaks
-      VStack(spacing: 12) {
-        sectionHeader("Streaks")
-          .padding(.top)
-        HStack {
-          CompactStatTile(
-            title: "Current",
-            value: compactStatsNumber(stats.currentStreak),
-            accentColor: accentColor,
-            onTap: onTapCurrentStreak
-          )
-          .layoutPriority(1)
-          CompactStatTile(
-            title: "Longest",
-            value: compactStatsNumber(stats.longestStreak),
-            accentColor: accentColor
-          )
-          .layoutPriority(1)
-
-          CompactStatTile(
-            title: activePeriodsTitle,
-            value: compactStatsNumber(stats.activeDays),
-            accentColor: accentColor,
-            onTap: onTapActiveDays
-          )
-          .layoutPriority(1)
-        }
-        .frame(maxWidth: .infinity)
-      }
-      .frame(maxWidth: .infinity)
-      .padding(.horizontal)
-      .padding(.bottom, -22)
-      .clipped()
-      .overlay(bottomDivider)
-
-      // Section: Performance
-      VStack {
-        sectionHeader("Performance", premium: !isPremium)
-          .padding(.horizontal)
-          .padding(.top)
-        VStack(spacing: 8) {
-          labeledValueRow(
-            title: completionRateTitle,
-            value: percent(completionRateTrailingLongWindow),
-            accentColor: accentColor,
-            isLocked: !isPremium
-          )
-          .padding(.horizontal)
-          .onTapGesture {
-            guard !isPremium else { return }
-
-            router.showScreen(.sheet) { _ in
-              PremiumPaywallSheet(trigger: .statsGate)
-            }
-
-            Task {
-              await hapticFeedback()
-            }
-          }
-
-          monthlyBars(
-            ratesByMonth: monthlyRates,
-            accentColor: accentColor,
-            isLocked: !isPremium
-          )
-          .padding(.vertical, 8)
-          .overlay(bottomDivider)
-          .onTapGesture {
-            guard !isPremium else { return }
-
-            router.showScreen(.sheet) { _ in
-              PremiumPaywallSheet(trigger: .statsGate)
-            }
-
-            Task {
-              await hapticFeedback()
-            }
-          }
-        }
-      }
-
-      if cadence == .daily {
-        VStack {
-          // Section: Patterns
-          sectionHeader("Patterns", premium: !isPremium)
-            .padding(.horizontal)
-            .padding(.top)
-          VStack(spacing: 8) {
-            labeledValueRow(
-              title: "Best Weekday",
-              value: bestWeekday.map { weekdayName($0) } ?? "—",
-              accentColor: accentColor,
-              isLocked: !isPremium
-            )
-            .padding(.horizontal)
-            .onTapGesture {
-              guard !isPremium else { return }
-
-              router.showScreen(.sheet) { _ in
-                PremiumPaywallSheet(trigger: .statsGate)
-              }
-
-              Task {
-                await hapticFeedback()
-              }
-            }
-          }
-
-          weekdayRibbon(
-            rates: weekdayRates,
-            accentColor: accentColor,
-            isLocked: !isPremium
-          )
-          .frame(maxWidth: .infinity)
-          .overlay(bottomDivider)
-          .onTapGesture {
-            guard !isPremium else { return }
-
-            router.showScreen(.sheet) { _ in
-              PremiumPaywallSheet(trigger: .statsGate)
-            }
-
-            Task {
-              await hapticFeedback()
-            }
-          }
-        }
-        .clipped()
-      }
-
-      // Section: Trends (Premium)
-      sectionHeader("Trends", premium: !isPremium)
-        .padding(.horizontal)
-        .padding(.top)
-
-      VStack(spacing: 16) {
-        HStack {
-          CompactStatTile(
-            title: shortTrendTitle,
-            value: "\(percent(averageProgressTrailingShortWindow))",
-            accentColor: accentColor,
-            size: .small,
-            isLocked: !isPremium
-          )
-          .layoutPriority(1)
-          CompactStatTile(
-            title: longTrendTitle,
-            value: "\(percent(averageProgressTrailingLongWindow))",
-            accentColor: accentColor,
-            size: .small,
-            isLocked: !isPremium
-          )
-          .layoutPriority(1)
-        }
-        .frame(maxWidth: .infinity)
-
-        // Volatility - Premium
-        labeledValueRow(
-          title: "Std Dev of Weekly CR",
-          value: String(format: "%.2f", volatilityStdDev),
-          accentColor: accentColor,
-          isLocked: !isPremium
-        )
-        .onTapGesture {
-          guard !isPremium else { return }
-
-          router.showScreen(.sheet) { _ in
-            PremiumPaywallSheet(trigger: .statsGate)
-          }
-
-          Task {
-            await hapticFeedback()
-          }
-        }
-
-      }.padding(.horizontal)
     }
+    .sheet(item: $selectedExplanation) { explanation in
+      MetricExplanationSheet(explanation: explanation)
+        .presentationDetents([.height(380), .medium])
+    }
+  }
+
+  @ViewBuilder
+  private func statisticSection(_ section: StatisticSection) -> some View {
+    let tileMetrics = section.metrics.filter {
+      $0.presentation == .largeTile || $0.presentation == .smallTile
+    }
+    let detailMetrics = section.metrics.filter { !tileMetrics.contains($0) }
+
+    VStack(spacing: 12) {
+      sectionHeader(LocalizedStringKey(section.title), premium: section.isPremium)
+        .padding(.top, section.id == "logging" ? 0 : 12)
+
+      if !tileMetrics.isEmpty {
+        LazyVGrid(
+          columns: [
+            GridItem(.flexible(), spacing: 12),
+            GridItem(.flexible(), spacing: 12)
+          ],
+          alignment: .leading,
+          spacing: 14
+        ) {
+          ForEach(tileMetrics) { metric in
+            metricTile(metric)
+              .layoutPriority(1)
+          }
+        }
+        .frame(maxWidth: .infinity)
+      }
+
+      ForEach(detailMetrics) { metric in
+        metricDetail(metric)
+      }
+    }
+    .frame(maxWidth: .infinity)
+    .padding(.horizontal)
+    .padding(.bottom, -22)
+    .clipped()
+    .overlay(bottomDivider)
+  }
+
+  @ViewBuilder
+  private func metricTile(_ metric: StatisticMetric) -> some View {
+    let isLocked = metric.isPremium && !isPremium
+    CompactStatTile(
+      title: LocalizedStringKey(metric.title),
+      value: metric.value,
+      accentColor: accentColor,
+      size: metric.presentation == .smallTile ? .small : .large,
+      isLocked: isLocked,
+      onTap: { handleMetricTap(metric) }
+    )
+  }
+
+  @ViewBuilder
+  private func metricDetail(_ metric: StatisticMetric) -> some View {
+    let isLocked = metric.isPremium && !isPremium
+
+    switch metric.presentation {
+    case .valueRow:
+      labeledValueRow(
+        title: metric.title,
+        value: metric.value,
+        accentColor: accentColor,
+        isLocked: isLocked
+      )
+      .contentShape(Rectangle())
+      .onTapGesture {
+        handleMetricTap(metric)
+      }
+
+    case .monthlyBars:
+      monthlyBars(
+        ratesByMonth: monthlyRates,
+        accentColor: accentColor,
+        isLocked: isLocked
+      )
+      .padding(.vertical, 8)
+      .contentShape(Rectangle())
+      .onTapGesture {
+        handleMetricTap(metric)
+      }
+
+    case .weekdayRibbon:
+      weekdayRibbon(
+        rates: weekdayRates,
+        accentColor: accentColor,
+        isLocked: isLocked
+      )
+      .frame(maxWidth: .infinity)
+      .contentShape(Rectangle())
+      .onTapGesture {
+        handleMetricTap(metric)
+      }
+
+    case .largeTile, .smallTile:
+      EmptyView()
+    }
+  }
+
+  private func handleMetricTap(_ metric: StatisticMetric) {
+    if metric.isPremium && !isPremium {
+      router.showScreen(.sheet) { _ in
+        OnboardingPaywall(
+          showsCloseButton: false,
+          isPresentedAsSheet: true,
+          trigger: .statsGate,
+          onNext: {}
+        )
+      }
+
+      Task {
+        await hapticFeedback()
+      }
+      return
+    }
+
+    selectedExplanation = metric.explanation
   }
 }
 
@@ -365,17 +264,6 @@ private var bottomDivider: some View {
   }
 }
 
-private func weekdayName(_ idx: Int) -> String {
-  let symbols = Calendar.current.shortWeekdaySymbols  // Sun..Sat depending on locale
-  let clamped = max(1, min(7, idx))
-  return symbols[clamped - 1]
-}
-
-private func percent(_ value: Double) -> String {
-  let p = max(0, min(1, value))
-  return String(format: "%.0f%%", p * 100)
-}
-
 func compactStatsNumber(_ value: Int) -> String {
   let sign = value < 0 ? "-" : ""
   var number = value == Int.min ? Double(Int.max) + 1 : Double(abs(value))
@@ -405,7 +293,7 @@ func compactStatsNumber(_ value: Int) -> String {
 }
 
 private func labeledValueRow(
-  title: LocalizedStringKey,
+  title: String,
   value: String,
   accentColor: Color,
   isLocked: Bool = false
@@ -452,7 +340,6 @@ private func weekdayRibbon(
     }
   }
   .padding(.top)
-  .padding(.horizontal)
   .frame(maxWidth: .infinity)
 }
 
@@ -463,7 +350,7 @@ private func monthlyBars(
 ) -> some View {
   VStack(spacing: 6) {
     HStack {
-      Text("Monthly Breakdown")
+      Text("Year Pattern")
         .font(AppFont.mono(12))
         .foregroundColor(Color.textSecondary)
       Spacer()
@@ -482,43 +369,8 @@ private func monthlyBars(
           .blur(radius: isLocked ? 10 : 0)
       }
     }
-  }.padding()
-}
-
-struct PremiumGate<Content: View>: View {
-  let title: LocalizedStringKey
-  let isPremium: Bool
-  let onUpgrade: () -> Void
-  @ViewBuilder let content: () -> Content
-
-  var body: some View {
-    VStack(spacing: 8) {
-      HStack {
-        Text(title)
-          .font(AppFont.mono(12))
-          .foregroundColor(Color.textSecondary)
-        Spacer()
-      }
-      if self.isPremium {
-        content()
-      } else {
-        HStack {
-          Text("Unlock with Premium")
-            .font(AppFont.mono(12))
-            .foregroundColor(Color("text-tertiary"))
-          Spacer()
-          Button(action: self.onUpgrade) {
-            Text("Upgrade")
-              .font(AppFont.mono(12))
-              .padding(.horizontal, 10)
-              .padding(.vertical, 6)
-              .background(Color("surface-secondary").opacity(0.5))
-              .cornerRadius(6)
-          }
-        }
-      }
-    }
   }
+  .padding(.vertical, 8)
 }
 
 /// Section header helper
@@ -551,4 +403,38 @@ private func sectionHeader(_ title: LocalizedStringKey, premium: Bool = false) -
     Spacer()
   }
   .padding(.top, 12)
+}
+
+private struct MetricExplanationSheet: View {
+  let explanation: MetricExplanation
+
+  var body: some View {
+    VStack(alignment: .leading, spacing: 22) {
+      Text(explanation.title)
+        .font(AppFont.mono(28))
+        .fontWeight(.black)
+        .foregroundColor(.textPrimary)
+
+      explanationBlock(title: "What it means", body: explanation.meaning)
+      explanationBlock(title: "How to read it", body: explanation.howToRead)
+      explanationBlock(title: "Why it matters", body: explanation.whyItMatters)
+
+      Spacer(minLength: 0)
+    }
+    .padding(24)
+    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+    .surfaceBackground(Color("surface-muted"), ignoresSafeArea: true)
+  }
+
+  private func explanationBlock(title: String, body: String) -> some View {
+    VStack(alignment: .leading, spacing: 6) {
+      Text(title)
+        .font(AppFont.mono(12))
+        .foregroundColor(.textSecondary)
+      Text(body)
+        .font(AppFont.mono(14))
+        .foregroundColor(.textPrimary)
+        .fixedSize(horizontal: false, vertical: true)
+    }
+  }
 }

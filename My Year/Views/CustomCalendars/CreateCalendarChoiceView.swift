@@ -43,12 +43,17 @@ struct CreateCalendarChoiceView: View {
         }
 
         creationPathButton(
-          title: "Connect a data source",
-          description: "Fill Check-ins from Apple Health and other sources."
+          title: "Connect Apple Health",
+          description: "Fill Check-ins from Apple Health automatically."
         ) {
           guard userCanCreateCalendar() else {
             router.showScreen(.sheet) { _ in
-              PremiumPaywallSheet(displayCloseButton: true, trigger: .calendarLimit)
+              OnboardingPaywall(
+                showsCloseButton: true,
+                isPresentedAsSheet: true,
+                trigger: .calendarLimit,
+                onNext: {}
+              )
             }
             return
           }

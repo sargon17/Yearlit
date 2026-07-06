@@ -208,7 +208,12 @@ private struct DailyWallpaperSetupView: View {
 
   private func showPremiumPaywall() {
     router.showScreen(.sheet) { _ in
-      PremiumPaywallSheet(displayCloseButton: true, trigger: .settingsSupport)
+      OnboardingPaywall(
+        showsCloseButton: true,
+        isPresentedAsSheet: true,
+        trigger: .settingsSupport,
+        onNext: {}
+      )
     }
   }
 }

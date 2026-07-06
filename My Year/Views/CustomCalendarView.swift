@@ -1,5 +1,4 @@
 import RevenueCat
-import RevenueCatUI
 import SharedModels
 import SwiftUI
 import SwiftfulRouting
@@ -80,7 +79,6 @@ struct CustomCalendarView: View {
   @State private var tempSelectedYear: Int = Calendar.current.component(.year, from: Date())
   @State private var calendarError: CalendarError?
   @State private var customerInfo: CustomerInfo?
-  @State private var isPaywallPresented: Bool = false
   @State private var statsBundle: StatsBundle?
   @State private var pendingMilestoneCheck: Bool = false
   @State private var isEntryEditSheetPresented: Bool = false
@@ -212,20 +210,21 @@ struct CustomCalendarView: View {
 
   private func presentEntryEditSheet(calendar: CustomCalendar, date: Date) {
     guard !calendar.isAppleHealthConnected else { return }
+    let sheetDate = entrySheetDate(for: date, cadence: calendar.cadence)
     Task {
       await hapticFeedback()
     }
     isEntryEditSheetPresented = true
     router.showScreen(
-      .sheetConfig(config: shortSheetConfig)
+      .sheetConfig(config: entryEditSheetConfig)
     ) { _ in
       DayEntryEditSheet(
         calendar: calendar,
-        date: date,
+        date: sheetDate,
         store: store,
         onSave: { entry in
           if isPositiveEntry(entry) {
-            triggerCheckInRipple(from: date)
+            triggerCheckInRipple(from: entry.date)
           }
           scheduleMilestoneCheck()
         },
@@ -234,6 +233,24 @@ struct CustomCalendarView: View {
           evaluateMilestonesIfNeeded(calendarId: calendar.id)
         }
       )
+      .id(entrySheetIdentity(calendar: calendar, date: sheetDate))
+    }
+  }
+
+  private func entrySheetIdentity(calendar: CustomCalendar, date: Date) -> String {
+    [
+      calendar.id.uuidString,
+      calendar.cadence.rawValue,
+      String(date.timeIntervalSinceReferenceDate)
+    ].joined(separator: "-")
+  }
+
+  private func entrySheetDate(for date: Date, cadence: CalendarCadence) -> Date {
+    switch cadence {
+    case .daily:
+      return LocalDayCalendar.startOfDay(for: date)
+    case .weekly:
+      return LocalDayCalendar.startOfWeek(for: date)
     }
   }
 
@@ -664,47 +681,11 @@ struct CustomCalendarView: View {
             averageProgressTrailingShortWindow: bundle.averageProgressTrailingShortWindow,
             averageProgressTrailingLongWindow: bundle.averageProgressTrailingLongWindow,
             volatilityStdDev: bundle.volatilityStd,
+            currentMissedPeriods: bundle.currentMissedPeriods,
+            averageRecoveryPeriods: bundle.averageRecoveryPeriods,
             isPremium: isPremium(customerInfo: customerInfo),
-            onUpgrade: { isPaywallPresented = true },
             cadence: activeCalendar.cadence,
             trackingType: activeCalendar.trackingType,
-            onTapCurrentStreak: {
-              guard
-                let milestone = StreakMilestones.latestMilestone(
-                  for: currentStreak(for: activeCalendar)
-                )
-              else { return }
-              router.showScreen(.sheet) { _ in
-                MilestoneCelebrationSheet(
-                  calendar: activeCalendar,
-                  milestone: milestone,
-                  currentStreak: currentStreak(for: activeCalendar),
-                  kind: .streak,
-                  dates: renderSnapshot.visibleGridDates,
-                  allowsStopShowing: false,
-                  showedUpPeriodKey: nil
-                )
-              }
-            },
-            onTapActiveDays: {
-              let showedUpCount = showedUpCount(for: activeCalendar)
-              guard
-                let milestone = ShowedUpMilestones.latestMilestone(
-                  for: showedUpCount
-                )
-              else { return }
-              router.showScreen(.sheet) { _ in
-                MilestoneCelebrationSheet(
-                  calendar: activeCalendar,
-                  milestone: milestone,
-                  currentStreak: currentStreak(for: activeCalendar),
-                  kind: .showedUp,
-                  dates: renderSnapshot.visibleGridDates,
-                  allowsStopShowing: false,
-                  showedUpPeriodKey: ShowedUpMilestones.periodKey(for: .allTime)
-                )
-              }
-            },
             onTapShare: {
               router.showScreen(.sheet) { _ in
                 CalendarShareSheet(
@@ -761,9 +742,6 @@ struct CustomCalendarView: View {
         }
       }
       .presentationDetents([.height(280)])
-    }
-    .sheet(isPresented: $isPaywallPresented) {
-      PremiumPaywallSheet(trigger: .statsGate)
     }
     .alert(item: $calendarError) { error in
       Alert(

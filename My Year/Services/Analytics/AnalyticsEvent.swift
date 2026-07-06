@@ -4,9 +4,18 @@ enum AnalyticsEvent: String, CaseIterable {
   case onboardingCompleted = "onboarding_completed"
   case onboardingStepViewed = "onboarding_step_viewed"
   case onboardingActionPerformed = "onboarding_action_performed"
+  case onboardingMotivationSelected = "onboarding_motivation_selected"
+  case onboardingNameStepCompleted = "onboarding_name_step_completed"
+  case onboardingHabitColorSelected = "onboarding_habit_color_selected"
+  case onboardingTrustStepViewed = "onboarding_trust_step_viewed"
+  case notificationPermissionResult = "notification_permission_result"
   case activationCompleted = "activation_completed"
 
   case calendarCreated = "calendar_created"
+  case appleHealthMetricSelected = "apple_health_metric_selected"
+  case appleHealthPermissionResult = "apple_health_permission_result"
+  case appleHealthImportPreviewLoaded = "apple_health_import_preview_loaded"
+  case appleHealthCalendarCreated = "apple_health_calendar_created"
   case calendarArchived = "calendar_archived"
   case calendarUnarchived = "calendar_unarchived"
   case checkinCompleted = "checkin_completed"
@@ -101,12 +110,19 @@ enum ShareType: String, CaseIterable {
 }
 
 enum OnboardingAction: String, CaseIterable {
+  case motivationSelected = "motivation_selected"
   case identityCompleted = "identity_completed"
+  case nameProvided = "name_provided"
+  case nameSkipped = "name_skipped"
+  case habitColorSelected = "habit_color_selected"
   case tinyHabitCreated = "tiny_habit_created"
   case firstDotMarked = "first_dot_marked"
+  case whyThisWorksContinued = "why_this_works_continued"
   case notificationsRequested = "notifications_requested"
   case notificationsSkipped = "notifications_skipped"
   case readyContinued = "ready_continued"
+  case founderNoteContinued = "founder_note_continued"
+  case socialProofContinued = "social_proof_continued"
   case paywallBoundaryReached = "paywall_boundary_reached"
   case paywallClosed = "paywall_closed"
 }
@@ -151,6 +167,8 @@ enum AnalyticsCatalog {
     "calendar_names",
     "habit_name",
     "habit_names",
+    "display_name",
+    "user_name",
     "goal_text",
     "journal_note",
     "journal_notes",
