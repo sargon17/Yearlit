@@ -3,7 +3,6 @@ import SwiftUI
 struct ReviewSatisfactionSheet: View {
   @ObservedObject var prompter: ReviewPrompter
   let context: ReviewPromptContext
-  @EnvironmentObject private var featureRequestManager: FeatureRequestManager
   @Environment(\.dismiss) private var dismiss
 
   @State private var feedbackText = ""
@@ -147,8 +146,8 @@ struct ReviewSatisfactionSheet: View {
     isSubmittingFeedback = true
     let feedbackLength = trimmedFeedback.count
 
-    Task {
-      await featureRequestManager.createRequest(
+    Task { @MainActor in
+      let success = await FeatureRequestManager.createRequest(
         text: "Review feedback: user is not enjoying Yearlit",
         description: """
           \(trimmedFeedback)
@@ -156,17 +155,16 @@ struct ReviewSatisfactionSheet: View {
           Source: in-app satisfaction prompt after a positive app event.
           User selected: No.
           """,
-        kind: .complaint,
-        onSuccess: {
-          trackFeedbackSubmitted(characterCount: feedbackLength)
-          close()
-        },
-        onError: {
-          isSubmittingFeedback = false
-          trackFeedbackSubmitFailed(characterCount: feedbackLength)
-          submitFailed = true
-        }
+        kind: .complaint
       )
+      if success {
+        trackFeedbackSubmitted(characterCount: feedbackLength)
+        close()
+      } else {
+        isSubmittingFeedback = false
+        trackFeedbackSubmitFailed(characterCount: feedbackLength)
+        submitFailed = true
+      }
     }
   }
 

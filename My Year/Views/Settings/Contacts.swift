@@ -3,7 +3,6 @@ import SwiftfulRouting
 
 struct HelpFeedbackSection: View {
   @Environment(\.router) private var router
-  @EnvironmentObject private var featureRequestManager: FeatureRequestManager
 
   var body: some View {
     Section(header: Text("Help & Feedback")) {
@@ -16,13 +15,20 @@ struct HelpFeedbackSection: View {
       }
       .font(AppFont.mono(11))
       .foregroundColor(.secondary)
-      if featureRequestManager.isConfigured {
+      if FeatureRequestManager.isConfigured {
         Button {
           router.showScreen(.push) { _ in
-            FeatureRequestsList()
+            WishView(.requests)
           }
         } label: {
           Label("Request a Feature", systemImage: "flask")
+        }
+        Button {
+          router.showScreen(.push) { _ in
+            WishView(.changelog)
+          }
+        } label: {
+          Label("What’s New", systemImage: "sparkles")
         }
       }
       Button {
