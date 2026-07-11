@@ -116,6 +116,7 @@ struct DataBackupServiceTests {
     try json.write(to: url, atomically: true, encoding: .utf8)
 
     #expect(harness.service.availableBackups().isEmpty)
+    #expect(!harness.service.isBackupValid(id: backup.id))
   }
 
   @MainActor

@@ -150,8 +150,8 @@ struct AppleHealthCalendarModelTests {
   @MainActor
   @Test func migrationRepairV2RestoresActiveMetadataFromLegacyPayload() throws {
     let container = try makeContainer()
-    let (defaultsSuiteName, defaults) = makeDefaults()
-    defer { defaults.removePersistentDomain(forName: defaultsSuiteName) }
+    let (defaultsSuiteName, defaults, backupDirectory) = makeDefaults()
+    defer { removeDefaults(defaults, suiteName: defaultsSuiteName, backupDirectory: backupDirectory) }
 
     let id = UUID()
     let legacyCalendar = CustomCalendar(
@@ -191,7 +191,11 @@ struct AppleHealthCalendarModelTests {
     )
     try context.save()
 
-    LegacyDataMigrator.migrateIfNeeded(container: container, defaults: defaults)
+    LegacyDataMigrator.migrateIfNeeded(
+      container: container,
+      defaults: defaults,
+      backupDirectoryURL: backupDirectory
+    )
 
     let calendars = try context.fetch(FetchDescriptor<HabitCalendarEntity>())
     let repairedCalendar = try #require(calendars.first)
@@ -203,8 +207,8 @@ struct AppleHealthCalendarModelTests {
   @MainActor
   @Test func migrationRepairsMissingSwiftDataEntriesFromLegacyPayload() throws {
     let container = try makeContainer()
-    let (defaultsSuiteName, defaults) = makeDefaults()
-    defer { defaults.removePersistentDomain(forName: defaultsSuiteName) }
+    let (defaultsSuiteName, defaults, backupDirectory) = makeDefaults()
+    defer { removeDefaults(defaults, suiteName: defaultsSuiteName, backupDirectory: backupDirectory) }
 
     let calendar = CustomCalendar(
       name: "No energy drinks",
@@ -229,7 +233,11 @@ struct AppleHealthCalendarModelTests {
     context.insert(HabitCalendarEntity.make(from: calendar))
     try context.save()
 
-    LegacyDataMigrator.migrateIfNeeded(container: container, defaults: defaults)
+    LegacyDataMigrator.migrateIfNeeded(
+      container: container,
+      defaults: defaults,
+      backupDirectoryURL: backupDirectory
+    )
 
     let entries = try context.fetch(FetchDescriptor<CalendarEntryEntity>())
 
@@ -241,8 +249,8 @@ struct AppleHealthCalendarModelTests {
   @MainActor
   @Test func migrationRepairsMissingSwiftDataCalendarsFromLegacyPayload() throws {
     let container = try makeContainer()
-    let (defaultsSuiteName, defaults) = makeDefaults()
-    defer { defaults.removePersistentDomain(forName: defaultsSuiteName) }
+    let (defaultsSuiteName, defaults, backupDirectory) = makeDefaults()
+    defer { removeDefaults(defaults, suiteName: defaultsSuiteName, backupDirectory: backupDirectory) }
 
     let calendar = CustomCalendar(
       name: "Reading",
@@ -263,7 +271,11 @@ struct AppleHealthCalendarModelTests {
     defaults.set(true, forKey: LegacyPersistenceKeys.migrationFlagKey)
     defaults.set(true, forKey: LegacyPersistenceKeys.dayKeyMigrationFlagKey)
 
-    LegacyDataMigrator.migrateIfNeeded(container: container, defaults: defaults)
+    LegacyDataMigrator.migrateIfNeeded(
+      container: container,
+      defaults: defaults,
+      backupDirectoryURL: backupDirectory
+    )
 
     let context = ModelContext(container)
     let calendars = try context.fetch(FetchDescriptor<HabitCalendarEntity>())
@@ -477,11 +489,18 @@ struct AppleHealthCalendarModelTests {
     return calendar.date(from: DateComponents(year: year, month: month, day: day))!
   }
 
-  private func makeDefaults() -> (suiteName: String, defaults: UserDefaults) {
+  private func makeDefaults() -> (suiteName: String, defaults: UserDefaults, backupDirectory: URL) {
     let suiteName = "SharedModelsTests.\(UUID().uuidString)"
     let defaults = UserDefaults(suiteName: suiteName)!
     defaults.removePersistentDomain(forName: suiteName)
-    return (suiteName, defaults)
+    let backupDirectory = FileManager.default.temporaryDirectory
+      .appendingPathComponent(UUID().uuidString, isDirectory: true)
+    return (suiteName, defaults, backupDirectory)
+  }
+
+  private func removeDefaults(_ defaults: UserDefaults, suiteName: String, backupDirectory: URL) {
+    defaults.removePersistentDomain(forName: suiteName)
+    try? FileManager.default.removeItem(at: backupDirectory)
   }
 
   @MainActor

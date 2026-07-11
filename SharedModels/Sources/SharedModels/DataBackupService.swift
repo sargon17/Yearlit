@@ -139,6 +139,10 @@ public final class DataBackupService {
             .sorted { $0.createdAt > $1.createdAt } ?? []
     }
 
+    func isBackupValid(id: UUID) -> Bool {
+        availableBackups().contains(where: { $0.id == id })
+    }
+
     public func restoreBackup(id: UUID) throws {
         guard let metadata = availableBackups().first(where: { $0.id == id }) else {
             throw DataBackupError.backupNotFound

@@ -16,16 +16,20 @@ enum LegacyPersistenceKeys {
     static let trackingStartedAtBackupKey = "swiftDataTrackingStartedAtBackupV1"
     static let legacyCalendarRepairFlagKey = "swiftDataLegacyCalendarRepairV1Complete"
     static let legacyCalendarRepairV2FlagKey = "swiftDataLegacyCalendarRepairV2Complete"
+    static let migrationBackupFlagKey = "DataBackup.beforeMigrationCreated"
 }
 
 @available(iOS 17.0, macOS 14.0, *)
 enum LegacyDataMigrator {
+    private static let migrationLock = NSLock()
+
     private struct TrackingStartedAtBackup: Codable {
         let createdAt: Date
         let valuesByCalendarId: [String: Date]
     }
 
     static func migrateIfNeeded(container: ModelContainer = SwiftDataManager.container) {
+        guard shouldRunMigration(in: Bundle.main.bundleURL) else { return }
         guard let defaults = UserDefaults(suiteName: LegacyPersistenceKeys.appGroupId) else {
             return
         }
@@ -33,7 +37,14 @@ enum LegacyDataMigrator {
         migrateIfNeeded(container: container, defaults: defaults)
     }
 
-    static func migrateIfNeeded(container: ModelContainer, defaults: UserDefaults) {
+    static func migrateIfNeeded(
+        container: ModelContainer,
+        defaults: UserDefaults,
+        backupDirectoryURL: URL? = DataBackupService.defaultDirectoryURL()
+    ) {
+        migrationLock.lock()
+        defer { migrationLock.unlock() }
+
         // Only migrate legacy data once.
         let alreadyMigrated = defaults.bool(forKey: LegacyPersistenceKeys.migrationFlagKey)
         var legacyMigrationSucceeded = alreadyMigrated
@@ -43,7 +54,11 @@ enum LegacyDataMigrator {
         }
 
         guard legacyMigrationSucceeded else { return }
-        guard createMigrationBackupIfNeeded(container: container, defaults: defaults) else { return }
+        guard createMigrationBackupIfNeeded(
+            container: container,
+            defaults: defaults,
+            directoryURL: backupDirectoryURL
+        ) else { return }
 
         let dayKeyMigrationSucceeded = migrateDayKeysIfNeeded(defaults: defaults, container: container)
 
@@ -55,8 +70,15 @@ enum LegacyDataMigrator {
         }
     }
 
-    private static func createMigrationBackupIfNeeded(container: ModelContainer, defaults: UserDefaults) -> Bool {
-        let backupKey = "DataBackup.beforeMigrationCreated"
+    static func shouldRunMigration(in bundleURL: URL) -> Bool {
+        bundleURL.pathExtension != "appex"
+    }
+
+    private static func createMigrationBackupIfNeeded(
+        container: ModelContainer,
+        defaults: UserDefaults,
+        directoryURL: URL?
+    ) -> Bool {
         let migrationFlags = [
             LegacyPersistenceKeys.dayKeyMigrationFlagKey,
             LegacyPersistenceKeys.trackingStartedAtBackfillMigrationFlagKey,
@@ -66,14 +88,18 @@ enum LegacyDataMigrator {
         ]
         let hasPendingMigration = migrationFlags.contains { !defaults.bool(forKey: $0) }
         guard hasPendingMigration else { return true }
-        guard !defaults.bool(forKey: backupKey) else { return true }
+        let backupService = DataBackupService(
+            container: container,
+            directoryURL: directoryURL,
+            defaults: defaults
+        )
         do {
-            try DataBackupService(
-                container: container,
-                defaults: defaults
-            )
-            .createProtectiveBackup(reason: .beforeMigration)
-            defaults.set(true, forKey: backupKey)
+            let backup = try backupService.createProtectiveBackup(reason: .beforeMigration)
+            guard backupService.isBackupValid(id: backup.id) else {
+                NSLog("Pre-migration data backup failed validation")
+                return false
+            }
+            defaults.set(true, forKey: LegacyPersistenceKeys.migrationBackupFlagKey)
             return true
         } catch {
             NSLog("Failed to create pre-migration data backup: \(error)")
