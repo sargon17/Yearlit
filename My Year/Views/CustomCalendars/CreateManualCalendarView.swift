@@ -275,7 +275,37 @@ struct CreateManualCalendarView: View {
           }
         }
 
-        CustomSection(label: "Notifications") {
+        Text(
+          "\(cadence.title) · \(trackingTypeLabel) · starts "
+            + trackingStartedAt.formatted(date: .abbreviated, time: .omitted)
+        )
+        .font(AppFont.mono(10, weight: .medium))
+        .foregroundStyle(.textSecondary)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(.horizontal, 8)
+
+        HabitHistorySection(
+          cadence: cadence,
+          trackingStartedAt: $trackingStartedAt,
+          earliestEntryDate: earliestExistingEntryDate,
+          autoAdjustedMessage: historyMessage ?? (!existingStreakEntries.isEmpty ? backfillSummary : nil),
+          onTrackingStartedAtChanged: { historyMessage = nil }
+        ) {
+          router.showScreen(.sheet) { _ in
+            ExistingStreakSheet(
+              cadence: cadence,
+              trackingType: trackingType,
+              dailyTarget: dailyTarget,
+              defaultDailyValue: defaultRecordValue,
+              existingEntries: existingStreakEntries,
+              accentColor: Color(selectedColor)
+            ) { entries in
+              applyExistingStreakEntries(entries)
+            }
+          }
+        }
+
+        CustomSection(label: "Automation") {
           VStack(spacing: 2) {
             Button(action: { showingNotificationSettings = true }) {
               HStack {
@@ -305,27 +335,6 @@ struct CreateManualCalendarView: View {
             .sameLevelBorder(isFlat: true)
           }
           .padding(.all, 2)
-        }
-
-        HabitHistorySection(
-          cadence: cadence,
-          trackingStartedAt: $trackingStartedAt,
-          earliestEntryDate: earliestExistingEntryDate,
-          autoAdjustedMessage: historyMessage ?? (!existingStreakEntries.isEmpty ? backfillSummary : nil),
-          onTrackingStartedAtChanged: { historyMessage = nil }
-        ) {
-          router.showScreen(.sheet) { _ in
-            ExistingStreakSheet(
-              cadence: cadence,
-              trackingType: trackingType,
-              dailyTarget: dailyTarget,
-              defaultDailyValue: defaultRecordValue,
-              existingEntries: existingStreakEntries,
-              accentColor: Color(selectedColor)
-            ) { entries in
-              applyExistingStreakEntries(entries)
-            }
-          }
         }
 
         CustomSeparator()
