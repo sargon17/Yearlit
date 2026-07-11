@@ -30,7 +30,7 @@ struct CalendarCreationPreview: View {
       }
     }
     .frame(height: 48)
-    .padding(12)
+    .padding(6)
     .lcdScreenEffect(clipShape: RoundedRectangle(cornerRadius: 6), diffusion: 0.12, dotOpacity: 0.42)
     .sameLevelBorder(radius: 6, color: .black)
     .outerSameLevelShadow(radius: 6)
