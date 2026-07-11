@@ -7,6 +7,7 @@ final class AnalyticsState {
   static let shared = AnalyticsState()
 
   private let defaults: UserDefaults
+  private var calendarSnapshotProvider: (() -> CustomCalendarStoreSnapshot)?
   private let installDateKey = "analytics.install_date"
   private let distinctIDKey = "analytics.distinct_id"
   private let activationCompletedKey = "analytics.has_completed_activation"
@@ -18,8 +19,16 @@ final class AnalyticsState {
   private(set) var isPremiumUser = false
   private(set) var premiumStatusKnown = false
 
-  init(defaults: UserDefaults = .standard) {
+  init(
+    defaults: UserDefaults = .standard,
+    calendarSnapshotProvider: (() -> CustomCalendarStoreSnapshot)? = nil
+  ) {
     self.defaults = defaults
+    self.calendarSnapshotProvider = calendarSnapshotProvider
+  }
+
+  func setCalendarSnapshotProvider(_ provider: @escaping () -> CustomCalendarStoreSnapshot) {
+    calendarSnapshotProvider = provider
   }
 
   var distinctID: String {
@@ -90,7 +99,7 @@ final class AnalyticsState {
   }
 
   func standardProperties() -> [String: AnalyticsPropertyValue] {
-    let snapshot = CustomCalendarStore.shared.snapshot
+    let snapshot = calendarSnapshotProvider?() ?? CustomCalendarStoreSnapshot()
     let activeCalendars = snapshot.activeCalendars
 
     var properties: [String: AnalyticsPropertyValue] = [

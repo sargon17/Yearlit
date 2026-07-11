@@ -1681,9 +1681,10 @@ public final class CustomCalendarStore: ObservableObject {
     }
 
     public nonisolated static func fetchCalendarsSnapshot(
-        container: ModelContainer = SwiftDataManager.container
+        container: ModelContainer? = nil
     ) -> [CustomCalendar] {
-        (try? fetchCalendars(container: container)) ?? []
+        guard let container = container ?? SwiftDataManager.availableContainer else { return [] }
+        return (try? fetchCalendars(container: container)) ?? []
     }
 
     public nonisolated static func normalizedCalendarOrder(_ calendars: [CustomCalendar]) -> [CustomCalendar] {
@@ -1949,9 +1950,10 @@ public final class ValuationStore: ObservableObject {
     }
 
     public nonisolated static func fetchValuationsSnapshot(
-        container: ModelContainer = SwiftDataManager.container
+        container: ModelContainer? = nil
     ) -> [String: DayValuation] {
-        (try? fetchValuations(container: container)) ?? [:]
+        guard let container = container ?? SwiftDataManager.availableContainer else { return [:] }
+        return (try? fetchValuations(container: container)) ?? [:]
     }
 
     public func getValuation(for date: Date) -> DayValuation? {
