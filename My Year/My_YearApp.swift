@@ -48,6 +48,7 @@ class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCenterDele
     } else {
       // Handle action buttons (Log Now, Snooze)
       Task { @MainActor in
+        guard SwiftDataManager.isAvailable else { return }
         handleNotificationAction(response, store: CustomCalendarStore.shared)
       }
     }
@@ -62,6 +63,10 @@ class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCenterDele
     withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void
   ) {
     Task { @MainActor in
+      guard SwiftDataManager.isAvailable else {
+        completionHandler([.banner, .sound, .badge])
+        return
+      }
       let userInfo = notification.request.content.userInfo
       let snapshot = CustomCalendarStore.shared.snapshot
       if let calendarIdString = userInfo["calendarId"] as? String,
@@ -94,6 +99,7 @@ struct My_YearApp: App {
   @State private var isDataRecoveryPresented = false
   @State private var hasTrackedOnboardingStarted = false
   private let dataRecoverySettingsKey = "openDataRecovery"
+  private let persistenceBootstrap: SwiftDataManager.BootstrapResult
 
   #if DEBUG
     static let isDebugMode = true
@@ -102,6 +108,12 @@ struct My_YearApp: App {
   #endif
 
   init() {
+    let persistenceBootstrap = SwiftDataManager.bootstrapResult
+    self.persistenceBootstrap = persistenceBootstrap
+    if case .ready = persistenceBootstrap {
+      AnalyticsState.shared.setCalendarSnapshotProvider { CustomCalendarStore.shared.snapshot }
+    }
+
     AppFont.registerFonts()
     // The embed UI loads from WishKit's default hosted origin; wishConfig's
     // apiBaseURL only feeds programmatic calls (see WishConfiguration).
@@ -161,86 +173,92 @@ struct My_YearApp: App {
 
   var body: some Scene {
     WindowGroup {
-      RouterView(addNavigationStack: false, addModuleSupport: true) { _ in
-        ContentView()
-          .tint(.textSecondary)
-          .wishWhatsNewSheet()
-      }
-      .environment(\.dates, Self.cachedDates)
-      .onOpenURL { url in
-        guard url.scheme == "my-year" else { return }
+      switch persistenceBootstrap {
+      case .ready:
+        RouterView(addNavigationStack: false, addModuleSupport: true) { _ in
+          ContentView()
+            .tint(.textSecondary)
+            .wishWhatsNewSheet()
+        }
+        .environment(\.dates, Self.cachedDates)
+        .onOpenURL { url in
+          guard url.scheme == "my-year" else { return }
 
-        switch url.host {
-        case "clear":
-          let store = ValuationStore.shared
-          store.clearAllValuations()
-        case "calendar":
-          handleWidgetOpenURL(url)
-        case "quick-add":
-          handleWidgetQuickAddURL(url)
-        case "data-recovery":
-          isDataRecoveryPresented = true
-        default:
-          handleWidgetOpenURL(url)
-          break
+          switch url.host {
+          case "clear":
+            let store = ValuationStore.shared
+            store.clearAllValuations()
+          case "calendar":
+            handleWidgetOpenURL(url)
+          case "quick-add":
+            handleWidgetQuickAddURL(url)
+          case "data-recovery":
+            isDataRecoveryPresented = true
+          default:
+            handleWidgetOpenURL(url)
+            break
+          }
         }
-      }
-      .environmentObject(onboarding)
-      .environmentObject(reviewPrompter)
-      .environmentObject(upgradePrompter)
-      .fullScreenCover(
-        isPresented: onboardingPresentation,
-        onDismiss: {
+        .environmentObject(onboarding)
+        .environmentObject(reviewPrompter)
+        .environmentObject(upgradePrompter)
+        .fullScreenCover(
+          isPresented: onboardingPresentation,
+          onDismiss: {
+            updateTimelinePreferencePresentation()
+          }
+        ) {
+          OnboardingView {
+            completeOnboarding()
+          }
+        }
+        .fullScreenCover(isPresented: $isTimelinePreferenceSheetPresented) {
+          TimelinePreferenceChoiceSheet { mode in
+            TimelinePreferenceManager.shared.setMode(mode)
+            isTimelinePreferenceSheetPresented = false
+          }
+        }
+        .sheet(isPresented: $isDataRecoveryPresented) {
+          NavigationStack {
+            DataRecoveryView()
+          }
+        }
+        .sheet(item: $reviewPrompter.activePrompt) { context in
+          ReviewSatisfactionSheet(prompter: reviewPrompter, context: context)
+        }
+        .sheet(item: $upgradePrompter.activePrompt) { context in
+          OnboardingPaywall(
+            showsCloseButton: true,
+            isPresentedAsSheet: true,
+            trigger: context.trigger,
+            analyticsProperties: context.analyticsProperties,
+            onNext: {}
+          )
+        }
+        .onAppear {
           updateTimelinePreferencePresentation()
-        }
-      ) {
-        OnboardingView {
-          completeOnboarding()
-        }
-      }
-      .fullScreenCover(isPresented: $isTimelinePreferenceSheetPresented) {
-        TimelinePreferenceChoiceSheet { mode in
-          TimelinePreferenceManager.shared.setMode(mode)
-          isTimelinePreferenceSheetPresented = false
-        }
-      }
-      .sheet(isPresented: $isDataRecoveryPresented) {
-        NavigationStack {
-          DataRecoveryView()
-        }
-      }
-      .sheet(item: $reviewPrompter.activePrompt) { context in
-        ReviewSatisfactionSheet(prompter: reviewPrompter, context: context)
-      }
-      .sheet(item: $upgradePrompter.activePrompt) { context in
-        OnboardingPaywall(
-          showsCloseButton: true,
-          isPresentedAsSheet: true,
-          trigger: context.trigger,
-          analyticsProperties: context.analyticsProperties,
-          onNext: {}
-        )
-      }
-      .onAppear {
-        updateTimelinePreferencePresentation()
-        trackOnboardingStartedIfNeeded()
-        openDataRecoveryIfRequested()
-      }
-      .onChange(of: onboarding.hasSeenOnboarding) { _, hasSeenOnboarding in
-        if hasSeenOnboarding {
-          updateTimelinePreferencePresentation()
-        } else {
           trackOnboardingStartedIfNeeded()
+          openDataRecoveryIfRequested()
         }
-      }
-      .onChange(of: scenePhase) { _, phase in
-        guard phase == .active else { return }
-        Analytics.shared.flushQueuedWidgetEvents()
-        Analytics.shared.track(.appOpened)
-        openDataRecoveryIfRequested()
-        if onboarding.hasSeenOnboarding, reviewPrompter.activePrompt == nil {
-          upgradePrompter.considerTimedPrompt()
+        .onChange(of: onboarding.hasSeenOnboarding) { _, hasSeenOnboarding in
+          if hasSeenOnboarding {
+            updateTimelinePreferencePresentation()
+          } else {
+            trackOnboardingStartedIfNeeded()
+          }
         }
+        .onChange(of: scenePhase) { _, phase in
+          guard phase == .active else { return }
+          Analytics.shared.flushQueuedWidgetEvents()
+          Analytics.shared.track(.appOpened)
+          openDataRecoveryIfRequested()
+          if onboarding.hasSeenOnboarding, reviewPrompter.activePrompt == nil {
+            upgradePrompter.considerTimedPrompt()
+          }
+        }
+
+      case .unavailable(let message):
+        PersistenceUnavailableView(details: message)
       }
     }
   }

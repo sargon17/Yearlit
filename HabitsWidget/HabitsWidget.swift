@@ -456,8 +456,6 @@ struct HabitQuickAddIntent: AppIntent {
   }
 
   func perform() async throws -> some IntentResult {
-    let store = await MainActor.run { CustomCalendarStore.shared }
-
     guard let calendarId = UUID(uuidString: calendarId) else {
       WidgetAnalyticsQueue.shared.enqueueQuickAddPerformed(properties: [
         "widget_kind": .string(WidgetAnalyticsKind.habits.rawValue),
@@ -468,8 +466,21 @@ struct HabitQuickAddIntent: AppIntent {
       return .result()
     }
 
-    let calendar = await MainActor.run {
-      CustomCalendarStore.fetchCalendarsSnapshot().first(where: { $0.id == calendarId })
+    guard let container = SwiftDataManager.availableContainer else {
+      WidgetAnalyticsQueue.shared.enqueueQuickAddPerformed(properties: [
+        "widget_kind": .string(WidgetAnalyticsKind.habits.rawValue),
+        "cadence": .string("unknown"),
+        "tracking_type": .string("unknown"),
+        "result": .string("persistence_unavailable")
+      ])
+      return .result()
+    }
+
+    let (store, calendar) = await MainActor.run {
+      let store = CustomCalendarStore(container: container)
+      let calendar = CustomCalendarStore.fetchCalendarsSnapshot(container: container)
+        .first(where: { $0.id == calendarId })
+      return (store, calendar)
     }
 
     guard let calendar else {

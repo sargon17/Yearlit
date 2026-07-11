@@ -474,34 +474,75 @@ extension HabitStackStepEntity {
 
 @available(iOS 17.0, macOS 14.0, *)
 public enum SwiftDataManager {
-    public static let container: ModelContainer = {
-        do {
-            let appGroupId = "group.sargon17.My-Year"
-            guard
-                let groupURL = FileManager.default
-                .containerURL(forSecurityApplicationGroupIdentifier: appGroupId)
-            else {
-                fatalError("Unable to resolve app group container for \(appGroupId)")
-            }
+    public enum BootstrapResult {
+        case ready(ModelContainer)
+        case unavailable(String)
+    }
 
-            let storeURL = groupURL.appendingPathComponent("SwiftDataStore.store", isDirectory: false)
-            let configuration = ModelConfiguration(
-                nil,
-                schema: nil,
-                url: storeURL,
-                allowsSave: true,
-                cloudKitDatabase: .automatic
-            )
-            return try ModelContainer(
-                for: HabitCalendarEntity.self,
-                CalendarEntryEntity.self,
-                DayValuationEntity.self,
-                HabitStackEntity.self,
-                HabitStackStepEntity.self,
-                configurations: configuration
-            )
-        } catch {
-            fatalError("Failed to initialise SwiftData container: \(error)")
+    private static let appGroupId = "group.sargon17.My-Year"
+
+    public static let bootstrapResult: BootstrapResult = {
+        guard
+            let groupURL = FileManager.default
+                .containerURL(forSecurityApplicationGroupIdentifier: appGroupId)
+        else {
+            return .unavailable("Unable to resolve app group container.")
         }
+
+        let storeURL = groupURL.appendingPathComponent("SwiftDataStore.store", isDirectory: false)
+        return bootstrap(storeURL: storeURL, makeContainer: makeContainer)
     }()
+
+    public static var isAvailable: Bool {
+        guard case .ready = bootstrapResult else { return false }
+        return true
+    }
+
+    public static var availableContainer: ModelContainer? {
+        guard case .ready(let container) = bootstrapResult else { return nil }
+        return container
+    }
+
+    public static var container: ModelContainer {
+        guard let container = availableContainer else {
+            preconditionFailure("SwiftData container accessed while persistence is unavailable")
+        }
+        return container
+    }
+
+    static func bootstrap(
+        storeURL: URL,
+        makeContainer: (URL) throws -> ModelContainer
+    ) -> BootstrapResult {
+        do {
+            return .ready(try makeContainer(storeURL))
+        } catch {
+            return .unavailable("Failed to open the existing data store: \(error.localizedDescription)")
+        }
+    }
+
+    private static func makeContainer(storeURL: URL) throws -> ModelContainer {
+        let configuration = ModelConfiguration(
+            nil,
+            schema: nil,
+            url: storeURL,
+            allowsSave: true,
+            cloudKitDatabase: .automatic
+        )
+        let container = try ModelContainer(
+            for: HabitCalendarEntity.self,
+            CalendarEntryEntity.self,
+            DayValuationEntity.self,
+            HabitStackEntity.self,
+            HabitStackStepEntity.self,
+            configurations: configuration
+        )
+        let context = ModelContext(container)
+        _ = try context.fetchCount(FetchDescriptor<HabitCalendarEntity>())
+        _ = try context.fetchCount(FetchDescriptor<CalendarEntryEntity>())
+        _ = try context.fetchCount(FetchDescriptor<DayValuationEntity>())
+        _ = try context.fetchCount(FetchDescriptor<HabitStackEntity>())
+        _ = try context.fetchCount(FetchDescriptor<HabitStackStepEntity>())
+        return container
+    }
 }
