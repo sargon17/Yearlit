@@ -21,40 +21,41 @@ struct CreateCalendarChoiceView: View {
         .padding(.horizontal, -16)
 
       VStack(alignment: .leading, spacing: 10) {
-        Text("How do you want to track progress?")
+        Text("Build a Calendar")
           .font(.headline)
           .foregroundStyle(.textPrimary)
 
-        Text("Choose how this Calendar gets its Check-ins.")
+        Text("Start fresh, or bring in the year you already lived.")
           .font(.footnote)
           .foregroundStyle(.textTertiary)
       }
       .frame(maxWidth: .infinity, alignment: .leading)
       .padding(.horizontal, 8)
 
-      HStack(spacing: 2) {
+      VStack(spacing: 12) {
         creationPathButton(
-          title: "Track myself",
-          description: "Log Check-ins directly in Yearlit."
+          title: "Log it in Yearlit",
+          description: "Create a Calendar you check in yourself.",
+          detail: "FLEXIBLE · DAILY OR WEEKLY",
+          preview: (Set(stride(from: 1, through: 350, by: 11)), Color("qs-amber"))
         ) {
+          guard userCanCreateCalendar() else {
+            showCalendarLimitPaywall()
+            return
+          }
           router.showScreen(.push) { _ in
             CreateManualCalendarView(onCreate: onCreate)
           }
         }
 
         creationPathButton(
-          title: "Connect Apple Health",
-          description: "Fill Check-ins from Apple Health automatically."
+          title: "Fill from Apple Health",
+          description: "Turn activity already on your iPhone into a Calendar.",
+          detail: "AUTOMATIC · INCLUDES THIS YEAR",
+          preview: (Set(stride(from: 0, through: 360, by: 3)), Color("qs-green"))
         ) {
           guard userCanCreateCalendar() else {
-            router.showScreen(.sheet) { _ in
-              OnboardingPaywall(
-                showsCloseButton: true,
-                isPresentedAsSheet: true,
-                trigger: .calendarLimit,
-                onNext: {}
-              )
-            }
+            showCalendarLimitPaywall()
             return
           }
 
@@ -87,10 +88,12 @@ struct CreateCalendarChoiceView: View {
   private func creationPathButton(
     title: LocalizedStringKey,
     description: LocalizedStringKey,
+    detail: LocalizedStringKey,
+    preview: (completedDays: Set<Int>, color: Color),
     action: @escaping () -> Void
   ) -> some View {
     Button(action: action) {
-      VStack(alignment: .leading, spacing: 6) {
+      VStack(alignment: .leading, spacing: 10) {
         Text(title)
           .font(.headline)
           .foregroundStyle(.textPrimary)
@@ -100,9 +103,14 @@ struct CreateCalendarChoiceView: View {
           .font(.footnote)
           .foregroundStyle(.textTertiary)
           .frame(maxWidth: .infinity, alignment: .leading)
+        CalendarCreationPreview(color: preview.color, completedDays: preview.completedDays)
+
+        Text(detail)
+          .font(AppFont.mono(10, weight: .medium))
+          .foregroundStyle(.textTertiary)
       }
-      .padding()
-      .frame(maxWidth: .infinity, minHeight: 76, alignment: .leading)
+      .padding(14)
+      .frame(maxWidth: .infinity, alignment: .leading)
       .sameLevelBorder()
     }
     .buttonStyle(.plain)
@@ -110,6 +118,17 @@ struct CreateCalendarChoiceView: View {
 
   private func userCanCreateCalendar() -> Bool {
     isPremiumUser || store.snapshot.calendars.count < 3
+  }
+
+  private func showCalendarLimitPaywall() {
+    router.showScreen(.sheet) { _ in
+      OnboardingPaywall(
+        showsCloseButton: true,
+        isPresentedAsSheet: true,
+        trigger: .calendarLimit,
+        onNext: {}
+      )
+    }
   }
 
   @MainActor

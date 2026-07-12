@@ -1,7 +1,6 @@
 import SharedModels
 import SwiftUI
 import SwiftfulRouting
-import UIKit
 
 struct AppleHealthMetricCalendarConfigView: View {
   let metric: AppleHealthMetric
@@ -11,22 +10,21 @@ struct AppleHealthMetricCalendarConfigView: View {
   @State private var selectedColor: String
   @State private var dailyTarget: Int
   @State private var isCreatingCalendar = false
-  @State private var isLoadingPreview = false
-  @State private var importedValues: [Date: Int]?
-  @State private var calendarError: CalendarError?
-  @State private var needsSettings = false
+  @State private var importedValues: [Date: Int]
   @FocusState private var isNameFocused: Bool
   @Environment(\.router) private var router
-  @Environment(\.openURL) private var openURL
 
-  private let healthService = AppleHealthMetricService()
-
-  init(metric: AppleHealthMetric, onCreate: @escaping (CustomCalendar) -> Void) {
+  init(
+    metric: AppleHealthMetric,
+    importedValues: [Date: Int],
+    onCreate: @escaping (CustomCalendar) -> Void
+  ) {
     self.metric = metric
     self.onCreate = onCreate
     _name = State(initialValue: metric.defaultCalendarName)
     _selectedColor = State(initialValue: metric.defaultColor)
     _dailyTarget = State(initialValue: metric.defaultTarget)
+    _importedValues = State(initialValue: importedValues)
   }
 
   private var trimmedName: String {
@@ -41,29 +39,33 @@ struct AppleHealthMetricCalendarConfigView: View {
     !trimmedName.isEmpty
       && dailyTarget >= 1
       && !isCreatingCalendar
-      && !isLoadingPreview
-      && previewValues?.isEmpty == false
-  }
-
-  private var previewValues: [Date: Int]? {
-    importedValues
+      && !importedValues.isEmpty
   }
 
   private var previewEntries: [String: CalendarEntry] {
-    guard let previewValues else { return [:] }
-    return AppleHealthMetricEntryMapper.entries(from: previewValues, target: dailyTarget)
+    AppleHealthMetricEntryMapper.entries(from: importedValues, target: dailyTarget)
   }
 
   private var importedDayCount: Int {
-    previewValues?.count ?? 0
+    importedValues.count
   }
 
   private var completedDayCount: Int {
     previewEntries.values.filter(\.completed).count
   }
 
+  private var completedDayIndices: Set<Int> {
+    let calendar = LocalDayCalendar.calendar
+    return Set(
+      importedValues.compactMap { date, value in
+        guard value >= dailyTarget else { return nil }
+        return calendar.ordinality(of: .day, in: .year, for: date).map { $0 - 1 }
+      })
+  }
+
   private var averageValue: Int? {
-    guard let values = previewValues?.values, !values.isEmpty else { return nil }
+    let values = importedValues.values
+    guard !values.isEmpty else { return nil }
     return Int((Double(values.reduce(0, +)) / Double(values.count)).rounded())
   }
 
@@ -128,6 +130,17 @@ struct AppleHealthMetricCalendarConfigView: View {
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(.horizontal, 8)
 
+        CalendarCreationPreview(color: Color(selectedColor), completedDays: completedDayIndices)
+
+        Text(
+          "\(completedDayCount) days reached \(dailyTarget.formatted()) "
+            + "\(metric.unit.displayName.lowercased())."
+        )
+        .font(AppFont.mono(11, weight: .medium))
+        .foregroundStyle(.textSecondary)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(.horizontal, 8)
+
         importPreviewSection
 
         CustomSeparator()
@@ -147,7 +160,7 @@ struct AppleHealthMetricCalendarConfigView: View {
     .navigationBarTitleDisplayMode(.large)
     .toolbar {
       ToolbarItem(placement: .confirmationAction) {
-        Button("Create & Import") {
+        Button("Add this Calendar") {
           Task {
             await createAppleHealthCalendar()
           }
@@ -158,16 +171,6 @@ struct AppleHealthMetricCalendarConfigView: View {
     .onAppear {
       isNameFocused = true
     }
-    .task {
-      await loadImportPreview()
-    }
-    .alert(item: $calendarError) { error in
-      Alert(
-        title: Text(error.title),
-        message: Text(error.message),
-        dismissButton: .default(Text("OK"))
-      )
-    }
   }
 
   @MainActor
@@ -176,164 +179,71 @@ struct AppleHealthMetricCalendarConfigView: View {
     isCreatingCalendar = true
     defer { isCreatingCalendar = false }
 
-    do {
-      try await healthService.requestAuthorization(for: metric)
-      let values: [Date: Int]
-      if let previewValues {
-        values = previewValues
-      } else {
-        values = try await healthService.currentYearValues(for: metric)
-      }
-      guard !values.isEmpty else {
-        calendarError = .appleHealthSyncFailed(AppleHealthMetricServiceError.noReadableHealthData)
-        return
-      }
-      let entries = AppleHealthMetricEntryMapper.entries(from: values, target: dailyTarget)
-      let calendar = CustomCalendar(
-        name: trimmedName,
-        color: selectedColor,
-        cadence: .daily,
-        trackingType: .binary,
-        trackingStartedAt: Self.currentYearStartDate(),
-        dailyTarget: dailyTarget,
-        entries: entries,
-        isArchived: false,
-        recurringReminderEnabled: false,
-        unit: metric.unit,
-        defaultRecordValue: nil,
-        currencySymbol: nil,
-        reminderTimeZone: TimeZone.current.identifier,
-        notificationPrivacyMode: .full,
-        suppressWhenCompleted: false,
-        additionalReminderTimes: [],
-        streakProtectionEnabled: false,
-        source: metric.source
-      )
-      onCreate(calendar)
-      CalendarAnalyticsTracker.shared.trackAppleHealthCalendarCreated(
-        calendar: calendar,
-        metric: metric,
-        importedDays: values.count,
-        completedDays: entries.values.filter(\.completed).count
-      )
-      router.dismissEnvironment()
-    } catch {
-      needsSettings = true
-      calendarError = .appleHealthSyncFailed(error)
-    }
-  }
-
-  @MainActor
-  private func loadImportPreview() async {
-    guard !isLoadingPreview else { return }
-    isLoadingPreview = true
-    defer { isLoadingPreview = false }
-
-    do {
-      try await healthService.requestAuthorization(for: metric)
-      CalendarAnalyticsTracker.shared.trackAppleHealthPermissionResult(metric, didGrantAccess: true)
-      let values = try await healthService.currentYearValues(for: metric)
-      importedValues = values
-      CalendarAnalyticsTracker.shared.trackAppleHealthImportPreviewLoaded(
-        metric: metric,
-        importedDays: values.count,
-        completedDays: AppleHealthMetricEntryMapper.entries(from: values, target: dailyTarget)
-          .values
-          .filter(\.completed)
-          .count,
-        target: dailyTarget
-      )
-    } catch {
-      CalendarAnalyticsTracker.shared.trackAppleHealthPermissionResult(metric, didGrantAccess: false)
-      needsSettings = true
-      calendarError = .appleHealthSyncFailed(error)
-    }
+    let entries = AppleHealthMetricEntryMapper.entries(from: importedValues, target: dailyTarget)
+    let calendar = CustomCalendar(
+      name: trimmedName,
+      color: selectedColor,
+      cadence: .daily,
+      trackingType: .binary,
+      trackingStartedAt: Self.currentYearStartDate(),
+      dailyTarget: dailyTarget,
+      entries: entries,
+      isArchived: false,
+      recurringReminderEnabled: false,
+      unit: metric.unit,
+      defaultRecordValue: nil,
+      currencySymbol: nil,
+      reminderTimeZone: TimeZone.current.identifier,
+      notificationPrivacyMode: .full,
+      suppressWhenCompleted: false,
+      additionalReminderTimes: [],
+      streakProtectionEnabled: false,
+      source: metric.source
+    )
+    onCreate(calendar)
+    CalendarAnalyticsTracker.shared.trackAppleHealthCalendarCreated(
+      calendar: calendar,
+      metric: metric,
+      importedDays: importedValues.count,
+      completedDays: entries.values.filter(\.completed).count
+    )
+    router.dismissEnvironment()
   }
 
   @ViewBuilder
   private var importPreviewSection: some View {
     CustomSection(label: "Import Preview") {
       VStack(spacing: 2) {
-        if isLoadingPreview {
-          HStack(spacing: 8) {
-            ProgressView()
-              .tint(.textPrimary)
-            Text("Reading Apple Health")
+        previewRow(title: "Imported days", value: importedDayCount.formatted(.number))
+        previewRow(title: "Completed at target", value: completedDayCount.formatted(.number))
+        if let averageValue {
+          previewRow(title: "Average imported day", value: averageValue.formatted(.number))
+        }
+
+        if targetSuggestions.count > 1 {
+          VStack(alignment: .leading, spacing: 8) {
+            Text("Target suggestions")
               .labelStyle(type: .secondary)
-            Spacer()
+
+            HStack(spacing: 8) {
+              ForEach(targetSuggestions, id: \.self) { target in
+                Button {
+                  dailyTarget = target
+                } label: {
+                  Text(target.formatted(.number))
+                    .font(.footnote.weight(.bold))
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 8)
+                    .frame(minWidth: 64)
+                }
+                .sameLevelBorder(isFlat: true)
+                .foregroundStyle(target == dailyTarget ? Color(selectedColor) : .textSecondary)
+              }
+            }
           }
+          .frame(maxWidth: .infinity, alignment: .leading)
           .padding()
           .sameLevelBorder(isFlat: true)
-        } else if let previewValues {
-          if previewValues.isEmpty {
-            VStack(alignment: .leading, spacing: 8) {
-              Text("No current-year data found.")
-                .labelStyle(type: .secondary)
-              Text("Yearlit needs at least one Apple Health value to create this Calendar.")
-                .font(.footnote)
-                .foregroundStyle(.textTertiary)
-            }
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .padding()
-            .sameLevelBorder(isFlat: true)
-          } else {
-            previewRow(title: "Imported days", value: importedDayCount.formatted(.number))
-            previewRow(title: "Completed at target", value: completedDayCount.formatted(.number))
-            if let averageValue {
-              previewRow(title: "Average imported day", value: averageValue.formatted(.number))
-            }
-
-            if targetSuggestions.count > 1 {
-              VStack(alignment: .leading, spacing: 8) {
-                Text("Target suggestions")
-                  .labelStyle(type: .secondary)
-
-                HStack(spacing: 8) {
-                  ForEach(targetSuggestions, id: \.self) { target in
-                    Button {
-                      dailyTarget = target
-                    } label: {
-                      Text(target.formatted(.number))
-                        .font(.footnote.weight(.bold))
-                        .padding(.horizontal, 10)
-                        .padding(.vertical, 8)
-                        .frame(minWidth: 64)
-                    }
-                    .sameLevelBorder(isFlat: true)
-                    .foregroundStyle(target == dailyTarget ? Color(selectedColor) : .textSecondary)
-                  }
-                }
-              }
-              .frame(maxWidth: .infinity, alignment: .leading)
-              .padding()
-              .sameLevelBorder(isFlat: true)
-            }
-          }
-        } else {
-          VStack(spacing: 10) {
-            Button("Retry Apple Health Import") {
-              Task {
-                await loadImportPreview()
-              }
-            }
-            .frame(maxWidth: .infinity, alignment: .center)
-            .fontWeight(.bold)
-            .padding()
-            .sameLevelBorder()
-
-            if needsSettings {
-              Button("Open Settings") {
-                if let settingsURL = URL(string: UIApplication.openSettingsURLString) {
-                  openURL(settingsURL)
-                }
-              }
-              .frame(maxWidth: .infinity, alignment: .center)
-              .fontWeight(.bold)
-              .padding()
-              .sameLevelBorder()
-            }
-          }
-          .foregroundStyle(.textSecondary)
         }
       }
       .padding(.all, 2)
