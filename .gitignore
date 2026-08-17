@@ -162,3 +162,7 @@ fastlane/test_output
 # Ignore Xcode user data
 *.xcuserdatad/
 xcuserdata/
+
+# Agent worktrees and scratch output — never commit these
+.claude/
+.worktrees/
