@@ -144,6 +144,54 @@ _Avoid_: quote, caption, reminder text
 An automatic local recovery point containing all durable user-created Yearlit data.
 _Avoid_: Debug backup, snapshot, versioning
 
+**Premium**:
+The paid access level that unlocks gated Yearlit features, held through the `premium` entitlement.
+_Avoid_: Pro, subscription, paid tier
+
+**Paywall**:
+The screen that presents the available plans and starts a purchase.
+_Avoid_: Purchase screen, upgrade screen, subscription screen
+
+**Upgrade prompt**:
+An app-initiated event that decides to show a **Paywall** without the user asking for it.
+_Avoid_: Automatic paywall, nag, popup
+
+**Paywall decline**:
+A **Paywall** closed without a purchase, outside the **Onboarding flow**.
+_Avoid_: Dismissal, rejection, bounce
+
+**Offer**:
+A time-limited price on **Premium** that is lower than the normal price, given to a chosen audience.
+_Avoid_: Promo, deal, special offer, campaign
+
+**Discount offer**:
+The **Offer** given to a **Never-purchased user** who declined the **Paywall**.
+_Avoid_: Win-back, comeback offer, retention offer
+
+**Win-back offer**:
+The **Offer** given to a **Lapsed subscriber**, using Apple's win-back offer mechanism.
+_Avoid_: Reactivation discount, return offer
+
+**Offer paywall**:
+The **Paywall** shown with **Offer** copy and the **Offer** price.
+_Avoid_: Offer screen, discount screen, promo screen
+
+**Offer prompt**:
+The **Upgrade prompt** that decides to show the **Offer paywall** instead of the normal **Paywall**.
+_Avoid_: Discount prompt, offer trigger
+
+**Offer eligibility**:
+The rule that decides whether a user gets no **Offer**, the **Discount offer**, or the **Win-back offer**.
+_Avoid_: Offer targeting, segment rule
+
+**Never-purchased user**:
+A user who has never held the **Premium** entitlement.
+_Avoid_: Free user, non-paying user
+
+**Lapsed subscriber**:
+A user who held the **Premium** entitlement through a subscription that is no longer active.
+_Avoid_: Churned user, expired user, cancelled user
+
 ## Relationships
 
 - A **Calendar** can reach many **Milestones**.
@@ -289,6 +337,16 @@ _Avoid_: Debug backup, snapshot, versioning
 - After restoring a **Data backup**, Yearlit reloads app state and widgets without requiring an app restart.
 - **Create Daily Wallpaper** reads cached premium status when enforcing premium **Daily Wallpaper settings**.
 - **Create Daily Wallpaper** does not block generation on a live purchase-status network request.
+
+- A user has exactly one **Offer eligibility** result at a time: no **Offer**, the **Discount offer**, or the **Win-back offer**.
+- A **Never-purchased user** can only receive the **Discount offer**; a **Lapsed subscriber** can only receive the **Win-back offer**.
+- The **Discount offer** applies to the annual plan only, at half the normal regional price.
+- The **Discount offer** becomes available after the user has made two **Paywall declines**.
+- A **Paywall** closed during the **Onboarding flow** is not a **Paywall decline**.
+- The **Offer prompt** does not add its own schedule; it changes what an already due **Upgrade prompt** shows.
+- The **Offer prompt** interrupts the user at most three times, and the **Offer** stays reachable from **Settings** after that.
+- The **Offer** price is decided on the server and can change without an app release.
+- The normal **Paywall** keeps the normal price even for a user who has a live **Offer**.
 
 ## Example dialogue
 
