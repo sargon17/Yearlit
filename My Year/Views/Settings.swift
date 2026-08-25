@@ -9,6 +9,10 @@ struct SettingsView: View {
       Form {
         ProSection(customerInfo: customerInfo)
 
+#if DEBUG
+        OfferPaywallPrototypeSection()
+#endif
+
         YearExperienceSection()
 
         MotivationSection()
