@@ -350,14 +350,6 @@ _Avoid_: Churned user, expired user, cancelled user
 - The **Offer prompt** interrupts the user at most three times, and the **Offer** stays reachable from **Settings** after that.
 - The **Offer** price is decided on the server and can change without an app release.
 - The normal **Paywall** keeps the normal price even for a user who has a live **Offer**.
-- The **Offer paywall** uses progress as proof: "Your year so far", "Keep the pattern alive.", and the user's local check-in count for the current year.
-- The **Discount offer** subtitle is "Your pattern is already in motion." The **Win-back offer** subtitle is "Your pattern is still here."
-- The **Discount offer** and the **Win-back offer** share one **Offer paywall** variant; only the subtitle changes by audience.
-- The **Offer paywall** shows the normal annual price with a strike-through, the Offer annual price, and the discount percentage when valid comparison data exists.
-- When valid comparison data is missing, the **Offer paywall** shows only the Offer price and does not show a strike-through price or discount percentage.
-- The **Offer paywall** keeps the monthly and weekly plans at normal price behind a "See other plans" control.
-- The **Offer paywall** shows free-trial text only when StoreKit reports a free trial for the selected annual product; its layout remains stable without that text.
-- **Settings** shows "Yearlit Offer" with "Save 50% on yearly" after the Yearlit PRO row only while an **Offer** is live.
 
 ## Example dialogue
 
