@@ -9,7 +9,7 @@ struct OverallGridView: View {
   let year: Int
 
   @Environment(\.colorScheme) var colorScheme
-  @AppStorage(AppStorageKeys.gridVisualizationStyle)
+  @AppStorage(AppStorageKeys.gridVisualizationStyle, store: TimelinePreferenceStore.appGroupDefaults)
   private var visualizationStyle: GridVisualizationStyle = .dot
   let today: Date = DateInRegion(region: .current).date
   @State private var mappedDays: [GridDay] = []

@@ -5,7 +5,8 @@ struct YearExperienceSection: View {
   @ObservedObject private var timelinePreference = TimelinePreferenceManager.shared
   @AppStorage(AppStorageKeys.isMoodTrackingEnabled) var isMoodTrackingEnabled: Bool = false
   @AppStorage(AppStorageKeys.isRecapViewEnabled) var isRecapViewEnabled: Bool = false
-  @AppStorage(AppStorageKeys.gridVisualizationStyle) var gridVisualizationStyle: GridVisualizationStyle = .dot
+  @AppStorage(AppStorageKeys.gridVisualizationStyle, store: TimelinePreferenceStore.appGroupDefaults)
+  var gridVisualizationStyle: GridVisualizationStyle = .dot
 
   private var selectedMode: Binding<CalendarTimelineMode> {
     Binding(
@@ -40,6 +41,17 @@ struct YearExperienceSection: View {
     )
   }
 
+  private var gridStyleBinding: Binding<GridVisualizationStyle> {
+    Binding(
+      get: { gridVisualizationStyle },
+      set: { newValue in
+        guard newValue != gridVisualizationStyle else { return }
+        gridVisualizationStyle = newValue
+        WidgetReload.scheduleAllTimelinesReload()
+      }
+    )
+  }
+
   var body: some View {
     Section(header: Text("Your Year")) {
       Picker("Default year view", selection: selectedMode) {
@@ -53,7 +65,7 @@ struct YearExperienceSection: View {
         .font(.footnote)
         .foregroundStyle(.secondary)
 
-      Picker("Grid style", selection: $gridVisualizationStyle) {
+      Picker("Grid style", selection: gridStyleBinding) {
         ForEach(GridVisualizationStyle.allCases) { style in
           Text(style.title).tag(style)
         }
