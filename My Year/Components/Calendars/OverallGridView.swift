@@ -9,8 +9,10 @@ struct OverallGridView: View {
   let year: Int
 
   @Environment(\.colorScheme) var colorScheme
+  @AppStorage(AppStorageKeys.gridVisualizationStyle)
+  private var visualizationStyle: GridVisualizationStyle = .dot
   let today: Date = DateInRegion(region: .current).date
-  @State private var mappedDays: [(date: Date, color: Color)] = []
+  @State private var mappedDays: [GridDay] = []
 
   private var dates: [Date] {
     getYearDatesArray(for: year)
@@ -26,14 +28,16 @@ struct OverallGridView: View {
 
       Canvas { context, _ in
         for index in mappedDays.indices {
+          let day = mappedDays[index]
           let center = layout.center(for: index)
+          let markSize = visualizationStyle.markSize(base: CalendarGridLayout.dotSize, fillRatio: day.fillRatio)
           let rect = CGRect(
-            x: center.x - (CalendarGridLayout.dotSize / 2),
-            y: center.y - (CalendarGridLayout.dotSize / 2),
-            width: CalendarGridLayout.dotSize,
-            height: CalendarGridLayout.dotSize
+            x: center.x - (markSize / 2),
+            y: center.y - (markSize / 2),
+            width: markSize,
+            height: markSize
           )
-          context.fill(Path(roundedRect: rect, cornerRadius: 3), with: .color(mappedDays[index].color))
+          context.fill(visualizationStyle.path(in: rect), with: .color(day.color))
         }
       }
       .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -68,17 +72,19 @@ struct OverallGridView: View {
     ].joined(separator: "|")
   }
 
-  private func mappedDays(from zByDay: [Double]) -> [(date: Date, color: Color)] {
+  private func mappedDays(from zByDay: [Double]) -> [GridDay] {
     let futureColor = futureDayColor()
     let todayColor = activeDayColor()
     let missedColor = missedDayColor()
     let todayBucket = LocalDayCalendar.startOfDay(for: today)
-    return zip(dates, zByDay).map { day, z -> (date: Date, color: Color) in
+    return zip(dates, zByDay).map { day, z -> GridDay in
       let dayBucket = day  // dates from getYearDatesArray are pre-bucketed to midnight
-      if dayBucket > todayBucket { return (day, futureColor) }
-      if z <= 0 { return (day, dayBucket == todayBucket ? todayColor : missedColor) }
-      let opacity = min(1, max(0.2, z))
-      return (day, accentColor.opacity(opacity))
+      if dayBucket > todayBucket { return GridDay(date: day, color: futureColor, fillRatio: 0) }
+      if z <= 0 {
+        return GridDay(date: day, color: dayBucket == todayBucket ? todayColor : missedColor, fillRatio: 0)
+      }
+      let intensity = min(1, max(0.2, z))
+      return GridDay(date: day, color: accentColor.opacity(intensity), fillRatio: intensity)
     }
   }
 }

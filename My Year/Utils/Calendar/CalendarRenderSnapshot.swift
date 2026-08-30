@@ -11,7 +11,7 @@ struct CalendarRenderSnapshot {
   let visibleGridDates: [Date]
   let your365HeaderTitle: String?
   let currentPeriodReferenceDate: Date?
-  let mappedGridDays: [(date: Date, color: Color)]
+  let mappedGridDays: [GridDay]
   let disabledGridDates: Set<Date>
   let cacheKey: String
 }
@@ -134,27 +134,32 @@ enum CalendarRenderSnapshotCache {
     dates: [Date],
     today: Date,
     your365Snapshot: Your365Snapshot?
-  ) -> [(date: Date, color: Color)] {
+  ) -> [GridDay] {
     let cellsByDate = Dictionary(uniqueKeysWithValues: your365Snapshot?.cells.map { ($0.date, $0) } ?? [])
     let counts = calendar.entries.values.map { $0.count }
     let scale = precomputeRobustDotScale(for: counts)
 
     return dates.map { date in
       if let cell = cellsByDate[date] {
-        return (
+        let isTracked = cell.state != .future && cell.state != .notTracked
+        return GridDay(
           date: date,
           color: colorForYour365Day(
             cell,
             calendar: calendar,
             today: today,
             precomputedScale: scale
-          )
+          ),
+          fillRatio: isTracked
+            ? fillRatioForDay(date, calendar: calendar, today: today, precomputedScale: scale)
+            : 0
         )
       }
 
-      return (
+      return GridDay(
         date: date,
-        color: colorForDay(date, calendar: calendar, today: today, precomputedScale: scale)
+        color: colorForDay(date, calendar: calendar, today: today, precomputedScale: scale),
+        fillRatio: fillRatioForDay(date, calendar: calendar, today: today, precomputedScale: scale)
       )
     }
   }

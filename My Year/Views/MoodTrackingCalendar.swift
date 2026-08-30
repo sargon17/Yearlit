@@ -18,6 +18,8 @@ struct MoodTrackingCalendar: View {
   let store = ValuationStore.shared
   @AppStorage(AppStorageKeys.isMoodTrackingEnabled) var isMoodTrackingEnabled: Bool = false
   @AppStorage("lastMoodPromptDayKey") private var lastMoodPromptDayKey: String = ""
+  @AppStorage(AppStorageKeys.gridVisualizationStyle)
+  private var visualizationStyle: GridVisualizationStyle = .dot
   @Environment(\.router) private var router
 
   @State private var valuationPopupDate: Date?
@@ -38,6 +40,12 @@ struct MoodTrackingCalendar: View {
     }
 
     return day == store.currentDayNumber ? activeDayColor() : missedDayColor()
+  }
+
+  /// Mood valuations are single entries, so a valuated day counts as full.
+  private func fillRatioForDay(_ day: Int) -> Double {
+    guard day <= store.currentDayNumber else { return 0 }
+    return store.getValuation(for: store.dateForDay(day)) == nil ? 0 : 1
   }
 
   private func handleDayTap(_ day: Int) {
@@ -154,13 +162,17 @@ struct MoodTrackingCalendar: View {
         Canvas { context, _ in
           for day in 0..<store.numberOfDaysInYear {
             let center = layout.center(for: day)
-            let rect = CGRect(
-              x: center.x - (CalendarGridLayout.dotSize / 2),
-              y: center.y - (CalendarGridLayout.dotSize / 2),
-              width: CalendarGridLayout.dotSize,
-              height: CalendarGridLayout.dotSize
+            let markSize = visualizationStyle.markSize(
+              base: CalendarGridLayout.dotSize,
+              fillRatio: fillRatioForDay(day)
             )
-            context.fill(Path(roundedRect: rect, cornerRadius: 3), with: .color(colorForDay(day)))
+            let rect = CGRect(
+              x: center.x - (markSize / 2),
+              y: center.y - (markSize / 2),
+              width: markSize,
+              height: markSize
+            )
+            context.fill(visualizationStyle.path(in: rect), with: .color(colorForDay(day)))
           }
         }
         .contentShape(Rectangle())
