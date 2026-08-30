@@ -33,7 +33,9 @@ enum GridVisualizationStyle: String, CaseIterable, Identifiable {
     case .dot:
       return base
     case .scaledDot:
-      return base * (0.45 + (0.75 * fillRatio))
+      // sqrt maps value to area instead of diameter, so days near the average
+      // stay clearly visible next to outlier days instead of vanishing.
+      return base * (0.45 + (0.75 * sqrt(fillRatio)))
     case .sparkle, .cross:
       // Thin shapes need a bigger bounding box to match the dot's visual weight.
       return base * 1.3
