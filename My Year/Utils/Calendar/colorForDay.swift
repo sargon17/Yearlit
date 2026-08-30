@@ -11,6 +11,30 @@ func colorForDay(
     colorForDay(day, calendar: calendar, today: today, precomputedScale: precomputeRobustDotScale(for: counts))
 }
 
+/// Same normalization the color uses, exposed as a number so styles can also encode it as mark size.
+func fillRatioForDay(
+    _ day: Date,
+    calendar: CustomCalendar,
+    today: Date,
+    precomputedScale: Double
+) -> Double {
+    let comparisonDate = calendar.bucketDate(for: today)
+    let bucketDate = calendar.bucketDate(for: day)
+
+    guard bucketDate <= comparisonDate, let entry = calendar.entry(for: day) else {
+        return 0
+    }
+
+    switch calendar.trackingType {
+    case .binary:
+        return entry.completed ? 1 : 0
+    case .counter:
+        return counterDotFillRatio(count: entry.count, precomputedScale: precomputedScale)
+    case .multipleDaily:
+        return multipleDailyDotFillRatio(count: entry.count, dailyTarget: calendar.dailyTarget)
+    }
+}
+
 /// Variant for tight loops: pass a precomputed scale to avoid recomputing it per cell.
 func colorForDay(
     _ day: Date,

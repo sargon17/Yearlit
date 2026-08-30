@@ -5,6 +5,7 @@ struct YearExperienceSection: View {
   @ObservedObject private var timelinePreference = TimelinePreferenceManager.shared
   @AppStorage(AppStorageKeys.isMoodTrackingEnabled) var isMoodTrackingEnabled: Bool = false
   @AppStorage(AppStorageKeys.isRecapViewEnabled) var isRecapViewEnabled: Bool = false
+  @AppStorage(AppStorageKeys.gridVisualizationStyle) var gridVisualizationStyle: GridVisualizationStyle = .dot
 
   private var selectedMode: Binding<CalendarTimelineMode> {
     Binding(
@@ -51,6 +52,12 @@ struct YearExperienceSection: View {
       Text(timelineHelperCopy)
         .font(.footnote)
         .foregroundStyle(.secondary)
+
+      Picker("Grid style", selection: $gridVisualizationStyle) {
+        ForEach(GridVisualizationStyle.allCases) { style in
+          Text(style.title).tag(style)
+        }
+      }
 
       Toggle("Mood Tracking", isOn: moodTrackingBinding)
       Toggle("Recap View", isOn: recapViewBinding)

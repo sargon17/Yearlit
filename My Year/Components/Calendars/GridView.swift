@@ -4,9 +4,11 @@ import UIKit
 
 struct GridView: View {
   @Environment(\.colorScheme) private var colorScheme
+  @AppStorage(AppStorageKeys.gridVisualizationStyle)
+  private var visualizationStyle: GridVisualizationStyle = .dot
 
   let handleDayTap: (Date) -> Void
-  let mappedDays: [(date: Date, color: Color)]
+  let mappedDays: [GridDay]
   let disabledDates: Set<Date>
   let rippleOriginDate: Date?
   let rippleTrigger: Int
@@ -14,7 +16,7 @@ struct GridView: View {
 
   init(
     handleDayTap: @escaping (Date) -> Void,
-    mappedDays: [(date: Date, color: Color)],
+    mappedDays: [GridDay],
     disabledDates: Set<Date>,
     rippleOriginDate: Date? = nil,
     rippleTrigger: Int = 0
@@ -73,7 +75,7 @@ struct GridView: View {
         let phase = timelineDate.map { ripplePhase(for: ripple, at: $0) } ?? 0
         drawDot(
           context: &context,
-          color: day.color,
+          day: day,
           center: layout.center(for: index),
           ripple: ripple,
           phase: phase
@@ -115,19 +117,22 @@ struct GridView: View {
 
   private func drawDot(
     context: inout GraphicsContext,
-    color baseColor: Color,
+    day: GridDay,
     center: CGPoint,
     ripple: CalendarGridRipple,
     phase: Double
   ) {
+    let baseColor = day.color
+    let markSize = visualizationStyle.markSize(base: CalendarGridLayout.dotSize, fillRatio: day.fillRatio)
+
     guard phase != 0 else {
       let rect = CGRect(
-        x: center.x - (CalendarGridLayout.dotSize / 2),
-        y: center.y - (CalendarGridLayout.dotSize / 2),
-        width: CalendarGridLayout.dotSize,
-        height: CalendarGridLayout.dotSize
+        x: center.x - (markSize / 2),
+        y: center.y - (markSize / 2),
+        width: markSize,
+        height: markSize
       )
-      context.fill(Path(roundedRect: rect, cornerRadius: 3), with: .color(baseColor))
+      context.fill(visualizationStyle.path(in: rect), with: .color(baseColor))
       return
     }
 
@@ -154,29 +159,16 @@ struct GridView: View {
       layer.scaleBy(x: scale, y: scale)
 
       let rect = CGRect(
-        x: -CalendarGridLayout.dotSize / 2,
-        y: -CalendarGridLayout.dotSize / 2,
-        width: CalendarGridLayout.dotSize,
-        height: CalendarGridLayout.dotSize
+        x: -markSize / 2,
+        y: -markSize / 2,
+        width: markSize,
+        height: markSize
       )
-      let path = Path(roundedRect: rect, cornerRadius: 3)
+      let path = visualizationStyle.path(in: rect)
       layer.fill(path, with: .color(color))
 
       if isHighlighting {
-        let gradient = Gradient(colors: [
-          Color.white.opacity((colorScheme == .dark ? 0.2 : 0.28) * highlightForce),
-          Color.white.opacity((colorScheme == .dark ? 0.06 : 0.08) * highlightForce),
-          .clear
-        ])
-        layer.fill(
-          path,
-          with: .linearGradient(
-            gradient,
-            startPoint: CGPoint(x: rect.minX, y: rect.minY),
-            endPoint: CGPoint(x: rect.maxX, y: rect.maxY)
-          )
-        )
-        layer.stroke(path, with: .color(Color.white.opacity(0.18 * highlightForce)), lineWidth: 1)
+        drawHighlight(layer: &layer, path: path, rect: rect, highlightForce: highlightForce)
       }
 
       if isRecoiling {
@@ -184,6 +176,28 @@ struct GridView: View {
         layer.fill(path, with: .color(Color.black.opacity(opacity)))
       }
     }
+  }
+
+  private func drawHighlight(
+    layer: inout GraphicsContext,
+    path: Path,
+    rect: CGRect,
+    highlightForce: Double
+  ) {
+    let gradient = Gradient(colors: [
+      Color.white.opacity((colorScheme == .dark ? 0.2 : 0.28) * highlightForce),
+      Color.white.opacity((colorScheme == .dark ? 0.06 : 0.08) * highlightForce),
+      .clear
+    ])
+    layer.fill(
+      path,
+      with: .linearGradient(
+        gradient,
+        startPoint: CGPoint(x: rect.minX, y: rect.minY),
+        endPoint: CGPoint(x: rect.maxX, y: rect.maxY)
+      )
+    )
+    layer.stroke(path, with: .color(Color.white.opacity(0.18 * highlightForce)), lineWidth: 1)
   }
 
   private func rippleOriginIndex() -> Int? {
