@@ -229,15 +229,25 @@ public struct WidgetGridDot: View {
     public let color: Color
     public let dotSize: CGFloat
     public let accentable: Bool
+    public let style: GridVisualizationStyle
+    public let fillRatio: Double
 
-    public init(color: Color, dotSize: CGFloat, accentable: Bool = false) {
+    public init(
+        color: Color,
+        dotSize: CGFloat,
+        accentable: Bool = false,
+        style: GridVisualizationStyle = .dot,
+        fillRatio: Double = 0
+    ) {
         self.color = color
         self.dotSize = dotSize
         self.accentable = accentable
+        self.style = style
+        self.fillRatio = fillRatio
     }
 
     public var body: some View {
-        RoundedRectangle(cornerRadius: 3)
+        GridMarkShape(style: style, fillRatio: fillRatio)
             .fill(color)
             .frame(width: dotSize, height: dotSize)
             .widgetAccentable(accentable)

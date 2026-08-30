@@ -4,7 +4,7 @@ import UIKit
 
 struct GridView: View {
   @Environment(\.colorScheme) private var colorScheme
-  @AppStorage(AppStorageKeys.gridVisualizationStyle)
+  @AppStorage(AppStorageKeys.gridVisualizationStyle, store: TimelinePreferenceStore.appGroupDefaults)
   private var visualizationStyle: GridVisualizationStyle = .dot
 
   let handleDayTap: (Date) -> Void

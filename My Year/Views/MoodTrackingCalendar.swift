@@ -18,7 +18,7 @@ struct MoodTrackingCalendar: View {
   let store = ValuationStore.shared
   @AppStorage(AppStorageKeys.isMoodTrackingEnabled) var isMoodTrackingEnabled: Bool = false
   @AppStorage("lastMoodPromptDayKey") private var lastMoodPromptDayKey: String = ""
-  @AppStorage(AppStorageKeys.gridVisualizationStyle)
+  @AppStorage(AppStorageKeys.gridVisualizationStyle, store: TimelinePreferenceStore.appGroupDefaults)
   private var visualizationStyle: GridVisualizationStyle = .dot
   @Environment(\.router) private var router
 

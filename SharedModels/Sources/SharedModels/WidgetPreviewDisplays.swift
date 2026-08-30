@@ -15,6 +15,7 @@ public struct YearProgressWidgetDisplayView: View {
     public let textPrimaryColor: Color
     public let inactiveRatio: Double
     public let renderingMode: WidgetStyle.RenderingMode
+    private let style = GridVisualizationStyle.stored()
 
     private var dotSize: CGFloat {
         switch family {
@@ -77,7 +78,9 @@ public struct YearProgressWidgetDisplayView: View {
                 WidgetGridDot(
                     color: colorForDay(day),
                     dotSize: dotSize,
-                    accentable: renderingMode.isMonochrome && day == todayIndex
+                    accentable: renderingMode.isMonochrome && day == todayIndex,
+                    style: style,
+                    fillRatio: day <= todayIndex ? 1 : 0
                 )
             }
         }
@@ -154,6 +157,8 @@ public struct HabitProgressWidgetDisplayView: View {
     public let backgroundColor: Color
     public let textPrimaryColor: Color
     public let renderingMode: WidgetStyle.RenderingMode
+    private let style = GridVisualizationStyle.stored()
+    private let counterScale: Double
 
     private var dotSize: CGFloat {
         switch family {
@@ -178,6 +183,7 @@ public struct HabitProgressWidgetDisplayView: View {
         self.backgroundColor = backgroundColor
         self.textPrimaryColor = textPrimaryColor
         self.renderingMode = renderingMode
+        counterScale = precomputeRobustDotScale(for: calendar?.entries.values.map(\.count) ?? [])
     }
 
     public var body: some View {
@@ -215,7 +221,12 @@ public struct HabitProgressWidgetDisplayView: View {
                 .padding(.bottom, 4)
 
             WidgetDotsGrid(count: dates.count, dotSize: dotSize) { index in
-                WidgetGridDot(color: colorForDate(dates[index]), dotSize: dotSize)
+                WidgetGridDot(
+                    color: colorForDate(dates[index]),
+                    dotSize: dotSize,
+                    style: style,
+                    fillRatio: fillRatio(for: dates[index])
+                )
             }
         }
         .padding()
@@ -273,6 +284,11 @@ public struct HabitProgressWidgetDisplayView: View {
             }
             return Color(calendar.color).opacity(multipleDailyDotFillRatio(count: entry.count, dailyTarget: calendar.dailyTarget))
         }
+    }
+
+    private func fillRatio(for date: Date) -> Double {
+        guard let calendar else { return 0 }
+        return fillRatioForDay(date, calendar: calendar, today: referenceDate, precomputedScale: counterScale)
     }
 
     private func recentDates(days: Int) -> [Date] {

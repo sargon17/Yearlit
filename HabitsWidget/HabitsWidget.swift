@@ -88,6 +88,7 @@ struct SimpleEntry: TimelineEntry {
 
 struct HorizontalCalendarGrid: View {
   let dotSize: CGFloat
+  let visualizationStyle: GridVisualizationStyle
   let family: WidgetFamily
   let calendar: CustomCalendar?
   let timelineMode: CalendarTimelineMode
@@ -124,6 +125,7 @@ struct HorizontalCalendarGrid: View {
     self.textPrimaryColor = textPrimaryColor
     self.inactiveRatio = inactiveRatio
     self.renderingMode = renderingMode
+    visualizationStyle = GridVisualizationStyle.stored()
     switch family {
     case .systemLarge:
       dotSize = 10.0
@@ -226,7 +228,9 @@ struct HorizontalCalendarGrid: View {
                   WidgetGridDot(
                     color: gridDay.color,
                     dotSize: dotSize,
-                    accentable: gridDay.accentable
+                    accentable: gridDay.accentable,
+                    style: visualizationStyle,
+                    fillRatio: gridDay.fillRatio
                   )
                 } else {
                   Color.clear.frame(width: dotSize, height: dotSize)

@@ -1,3 +1,5 @@
+import SharedModels
+
 enum AppStorageKeys {
   static let isMoodTrackingEnabled = "isMoodTrackingEnabled"
   static let isRecapViewEnabled = "isRecapViewEnabled"
@@ -5,7 +7,8 @@ enum AppStorageKeys {
   static let runtimeDebugEnabled = "runtimeDebugEnabled"
   static let cleanScreenshotsEnabled = "cleanScreenshotsEnabled"
   static let wandFillForce = "wandFillForce"
-  static let gridVisualizationStyle = "gridVisualizationStyle"
+  /// Lives in the app-group defaults (`TimelinePreferenceStore.appGroupDefaults`) so widgets read it too.
+  static let gridVisualizationStyle = GridVisualizationStyle.preferenceKey
   static let milestoneCelebrationsEnabled = "milestoneCelebrationsEnabled"
   static let streakMilestoneCelebrationsEnabled = "streakMilestoneCelebrationsEnabled"
   static let showedUpMilestoneCelebrationsEnabled = "showedUpMilestoneCelebrationsEnabled"

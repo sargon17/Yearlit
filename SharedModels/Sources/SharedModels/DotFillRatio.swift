@@ -23,6 +23,30 @@ public func counterDotFillRatio(count: Int, counts: [Int]) -> Double {
     return min(1, max(minimumTrackedDotFillRatio, ratio))
 }
 
+/// Same normalization the color uses, exposed as a number so styles can also encode it as mark size.
+public func fillRatioForDay(
+    _ day: Date,
+    calendar: CustomCalendar,
+    today: Date,
+    precomputedScale: Double
+) -> Double {
+    let comparisonDate = calendar.bucketDate(for: today)
+    let bucketDate = calendar.bucketDate(for: day)
+
+    guard bucketDate <= comparisonDate, let entry = calendar.entry(for: day) else {
+        return 0
+    }
+
+    switch calendar.trackingType {
+    case .binary:
+        return entry.completed ? 1 : 0
+    case .counter:
+        return counterDotFillRatio(count: entry.count, precomputedScale: precomputedScale)
+    case .multipleDaily:
+        return multipleDailyDotFillRatio(count: entry.count, dailyTarget: calendar.dailyTarget)
+    }
+}
+
 public func multipleDailyDotFillRatio(count: Int, dailyTarget: Int) -> Double {
     guard count > 0 else { return 0 }
 

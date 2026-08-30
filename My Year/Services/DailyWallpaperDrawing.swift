@@ -56,6 +56,7 @@ enum DailyWallpaperDrawing {
     palette: DailyWallpaperPalette
   ) {
     let dotSize = alignedLength(max(5.5 * unit, min(7 * unit, rect.width / 46)))
+    let style = GridVisualizationStyle.stored()
     let layout = WidgetStyle.gridLayout(
       count: progress.numberOfDaysInYear,
       dotSize: dotSize,
@@ -69,12 +70,16 @@ enum DailyWallpaperDrawing {
         guard day < progress.numberOfDaysInYear else { continue }
 
         let color: UIColor
+        let fillRatio: Double
         if day >= progress.currentDayNumber {
           color = palette.futureDot
+          fillRatio = 0
         } else if day == progress.currentDayNumber - 1 {
           color = palette.accent
+          fillRatio = 1
         } else {
           color = palette.pastDot
+          fillRatio = 1
         }
 
         color.setFill()
@@ -85,7 +90,8 @@ enum DailyWallpaperDrawing {
             width: dotSize,
             height: dotSize
           ))
-        UIBezierPath(roundedRect: dotRect, cornerRadius: alignedLength(2 * unit)).fill()
+        let markPath = GridMarkShape(style: style, fillRatio: fillRatio).path(in: dotRect)
+        UIBezierPath(cgPath: markPath.cgPath).fill()
       }
     }
   }

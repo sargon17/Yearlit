@@ -63,27 +63,36 @@ struct ShareCompactStatTile: View {
 }
 
 struct ShareCalendarGridView: View {
-    let mappedDays: [(date: Date, color: Color)]
+    let mappedDays: [GridDay]
+    private let style = GridVisualizationStyle.stored()
 
     init(calendar: CustomCalendar, dates: [Date]) {
         let today = Date().date
-        let counts = calendar.entries.values.map { $0.count }
+        let scale = precomputeRobustDotScale(for: calendar.entries.values.map(\.count))
         mappedDays = dates.map { date in
-            (date: date, color: colorForDay(date, calendar: calendar, today: today, counts: counts))
+            GridDay(
+                date: date,
+                color: colorForDay(date, calendar: calendar, today: today, precomputedScale: scale),
+                fillRatio: fillRatioForDay(date, calendar: calendar, today: today, precomputedScale: scale)
+            )
         }
     }
 
     init(snapshot: Your365Snapshot, calendar: CustomCalendar, today: Date = Date()) {
         let scale = precomputeRobustDotScale(for: calendar.entries.values.map(\.count))
         mappedDays = snapshot.cells.map { cell in
-            (
+            let isTracked = cell.state != .future && cell.state != .notTracked
+            return GridDay(
                 date: cell.date,
                 color: colorForYour365Cell(
                     cell,
                     calendar: calendar,
                     today: today,
                     precomputedScale: scale
-                )
+                ),
+                fillRatio: isTracked
+                    ? fillRatioForDay(cell.date, calendar: calendar, today: today, precomputedScale: scale)
+                    : 0
             )
         }
     }
@@ -109,7 +118,9 @@ struct ShareCalendarGridView: View {
                             if day < mappedDays.count {
                                 GridDot(
                                     color: mappedDays[day].color,
-                                    dotSize: dotSize
+                                    dotSize: dotSize,
+                                    style: style,
+                                    fillRatio: mappedDays[day].fillRatio
                                 )
                             } else {
                                 Color.clear.frame(width: dotSize, height: dotSize)

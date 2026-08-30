@@ -31,6 +31,8 @@ struct HabitWidgetGridSnapshot {
 struct HabitWidgetGridDay {
   let color: Color
   let accentable: Bool
+  /// Normalized 0...1 intensity, same value the color encodes; styles can also encode it as mark size.
+  let fillRatio: Double
 }
 
 private struct HabitWidgetGridSnapshotBuilder {
@@ -80,8 +82,27 @@ private struct HabitWidgetGridSnapshotBuilder {
         your365CellsByDate: your365CellsByDate,
         counterDotScale: counterDotScale
       ),
-      accentable: isAccentedDay(normalized, today: today)
+      accentable: isAccentedDay(normalized, today: today),
+      fillRatio: fillRatio(
+        for: normalized,
+        today: today,
+        your365CellsByDate: your365CellsByDate,
+        counterDotScale: counterDotScale
+      )
     )
+  }
+
+  private func fillRatio(
+    for normalized: Date,
+    today: Date,
+    your365CellsByDate: [Date: Your365Cell],
+    counterDotScale: Double
+  ) -> Double {
+    guard let calendar else { return 0 }
+    if let cell = your365CellsByDate[normalized], cell.usesYour365OnlyColor {
+      return 0
+    }
+    return fillRatioForDay(normalized, calendar: calendar, today: today, precomputedScale: counterDotScale)
   }
 
   private func colorForDay(

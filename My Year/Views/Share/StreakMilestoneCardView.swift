@@ -428,6 +428,9 @@ private struct MilestoneGridView: View {
                 availableWidth: availableWidth,
                 availableHeight: availableHeight
             )
+            let style = GridVisualizationStyle.stored()
+            let today = Date()
+            let scale = precomputeRobustDotScale(for: calendar.entries.values.map(\.count))
 
             VStack(spacing: layout.verticalSpacing) {
                 ForEach(0 ..< layout.rows, id: \.self) { row in
@@ -437,7 +440,14 @@ private struct MilestoneGridView: View {
                             if dayIndex < dates.count {
                                 GridDot(
                                     color: dotColor(for: dates[dayIndex]),
-                                    dotSize: dotSize
+                                    dotSize: dotSize,
+                                    style: style,
+                                    fillRatio: fillRatioForDay(
+                                        dates[dayIndex],
+                                        calendar: calendar,
+                                        today: today,
+                                        precomputedScale: scale
+                                    )
                                 )
                             } else {
                                 Color.clear.frame(width: dotSize, height: dotSize)
