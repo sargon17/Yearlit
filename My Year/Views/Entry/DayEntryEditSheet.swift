@@ -34,7 +34,7 @@ struct DayEntryEditSheet: View {
     _selectedDate = State(initialValue: bucketedDate)
     _presentedDate = State(initialValue: bucketedDate)
     _entryCount = State(initialValue: existingEntry?.count ?? 0)
-    _entryCompleted = State(initialValue: existingEntry?.completed ?? false)
+    _entryCompleted = State(initialValue: existingEntry?.completed ?? (calendar.trackingType == .binary))
   }
 
   private func saveEntry() {
