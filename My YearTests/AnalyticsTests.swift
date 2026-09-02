@@ -69,6 +69,16 @@ struct AnalyticsTests {
     #expect(state.standardProperties()["mood_tracking_enabled"] == .bool(true))
   }
 
+  @Test func standardPropertiesDoNotRequireCalendarPersistence() {
+    let defaults = makeTestDefaults()
+    defer { cleanupTestDefaults(defaults) }
+
+    let state = AnalyticsState(defaults: defaults)
+
+    #expect(state.standardProperties()["calendar_count"] == .int(0))
+    #expect(state.standardProperties()["has_reminders_enabled"] == .bool(false))
+  }
+
   @Test func standardSnapshotPropertyKeysAreStableAndDocumented() throws {
     let defaults = makeTestDefaults()
     defer { cleanupTestDefaults(defaults) }
