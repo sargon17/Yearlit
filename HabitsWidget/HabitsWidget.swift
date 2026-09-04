@@ -12,6 +12,8 @@ import UIKit
 import WidgetKit
 
 struct Provider: AppIntentTimelineProvider {
+  var analyticsKind: WidgetAnalyticsKind = .habits
+
   func placeholder(in _: Context) -> SimpleEntry {
     makeEntry(for: ConfigurationAppIntent.defaultCalendar, date: Date())
   }
@@ -32,7 +34,7 @@ struct Provider: AppIntentTimelineProvider {
       } ?? entry.timelineMode
 
       WidgetAnalyticsQueue.shared.enqueueTimelineLoaded(properties: [
-        "widget_kind": .string(WidgetAnalyticsKind.habits.rawValue),
+        "widget_kind": .string(analyticsKind.rawValue),
         "widget_family": .string(widgetFamilyName(context.family)),
         "has_calendar": .bool(entry.calendar != nil),
         "cadence": .string(entry.calendar?.cadence.rawValue ?? "unknown"),
@@ -520,11 +522,12 @@ private func widgetFamilyName(_ family: WidgetFamily) -> String {
   case .systemSmall: return WidgetAnalyticsFamily.systemSmall.rawValue
   case .systemMedium: return WidgetAnalyticsFamily.systemMedium.rawValue
   case .systemLarge: return WidgetAnalyticsFamily.systemLarge.rawValue
+  case .accessoryRectangular: return WidgetAnalyticsFamily.accessoryRectangular.rawValue
   default: return WidgetAnalyticsFamily.other.rawValue
   }
 }
 
-private func widgetDeepLink(
+func widgetDeepLink(
   host: String,
   calendarId: String?,
   widgetKind: String,
