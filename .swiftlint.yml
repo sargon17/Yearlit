@@ -21,7 +21,6 @@ included:
   # - Sources
 excluded: # case-sensitive paths to ignore during linting. Takes precedence over `included`
   - DerivedData
-  - .sandcastle/worktrees
   - node_modules
   - SharedModels/.build
   # - Carthage

@@ -1,9 +1,5 @@
 {
   "scripts": {
-    "sandcastle": "bun .sandcastle/lead-delivery/main.mts",
-    "sandcastle:lead-delivery": "bun .sandcastle/lead-delivery/main.mts",
-    "sandcastle:basic": "bun .sandcastle/main.mts",
-    "sandcastle:build-image": "sandcastle docker build-image",
     "build:ios": "./scripts/xcodebuild-device-build.sh",
     "sim:boot": "./scripts/ios-simulator.sh boot",
     "test:sim": "./scripts/ios-simulator.sh test",
@@ -19,8 +15,5 @@
     "dev": "scripts/ios-simulator.sh run",
     "dev:ipad": "SIMULATOR_NAME='My Year iPad' SIMULATOR_OS=26.5 scripts/ios-simulator.sh run",
     "dev:device": "./scripts/ios-device.sh run"
-  },
-  "dependencies": {
-    "@ai-hero/sandcastle": "^0.5.5"
   }
 }
