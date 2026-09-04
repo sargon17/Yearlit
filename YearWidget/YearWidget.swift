@@ -5,22 +5,23 @@ import WidgetKit
 
 struct SimpleEntry: TimelineEntry {
     let date: Date
+    let style: GridVisualizationStyle
 }
 
-struct Provider: TimelineProvider {
-    typealias Entry = SimpleEntry
-
+struct Provider: AppIntentTimelineProvider {
     func placeholder(in _: Context) -> SimpleEntry {
-        return SimpleEntry(date: Date())
+        makeEntry(for: YearWidgetConfigurationIntent(), date: Date())
     }
 
-    func getSnapshot(in _: Context, completion: @escaping (SimpleEntry) -> Void) {
-        let entry = SimpleEntry(date: Date())
-        completion(entry)
+    func snapshot(for configuration: YearWidgetConfigurationIntent, in _: Context) async -> SimpleEntry {
+        makeEntry(for: configuration, date: Date())
     }
 
-    func getTimeline(in context: Context, completion: @escaping (Timeline<Entry>) -> Void) {
-        let entry = SimpleEntry(date: Date())
+    func timeline(
+        for configuration: YearWidgetConfigurationIntent,
+        in context: Context
+    ) async -> Timeline<SimpleEntry> {
+        let entry = makeEntry(for: configuration, date: Date())
 
         if !context.isPreview {
             WidgetAnalyticsQueue.shared.enqueueTimelineLoaded(properties: [
@@ -35,8 +36,11 @@ struct Provider: TimelineProvider {
         let calendar = Calendar.current
         let tomorrow = calendar.startOfDay(for: calendar.date(byAdding: .day, value: 1, to: Date()) ?? Date())
 
-        let timeline = Timeline(entries: [entry], policy: .after(tomorrow))
-        completion(timeline)
+        return Timeline(entries: [entry], policy: .after(tomorrow))
+    }
+
+    private func makeEntry(for configuration: YearWidgetConfigurationIntent, date: Date) -> SimpleEntry {
+        SimpleEntry(date: date, style: configuration.visualizationStyle.resolved())
     }
 }
 
@@ -67,7 +71,8 @@ struct YearWidgetEntryView: View {
             backgroundColor: backgroundColor,
             textPrimaryColor: primaryTextColor,
             inactiveRatio: inactiveRatio,
-            renderingMode: renderingMode
+            renderingMode: renderingMode,
+            style: entry.style
         )
         .containerBackground(backgroundColor, for: .widget)
         .widgetAccentable(false)
@@ -92,7 +97,11 @@ struct YearWidget: Widget {
     let kind: String = WidgetKinds.year
 
     var body: some WidgetConfiguration {
-        StaticConfiguration(kind: kind, provider: Provider()) { entry in
+        AppIntentConfiguration(
+            kind: kind,
+            intent: YearWidgetConfigurationIntent.self,
+            provider: Provider()
+        ) { entry in
             YearWidgetEntryView(entry: entry)
         }
         .configurationDisplayName("Year Progress")

@@ -1,3 +1,4 @@
+import AppIntents
 import Foundation
 import SwiftUI
 
@@ -112,6 +113,33 @@ public enum GridVisualizationStyle: String, CaseIterable, Identifiable, Sendable
             cornerSize: corner
         )
         return path
+    }
+}
+
+/// Per-widget choice of grid marks. `appDefault` follows the style selected in the app.
+public enum WidgetGridStyleOption: String, AppEnum, CaseIterable, Sendable {
+    case appDefault
+    case dot
+    case scaledDot
+    case sparkle
+    case cross
+
+    public static var typeDisplayRepresentation: TypeDisplayRepresentation { "Visualization" }
+    public static var caseDisplayRepresentations: [WidgetGridStyleOption: DisplayRepresentation] {
+        [
+            .appDefault: "App Setting",
+            .dot: "Dots",
+            .scaledDot: "Scaled Dots",
+            .sparkle: "Sparkles",
+            .cross: "Crosses"
+        ]
+    }
+
+    /// Raw values match GridVisualizationStyle, so the lookup is the mapping table.
+    public func resolved(
+        defaults: UserDefaults = TimelinePreferenceStore.appGroupDefaults
+    ) -> GridVisualizationStyle {
+        GridVisualizationStyle(rawValue: rawValue) ?? .stored(defaults: defaults)
     }
 }
 

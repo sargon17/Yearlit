@@ -114,7 +114,8 @@ struct HorizontalCalendarGrid: View {
     backgroundColor: Color,
     textPrimaryColor: Color,
     inactiveRatio: Double,
-    renderingMode: WidgetStyle.RenderingMode
+    renderingMode: WidgetStyle.RenderingMode,
+    visualizationStyle: GridVisualizationStyle
   ) {
     self.family = family
     self.calendar = calendar
@@ -127,7 +128,7 @@ struct HorizontalCalendarGrid: View {
     self.textPrimaryColor = textPrimaryColor
     self.inactiveRatio = inactiveRatio
     self.renderingMode = renderingMode
-    visualizationStyle = GridVisualizationStyle.stored()
+    self.visualizationStyle = visualizationStyle
     switch family {
     case .systemLarge:
       dotSize = 10.0
@@ -405,7 +406,8 @@ struct HabitsWidgetEntryView: View {
         backgroundColor: backgroundColor,
         textPrimaryColor: primaryTextColor,
         inactiveRatio: inactiveRatio,
-        renderingMode: renderingMode
+        renderingMode: renderingMode,
+        visualizationStyle: entry.configuration.visualizationStyle.resolved()
       )
       .containerBackground(backgroundColor, for: .widget)
       .widgetURL(destinationURL)
@@ -421,7 +423,8 @@ struct HabitsWidgetEntryView: View {
         backgroundColor: backgroundColor,
         textPrimaryColor: primaryTextColor,
         inactiveRatio: inactiveRatio,
-        renderingMode: renderingMode
+        renderingMode: renderingMode,
+        visualizationStyle: entry.configuration.visualizationStyle.resolved()
       )
       .widgetURL(destinationURL)
     }
@@ -633,7 +636,8 @@ private func previewWidget(
     backgroundColor: backgroundColor,
     textPrimaryColor: primaryTextColor,
     inactiveRatio: WidgetStyle.futureDotFillRatio,
-    renderingMode: renderingMode
+    renderingMode: renderingMode,
+    visualizationStyle: .stored()
   )
   .frame(width: 360, height: 260)
   .padding()
