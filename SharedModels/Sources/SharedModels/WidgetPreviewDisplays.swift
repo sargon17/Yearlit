@@ -15,7 +15,7 @@ public struct YearProgressWidgetDisplayView: View {
     public let textPrimaryColor: Color
     public let inactiveRatio: Double
     public let renderingMode: WidgetStyle.RenderingMode
-    private let style = GridVisualizationStyle.stored()
+    public let style: GridVisualizationStyle
 
     private var dotSize: CGFloat {
         switch family {
@@ -34,7 +34,8 @@ public struct YearProgressWidgetDisplayView: View {
         backgroundColor: Color,
         textPrimaryColor: Color,
         inactiveRatio: Double = WidgetStyle.futureDotFillRatio,
-        renderingMode: WidgetStyle.RenderingMode = .fullColor
+        renderingMode: WidgetStyle.RenderingMode = .fullColor,
+        style: GridVisualizationStyle = .stored()
     ) {
         self.family = family
         self.referenceDate = referenceDate
@@ -42,6 +43,7 @@ public struct YearProgressWidgetDisplayView: View {
         self.textPrimaryColor = textPrimaryColor
         self.inactiveRatio = inactiveRatio
         self.renderingMode = renderingMode
+        self.style = style
     }
 
     public var body: some View {

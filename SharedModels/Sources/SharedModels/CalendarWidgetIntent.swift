@@ -59,6 +59,9 @@ public struct CalendarWidgetConfigurationIntent: WidgetConfigurationIntent {
     )
     public var selectedCalendar: CalendarOption?
 
+    @Parameter(title: "Visualization", default: .appDefault)
+    public var visualizationStyle: WidgetGridStyleOption
+
     public init() {
         let calendars = CustomCalendarStore.fetchCalendarsSnapshot()
         if let calendar = calendars.first {

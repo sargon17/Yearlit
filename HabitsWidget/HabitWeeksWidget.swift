@@ -17,8 +17,6 @@ struct HabitWeeksWidgetEntryView: View {
   @Environment(\.colorScheme) private var colorScheme
   @Environment(\.widgetRenderingMode) private var widgetRenderingMode
 
-  private let visualizationStyle = GridVisualizationStyle.stored()
-
   var body: some View {
     let renderingMode = WidgetStyle.RenderingMode(widgetRenderingMode)
     let snapshot = HabitWidgetGridSnapshot.make(
@@ -42,7 +40,7 @@ struct HabitWeeksWidgetEntryView: View {
           .minimumScaleFactor(0.7)
       }
 
-      HabitWeeksDotGrid(days: snapshot.days, style: visualizationStyle)
+      HabitWeeksDotGrid(days: snapshot.days, style: .scaledDot)
     }
     .containerBackground(.clear, for: .widget)
     .widgetURL(
