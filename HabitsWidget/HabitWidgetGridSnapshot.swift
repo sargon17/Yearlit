@@ -239,6 +239,10 @@ private struct HabitWidgetGridSnapshotBuilder {
   }
 
   private func datesForFamily(today: Date, your365Snapshot: Your365Snapshot?) -> [Date] {
+    if family == .accessoryRectangular {
+      return accessoryDates(today: today)
+    }
+
     if let calendar, calendar.cadence == .weekly {
       return family == .systemSmall ? recentWeeks(from: today, weeks: 35) : yearWeeks(containing: today)
     }
@@ -248,6 +252,21 @@ private struct HabitWidgetGridSnapshotBuilder {
     }
 
     return family == .systemSmall ? recentDates(from: today, days: 35) : yearDates(containing: today)
+  }
+
+  /// Whole weeks aligned to the week start, so the Lock Screen rows read as a calendar.
+  private func accessoryDates(today: Date) -> [Date] {
+    if let calendar, calendar.cadence == .weekly {
+      return recentWeeks(from: today, weeks: 21)
+    }
+    let dayCalendar = LocalDayCalendar.calendar
+    let weekStart = LocalDayCalendar.startOfWeek(for: today)
+    guard let start = dayCalendar.date(byAdding: .weekOfYear, value: -2, to: weekStart),
+      let end = dayCalendar.date(byAdding: .day, value: 6, to: weekStart)
+    else {
+      return []
+    }
+    return buildDates(from: start, to: end)
   }
 
   private func smallYour365Dates(today: Date, snapshot: Your365Snapshot) -> [Date] {

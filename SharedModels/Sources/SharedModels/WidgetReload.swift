@@ -14,6 +14,7 @@ public enum WidgetReload {
         case year
         case habits
         case streak
+        case habitWeeks
 
         var widgetKind: String {
             switch self {
@@ -23,6 +24,8 @@ public enum WidgetReload {
                 WidgetKinds.habits
             case .streak:
                 WidgetKinds.streak
+            case .habitWeeks:
+                WidgetKinds.habitWeeks
             }
         }
     }
@@ -54,7 +57,7 @@ public enum WidgetReload {
     }
 
     public static func scheduleHabitWidgetsReload(debounce: TimeInterval = 0.5) {
-        scheduleReload(of: [.habits, .streak], debounce: debounce)
+        scheduleReload(of: [.habits, .streak, .habitWeeks], debounce: debounce)
     }
 
     public static func scheduleYearWidgetReload(debounce: TimeInterval = 0.5) {
@@ -90,4 +93,5 @@ public enum WidgetKinds {
     public static let year = "YearWidget"
     public static let habits = "HabitsWidget"
     public static let streak = "StreakWidget"
+    public static let habitWeeks = "HabitWeeksWidget"
 }

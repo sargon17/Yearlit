@@ -12,6 +12,7 @@ import WidgetKit
 struct HabitsWidgetBundle: WidgetBundle {
     var body: some Widget {
         HabitsWidget()
+        HabitWeeksWidget()
         // HabitsWidgetControl()
     }
 }

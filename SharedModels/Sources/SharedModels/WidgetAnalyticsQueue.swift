@@ -4,12 +4,14 @@ public enum WidgetAnalyticsKind: String, Codable, CaseIterable {
     case year
     case habits
     case streak
+    case habitWeeks = "habit_weeks"
 }
 
 public enum WidgetAnalyticsFamily: String, Codable, CaseIterable {
     case systemSmall
     case systemMedium
     case systemLarge
+    case accessoryRectangular
     case other
 }
 
