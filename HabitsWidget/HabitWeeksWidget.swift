@@ -9,8 +9,8 @@ import SharedModels
 import SwiftUI
 import WidgetKit
 
-private let weekRows = 3
-private let daysPerWeek = 7
+private let daysPerRow = 14
+private let gapRatio: CGFloat = 0.4
 
 struct HabitWeeksWidgetEntryView: View {
   var entry: SimpleEntry
@@ -32,7 +32,7 @@ struct HabitWeeksWidgetEntryView: View {
       renderingMode: renderingMode
     )
 
-    VStack(alignment: .leading, spacing: 2) {
+    VStack(alignment: .leading, spacing: 6) {
       if let calendar = entry.calendar {
         Text(calendar.name)
           .font(AppFont.mono(11))
@@ -64,29 +64,28 @@ private struct HabitWeeksDotGrid: View {
 
   var body: some View {
     GeometryReader { geometry in
-      let columns = CGFloat(daysPerWeek)
-      let rows = CGFloat(weekRows)
-      let dotSize = min(geometry.size.height / rows, geometry.size.width / columns) * 0.62
-      let horizontalSpacing = max(1, (geometry.size.width - dotSize * columns) / (columns - 1))
-      let verticalSpacing = max(1, (geometry.size.height - dotSize * rows) / (rows - 1))
+      let columns = CGFloat(daysPerRow)
+      let dotSize = geometry.size.width / (columns + ((columns - 1) * gapRatio))
+      let horizontalSpacing = dotSize * gapRatio
+      let rowsThatFit = Int((geometry.size.height + horizontalSpacing) / (dotSize + horizontalSpacing))
+      let rows = min(days.count / daysPerRow, rowsThatFit)
+      let verticalSpacing = rows > 1
+        ? (geometry.size.height - (dotSize * CGFloat(rows))) / CGFloat(rows - 1)
+        : 0
+      let shown = Array(days.suffix(rows * daysPerRow))
 
       VStack(spacing: verticalSpacing) {
-        ForEach(0..<weekRows, id: \.self) { row in
+        ForEach(0..<rows, id: \.self) { row in
           HStack(spacing: horizontalSpacing) {
-            ForEach(0..<daysPerWeek, id: \.self) { col in
-              let index = (row * daysPerWeek) + col
-              if index < days.count {
-                let gridDay = days[index]
-                WidgetGridDot(
-                  color: gridDay.color,
-                  dotSize: dotSize,
-                  accentable: gridDay.accentable,
-                  style: style,
-                  fillRatio: gridDay.fillRatio
-                )
-              } else {
-                Color.clear.frame(width: dotSize, height: dotSize)
-              }
+            ForEach(0..<daysPerRow, id: \.self) { col in
+              let gridDay = shown[(row * daysPerRow) + col]
+              WidgetGridDot(
+                color: gridDay.color,
+                dotSize: dotSize,
+                accentable: gridDay.accentable,
+                style: style,
+                fillRatio: gridDay.fillRatio
+              )
             }
           }
         }

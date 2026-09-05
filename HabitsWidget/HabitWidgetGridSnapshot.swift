@@ -254,14 +254,14 @@ private struct HabitWidgetGridSnapshotBuilder {
     return family == .systemSmall ? recentDates(from: today, days: 35) : yearDates(containing: today)
   }
 
-  /// Whole weeks aligned to the week start, so the Lock Screen rows read as a calendar.
+  /// Twelve whole weeks aligned to the week start; the Lock Screen view shows as many rows as fit.
   private func accessoryDates(today: Date) -> [Date] {
     if let calendar, calendar.cadence == .weekly {
-      return recentWeeks(from: today, weeks: 21)
+      return recentWeeks(from: today, weeks: 84)
     }
     let dayCalendar = LocalDayCalendar.calendar
     let weekStart = LocalDayCalendar.startOfWeek(for: today)
-    guard let start = dayCalendar.date(byAdding: .weekOfYear, value: -2, to: weekStart),
+    guard let start = dayCalendar.date(byAdding: .weekOfYear, value: -11, to: weekStart),
       let end = dayCalendar.date(byAdding: .day, value: 6, to: weekStart)
     else {
       return []
